@@ -297,7 +297,9 @@ these sets is embedded in or distributed with the engine.
     C8 +42 cents)
   - The two takes of a key lie 3.7, 1.9 and 0.9 dB apart (median; pp, mf, ff)
   - The pedal pass: 16 events, 17–50 dB over the floor; four pedal-downs and three pedal-ups
-    (`split_session.py --pedal`), the pedal's noise and ring (step 205); the C1–C8 pass with the
+    (`split_session.py --pedal`), the pedal's noise and ring (steps 205–206): the thumps 5–22 dB
+    (downs) and 22–31 dB (ups) under the median mf note's peak, a low thud (100–400 Hz) whose highs
+    lie under the room's floor; the later blips in a take are the room's; the C1–C8 pass with the
     pedal down splits into its 8 notes (unused so far)
   - Releases: the dampers' first fall 111 dB/s (median, 100 Hz–1.5 kHz; Grand E's 111), A0–E6;
     the release noise not clean (the damped strings' remainder, an edge at each take's start):

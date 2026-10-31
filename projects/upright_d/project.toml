@@ -20,6 +20,12 @@ id_max_partial = 60
 # 2.9–5.6 s (strings ringing in them, not the room: Upright A's 1.2–1.6 s were its hum), held at 250 Hz
 room_t60 = [[250.0, 0.65], [500.0, 0.34], [800.0, 0.26], [2000.0, 0.35], [4000.0, 0.36], [8000.0, 0.30], [12800.0, 0.26]]
 
+# the pedal's thumps at its recordings' level (2026-10-31): played 3.6–4.8 dB over them re the mf
+# notes (the exported reference, the model's radiated mf peak, lies over the engine's played one), and
+# heard as too loud; the ring's target stays the recordings'
+[noises]
+pedal_level_db = -4.5
+
 [uses]
 # the release noise Salamander's, as the other pianos' (2026-10-31, heard "way too loud and clicky"):
 # its own release takes, the note's partials taken out, left the damped strings' remainder 20–30 dB
@@ -59,6 +65,15 @@ low_eta = 0.04
 [felt]
 p = 1.82
 stiffness_db = 5.3
+
+# the strings ringing along by ear (2026-10-31; the fits never see it): the undamped treble (F6 up) rang
+# "quite intensely on their own"; the Sympathetic resonance control at about 25 % heard right. Measured
+# on the releases pass (keys C3–C5 held 2.3 s and released, the band of the undamped strings'
+# fundamentals, 1.4–4.3 kHz, 0.5–2 s after the release re the attack): the recording at its floor
+# (−50.2 dB; −50.3 before the strike: no ring above it), the engine −48.3 dB at 100 %, −54.2 at 50 %,
+# −60.2 at 25 %
+[sympathetic]
+percent = 25.0
 
 # the felt's core (2026-10-31): Upright C's, heard by the maintainer to improve this piano in the plugin
 # (its Felt tab); 3 N at 0.5 mm past the core's depth to D♯2, none from C3

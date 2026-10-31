@@ -3051,3 +3051,60 @@ Upright A's recordings by this measure; left for the ear.
 The chain refit with the new sources moved nothing measured: the treble and the middle as in step
 204, the lowest fundamentals +0.2 dB, the phrase's loudness −27.8 LUFS (the grands' −28.2).
 
+<a id="step-206"></a>
+## 206. Upright D's pedal thumps and its undamped treble
+
+Heard (the maintainer): the pedal's ring right now, its thumps "still too loud and sometimes a bit
+clicky" (the pedal noise he turns down about 20 dB on the other pianos too); the felt right; the
+undamped treble "ring quite intensely on their own", the Sympathetic resonance control at about 25 %
+right.
+
+**The thumps** (each event at the Recording position, peak re the median mf note's peak over the 30
+recorded keys at the mf velocity; the recording's takes re its mf takes):
+
+| | downs | ups | highs of an up (peak over 3 kHz re its peak) |
+|---|---|---|---|
+| its recordings | −22.2, −12.8, −10.2, −4.6 | −31.4, −22.1, −23.9 | −22, −33, −30 |
+| step 205's export | −17.4, −8.3, −5.6, −0.1 | −26.7, −17.7, −19.2 | −16, −16, −24 |
+| now | −21.8, −12.7, −10.1, −4.6 | −30.6, −21.8, −23.5 | −45, −70, −40 |
+
+They played 3.6–4.8 dB over the recordings: a take's level is re the export's reference, the model's
+radiated mf peak, which lies over the engine's played mf notes (Grand A's borrowed thumps play
++2.5 … +4.4 dB over Salamander's ratios alike). `[noises] pedal_level_db = -4.5` (a level on every
+thump, not on the ring's target). The onsets match (the first impact's rise 0.7–2.8 ms recorded,
+0.5–3.3 in the engine); the click was the highs: the thump's bands were read over the take to its
+last impact, and in a room's recording the later "impacts" (0.36–0.66 s) were the room's blips and
+the band's highs its floor (−25 … −35 dB re the strongest band at 1.6–12.8 kHz), which the
+resynthesis put under every impact. Within the first 0.3 s the thump's highs lie under the floor (a
+low thud, 100–400 Hz). For a set's own takes `pedal_noise.py` now reads the impacts within 0.35 s and
+takes each take's floor (its last 0.5 s) out of its bands; Salamander's path unchanged (its cache
+rewritten byte for byte). The ring: −41.4 dB (step 205 −39.0; the recordings −37 … −54).
+
+**The other pianos' borrowed thumps**, the same measure (peaks, the two takes each):
+
+| | downs | ups |
+|---|---|---|
+| Grands A, B, C, E | −18 … −20, −22 … −25 | −23 … −26, −27 … −31 |
+| Grand D | −31, −36 | −38, −41 |
+| Grand F | −29, −34 | −37, −38 |
+| Grand G | −11, −17 | −19, −22 |
+| Uprights A, B, C | −15 … −19, −21 … −24 | −19 … −23, −25 … −29 |
+| Upright D's recordings | −22 … −5 (median −11.5) | −31 … −22 (−23.9) |
+| Salamander's raw takes re its raw mf (v8) notes | −11.3, −17.2 | −18.8, −24.5 |
+| Salamander's mix (its SFZ: −20/−19 dB) | −21.8, −27.7 | −28.3, −34.0 |
+
+Against both recordings the engines' thumps lie at or under their level, not 20 dB over: the
+maintainer's 20 dB by ear is a cut below what a microphone at the player's distance records (as
+Salamander's sample author mixed his takes 10 dB under their raw level, steps 120–121). For a later
+round on every piano.
+
+**The undamped treble.** Keys C3–C5 of the releases pass (held 2.3 s, released) and their renders, the
+band of the undamped strings' fundamentals (F6–C8, 1.4–4.3 kHz) 0.5–2 s after the release re the
+first 0.2 s of the attack: the recording −50.2 dB, its floor (−50.3 before the strike: no ring above
+it); the engine −48.3 at the control's 100 %, −54.2 at 50 %, −60.2 at 25 %, −99 at 0; at 2–3.5 s
+after the release −65.4 / −77.5 (100 / 25 %). The engine's undamped strings ring at least to where the
+recording shows nothing; 25 % puts them 10 dB under its floor. A project's `[sympathetic] percent`
+(0–300) scales the strings' sympathetic drive (the export's `transfer`) as the control scales it on a
+string instrument, so the control's 100 % is the instrument's own; without it the transfer is as
+before (every other export unchanged). Upright D: 25 %.
+
