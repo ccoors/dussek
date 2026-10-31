@@ -35,8 +35,9 @@ What `project.toml` holds:
   `reversed_keys` for a keyboard with dark naturals and light sharps (the harpsichords), and
   `hidden` for a test fixture.
 - **The recordings' credit** (`[license]`): `set`, `author`, `url` (left out for recordings not
-  published), `terms` (quoted where the source words them) and `source_license` (`CC0`, `public-domain`, `free-use`, `CC-BY-4.0` or
-  `CC-BY-SA-4.0`); `by` names who made the instrument when it is not this repository's author.
+  published), `terms` (quoted where the source words them) and `source_license` (`CC0`,
+  `public-domain`, `free-use`, `CC-BY-3.0`, `CC-BY-4.0` or `CC-BY-SA-4.0`); `by` names who made the
+  instrument when it is not this repository's author.
   `proto/license.py` writes `instruments/<project>/LICENSE.md` from it and from
   the blocks of every project reached through `[uses]`: the instrument is CC BY 4.0, or CC BY-SA
   4.0 where any of those recordings are ShareAlike, and music made with it is the player's;

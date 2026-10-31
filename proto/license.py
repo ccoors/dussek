@@ -14,7 +14,7 @@ The exports call `write`; after a change to a [license] block: `python3 proto/li
     author = "…"
     url = "…"
     terms = "…"           # their terms, quoted where the source words them
-    source_license = "…"  # CC0, public-domain, free-use, CC-BY-4.0 or CC-BY-SA-4.0
+    source_license = "…"  # CC0, public-domain, free-use, CC-BY-3.0, CC-BY-4.0 or CC-BY-SA-4.0
     by = "…"              # who made the instrument (the licensor), when not this repository's author
 
 Without a block (a project the editor made, until its recordings are named) the file names no
@@ -31,7 +31,7 @@ import project as P  # noqa: E402
 
 AUTHOR = "Christian Friedrich Coors"
 NAME = "PianoEngine"
-SOURCE_LICENSES = {"CC0", "public-domain", "free-use", "CC-BY-4.0", "CC-BY-SA-4.0"}
+SOURCE_LICENSES = {"CC0", "public-domain", "free-use", "CC-BY-3.0", "CC-BY-4.0", "CC-BY-SA-4.0"}
 LICENSES = {
     "CC BY 4.0": ("Creative Commons Attribution 4.0 International", "https://creativecommons.org/licenses/by/4.0/"),
     "CC BY-SA 4.0": ("Creative Commons Attribution-ShareAlike 4.0 International",
@@ -106,6 +106,7 @@ def _credit_line(block, how):
     terms = {"CC0": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
              "public-domain": "public domain",
              "free-use": "free to use",
+             "CC-BY-3.0": "CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/)",
              "CC-BY-4.0": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
              "CC-BY-SA-4.0": "CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/)"}[block["source_license"]]
     # recordings not published (a maintainer's own) have no address
