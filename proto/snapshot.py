@@ -33,7 +33,7 @@ class SnapshotError(Exception):
 def snapshots_dir():
     """The data directory's snapshots folder, as the plugin searches it."""
     data = os.environ.get("XDG_DATA_HOME") or os.path.join(os.environ.get("HOME", "~"), ".local", "share")
-    return os.path.join(data, "pianoengine", "snapshots")
+    return os.path.join(data, "dussek", "snapshots")
 
 
 def safe_ref(ref):

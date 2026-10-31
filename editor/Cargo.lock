@@ -968,6 +968,41 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d8b14ccef22fc6f5a8f4d7d768562a182c04ce9a3b3157b91390b52ddfdf1a76"
 
 [[package]]
+name = "dussek"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "hound",
+ "midly",
+ "realfft",
+ "serde",
+ "serde_json",
+ "tiny-skia",
+ "toml_edit",
+]
+
+[[package]]
+name = "dussek-editor"
+version = "0.1.0"
+dependencies = [
+ "cpal",
+ "dussek",
+ "eframe",
+ "egui_extras",
+ "glob",
+ "hound",
+ "libc",
+ "realfft",
+ "regex",
+ "rfd",
+ "serde",
+ "serde_json",
+ "symphonia",
+ "tempfile",
+ "toml_edit",
+]
+
+[[package]]
 name = "ecolor"
 version = "0.36.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2748,41 +2783,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e57fef6bc5981e38c2ce2d63bfa546861309f875b8a75f092d1d54ae2d64f266"
 dependencies = [
  "siphasher",
-]
-
-[[package]]
-name = "pianoengine"
-version = "0.1.0"
-dependencies = [
- "clap",
- "hound",
- "midly",
- "realfft",
- "serde",
- "serde_json",
- "tiny-skia",
- "toml_edit",
-]
-
-[[package]]
-name = "pianoengine-editor"
-version = "0.1.0"
-dependencies = [
- "cpal",
- "eframe",
- "egui_extras",
- "glob",
- "hound",
- "libc",
- "pianoengine",
- "realfft",
- "regex",
- "rfd",
- "serde",
- "serde_json",
- "symphonia",
- "tempfile",
- "toml_edit",
 ]
 
 [[package]]

@@ -1,5 +1,5 @@
 [package]
-name = "pianoengine-editor"
+name = "dussek-editor"
 version = "0.1.0"
 edition = "2024"
 license = "AGPL-3.0-or-later"
@@ -12,11 +12,11 @@ name = "pe_editor"
 path = "src/lib.rs"
 
 [[bin]]
-name = "pianoengine-editor"
+name = "dussek-editor"
 path = "src/main.rs"
 
 [dependencies]
-pianoengine = { path = "../engine" }
+dussek = { path = "../engine" }
 eframe = "0.36.2"
 egui_extras = "0.36.2"
 toml_edit = "0.25.17"

@@ -3,8 +3,8 @@
 //! written, Finish writes the project.
 use pe_editor::project::Repo;
 use pe_editor::roll::{self, Candidates, Rng};
-use pianoengine::roll::files::Export;
-use pianoengine::roll::recipe::Recipe;
+use dussek::roll::files::Export;
+use dussek::roll::recipe::Recipe;
 
 fn cands() -> Candidates {
     Candidates {
@@ -224,7 +224,7 @@ fn a_superseded_roll_stops() {
     roll::begin_preview();
     let t = std::time::Instant::now();
     let e = roll::preview(&repo, &r, old, false).err().expect("superseded");
-    assert_eq!(e, pianoengine::roll::generate::CANCELLED);
+    assert_eq!(e, dussek::roll::generate::CANCELLED);
     assert!(t.elapsed().as_secs_f64() < 1.0);
 }
 
@@ -307,7 +307,7 @@ fn a_pulled_back_draw_finishes_from_its_preview() {
     roll::finish(&repo, &r).unwrap();
     // what the build writes next: the same files (the plugin's reload changes nothing heard)
     let written = Export::read(&repo.root.join("instruments/my_roll")).unwrap();
-    let (built, _, license) = pianoengine::roll::generate::generate(&r, &repo.root.join("instruments")).unwrap();
+    let (built, _, license) = dussek::roll::generate::generate(&r, &repo.root.join("instruments")).unwrap();
     assert_eq!(written.json, built.json);
     assert!(written.data == built.data, "data.bin differs");
     assert_eq!(std::fs::read_to_string(repo.root.join("instruments/my_roll/LICENSE.md")).unwrap(), license);

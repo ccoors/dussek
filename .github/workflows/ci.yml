@@ -52,7 +52,7 @@ jobs:
         run: just test-plugin
       - name: The standalone renders as midi2wav does
         run: |
-          plugin/build/bin/pianoengine render instruments/grand_a albums/demos/midi/03-glass-rain.mid render.wav --tail 1
+          plugin/build/bin/dussek render instruments/grand_a albums/demos/midi/03-glass-rain.mid render.wav --tail 1
           engine/target/release/midi2wav instruments/grand_a albums/demos/midi/03-glass-rain.mid midi2wav.wav --tail 1
           cmp render.wav midi2wav.wav
       - name: The prototype's suite

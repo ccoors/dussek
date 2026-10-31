@@ -2,10 +2,10 @@
 //! a recipe drawn by the roll-time rules or one part of it re-rolled, the preview written where the
 //! plugin looks, the project written at Finish (design log steps 117–118).
 use crate::project::{self, Repo, write_atomic};
-use pianoengine::mic::Body;
-use pianoengine::roll::files::Export;
-use pianoengine::roll::generate::{Options, Report, generate_with, license, write_export};
-use pianoengine::roll::recipe::Recipe;
+use dussek::mic::Body;
+use dussek::roll::files::Export;
+use dussek::roll::generate::{Options, Report, generate_with, license, write_export};
+use dussek::roll::recipe::Recipe;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
@@ -32,7 +32,7 @@ pub fn candidates(repo: &Repo) -> Candidates {
             continue;
         }
         let dir = instruments(repo).join(&name);
-        let Ok(info) = pianoengine::info::info(&dir) else { continue };
+        let Ok(info) = dussek::info::info(&dir) else { continue };
         if info.morph_family != 1 {
             continue;
         }

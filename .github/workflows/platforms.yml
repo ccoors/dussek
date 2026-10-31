@@ -34,8 +34,8 @@ jobs:
         run: plugin/build/ui_tests
       - name: The standalone renders
         run: |
-          bin=plugin/build/bin/pianoengine
-          [ -e "$bin" ] || [ -e "$bin.exe" ] || bin=plugin/build/bin/pianoengine.app/Contents/MacOS/pianoengine
+          bin=plugin/build/bin/dussek
+          [ -e "$bin" ] || [ -e "$bin.exe" ] || bin=plugin/build/bin/dussek.app/Contents/MacOS/dussek
           "$bin" render instruments/grand_a albums/demos/midi/03-glass-rain.mid render.wav --tail 1 2>&1 | tee render.txt
           test -s render.wav
           grep -q "rendered in" render.txt   # its report reaches a pipe (Windows: a window program)
@@ -75,8 +75,8 @@ jobs:
         run: plugin/build/ui_tests
       - name: The standalone renders
         run: |
-          bin=plugin/build/bin/pianoengine
-          [ -e "$bin" ] || [ -e "$bin.exe" ] || bin=plugin/build/bin/pianoengine.app/Contents/MacOS/pianoengine
+          bin=plugin/build/bin/dussek
+          [ -e "$bin" ] || [ -e "$bin.exe" ] || bin=plugin/build/bin/dussek.app/Contents/MacOS/dussek
           "$bin" render instruments/grand_a albums/demos/midi/03-glass-rain.mid render.wav --tail 1 2>&1 | tee render.txt
           test -s render.wav
           grep -q "rendered in" render.txt   # its report reaches a pipe (Windows: a window program)

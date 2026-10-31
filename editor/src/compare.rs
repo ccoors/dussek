@@ -3,7 +3,7 @@
 use crate::audio::{self, Long, Partial};
 use crate::project::{Project, Repo, write_atomic};
 use crate::{mapping, suggest};
-use pianoengine::{Engine, Event, Instrument, Params, RadiationCache, SILENCE_S};
+use dussek::{Engine, Event, Instrument, Params, RadiationCache, SILENCE_S};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value as Json, json};
 use std::collections::BTreeMap;

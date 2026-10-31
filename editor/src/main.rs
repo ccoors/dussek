@@ -7,8 +7,8 @@ use eframe::egui;
 fn main() -> eframe::Result {
     let repo = pe_editor::project::Repo::from_env();
     let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([1280.0, 820.0]).with_title("PianoEngine editor"),
+        viewport: egui::ViewportBuilder::default().with_inner_size([1280.0, 820.0]).with_title("Dussek editor"),
         ..Default::default()
     };
-    eframe::run_native("pianoengine-editor", options, Box::new(move |_cc| Ok(Box::new(ui::App::new(repo)))))
+    eframe::run_native("dussek-editor", options, Box::new(move |_cc| Ok(Box::new(ui::App::new(repo)))))
 }

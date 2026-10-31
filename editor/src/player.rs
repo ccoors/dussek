@@ -95,7 +95,7 @@ impl Player {
                     }
                     Err(_) => out.fill(0.0),
                 },
-                |e| eprintln!("pianoengine-editor: audio: {e}"),
+                |e| eprintln!("dussek-editor: audio: {e}"),
                 None,
             )
             .map_err(|e| e.to_string())?;

@@ -98,10 +98,10 @@ def test_remove_takes_only_that_ref(repo, tmp_path):
 
 def test_snapshots_live_in_the_data_directory(monkeypatch):
     monkeypatch.setenv("XDG_DATA_HOME", "/x/data")
-    assert SN.snapshots_dir() == "/x/data/pianoengine/snapshots"
+    assert SN.snapshots_dir() == "/x/data/dussek/snapshots"
     monkeypatch.delenv("XDG_DATA_HOME")
     monkeypatch.setenv("HOME", "/x/home")
-    assert SN.snapshots_dir() == "/x/home/.local/share/pianoengine/snapshots"
+    assert SN.snapshots_dir() == "/x/home/.local/share/dussek/snapshots"
 
 
 @pytest.mark.skipif(not os.path.exists(os.path.join(REPO, "engine", "target", "release", "render")), reason="no render binary")

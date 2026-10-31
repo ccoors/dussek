@@ -1,4 +1,4 @@
-# PianoEngine's commands. `just` lists them; `just --show <recipe>` prints one.
+# Dussek's commands. `just` lists them; `just --show <recipe>` prints one.
 
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
@@ -42,7 +42,7 @@ test:
     #!/usr/bin/env bash
     set -u
     # per checkout: two checkouts testing at once wrote each other's logs
-    logs=${LOGS:-${TMPDIR:-/tmp}/pianoengine-test-logs/$(basename "{{justfile_directory()}}")}
+    logs=${LOGS:-${TMPDIR:-/tmp}/dussek-test-logs/$(basename "{{justfile_directory()}}")}
     mkdir -p "$logs"
     failed=()
     run() {
@@ -124,12 +124,12 @@ install:
     #!/usr/bin/env bash
     set -euo pipefail
     bin="$PWD/plugin/build/bin"
-    data="${XDG_DATA_HOME:-$HOME/.local/share}/pianoengine"
-    [ -d "$bin/pianoengine.lv2" ] || { echo "build the plugin first: just plugin"; exit 1; }
+    data="${XDG_DATA_HOME:-$HOME/.local/share}/dussek"
+    [ -d "$bin/dussek.lv2" ] || { echo "build the plugin first: just plugin"; exit 1; }
     mkdir -p "$HOME/.lv2" "$HOME/.clap" "$HOME/.vst3" "$data"
-    links=("$bin/pianoengine.lv2:$HOME/.lv2/pianoengine.lv2"
-           "$bin/pianoengine.clap:$HOME/.clap/pianoengine.clap"
-           "$bin/pianoengine.vst3:$HOME/.vst3/pianoengine.vst3"
+    links=("$bin/dussek.lv2:$HOME/.lv2/dussek.lv2"
+           "$bin/dussek.clap:$HOME/.clap/dussek.clap"
+           "$bin/dussek.vst3:$HOME/.vst3/dussek.vst3"
            "$PWD/instruments:$data/instruments")
     for l in "${links[@]}"; do
         t=${l#*:}
@@ -142,9 +142,9 @@ install:
 [group('run')]
 uninstall:
     #!/usr/bin/env bash
-    data="${XDG_DATA_HOME:-$HOME/.local/share}/pianoengine"
-    for t in "$HOME/.lv2/pianoengine.lv2" "$HOME/.clap/pianoengine.clap" \
-             "$HOME/.vst3/pianoengine.vst3" "$data/instruments"; do
+    data="${XDG_DATA_HOME:-$HOME/.local/share}/dussek"
+    for t in "$HOME/.lv2/dussek.lv2" "$HOME/.clap/dussek.clap" \
+             "$HOME/.vst3/dussek.vst3" "$data/instruments"; do
         [ -L "$t" ] && rm "$t" && echo "removed $t"
     done
     true

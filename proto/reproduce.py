@@ -135,7 +135,7 @@ def main():
         if not build._built_here(n):
             print(f"{n}: not built here (no caches), not reproduced", flush=True)
     names = [n for n in names if build._built_here(n)]
-    scratch = args.keep or tempfile.mkdtemp(prefix="pianoengine-reproduce-")
+    scratch = args.keep or tempfile.mkdtemp(prefix="dussek-reproduce-")
     bad = 0
     try:
         with ThreadPoolExecutor(args.jobs) as pool:
