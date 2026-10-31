@@ -234,7 +234,7 @@ std::string midi2wavLine(const float* values, const std::string& dir, double rat
     }
     char r[32];
     std::snprintf(r, sizeof(r), "%.17g", rate);
-    std::string line = "midi2wav " + quoted(dir.empty() ? std::string("<instrument>") : dir)
+    std::string line = "pianoengine render " + quoted(dir.empty() ? std::string("<instrument>") : dir)
         + " in.mid out.wav --rate " + r;
     if (n > 0)
         line += " " + std::string(spec.data(), n);

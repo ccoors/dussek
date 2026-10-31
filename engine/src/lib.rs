@@ -14,6 +14,7 @@ pub mod instrument;
 pub mod kernel;
 pub mod mic;
 pub mod midi;
+pub mod midi2wav;
 pub mod motor;
 pub mod noise;
 pub mod physics;

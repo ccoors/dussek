@@ -44,7 +44,7 @@ const char* const kPanicDescription = "Silence at once: every note, the strings 
                                       "tail stop within 20 ms; every key and pedal is released (the Sustain "
                                       "latch stays as set). MIDI CC120 (all sound off) does the same.";
 const char* const kMenuTitle = "Menu";
-const char* const kMenuDescription = "Zoom: the window's size. Copy CLI: a midi2wav command line for the current "
+const char* const kMenuDescription = "Zoom: the window's size. Copy CLI: a command line (the standalone's render) for the current "
                                      "settings to the clipboard (the instrument, the sample rate and every setting "
                                      "that differs from the default; replace in.mid and out.wav with your files). "
                                      "Reset: every parameter but the instrument back to its default, the velocity "

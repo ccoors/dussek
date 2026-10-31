@@ -1118,7 +1118,7 @@ private:
             d_stderr2("PianoEngine: the clipboard took nothing; the command line: %s", line.c_str());
             return;
         }
-        showNote("Copied", "The midi2wav command line for the current settings is on the clipboard.", fLayout.menu);
+        showNote("Copied", "The command line (pianoengine render) for the current settings is on the clipboard.", fLayout.menu);
     }
 
     void drawCopiedNote()

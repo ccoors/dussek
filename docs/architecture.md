@@ -225,7 +225,8 @@ are built but untested.
 
 - **Parameters**: `Params.hpp` is the interface (indices, symbols, ranges, descriptions). One
   mapping from parameters to the engine's values (`EngineValues`) serves the DSP, the UI and
-  Copy CLI's `midi2wav` line [53].
+  Copy CLI's `pianoengine render` line [53] (the standalone's `render`: midi2wav's code in the
+  engine library, `engine/src/midi2wav/`, through `pe_cli`).
 - **Instruments**: the catalog (`Catalog.*`) lists every instrument directory in the search
   paths. The choice is the `instrument` state, saved by name [77], or by its path for a folder
   opened from the menu [163]. A file watch reloads an instrument whose files change, such as a

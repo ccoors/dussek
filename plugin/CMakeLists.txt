@@ -53,6 +53,8 @@ dpf_add_plugin(pianoengine
 
 target_include_directories(pianoengine PUBLIC src)
 target_link_libraries(pianoengine PUBLIC Threads::Threads ${CMAKE_DL_LIBS} m)
+# the standalone's `render` command (midi2wav's code through pe_cli), before DPF's main
+target_sources(pianoengine-jack PRIVATE src/StandaloneCli.cpp)
 
 # pure logic shared by the DSP and the UI, and its tests (no window)
 add_library(pe_common STATIC src/Catalog.cpp src/Params.cpp src/EngineValues.cpp src/PedalMixer.cpp src/ui/Format.cpp src/ui/Instruments.cpp src/ui/Layout.cpp src/ui/MicMap.cpp src/ui/Spectro.cpp src/ui/Strip.cpp src/ui/StripInteraction.cpp src/ui/Viz.cpp src/ui/Tooltip.cpp src/ui/UiState.cpp src/SharedRegion.cpp src/ui/TelemetryClient.cpp src/ui/CurveEdit.cpp src/ui/FeltEditor.cpp src/ui/NoteHistory.cpp src/MidiMap.cpp src/MidiRoute.cpp src/Morph.cpp src/FileWatch.cpp src/Presets.cpp src/Paths.cpp src/Numbers.cpp)

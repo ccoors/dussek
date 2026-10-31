@@ -44,6 +44,11 @@ jobs:
         run: just build
       - name: The plugin's UI tests
         run: just test-plugin
+      - name: The standalone renders as midi2wav does
+        run: |
+          plugin/build/bin/pianoengine render instruments/grand_a albums/demos/midi/03-glass-rain.mid render.wav --tail 1
+          engine/target/release/midi2wav instruments/grand_a albums/demos/midi/03-glass-rain.mid midi2wav.wav --tail 1
+          cmp render.wav midi2wav.wav
       - name: The prototype's suite
         run: just test-proto
       - name: The editor's suite
@@ -68,6 +73,12 @@ jobs:
         run: just plugin
       - name: The plugin's UI tests
         run: plugin/build/ui_tests
+      - name: The standalone renders
+        run: |
+          bin=plugin/build/bin/pianoengine
+          [ -e "$bin" ] || [ -e "$bin.exe" ] || bin=plugin/build/bin/pianoengine.app/Contents/MacOS/pianoengine
+          "$bin" render instruments/grand_a albums/demos/midi/03-glass-rain.mid render.wav --tail 1
+          test -s render.wav
 
   windows:
     runs-on: windows-2025
@@ -103,3 +114,9 @@ jobs:
         run: just plugin
       - name: The plugin's UI tests
         run: plugin/build/ui_tests
+      - name: The standalone renders
+        run: |
+          bin=plugin/build/bin/pianoengine
+          [ -e "$bin" ] || [ -e "$bin.exe" ] || bin=plugin/build/bin/pianoengine.app/Contents/MacOS/pianoengine
+          "$bin" render instruments/grand_a albums/demos/midi/03-glass-rain.mid render.wav --tail 1
+          test -s render.wav

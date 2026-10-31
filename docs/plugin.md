@@ -126,7 +126,8 @@ The header's buttons:
   sound ever run away (a fault), the engine silences it by itself: the voice that blows up, or
   everything once the output passes +20 dBFS.
 - **⋯** holds the zoom, Copy CLI and Reset.
-  - **Copy CLI** puts a `midi2wav` command line for the current settings on the clipboard: the
+  - **Copy CLI** puts a `pianoengine render` command line (the standalone's `render`, which is
+    `midi2wav`: either takes it) for the current settings on the clipboard: the
     instrument's directory, the sample rate, `--velocity-curve`, `--param`, `--tuning` with
     every setting that differs from the engine's default, `--latch`, and `--felt` with the Felt tab's
     points (midi2wav builds the felt and a piano's Hammer hardness as the plugin does, the loudness

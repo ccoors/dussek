@@ -264,6 +264,11 @@ typedef struct PeInstrumentInfo {
 /* fills `out` from instrument_dir/instrument.json (any thread, not real-time safe); false (out
  * untouched): missing or rejected, with a message in `err` (err_len bytes, may be null) */
 bool pe_instrument_info(const char* instrument_dir, PeInstrumentInfo* out, char* err, size_t err_len);
+
+/* the standalone's command line after its program name: "render" and midi2wav's arguments
+ * (pianoengine render instruments/grand_a in.mid out.wav ...); renders as midi2wav does, printing to
+ * stdout and stderr, and returns the exit status (2 for anything but "render") */
+int32_t pe_cli(int32_t argc, const char* const* argv);
 /* e (fresh, not yet processed) takes over from old, the engine it replaces: sounding
  * strings, keys, pedal and output go on (at the new tuning; a new microphone setup
  * crossfades). false (nothing taken): the engines do not match. old may be destroyed

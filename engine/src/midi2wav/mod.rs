@@ -1,5 +1,6 @@
 //! Render a Standard MIDI file to a stereo WAV with the piano engine (and, with `--video`, a video
-//! of it). `midi2wav --help` lists the options (`Cli` below); docs/engine.md describes them.
+//! of it). `midi2wav --help` lists the options (`Cli` below); docs/engine.md describes them. The
+//! `midi2wav` binary and the standalone's `render` (`pe_cli`, through the C interface) run `main`.
 //!
 //! The engine is sequential, so the piece is cut into time segments (`--jobs`), each rendered by
 //! its own engine that first replays at least `--warmup` seconds of the music before it, from the
@@ -9,17 +10,20 @@ mod video;
 
 use std::time::{Duration, Instant};
 
+use std::ffi::OsString;
+use std::io::Write;
+
 use clap::{CommandFactory, Parser};
 
-use pianoengine::midi::{self, Action};
-use pianoengine::{Engine, Event, Instrument, Mix, Params, RadiationCache, Tuning};
+use crate::midi::{self, Action};
+use crate::{Engine, Event, Instrument, Mix, Params, RadiationCache, Tuning};
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 struct Opts {
     rate: f64,
     tail: f64,
-    curve: pianoengine::velocity::VelocityCurve,
+    curve: crate::velocity::VelocityCurve,
     param: String,
     tuning: String,
     bits: u16,
@@ -207,27 +211,27 @@ fn jobs(s: &str) -> std::result::Result<usize, String> {
 }
 
 fn param_spec(s: &str) -> std::result::Result<String, String> {
-    pianoengine::spec::params(Params::default(), s).map(|_| s.to_string()).map_err(|e| e.to_string())
+    crate::spec::params(Params::default(), s).map(|_| s.to_string()).map_err(|e| e.to_string())
 }
 
 fn tuning_spec(s: &str) -> std::result::Result<String, String> {
-    pianoengine::spec::tuning(Tuning::default(), s).map(|_| s.to_string()).map_err(|e| e.to_string())
+    crate::spec::tuning(Tuning::default(), s).map(|_| s.to_string()).map_err(|e| e.to_string())
 }
 
 fn velocity_curve(s: &str) -> std::result::Result<String, String> {
-    pianoengine::velocity::VelocityCurve::try_parse(s)
+    crate::velocity::VelocityCurve::try_parse(s)
         .map(|_| s.to_string())
         .ok_or_else(|| "in:out pairs between 1:1 and 127:127, the ins rising and the outs never falling, e.g. 1:1,64:80,127:127".into())
 }
 
 fn felt(s: &str) -> std::result::Result<String, String> {
-    pianoengine::felt::FeltEdit::try_parse(s)
+    crate::felt::FeltEdit::try_parse(s)
         .map(|_| s.to_string())
         .ok_or_else(|| "groups s, p, c, d of key=bend points (s:21=6,60=0;p:;c:;d:), the keys rising within 21–108, at most 8 a group".into())
 }
 
 fn mic(s: &str) -> std::result::Result<String, String> {
-    pianoengine::spec::mic(s).map(|_| s.to_string()).map_err(|e| e.to_string())
+    crate::spec::mic(s).map(|_| s.to_string()).map_err(|e| e.to_string())
 }
 
 fn morph(s: &str) -> std::result::Result<String, String> {
@@ -251,32 +255,36 @@ fn ffmpeg_help() -> String {
 }
 
 fn param_help() -> String {
-    format!("Live parameters as key=value pairs, e.g. room=0.5,volume=0.8. The keys:\n{}", key_list(pianoengine::spec::PARAM_KEYS))
+    format!("Live parameters as key=value pairs, e.g. room=0.5,volume=0.8. The keys:\n{}", key_list(crate::spec::PARAM_KEYS))
 }
 
 fn tuning_help() -> String {
-    let temperaments: Vec<String> = pianoengine::temperament::NAMES.iter().enumerate().map(|(i, n)| format!("{i} {n}")).collect();
+    let temperaments: Vec<String> = crate::temperament::NAMES.iter().enumerate().map(|(i, n)| format!("{i} {n}")).collect();
     format!(
         "Compiled settings as key=value pairs, e.g. a4=442,temperament=3,mic=1. The keys:\n{}\nThe temperaments: {}.",
-        key_list(pianoengine::spec::TUNING_KEYS),
+        key_list(crate::spec::TUNING_KEYS),
         temperaments.join(", ")
     )
 }
 
 /// The command line, checked as a whole (what `clap` cannot check value by value), as the options.
-fn parse_args() -> (String, String, String, Opts) {
-    let c = Cli::parse();
-    let fail = |kind, msg: &str| -> ! { Cli::command().error(kind, msg).exit() };
+fn parse_args<I, T>(args: I) -> std::result::Result<(String, String, String, Opts), clap::Error>
+where
+    I: IntoIterator<Item = T>,
+    T: Into<OsString> + Clone,
+{
+    let c = Cli::try_parse_from(args)?;
+    let fail = |kind, msg: &str| Err(Cli::command().error(kind, msg));
     if !c.mic.is_empty() && c.mic.len() != 2 {
-        fail(clap::error::ErrorKind::WrongNumberOfValues, "--mic is given twice: the left microphone, then the right");
+        return fail(clap::error::ErrorKind::WrongNumberOfValues, "--mic is given twice: the left microphone, then the right");
     }
     if c.maxwarm < c.warmup {
-        fail(clap::error::ErrorKind::ValueValidation, "--maxwarm is shorter than --warmup");
+        return fail(clap::error::ErrorKind::ValueValidation, "--maxwarm is shorter than --warmup");
     }
     let o = Opts {
         rate: c.rate,
         tail: c.tail,
-        curve: c.velocity_curve.as_deref().map_or(pianoengine::velocity::VelocityCurve::STRAIGHT, |s| pianoengine::velocity::VelocityCurve::try_parse(s).unwrap()),
+        curve: c.velocity_curve.as_deref().map_or(crate::velocity::VelocityCurve::STRAIGHT, |s| crate::velocity::VelocityCurve::try_parse(s).unwrap()),
         param: c.param.unwrap_or_default(),
         tuning: c.tuning.unwrap_or_default(),
         bits: c.bits,
@@ -294,7 +302,7 @@ fn parse_args() -> (String, String, String, Opts) {
         felt: c.felt.unwrap_or_default(),
         video: c.video.map(|path| video::VideoOpts { path, width: c.size.0, height: c.size.1, fps: c.fps, ffmpeg: c.ffmpeg, transparent: c.transparent }),
     };
-    (c.instrument, c.midi, c.out, o)
+    Ok((c.instrument, c.midi, c.out, o))
 }
 
 /// An event on the global sample axis.
@@ -344,7 +352,7 @@ fn render_segment(
             }
         }
         // the engine alternates its pedal-thump takes once per lift-and-drop cycle
-        let now_lifted = pianoengine::engine::pedal_engage(pedal as f64) <= 0.5;
+        let now_lifted = crate::engine::pedal_engage(pedal as f64) <= 0.5;
         cycles += (lifted && !now_lifted) as usize;
         lifted = now_lifted;
     }
@@ -386,15 +394,28 @@ fn render_segment(
     Ok(l[skip..].iter().zip(&r[skip..]).map(|(&l, &r)| [l, r]).collect())
 }
 
-fn main() -> std::process::ExitCode {
-    let (dir, midi_path, out_path, o) = parse_args();
-    match run(&dir, &midi_path, &out_path, o) {
-        Ok(()) => std::process::ExitCode::SUCCESS,
+/// The command line `args` (the first the program's name): the exit status (0, 1 a failed render,
+/// 2 a usage error; --help and --version print and return 0). Never exits the process.
+pub fn main<I, T>(args: I) -> i32
+where
+    I: IntoIterator<Item = T>,
+    T: Into<OsString> + Clone,
+{
+    let code = match parse_args(args) {
         Err(e) => {
-            eprintln!("error: {e}");
-            std::process::ExitCode::FAILURE
+            let _ = e.print();
+            e.exit_code()
         }
-    }
+        Ok((dir, midi_path, out_path, o)) => match run(&dir, &midi_path, &out_path, o) {
+            Ok(()) => 0,
+            Err(e) => {
+                eprintln!("error: {e}");
+                1
+            }
+        },
+    };
+    let _ = std::io::stdout().flush();
+    code
 }
 
 /// `dir` an instrument's directory: its instrument.json there, or an error that says so
@@ -433,17 +454,17 @@ fn run(dir: &str, midi_path: &str, out_path: &str, o: Opts) -> Result<()> {
     for side in &o.morph {
         instrument_dir(side.rsplit_once('=').map_or(side.as_str(), |(d, _)| d), "--morph")?;
     }
-    let sides = pianoengine::spec::morph_sides(dir, &o.morph)?;
+    let sides = crate::spec::morph_sides(dir, &o.morph)?;
     let mut inst = Instrument::morph(&sides).map_err(|e| format!("cannot load the instrument `{dir}`: {e}"))?;
     let load = t0.elapsed();
     let sr = o.rate;
-    let mut tuning = pianoengine::spec::tuning(inst.tuning, &o.tuning)?;
+    let mut tuning = crate::spec::tuning(inst.tuning, &o.tuning)?;
     if let Some(path) = &o.scl {
-        tuning.keys = Some(pianoengine::temperament::load_scale(std::path::Path::new(path), o.key).map_err(|e| format!("--scl `{path}`: {e}"))?.0);
+        tuning.keys = Some(crate::temperament::load_scale(std::path::Path::new(path), o.key).map_err(|e| format!("--scl `{path}`: {e}"))?.0);
     }
-    let mut params = pianoengine::spec::params(Params::default(), &o.param)?;
+    let mut params = crate::spec::params(Params::default(), &o.param)?;
     // the felt and, on a hammer piano, Hammer hardness at the build, as the plugin plays them
-    let mut felt = pianoengine::felt::FeltEdit::try_parse(&o.felt).ok_or("--felt: unreadable")?; // checked by the parser
+    let mut felt = crate::felt::FeltEdit::try_parse(&o.felt).ok_or("--felt: unreadable")?; // checked by the parser
     if inst.is_hammer_piano() {
         felt.hardness_db = 20.0 * (params.hardness as f64).log10();
         params.hardness = 1.0;
@@ -454,8 +475,8 @@ fn run(dir: &str, midi_path: &str, out_path: &str, o: Opts) -> Result<()> {
     }
 
     if !o.mics.is_empty() {
-        tuning.mic = pianoengine::mic::MicPosition::Custom;
-        tuning.mic_setup.mics = [pianoengine::spec::mic(&o.mics[0])?, pianoengine::spec::mic(&o.mics[1])?];
+        tuning.mic = crate::mic::MicPosition::Custom;
+        tuning.mic_setup.mics = [crate::spec::mic(&o.mics[0])?, crate::spec::mic(&o.mics[1])?];
     }
     if let Some(w) = o.wall {
         tuning.mic_setup.wall = w;

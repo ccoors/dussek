@@ -12,8 +12,8 @@ use std::io::Write;
 use std::process::{Command, Stdio};
 use std::time::Instant;
 
-use pianoengine::telemetry::{KEY_DAMPER, KEY_HAMMER, KeyFrame, VIZ_PARTIALS};
-use pianoengine::{Engine, Event, Instrument, Mix, Params, RadiationCache, Tuning};
+use crate::telemetry::{KEY_DAMPER, KEY_HAMMER, KeyFrame, VIZ_PARTIALS};
+use crate::{Engine, Event, Instrument, Mix, Params, RadiationCache, Tuning};
 use tiny_skia::{
     BlendMode, Color, FillRule, GradientStop, LinearGradient, Paint, Path, PathBuilder, Pixmap, Point, RadialGradient, Rect,
     Shader, SpreadMode, Stroke, Transform,

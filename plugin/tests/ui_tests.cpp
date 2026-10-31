@@ -4072,12 +4072,12 @@ TEST(the_default_settings_copy_as_a_short_command_line)
     // vibraphone's), the wear's variant 1
     const std::string tail = " in.mid out.wav --rate 48000 --param voicing=0.05,motor=1 --tuning seed=1";
     const std::string line = cliLine(defaults(0, 0, 0));
-    CHECK(line == "midi2wav /i/grand_a" + tail);
+    CHECK(line == "pianoengine render /i/grand_a" + tail);
     // a directory that needs quoting, the latch, a rate that is no whole number
     std::vector<float> v = defaults(0, 0, 0);
     v[kSustainLatch] = 1;
     CHECK(midi2wavLine(v.data(), "/a b/it's", 44100.5)
-        == "midi2wav '/a b/it'\\''s' in.mid out.wav --rate 44100.5 --param voicing=0.05,motor=1 --tuning seed=1 --latch");
+        == "pianoengine render '/a b/it'\\''s' in.mid out.wav --rate 44100.5 --param voicing=0.05,motor=1 --tuning seed=1 --latch");
 }
 
 TEST(touch_tab_has_a_graph_and_no_empty_note)
@@ -4255,7 +4255,7 @@ TEST(a_bent_velocity_curve_copies_into_the_command_line)
     CHECK(pe_velocity_curve_parse("1:1,64:100,127:127", &c));
     const std::vector<float> v = defaults(0, 0, 0);
     CHECK(midi2wavLine(v.data(), "/i/grand_a", 48000, &c)
-        == "midi2wav /i/grand_a in.mid out.wav --rate 48000 --velocity-curve 1:1,64:100,127:127 "
+        == "pianoengine render /i/grand_a in.mid out.wav --rate 48000 --velocity-curve 1:1,64:100,127:127 "
            "--param voicing=0.05,motor=1 --tuning seed=1");
     CHECK(midi2wavLine(v.data(), "/i/grand_a", 48000, nullptr) == cliLine(v));
 }

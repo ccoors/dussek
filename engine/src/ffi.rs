@@ -209,6 +209,28 @@ impl PeCache {
     }
 }
 
+/// The standalone's command line after its program name (`argc` strings from `argv`): `render` and
+/// midi2wav's arguments (`pianoengine render instruments/grand_a in.mid out.wav …`). Renders as
+/// midi2wav does and returns its exit status (2 for anything but `render`). Prints to the process's
+/// stdout and stderr; any thread, not the audio thread.
+///
+/// # Safety
+/// `argv` points at `argc` NUL-terminated strings.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn pe_cli(argc: i32, argv: *const *const c_char) -> i32 {
+    if argv.is_null() {
+        return 2;
+    }
+    let args: Vec<String> = (0..argc.max(0) as usize)
+        .map(|i| unsafe { CStr::from_ptr(*argv.add(i)) }.to_string_lossy().into_owned())
+        .collect();
+    if args.first().map(String::as_str) != Some("render") {
+        eprintln!("usage: pianoengine render INSTRUMENT IN.mid OUT.wav [options]   (pianoengine render --help)");
+        return 2;
+    }
+    crate::midi2wav::main(std::iter::once("pianoengine render".to_string()).chain(args.into_iter().skip(1)))
+}
+
 /// At most `n` threads per build (an engine, a morph, a felt's measurement) from now on, for the
 /// whole process; 0: every core (`threads::set_build_threads`). Any thread.
 #[unsafe(no_mangle)]

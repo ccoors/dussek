@@ -12,12 +12,15 @@ engine/target/release/bench instruments/grand_a 64       # the load per 64-frame
 just midi2wav instruments/grand_f song.mid song.wav          # a MIDI file into a WAV
 ```
 
-The plugin's "Copy CLI" (in its header menu) puts a `midi2wav` line for its current settings on
-the clipboard.
+The plugin's "Copy CLI" (in its header menu) puts a `pianoengine render` line for its current
+settings on the clipboard.
 
 ## midi2wav
 
-`midi2wav` plays a Standard MIDI file through the engine. `midi2wav -h` lists its options,
+`midi2wav` plays a Standard MIDI file through the engine. The standalone does the same as
+`pianoengine render` with the same arguments (`pianoengine render --help`): one code
+(`engine/src/midi2wav/`, through the C interface's `pe_cli`), the same file byte for byte, so a
+release needs no separate tool. `midi2wav -h` lists its options,
 `midi2wav --help` describes each and every key of `--param` and `--tuning`. Every value is checked
 before anything renders; an unknown option or key gets the nearest known one as a suggestion. It reads:
 

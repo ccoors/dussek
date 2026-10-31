@@ -59,10 +59,11 @@ keyboard.
 ## Rendering a MIDI file
 
 The ⋯ menu's **Copy CLI** puts a command line on the clipboard that renders a MIDI file offline
-with the current settings: replace `in.mid` and `out.wav` and run it. The plain form:
+with the current settings: replace `in.mid` and `out.wav` and run it. The standalone renders it
+(`pianoengine render`, with the standalone's path where it is not on your `PATH`). The plain form:
 
 ```sh
-just midi2wav instruments/grand_a song.mid song.wav
+plugin/build/bin/pianoengine render instruments/grand_a song.mid song.wav
 ```
 
 Music you make with the instruments is yours, free to use without credit.

@@ -49,8 +49,9 @@ bool sameTuning(const PeTuning& a, const PeTuning& b);
 /// accepts (Catalog::entryAt); empty if none is
 std::string instrumentDir(const char* resources, const char* id);
 
-/// the shell command that renders a MIDI file with these settings:
-/// `midi2wav '<dir>' in.mid out.wav --rate <rate> [--velocity-curve …] [--param …] [--tuning …] [--latch]`
+/// the shell command that renders a MIDI file with these settings (the standalone's `render`, which is
+/// midi2wav; `midi2wav` takes the same arguments):
+/// `pianoengine render '<dir>' in.mid out.wav --rate <rate> [--velocity-curve …] [--param …] [--tuning …] [--latch]`
 /// (`curve`: the velocity curve, a state; null: straight)
 /// `morph`: each partner's directory and weight (one --morph per weight above 0); `felt`: the Felt tab's
 /// "felt" state (--felt where not empty); `scale`: the "scale_file" state (--scl with the temperament key

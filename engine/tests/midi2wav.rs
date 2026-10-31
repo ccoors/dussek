@@ -332,3 +332,31 @@ fn the_command_line_helps_and_its_errors_say_what_is_wrong() {
     let (code, text) = run(&[DIR, m, "/no/such/folder/out.wav"]);
     assert!(code == Some(1) && text.contains("the folder `/no/such/folder` does not exist"), "{text}");
 }
+
+/// pe_cli as the standalone calls it: `render` first, then midi2wav's arguments; its exit status
+fn pe_cli(args: &[&str]) -> i32 {
+    let owned: Vec<std::ffi::CString> = std::iter::once("render").chain(args.iter().copied())
+        .map(|a| std::ffi::CString::new(a).unwrap()).collect();
+    let ptrs: Vec<*const std::os::raw::c_char> = owned.iter().map(|c| c.as_ptr()).collect();
+    unsafe { pianoengine::ffi::pe_cli(ptrs.len() as i32, ptrs.as_ptr()) }
+}
+
+#[test]
+fn the_standalones_render_writes_what_midi2wav_writes() {
+    // `pianoengine render …` (the standalone) runs midi2wav's code through the C interface
+    if !std::path::Path::new(DIR).exists() {
+        eprintln!("skipped: no instrument");
+        return;
+    }
+    let dir = std::path::PathBuf::from(env!("CARGO_TARGET_TMPDIR"));
+    let mid = dir.join("pe_cli.mid");
+    midi(&mid);
+    let (a, b) = (dir.join("pe_cli_tool.wav"), dir.join("pe_cli_entry.wav"));
+    render(&mid, &a, &["--jobs", "2"]);
+    let args = [DIR, mid.to_str().unwrap(), b.to_str().unwrap(), "--rate", "32000", "--tail", "2", "--jobs", "2"];
+    assert_eq!(pe_cli(&args), 0);
+    assert_eq!(std::fs::read(&a).unwrap(), std::fs::read(&b).unwrap(), "not the same file");
+    // a usage error is an exit status, not the end of the process (the standalone prints it and exits)
+    assert_eq!(pe_cli(&[DIR, mid.to_str().unwrap(), b.to_str().unwrap(), "--rate", "fast"]), 2);
+    assert_eq!(pe_cli(&["--version"]), 0);
+}
