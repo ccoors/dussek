@@ -1,0 +1,3 @@
+# Instrument aliases: "old-id new-id", one per line. A renamed or removed instrument keeps its old
+# folder name here, pointing at its successor, so sessions saved with it still find an instrument
+# (docs/compatibility.md). A real folder of the old name wins over its alias.

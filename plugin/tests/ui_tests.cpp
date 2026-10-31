@@ -4656,6 +4656,33 @@ TEST(catalog_shadows_and_skips)
     CHECK(c.messages().size() == 1); // the shadowed one (a missing path is no problem; no data.bin: not an instrument)
 }
 
+TEST(aliases_resolve_old_instrument_ids)
+{
+    // a renamed or removed instrument's saved sessions find its successor through aliases.txt in an
+    // instrument folder ("old new" per line); a real folder wins; a missing target or a cycle leaves
+    // the session's id missing (the UI names it), never the menu's first
+    TempTree t;
+    t.add("a", "b", "harp", R"({"name": "B", "group": "Harps"})");
+    t.add("a", "c", "harp", R"({"name": "C", "group": "Harps"})");
+    {
+        std::ofstream f(t.path("a") + "/aliases.txt");
+        f << "# old new\na b\nx y\np q\nq p\nc d\nchain a\n";
+    }
+    const Catalog c = Catalog::scan({ t.path("a") });
+    CHECK(c.find("a") != nullptr && c.find("a")->id == "b");
+    CHECK(c.find("chain") != nullptr && c.find("chain")->id == "b"); // chain → a → b
+    CHECK(c.find("x") == nullptr && c.find("p") == nullptr);          // a missing target; a cycle
+    CHECK(c.find("c") != nullptr && c.find("c")->id == "c");          // the real folder wins
+    CHECK(c.find("zzz") == nullptr && choose(c, "zzz").entry == nullptr && choose(c, "zzz").id == "zzz");
+    CHECK(c.menu().size() == 2); // an alias is no menu entry
+    // the engine's side finds the folder the same way (the worker loads instrumentDir's)
+    const char* env = std::getenv("DUSSEK_INSTRUMENTS");
+    const std::string envWas = env ? env : "";
+    setEnv("DUSSEK_INSTRUMENTS", t.path("a").c_str());
+    CHECK(instrumentDir(nullptr, "a") == c.find("b")->dir && instrumentDir(nullptr, "p").empty());
+    if (env) setEnv("DUSSEK_INSTRUMENTS", envWas.c_str()); else unsetEnv("DUSSEK_INSTRUMENTS");
+}
+
 TEST(catalog_rejects_and_keeps)
 {
     TempTree t;

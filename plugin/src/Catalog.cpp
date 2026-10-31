@@ -1,6 +1,8 @@
 #include "Catalog.hpp"
 #include "Paths.hpp"
 
+#include <sstream>
+#include <fstream>
 #include <algorithm>
 #include <filesystem>
 #include <cstdio>
@@ -104,6 +106,8 @@ Catalog Catalog::scan(const std::vector<std::string>& paths)
     for (const std::string& path : paths) {
         if (path.empty())
             continue;
+        for (const auto& [from, to] : aliasesIn(path))
+            c.fAliases.emplace(from, to); // an earlier path's stays
         for (const std::string& id : subdirectories(path)) {
             InstrumentEntry e;
             std::string message;
@@ -136,10 +140,37 @@ Catalog Catalog::scan(const std::vector<std::string>& paths)
 
 const InstrumentEntry* Catalog::find(const std::string& id) const
 {
-    for (const InstrumentEntry& e : fEntries)
-        if (e.id == id)
-            return &e;
+    for (const std::string& a : aliasChain(fAliases, id))
+        for (const InstrumentEntry& e : fEntries)
+            if (e.id == a)
+                return &e;
     return outside(id);
+}
+
+std::map<std::string, std::string> Catalog::aliasesIn(const std::string& path)
+{
+    std::map<std::string, std::string> out;
+    std::ifstream f(path + "/aliases.txt");
+    std::string line;
+    while (std::getline(f, line)) {
+        std::istringstream in(line);
+        std::string from, to;
+        if (in >> from >> to && from[0] != '#')
+            out.emplace(from, to);
+    }
+    return out;
+}
+
+std::vector<std::string> Catalog::aliasChain(const std::map<std::string, std::string>& aliases, const std::string& id)
+{
+    std::vector<std::string> chain { id };
+    for (int hop = 0; hop < 8; ++hop) {
+        const auto it = aliases.find(chain.back());
+        if (it == aliases.end() || std::find(chain.begin(), chain.end(), it->second) != chain.end())
+            break;
+        chain.push_back(it->second);
+    }
+    return chain;
 }
 
 const InstrumentEntry* Catalog::outside(const std::string& id)

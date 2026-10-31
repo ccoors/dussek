@@ -3,6 +3,7 @@
 
 #include "Instruments.hpp"
 
+#include <map>
 #include <algorithm>
 #include <cctype>
 #include <cmath>
@@ -211,13 +212,20 @@ std::string instrumentDir(const char* resources, const char* id)
 {
     if (const InstrumentEntry* e = Catalog::outside(id != nullptr ? id : ""))
         return e->dir; // kept anywhere: its own path
-    // the catalog's test, path by path: the entry the catalog lists for the id
-    for (const std::string& c : Catalog::searchPaths(resources)) {
-        InstrumentEntry e;
-        std::string message;
-        if (Catalog::entryAt(c, id != nullptr ? id : "", e, message))
-            return e.dir;
-    }
+    // the catalog's test, path by path: the entry the catalog lists for the id, else for the ids its
+    // aliases lead to (Catalog::find's order: a real folder first)
+    const std::vector<std::string> paths = Catalog::searchPaths(resources);
+    std::map<std::string, std::string> aliases;
+    for (const std::string& c : paths)
+        for (const auto& [from, to] : Catalog::aliasesIn(c))
+            aliases.emplace(from, to);
+    for (const std::string& a : Catalog::aliasChain(aliases, id != nullptr ? id : ""))
+        for (const std::string& c : paths) {
+            InstrumentEntry e;
+            std::string message;
+            if (Catalog::entryAt(c, a, e, message))
+                return e.dir;
+        }
     return std::string();
 }
 

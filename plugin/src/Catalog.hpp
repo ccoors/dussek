@@ -4,6 +4,7 @@
 #include "dussek.h"
 
 #include <memory>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -40,8 +41,14 @@ public:
     /// opened from a folder) as an entry, made on first use and kept for the process (the same
     /// pointer every time); nullptr when it is none
     static const InstrumentEntry* outside(const std::string& id);
+    /// the aliases an instrument folder declares (its aliases.txt: "old-id new-id" per line, `#`
+    /// comments): a renamed or removed instrument's saved sessions find its successor
+    static std::map<std::string, std::string> aliasesIn(const std::string& path);
+    /// `id`, then the ids its aliases lead to (up to 8 hops; a cycle ends it), in order
+    static std::vector<std::string> aliasChain(const std::map<std::string, std::string>& aliases, const std::string& id);
 
-    /// the entry of a listed id, or of an absolute path (`outside`)
+    /// the entry of a listed id, else of the first listed id its aliases lead to (a real folder wins
+    /// over an alias), else of an absolute path (`outside`)
     const InstrumentEntry* find(const std::string& id) const;
     /// the listed entries (not hidden), in menu order
     std::vector<const InstrumentEntry*> menu() const;
@@ -54,6 +61,7 @@ public:
 
 private:
     std::vector<InstrumentEntry> fEntries; // menu order
+    std::map<std::string, std::string> fAliases; // old id → new (the first path's wins)
     std::vector<std::string> fMessages;
 };
 
