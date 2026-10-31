@@ -1,7 +1,6 @@
 # Linux, for main and pull requests (a branch is tested locally, `just test`; by hand here from the
 # Actions tab): the build, the plugin's UI tests, the prototype's and the editor's suites, and the
 # checks a commit needs. macOS and Windows: platforms.yml; the engine's suite: engine-tests.yml.
-# The repository is private for now, where Actions' minutes count (macOS 10x, Windows 2x).
 name: CI
 
 on:

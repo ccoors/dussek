@@ -3433,3 +3433,15 @@ path has `\` only (`Z:\home\…\chimes\instrument.json`), so the file itself was
 folder. `folderOf` and `fileNameOf` (`plugin/src/Paths.hpp`) split at either separator on Windows
 and keep a drive's root; the Scala file's start folder and its label in the Temperament menu
 used the same `/` split.
+
+<a id="step-217"></a>
+## 217. Going public
+
+The repository on GitHub was made private under its final name; its history is the one prepared
+commit (the tree of the archive's step 202) and the work since (CI, the ports, Uprights and Grands
+D to I, the rename, the locks), one author identity, no attribution lines, no brand names outside
+the credits (a word scan on every commit). Before its visibility changes, the text a stranger
+reads first no longer assumes a private repository or Linux alone: the README names Linux as the
+tested platform and macOS (Apple silicon) and Windows as built by CI and untested, points at the CI
+test builds until the first release, and gives the clone's address; the workflows' comments drop
+the private repository's minutes.

@@ -1,5 +1,5 @@
 # The engine's suite: about 6 min on every core of a desktop, 40 min on a runner. By hand from the
-# Actions tab (locally: just test-engine); no schedule while the repository is private.
+# Actions tab (locally: just test-engine).
 name: Engine tests
 
 on:

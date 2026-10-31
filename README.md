@@ -1,12 +1,13 @@
 # Dussek
 
-A physically modeled piano for Linux, as an LV2 plugin and a JACK standalone (CLAP and VST3 are
-built too, but untested). It plays nine grands, four uprights, six harpsichords, a clavichord,
-harps, guitars, zithers and percussion. None of them plays back a recording: the engine simulates
-the hammer (or plectrum, or mallet), stiff strings with coupled unisons, the soundboard, the dampers
-and the pedals, in real time. Each instrument's parameters were measured from freely licensed
-recordings of a real one, so the instruments ship as numbers, without any audio. The aim is an
-instrument that plays well (a continuous response to velocity, fast repetition, half pedaling,
+A physically modeled piano, as an LV2 plugin and a standalone (CLAP and VST3 are built too, but
+untested). Linux is where it is tested; the macOS (Apple silicon) and Windows builds come from CI
+and are untested: reports welcome. It plays nine grands, four uprights, six harpsichords, a
+clavichord, harps, guitars, zithers and percussion. None of them plays back a recording: the engine
+simulates the hammer (or plectrum, or mallet), stiff strings with coupled unisons, the soundboard,
+the dampers and the pedals, in real time. Each instrument's parameters were measured from freely
+licensed recordings of a real one, so the instruments ship as numbers, without any audio. The aim is
+an instrument that plays well (a continuous response to velocity, fast repetition, half pedaling,
 sympathetic resonance, low latency) and has a character of its own. It is named after Jan Ladislav
 Dussek (1760–1812), the pianist who had the piano's keyboard extended to five and a half octaves.
 
@@ -31,7 +32,9 @@ rolled pianos that no recording holds (a "Rolled pianos" group).
 
 ## Download and install
 
-Prebuilt releases come later. Until then, build from source.
+Prebuilt releases come later. Until then, build from source, or take a test build from a recent
+run of the CI workflows (the Actions tab, signed in to GitHub; kept 3 days): each platform's holds
+the standalone, the plugins, the instruments and a `TRY-IT.txt` saying where they go.
 
 ## Build from source
 
@@ -42,7 +45,7 @@ On Linux the plugin needs the development packages of OpenGL, X11, JACK, ALSA an
 (`.github/workflows/ci.yml` lists Ubuntu's).
 
 ```sh
-git clone --recursive <this repository's URL>    # then, in the clone:
+git clone --recursive https://github.com/ccoors/dussek.git && cd dussek
 just build         # the engine, the plugin (DPF comes as a git submodule) and the editor
 just install       # links the plugin into ~/.lv2, ~/.clap, ~/.vst3; the instruments into ~/.local/share
 just standalone    # the JACK standalone under PipeWire, with an ALSA MIDI port
