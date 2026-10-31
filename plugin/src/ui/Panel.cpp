@@ -14,6 +14,8 @@ using DGL_NAMESPACE::NanoVG;
 namespace {
 void label(NanoVG& vg, float x, float y, const char* s, const DGL_NAMESPACE::Color& c, int align)
 {
+    if (s == nullptr || s[0] == '\0')
+        return; // nothing to draw (NanoVG asserts on an empty string): the About tab's blank lines
     vg.fillColor(c);
     vg.textAlign(NanoVG::Align(align));
     vg.text(x, y, s, nullptr);
