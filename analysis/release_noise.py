@@ -119,13 +119,16 @@ def vcsl_keys(profile):
     """Release samples of a VCSL set (one per recorded note; keys between take the nearest), their
     note's partials taken out (`without_partials`). Level re the note as the sampler plays them:
     (release peak + its SFZ volume) − (note peak + its SFZ volume), both with amp_veltrack 0, for the
-    recorded layer (mf)."""
+    recorded layer (mf; of several dynamics the mf one, as the release takes are struck)."""
     sfz = D.parse_sfz(os.path.join(D.root(profile), D.release_sfz(profile)))
     regions = [r for r in sfz if r.get("trigger") == "release" and "sample" in r]
     # the note's attack region volume (the analysis does not keep it for one-layer sets)
     attack_db = {int(r["pitch_keycenter"]): float(r.get("volume", 0)) for r in sfz
                  if r.get("trigger", "attack") == "attack" and "sample" in r}
     notes = P.load_cache(profile, "analysis")["samples"]
+    # a set of several dynamics: the note at mf, the release takes' (a one-layer set: its layer)
+    mf = [s for s in notes if "error" not in s and D.dynamic_of(profile, s) == "mf"]
+    notes = mf or notes
     # keyed by the key played (the 4′'s samples are analyzed at their sounding note)
     note_db = {s.get("key", s["note"]): s["peak_dbfs"] + attack_db[s.get("key", s["note"])] for s in notes
                if "error" not in s and s.get("key", s["note"]) in attack_db}

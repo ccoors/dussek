@@ -108,7 +108,9 @@ def _credit_line(block, how):
              "free-use": "free to use",
              "CC-BY-4.0": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
              "CC-BY-SA-4.0": "CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/)"}[block["source_license"]]
-    line = f"- **{block['set']}** by {block['author']}, {block['url']}: {terms}. {block['terms']}"
+    # recordings not published (a maintainer's own) have no address
+    where = f", {block['url']}" if block.get("url") else ""
+    line = f"- **{block['set']}** by {block['author']}{where}: {terms}. {block['terms']}"
     return line + (f" (borrowed: {how})" if how else "")
 
 

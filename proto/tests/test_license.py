@@ -40,7 +40,8 @@ def test_every_project_with_recordings_has_a_license_block():
     for name, cfg in sorted(projects.items()):
         has_sources = any(p.get("source") for p in cfg.get("part", []))
         block = cfg.get("license", {})
-        if has_sources and not all(block.get(k) for k in ("set", "author", "url", "terms", "source_license")):
+        # `url` may be left out: recordings not published have none
+        if has_sources and not all(block.get(k) for k in ("set", "author", "terms", "source_license")):
             missing.append(name)
         if block and block.get("source_license") not in L.SOURCE_LICENSES:
             missing.append(f"{name}: source_license {block.get('source_license')!r}")
@@ -110,3 +111,10 @@ def test_the_license_makes_nothing_stale(tmp_path, monkeypatch):
     changed = _prints(monkeypatch, _copy(tmp_path, "changed", lambda t: t.replace(
         "[license]\n", "[license]\nnote = \"changed\"\n", 1)), steps)
     assert NAME == "grand_a" and plain == changed
+
+
+def test_a_set_not_published_is_credited_without_an_address():
+    block = {"set": "Own set", "author": "Someone", "terms": "Not published.", "source_license": "CC-BY-4.0"}
+    line = L._credit_line(block, "")
+    assert line.startswith("- **Own set** by Someone: CC BY 4.0") and "None" not in line
+    assert L._credit_line({**block, "url": "https://example.org"}, "").startswith("- **Own set** by Someone, https://example.org: ")
