@@ -3305,6 +3305,7 @@ start (the maintainer: wanted) was 20 dB down with the thumps (not wanted). Now 
 noise** the thumps going down and up (the engine's `pedal`, the one-shots), **Pedal ring** the
 strings' kick as their dampers lift (`pedal_ring`, `Engine::lift_kick`; a `--param` key and a
 control in the instrument report, inert where the export has no kick: the 13 pianos show it, as
-the Pedal noise). Both start at −20 dB, so nothing sounds different until one is moved; either at
-0 leaves the other bit for bit as it plays alone (`engine/tests/pedal.rs`), and the ring follows
-its gain (half the gain, half the peak within 1 %).
+the Pedal noise). The noise starts at −20 dB, the ring at −10 dB: chosen by ear (the maintainer:
+"even if it's not entirely realistic. Sounds best to me"), 10 dB over the ring as step 210 played
+it beside the thumps. Either at 0 leaves the other bit for bit as it plays alone
+(`engine/tests/pedal.rs`), and the ring follows its gain (half the gain, half the peak within 1 %).

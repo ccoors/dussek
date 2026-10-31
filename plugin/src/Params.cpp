@@ -355,8 +355,8 @@ ParamInfo make(uint32_t i)
         p.description = "The sustain pedal's thump going down and up. -20 dB by default, 0 dB as recorded; the left "
                         "end is off.";
         break;
-    case kPedalRing: set("Pedal ring", "pedal_ring", "dB", -20, kOffDb, 12);
-        p.description = "The strings set ringing as the sustain pedal lifts their dampers. -20 dB by default, 0 dB as "
+    case kPedalRing: set("Pedal ring", "pedal_ring", "dB", -10, kOffDb, 12);
+        p.description = "The strings set ringing as the sustain pedal lifts their dampers. -10 dB by default, 0 dB as "
                         "fitted; the left end is off.";
         break;
     }
