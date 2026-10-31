@@ -32,9 +32,10 @@ case $platform in
   xattr -dr com.apple.quarantine dussek.app dussek.lv2 dussek.clap dussek.vst3"
         note="Built for Apple silicon (arm64), macOS 13.3 or newer; not for Intel Macs." ;;
     windows)
-        plugins="dussek.vst3 in C:\\Program Files\\Common Files\\VST3, dussek.clap in C:\\Program Files\\Common Files\\CLAP, dussek.lv2 in %APPDATA%\\LV2"
+        plugins="C:\\Program Files\\Common Files\\VST3 (dussek.vst3), C:\\Program Files\\Common Files\\CLAP (dussek.clap), %APPDATA%\\LV2 (dussek.lv2)"
         data="%APPDATA%\\Dussek"
-        run="dussek.exe (the standalone plays through the system's audio device)"
+        run="dussek.exe (the standalone plays through the system's audio device; started from a
+  console, it first says \"Failed to load JACK DLL\": expected without JACK, it then uses the system's)"
         note="Built with MinGW (UCRT): Windows 10 or newer, 64 bit. Windows may warn about an unknown publisher." ;;
 esac
 cat > "$out/TRY-IT.txt" <<TXT
@@ -43,7 +44,7 @@ Dussek, a test build from commit $commit ($platform). Not a release.
 1. Copy the folder "instruments" into $data
    (make the folder if needed); the plugin and the standalone find the instruments there.
 2. The standalone: $run
-3. The plugins: copy the bundles you want into $plugins.
+3. The plugins: copy the bundles you want to $plugins.
    LV2 and the standalone are the tested targets; CLAP and VST3 are built but untested.
 
 $note

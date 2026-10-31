@@ -23,6 +23,7 @@
 #include "MidiMap.hpp"
 #include "Morph.hpp"
 #include "Panel.hpp"
+#include "GlCheck.hpp"
 #include "Paths.hpp"
 #include "Params.hpp"
 #include "PedalMixer.hpp"
@@ -65,8 +66,13 @@ public:
         for (uint32_t i = kParamCount; i < kTotalParams; ++i)
             fValues[i] = diagInfo(i).def;
         fDiag.setConcertPitch(fValues[kConcertPitch]);
+        if (getContext() == nullptr)
+            reportMissingOpenGl(); // no OpenGL 2: a black window, the player told why (GlCheck.hpp)
         fHostScale = getScaleFactor();
-        const double s = fHostScale;
+        // at the scale last picked (window.txt: the standalone keeps no session); a host's saved
+        // "ui" state, when it comes (stateChanged), wins
+        fState = initialUiState(dataDirs().config);
+        const double s = fHostScale * fState.zoom / 100.0;
         fScaleBefore = s;
         uint32_t minW, minH;
         updateConstraints(s, minW, minH);
@@ -569,6 +575,7 @@ private:
     uint64_t fNotesPaintMs = 0;
     CatalogPtr fCatalog; // the instruments found (Catalog.hpp)
     StateRestore fRestore; // the restored state's version (StateVersion.hpp)
+    bool fTitled = false;  // the standalone's window title set (uiIdle)
     Choice fChoice;      // the "instrument" state: the id and its entry (nullptr: missing)
     UiState fState;
     Layout fLayout;
@@ -1346,6 +1353,12 @@ private:
 
     void uiIdle() override
     {
+        // the standalone's window: the plugin's name alone (DPF titles it "maker: name")
+        if (!fTitled) {
+            fTitled = true;
+            if (std::strcmp(getPluginFormatName(), "JACK/Standalone") == 0)
+                getWindow().setTitle(DISTRHO_PLUGIN_NAME);
+        }
         // the worker rescanned the instrument folders (a new one appeared, as the editor's preview)
         if (const CatalogPtr c = sharedCatalog(resources()); c != fCatalog) {
             fCatalog = c;
@@ -1728,6 +1741,7 @@ private:
             if (fZoomSub && fSubRect.contains(p.x, p.y)) {
                 fState.zoom = kZoomSteps[std::min(7, std::max(0, subRow(p.y)))];
                 saveState();
+                saveZoom(dataDirs().config, fState.zoom); // the next window's (the standalone has no session)
                 applyZoom();
             } else if (fListRect.contains(p.x, p.y)) {
                 const int i = listRow(p.y);

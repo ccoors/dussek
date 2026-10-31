@@ -3405,3 +3405,21 @@ section):
   `--tuning` keys).
 
 AGENTS.md's "no backward compatibility" rule gives way to these.
+
+<a id="step-215"></a>
+## 215. The standalone's window: its scale kept, its title, a black window explained
+
+From the maintainer's tries of the test builds:
+
+- **The zoom was lost at each start.** It lives in the `ui` state, which a host keeps with its
+  session; DPF's JACK standalone keeps none (and never hands the UI the state). The zoom last
+  picked is now also written to `window.txt` in the config folder, and a new window opens at it; a
+  host's saved `ui` state still wins. The DSP side's default stays plain: DPF writes the default
+  state into the LV2 bundle's presets at the build, which would carry the build machine's zoom.
+- **The title read "Christian Friedrich Coors: Dussek"**: DPF's standalone titles its window
+  "maker: name". The UI sets the standalone's title to the name alone; the maker hosts show stays.
+- **Over Remote Desktop the window stayed black** (Windows' own OpenGL 1.1: no `glActiveTexture`,
+  no NanoVG context, a DPF assertion on the console). Without a context the UI now says why, on
+  standard error and on Windows in a message box, once: the sound still plays.
+- The Windows `TRY-IT.txt` says the "Failed to load JACK DLL" line is expected (DPF tries JACK
+  first, then the system's audio).

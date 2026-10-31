@@ -5,6 +5,9 @@
 #include "Numbers.hpp"
 // std::to_chars for floating point: libstdc++ 11+, libc++ on macOS 13.3+
 #include <charconv>
+#include <sstream>
+#include <fstream>
+#include <filesystem>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
@@ -134,5 +137,43 @@ std::vector<uint32_t> resetParams()
     for (uint32_t i = 0; i < kParamCount; ++i)
         r.push_back(i);
     return r;
+}
+
+int parseSavedZoom(const std::string& text)
+{
+    int zoom = 0;
+    if (const char* z = std::strstr(text.c_str(), "zoom="); z != nullptr && std::sscanf(z, "zoom=%d", &zoom) == 1)
+        for (int k : kZoomSteps)
+            if (k == zoom)
+                return zoom;
+    return 100;
+}
+
+int loadSavedZoom(const std::string& config)
+{
+    if (config.empty())
+        return 100;
+    std::ifstream f(config + "/window.txt");
+    std::stringstream ss;
+    ss << f.rdbuf();
+    return parseSavedZoom(ss.str());
+}
+
+bool saveZoom(const std::string& config, int zoom)
+{
+    if (config.empty())
+        return false;
+    std::error_code ec;
+    std::filesystem::create_directories(config, ec);
+    std::ofstream f(config + "/window.txt");
+    f << "zoom=" << zoom << "\n";
+    return (bool)f;
+}
+
+UiState initialUiState(const std::string& config)
+{
+    UiState s;
+    s.zoom = loadSavedZoom(config);
+    return s;
 }
 }

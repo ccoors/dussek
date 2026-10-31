@@ -37,6 +37,7 @@
 #include "dussek.h"
 #include "DistrhoPluginInfo.h"
 #include "StateVersion.hpp"
+#include "GlCheck.hpp"
 
 #include <algorithm>
 #include <filesystem>
@@ -402,6 +403,28 @@ TEST(user_files_carry_a_version)
     const MidiMap later = MidiMap::parse("version 2\nknob 1 2 3\nprogram_change on\ncc 2 22 mic_l_x\n");
     CHECK(later.version == 2 && later.programChange && later.find(kMicLX) != nullptr && later.find(kMicLX)->cc == 22);
     CHECK(MidiMap::parse("cc 2 22 mic_l_x\n").version == pe::kFirstMidiMapVersion);
+}
+
+TEST(the_scale_is_kept_for_the_next_window)
+{
+    // the standalone has no session: the scale last picked is kept in the config folder
+    // (window.txt) and is every new window's (a session's own "ui" state wins in a host)
+    const std::string dir = tempDir("pe-window-") + "/config/dussek"; // made by the first save
+    CHECK(pe::loadSavedZoom(dir) == 100); // nothing saved yet
+    CHECK(pe::saveZoom(dir, 150) && pe::loadSavedZoom(dir) == 150);
+    CHECK(pe::initialUiState(dir).zoom == 150 && pe::initialUiState(dir).tab == 0);
+    CHECK(pe::parseSavedZoom("zoom=175\n") == 175 && pe::parseSavedZoom("zoom=137\n") == 100
+          && pe::parseSavedZoom("") == 100 && pe::parseSavedZoom("zoom=x") == 100);
+    CHECK(!pe::saveZoom("", 150) && pe::loadSavedZoom("") == 100); // no config folder known
+}
+
+TEST(a_display_without_opengl_2_is_named)
+{
+    // over Remote Desktop, or in a VM without 3D acceleration, Windows offers OpenGL 1.1 only: the
+    // window stays black; the player is told why and that the sound still plays
+    const std::string m = pe::openGlMissingText();
+    CHECK(m.find("OpenGL 2") != std::string::npos && m.find("Remote Desktop") != std::string::npos
+          && m.find("sound") != std::string::npos);
 }
 
 TEST(the_parameter_table_only_grows)

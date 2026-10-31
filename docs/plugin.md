@@ -142,8 +142,10 @@ The header's buttons:
     parameter but the instrument back to its default, and the velocity curve straight. The felt's
     points, the morph's partners and the Scala file stay (the Default preset clears them too).
 
-The selected tab, the zoom and the bottom's panel are saved with the session. `plugin/build/ui_tests` tests the UI's
-logic without a window. The parameters' order is not kept stable between versions yet.
+The selected tab, the zoom and the bottom's panel are saved with the session. The zoom last picked
+is also kept for the next window (`window.txt` in the config folder, beside the MIDI map): the
+standalone keeps no session. `plugin/build/ui_tests` tests the UI's logic without a window. The
+parameter table only grows from release to release ([compatibility.md](compatibility.md)).
 
 ## The header's controls
 
