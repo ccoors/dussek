@@ -17,6 +17,7 @@ and links it in as `data/<name>`.
 | [Piano in 162](https://www.ivyaudio.com), SFZ edition (Ivy Audio) | free for personal or commercial use | 4.7 GB | `data/piano-in-162/` | `grand_d` (Grand D; its layers' recording gains are undone in `analysis/datasets.py`) |
 | [Headroom Piano](https://github.com/sfzinstruments/BengtNilsson.HeadroomPiano) (Bengt Nilsson) | CC BY 4.0 | 284 MB | `git clone` into `data/headroom-piano/` | `grand_c` (Grand C, credited) |
 | [Osiris Piano](https://github.com/sfzinstruments/Osiris_Piano) (Versilian Studios, Karoryfer) | CC0 | 908 MB | `git clone` into `data/osiris-piano/` | `grand_g` (Grand G) |
+| [City Piano](https://bigcatinstruments.blogspot.com/2015/09/all-keyboard-instruments.html) (Big Cat Instruments; close samples, http://www.mediafire.com/download/4vmjle2acsy1xd2/City_Piano_Close_Samples.zip) | public domain | 425 MB | extracted into `data/city-piano/` | `grand_h` (Grand H; its levels from Grand B's set, `data/iowa-mis-piano/` too) |
 | [LivingRoom Upright, Micro SFZ](https://downloads.keypleezer.com/dl-free-version-micro-sfz/v100/livingroom-upright-piano-micro-sfz.zip) (KeyPleezer) | audio CC BY-SA 4.0 | 91 MB | `data/livingroom-upright/` | `upright_c` (Upright C; its export is CC BY-SA 4.0 too) |
 | The maintainer's own upright, recorded 2026-10-31 | the maintainer's (not published) | 2 GB | split by `analysis/split_session.py` into `data/own-upright/` (`docs/recording-a-piano.md`) | `upright_d` (Upright D); not downloadable |
 

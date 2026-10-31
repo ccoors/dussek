@@ -3133,3 +3133,58 @@ in place of the downs (Salamander's cache has none: its path unchanged). `pedal_
 take 6 dB over its kind's median (down_4 +6.9 dB). Choosing the take by the press (its speed) would
 be the engine's; not here.
 
+## 204. Grand H, from a normalized baby grand
+
+The City Piano (Big Cat Instruments, 2014, public domain), a baby grand recorded close: every key,
+four velocity ranges (1–48, 49–96, 97–110, 111–127), a release per key, 44.1 kHz / 16 bit. Downloaded
+on 2026-10-03 and set aside for its normalization and its cut files; measured before fitting:
+
+- **Levels.** Every file peaks at −5 dBFS: no level per velocity or key. The noise above 4 kHz in a
+  file's last second lies 77–82 dB under its peak in every layer, so the noise floor gives no layer's
+  gain back either.
+- **The layers' timbre is the recordings' own.** The attack's 2–4 kHz re 200–500 Hz (0–0.3 s), from
+  the softest range up: −41/−23/−21/−17 dB in A0–E2, −43/−31/−25/−20 in F2–E4, −16/−8/+3/+5 in
+  F4–E6: real strikes, only their levels flattened. The softest, the middle and the loudest range
+  are pp, mf and ff (the wizard's proposal); 97–110 is left out.
+- **Decays.** The files end while the notes still sound (20 s in the bass, 10–15 s in the middle,
+  4 s in the treble), at 60–72 dB under the peak. The fundamental's decay is measurable over a
+  median 24–28 dB in the bass, 53–57 dB in the middle, 64–66 dB from F4 to E6 (Grand B's mf 26/58/80,
+  Grand C's loudest 30/63/81); the analysis finds too few partials in 16 of 264 takes, all from D♯7
+  up (Grand B 22).
+- **Tuning.** A = 440 Hz with a stretch (−22 cents at A0, +10 … +15 from F6), ±4 cents rms off a
+  smooth curve; no mislabeled note.
+- **Microphones.** Close and in effect mono: the channels' difference lies 43–44 dB under their sum.
+- **Releases.** 0.3–0.8 s each, normalized too, and key-up noises alone: no string rings before them,
+  so no damper's fall to read (step 119), and no level re the notes. The dampers are borrowed (Grand
+  E's), the release and pedal noise (Grand A's), as on the other grands.
+
+The project starts from Grand E's file (normalized as this set is, its levels from Grand B's
+recordings), its by-ear values then measured again on Grand H. The levels come from Grand B too
+(`[uses] levels`): of the grands recorded at real levels, its layers' brightness lies nearest this
+set's (the attack's 2–4 kHz within 1–3 dB at mf and ff from F2 up; Grand C's 8–14 dB brighter at mf
+and ff from F2 to E6). The register step reads Grand B's recordings, so building Grand H needs
+`data/iowa-mis-piano/` too. Against Grand B the register fit leaves 4.6/4.7 dB rms per key at mf/ff,
+the even levels 0.5 dB from key to key (the other grands 0.2–0.6).
+
+What the export measured, as steps 141–147 and 183 did for the other grands (none of it heard yet):
+
+- **The felt.** At the played pp, mf and ff velocities, the attack's 1–2/2–4 kHz re 200–500 Hz (keys
+  C2–C5) against the recording: with Grand E's felt pp −5.8/−7.3, mf +2.5/+2.3, ff +0.9/+5.9 dB; two
+  probes and a least-squares step, p 1.41 and −0.8 dB: pp −2.3/+2.4, mf +1.3/+0.5, ff −0.5/−1.6 dB.
+- **The board's tone.** Untrimmed, the treble's upper partials lie under the recording (4 kHz pp/mf/ff
+  +1.0/−0.3/−6.6 dB; the other grands at mf −1.5 … +7.5), so no treble row. The board fit's data begin
+  at 41 Hz, and the fundamentals of A0–G♯1 sat +6.6 dB over partials 2–4 re the recording (D1–E1
+  +14 … +24); 31.5 Hz −8 and 45 Hz −1.5 dB: +0.5 dB.
+- **The unisons.** The recording's beats grow to 3.4–6.1 cents from key 90 up, the engine's stayed
+  at 1.5–2.4: ×3.20 at key 108, measured again ×2.79, so ×8.93 (then ×1.29 left).
+- **Its loudness.** The step-173 phrase at the midpoint of Recording and Player: −28.4 LUFS against
+  the grands' median −28.0 (measured the same way): Grand E's gain kept.
+
+Against the other grands (the report and the editor's Compare): the bass attack (A0–B2, each band re
+200–500 Hz) lies within a few dB of its own recording (mf +1.3/−0.8/+3.9/+3.8, ff +0.7/−1.9/−6.1/+0.3
+dB at 1–2/2–4/4–6/6–8 kHz), but 13–20 keys per band lie under the recorded grands' envelope of the
+change from mf to ff: the recording's own change is that narrow (its mf bright, the 2–4 kHz in A0–E2
+−23 dB re 200–500 Hz against Grand B's −38). The Compare page flags 11 of 264 pairs (Grand E 15),
+lengths and top-key pitches; 94 lengths stopped by the cut files. Open: at ff the engine is darker
+than the recording above C3 (the middle's 4 kHz −7.5, the treble's 2 and 4 kHz −6.3/−6.6 dB within a
+note), where the felt solve (C2–C5, the attack alone) did not look.

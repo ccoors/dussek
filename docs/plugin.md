@@ -441,6 +441,7 @@ What they do beyond strings struck or plucked:
 | Grand D | every key recorded; its layers' recording gains undone |
 | Grand E | normalized samples: the dynamic range comes from the model |
 | Grand G | a worn grand recorded softly with the soft pedal down: a quiet piano, narrow dynamics |
+| Grand H | a baby grand recorded close and in mono, every file normalized: its levels from Grand B's recordings, its timbre per layer its own |
 | Harpsichord B | 8′, 4′ and 8′ II registers and a lute row (the header's stops); the 8′ II and the lute derived from the 8′ |
 | Harpsichord E | a French double of 1755: the lower manual's 8′ and the upper manual's (the 8′ II), each recorded; F1–F6 |
 | Harpsichord F | an English single of 1709: its two 8′ choirs, each recorded (the 8′ and the 8′ II); G1–D6, the bass a short octave in the original, chromatic here |

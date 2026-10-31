@@ -218,7 +218,7 @@ error far apart (design log step 114).
 The chains are in `projects/steps.toml`, by family. A project's `skip` leaves steps out: the
 pianos borrow Salamander's release and pedal noise and Grand E's dampers and skip those steps (the
 lenders run their own), and Salamander, scaled per key, skips `register`. A normalized set fits its
-register against another set's levels instead (`[uses] levels`: Grand E against Grand B's, the đàn
+register against another set's levels instead (`[uses] levels`: Grand E and Grand H against Grand B's, the đàn
 tranh against Harp A's).
 
 | Family | Instruments | Steps |

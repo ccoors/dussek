@@ -1,0 +1,104 @@
+# grand_h: made from grand_e's project file (normalized per file as this set is, its levels from Grand B's recordings) (the comments are grand_e's but where measured on Grand H, 2026-10-31: design log step 204)
+[project]
+family = "struck"
+# register: its balance along the keys fitted against Grand B's recordings ([uses] levels; it reads
+# them, so data/iowa-mis-piano/ is needed to build it)
+# the set's release samples are key-up noises alone (no string ringing before them, so no damper's
+# fall) and normalized each to −5 dBFS (no level re the notes): the dampers and the release noise borrowed
+skip = ["release_noise", "dampers", "pedal_noise"]
+body = "grand"
+
+[menu]
+name = "Grand H"
+group = "Grand pianos"
+
+[strings]
+design = "grand"
+board_seed = 8
+detune = 1.0
+id_max_partial = 60
+
+[uses]
+release = "grand_a"
+pedal = "grand_a"
+dampers = "grand_e"
+# Grand B's set (Iowa), the same model with every note at real levels; of the grands recorded at
+# real levels its layers' brightness is the nearest this set's (2–4 kHz re 200–500 Hz in the first
+# 0.3 s: within 1–3 dB at mf and ff from F2 to C8; Grand C's 8–14 dB brighter at mf and ff from F2 to E6)
+levels = "grand_b"
+
+[export]
+# the level by loudness (2026-10-31, design log steps 173 and 177): the phrase (a two-octave arpeggio at
+# 80, four chords at 95) at the midpoint of Recording and Player, EBU R128: −28.4 LUFS against the
+# grands' median −28.0 (Grand E's gain kept: within ±0.5 dB)
+output_gain_db = -1.5
+
+[[part]]
+id = "grand_h"
+
+[[part.source]]
+id = "grand_h"
+role = "main"
+root = "city-piano"
+# four velocity ranges recorded (1–48, 49–96, 97–110, 111–127): the softest, the middle and the
+# loudest as pp, mf and ff; 97–110 is left out
+dynamics = { pp = "v1", mf = "v49", ff = "v111" }
+# every file normalized to −5 dBFS (no level per velocity or key): the balance along the keys and
+# the steps between the dynamics follow Grand B's recordings ([uses] levels), the felt fit its
+# hammer speeds; the timbre's change from layer to layer is the recordings' own
+levels = "normalized"
+
+[part.source.map]
+kind = "pattern"
+glob = "*-*-*.wav"
+regex = '(?P<note>[A-G]#?\d)-(?P<dynamic>\d+)-\d+\.wav'
+note = { group = "note" }
+layers = ["1", "49", "111"]
+dynamic_format = "v{}"
+order = "note"
+
+# the export voices the piano to one level curve, as a voicer leaves it (design log step 138): each
+# key's ff level corrected to a smooth trend through the keys' levels; the board's character stays
+# in each key's tone. Heard as "a lot cleaner … mint condition" (2026-10-21); the Condition's
+# Normal zone adds the unevenness back at runtime (the voicing's level scatter, step 139)
+[even_levels]
+window_keys = 9
+
+# the felt solved from the recording at the played pp, mf and ff velocities (2026-10-31, design log
+# steps 141–142; the fits never see it): the attack's 1–2/2–4 kHz re 200–500 Hz (0.02–0.15 s, keys
+# C2–C5, every third), engine − recording. Grand E's pair (p 1.9, +2.2 dB) left pp −5.8/−7.3, mf
+# +2.5/+2.3, ff +0.9/+5.9 dB; two probes (p −0.4, +3 dB), a least-squares step: pp −2.3/+2.4, mf
+# +1.3/+0.5, ff −0.5/−1.6 dB. Not yet heard
+[felt]
+p = 1.41
+stiffness_db = -0.8
+
+# the board's tone (2026-10-31, tone_check.py, design log steps 143 and 147; the fits never see it):
+# within a note, re the band of its fundamental, the treble's upper partials lie under the recording
+# untrimmed (4 kHz mf −1.6, ff −6.0 dB), so no treble row. The lowest octave: the board fit's data
+# start at 41 Hz, below which its response is held flat; the fundamentals of A0–G♯1 sat +6.6 dB
+# over partials 2–4 against the recording (keys D1–E1 +14 … +24 dB); 31.5 Hz −8 and 45 Hz −1.5 dB
+# bring the median near 0 dB (−10/−3 overshot to −1.7). Not yet heard
+[board]
+trim_db = [[31.5, -8.0], [45.0, -1.5]]
+# the board's low modes ring longer (2026-10-27, by ear on Grands A and B; the fits never see it):
+# at loss factor 4 % where that rings longer than the fitted overlap, below 450 Hz; the board's own
+# response 0.45–0.6 s below 200 Hz (was ~0.15 s), a grand's board glued into its rim ~0.5 s (Plath)
+# (design log step 184)
+low_eta = 0.04
+
+# the unison toward the top key (2026-10-31, unison_check.py, design log step 183; the fits never see
+# it): the fitted detune is measured from beats below the top octaves and held above them; the
+# recording's beats (partials 1–3) grow to 3.4–6.1 cents from key 90 up, the engine's stayed at
+# 1.5–2.4; their ratio from key 78 up, a line in log: ×3.20 at 108; measured again on that export
+# (three strings beat at their neighbors' gaps): ×2.79, so ×8.93
+[unison]
+treble = [[78, 1.0], [108, 8.93]]
+
+# the recordings' credit and terms (proto/license.py writes instruments/<project>/LICENSE.md)
+[license]
+set = "City Piano"
+author = "Big Cat Instruments"
+url = "https://bigcatinstruments.blogspot.com/2015/09/all-keyboard-instruments.html"
+terms = "\"It is free and public domain. Do anything you like with it.\""
+source_license = "public-domain"
