@@ -3250,10 +3250,9 @@ Then as steps 141–147 did for the grands:
   45 Hz −12 dB, 63 Hz −8.5): +10.4 and −1.8 dB. The bass's bands re its fundamental, −12 … −19 dB
   under the recording's before, now −7 … +3 dB at 125 Hz–2 kHz at pp and mf (63 Hz −12).
 - The felt: Grand A's core by ear left out (with it the bass at ff +6.7/+8.1 dB at 2/4 kHz over
-  the recording, without +3.6/+4.3); the pair solved from two probes at pp, mf and ff, 1–4 kHz
-  over the three registers: p 1.83, +1.8 dB (rms 5.0 → 3.9 dB from Grand A's 2.09, +3.4 dB).
-- The loudness: the middle phrase 2.3 dB under the grands' median at the midpoint of Recording and
-  Player; `output_gain_db` +2.0 puts it 0.25 dB under.
+  the recording, without +3.6/+4.3); the pair solved as step 142's (below).
+- The loudness: the middle phrase at the grands' median (−28.3 LUFS) at the midpoint of Recording and
+  Player, `output_gain_db` +1.0.
 
 Left as they are, numbers for the ear: within a note the middle's 250 Hz band +10 … +12 dB and its
 8 kHz band +13 … +16 dB over the recording at mf and ff, the treble's 1 kHz +6 … +8 dB (the
@@ -3261,3 +3260,24 @@ hammer's thump 8 dB lower moved neither); the unisons beat 1.3–1.6 times the r
 F5 and 0.7–0.9 times from F♯5 to C♯7, 0.75 at the top (Grand A's ×12 kept, the bound). The 7 s and
 staccato takes, unused, hold this piano's own dampers and release noise; measuring them needs the
 release found inside a note (the damper step reads release recordings that start at the release).
+
+The first listening (the user): "the Room adds a really weird high-pitched hiss", gone with Room down;
+"up to C6 the single note listening tests of the pp versions sound very stringy. Same up to about C4
+for mf"; the borrowed dampers fine.
+
+- The hiss: the room's decay came from `body_decay.py`'s bands, and its 12.8 kHz band, the recording's
+  floor (T60 41 s; 10 and 16 kHz 44 and 32 s), was consistent enough over the notes to be taken: the
+  synthetic room rang for its whole 2 s at 6–16 kHz, 60–80 dB over Grands A and B's room output
+  2.5–5.5 s after a strike (third-octave bands, Room on − Room off). `[strings] room_t60` takes the
+  measured bands up to 8 kHz, held above (a refit of Grand I's steps): its late output at 6–16 kHz now
+  −127 … −138 dB (A −139 … −150); in a piece the energy at 8–16 kHz −13 dB.
+- Stringy: the beating against the recording (partials 1–12 over 0.3–3 s, keys C2–C6) lay where Grand
+  A's and B's lie against theirs: the depth (median 2.9 dB, recorded 2.9), the jump of the beat
+  rate from partial to partial (0.31, recorded 0.34) and the envelope's periodicity (0.36, recorded
+  0.26; Grand A 0.36 against 0.31). The soft attack did not: at pp the 1–2 and 2–4 kHz re 200–500 Hz
+  sat +8.6/+13.6 dB over the recording (C2–C6, medians; Grand A +0.9/+7.4), step 142's
+  string-like, plucked soft playing. The first felt was solved from the tone within a note over 1
+  s; solved on the attack at pp, mf and ff as step 142's (C2–C5, two probes): p 2.2, −0.2 dB. Now
+  pp +0.9/+4.4, mf +2.1/−1.9, ff +8.2/+7.0 dB (C2–C6). The unisons (C4–F5 1.2–1.6 times the
+  recording's beat) left as they were: a width of 0.75 did not slow them in `unison_check.py` (n =
+  2 per half octave).

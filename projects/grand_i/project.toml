@@ -28,6 +28,13 @@ band_correction = true
 # like 0.87 cents (model ×1: 1.29), Iowa like 1.35 cents (model ×1: 0.82, ×3: 2.08).
 # The EDC fit alone cannot pin it down (Salamander drifts to the bound with ~1 dB gain)
 detune = 0.7
+# the room's decay (2026-10-31): body_decay.py's bands as measured up to 8 kHz, without 10–16 kHz, where
+# the gaps hold the recording's floor (T60 32–44 s, the 12.8 kHz band consistent enough to be taken);
+# with it the room hissed for 2 s after every note (its 6–16 kHz output 60–80 dB over Grands A and B's
+# 2.5–5.5 s after a strike), heard as "a really weird high-pitched hiss" (the user). Held above 8 kHz
+room_t60 = [[126.0, 0.67], [159.0, 0.57], [200.0, 0.27], [252.0, 0.53], [317.0, 0.45], [400.0, 0.25], [504.0, 0.36],
+            [635.0, 0.25], [800.0, 0.22], [1008.0, 0.21], [1270.0, 0.22], [2540.0, 1.19], [4032.0, 1.04],
+            [5080.0, 0.77], [6400.0, 0.88], [8063.0, 0.71]]
 
 [uses]
 # measured from release recordings (design log step 119)
@@ -44,8 +51,9 @@ pedal = "grand_a"
 phantom = 0.05
 # the level by loudness (2026-10-31, steps 173 and 177): a phrase in its middle (an arpeggio at velocity
 # 80, chords at 95) lay at −30.2 LUFS at Recording and −30.9 at Player (EBU R128), their midpoint 2.3 dB
-# under the grands' median (−28.3 LUFS, measured alike); +2 dB
-output_gain_db = 2.0
+# under the grands' median (−28.3 LUFS, measured alike): +2 dB; with the felt solved on the attack it lay
+# 1.0 dB over: +1 dB
+output_gain_db = 1.0
 
 [impact]
 trim_db = [[21, -12.0]]
@@ -57,14 +65,16 @@ trim_db = [[21, -12.0]]
 [even_levels]
 window_keys = 9
 
-# the felt solved from the recording (2026-10-31, step 141's way; the fits never see it): within a note,
-# octave bands 1, 2 and 4 kHz re the fundamental's over the first second (tone_check.py), the engine −
-# the recording at pp, mf and ff in the bass, middle and treble; two probes (p −0.4, +3 dB) and least
-# squares: rms 5.0 → 3.9 dB from Grand A's pair (2.09, +3.4 dB). Grand A's core by ear left out: with it
-# the bass at ff sat +6.7/+8.1 dB (2/4 kHz) over the recording, without it +3.6/+4.3
+# the felt solved from the recording (2026-10-31, step 142's way; the fits never see it): the attack's
+# 1–2 and 2–4 kHz re 200–500 Hz at the velocities the export plays pp, mf and ff (bass_check.py's
+# measure, keys C2–C5, medians), two probes (p +0.4, +3 dB) and least squares. A first pair solved from
+# the tone within a note over 1 s (p 1.83, +1.8 dB) left soft playing bright: pp +2.5/+12.7 dB over the
+# recording (Grand A +0.9/+7.4), heard as "very stringy" at pp up to C6 (the user); this pair: pp
+# −3.9/+8.0, mf +2.1/−2.0, ff +7.9/+2.3 dB. Grand A's core by ear left out: with it the bass at ff sat
+# +6.7/+8.1 dB (2/4 kHz within the note) over the recording, without it +3.6/+4.3
 [felt]
-p = 1.83
-stiffness_db = 1.8
+p = 2.2
+stiffness_db = -0.2
 
 # the board's tone (2026-10-31; the fits never see it). The lowest octaves: its board fit's data start
 # at 66 Hz, below which the response is held flat; the bass's fundamentals sat over partials 2–4
