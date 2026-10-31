@@ -295,7 +295,7 @@ fn the_command_line_helps_and_its_errors_say_what_is_wrong() {
     // --help: every key of --param and --tuning, the temperaments; -h the summary alone
     let (code, help) = run(&["--help"]);
     assert_eq!(code, Some(0));
-    for (k, _) in pianoengine::spec::PARAM_KEYS.iter().chain(pianoengine::spec::TUNING_KEYS) {
+    for (k, _) in dussek::spec::PARAM_KEYS.iter().chain(dussek::spec::TUNING_KEYS) {
         assert!(help.contains(&format!("  {k} ")), "--help lacks {k}");
     }
     assert!(help.contains("Werckmeister III"));
@@ -338,12 +338,12 @@ fn pe_cli(args: &[&str]) -> i32 {
     let owned: Vec<std::ffi::CString> = std::iter::once("render").chain(args.iter().copied())
         .map(|a| std::ffi::CString::new(a).unwrap()).collect();
     let ptrs: Vec<*const std::os::raw::c_char> = owned.iter().map(|c| c.as_ptr()).collect();
-    unsafe { pianoengine::ffi::pe_cli(ptrs.len() as i32, ptrs.as_ptr()) }
+    unsafe { dussek::ffi::pe_cli(ptrs.len() as i32, ptrs.as_ptr()) }
 }
 
 #[test]
 fn the_standalones_render_writes_what_midi2wav_writes() {
-    // `pianoengine render …` (the standalone) runs midi2wav's code through the C interface
+    // `dussek render …` (the standalone) runs midi2wav's code through the C interface
     if !std::path::Path::new(DIR).exists() {
         eprintln!("skipped: no instrument");
         return;

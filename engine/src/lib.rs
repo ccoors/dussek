@@ -1,4 +1,4 @@
-//! Real-time piano engine: runs an instrument exported by `proto/export.py` (Phase 3).
+//! Dussek's real-time engine: runs an instrument exported by `proto/export.py` (Phase 3).
 //!
 //! Physics and parameters come from the Python prototype; this crate only executes
 //! them: hammer contact, coupled string modes, dampers and pedal, sympathetic

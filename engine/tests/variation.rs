@@ -3,7 +3,7 @@
 //! recorded takes per key and dynamic differ like this: their partials around the fundamental
 //! within about −20 dB, above 2–4 kHz unrelated (design log step 130).
 
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 use std::path::Path;
 
 const SR: f64 = 48000.0;

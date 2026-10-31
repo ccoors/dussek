@@ -1,7 +1,7 @@
 //! The crotales (`proto/export_bars.py --profile crotales`): bronze discs, eight modes whose
 //! ratios drift over the keys, one mallet, no dampers. Needs the export (skipped without).
 
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 
 mod common;
 
@@ -19,7 +19,7 @@ fn render(e: &mut Engine, n: usize) -> Vec<f32> {
 #[test]
 fn drifting_modes_one_mallet_no_dampers() {
     let Ok(inst) = Instrument::load(DIR) else { return };
-    assert!(inst.body() == pianoengine::mic::Body::Crotales && !inst.motor);
+    assert!(inst.body() == dussek::mic::Body::Crotales && !inst.motor);
     assert!(inst.mallets.is_empty());
     // the strongest mode from 3.7 at C6 to 3.2 at C8; the second from 2.14 to 1.9
     let r = |key: usize, j: usize| inst.notes[key - 21].spec.string.modes.as_ref().unwrap().ratio[j];
@@ -44,7 +44,7 @@ fn drifting_modes_one_mallet_no_dampers() {
 
 #[test]
 fn close_pair_hears_the_bass_left_and_the_treble_right() {
-    use pianoengine::mic::MicPosition;
+    use dussek::mic::MicPosition;
     let Ok(_) = Instrument::load(DIR) else { return };
     // R re L (dB) of a key at Close 1 (the pair over the discs): the frame's own range spread
     // over the pair (the zones at the piano's keys piled C6–B6 at the bass end)
@@ -70,7 +70,7 @@ fn close_pair_hears_the_bass_left_and_the_treble_right() {
 
 /// R re L (dB) of `key` at Close 1, the keys spread along the discs or not.
 fn balance_at(key: u8, spread_keys: bool) -> f64 {
-    use pianoengine::mic::MicPosition;
+    use dussek::mic::MicPosition;
     let tuning = Tuning { mic: MicPosition::Hammers, spread_keys, ..Tuning::default() };
     let mut e = common::engine(DIR, SR, tuning).unwrap();
     e.set_params(Params { room: 0.0, ..Params::default() });
@@ -97,7 +97,7 @@ fn spread_over_all_keys_moves_the_extrapolated_ones_along_the_discs() {
 #[test]
 fn switching_the_spread_hands_over_to_the_new_positions() {
     let Ok(_) = Instrument::load(DIR) else { return };
-    use pianoengine::mic::MicPosition;
+    use dussek::mic::MicPosition;
     let engine = |spread_keys: bool| {
         let tuning = Tuning { mic: MicPosition::Hammers, spread_keys, ..Tuning::default() };
         let mut e = common::engine(DIR, SR, tuning).unwrap();

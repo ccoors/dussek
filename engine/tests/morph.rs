@@ -4,9 +4,9 @@
 //! (skipped without them).
 
 mod common;
-use pianoengine::physics::Excitation;
-use pianoengine::mic::MicPosition;
-use pianoengine::{Engine, Event, Instrument, RadiationCache, Tuning};
+use dussek::physics::Excitation;
+use dussek::mic::MicPosition;
+use dussek::{Engine, Event, Instrument, RadiationCache, Tuning};
 
 const A: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_a");
 const E: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_d");
@@ -142,7 +142,7 @@ fn level_corrections_blend_with_none() {
 }
 
 /// the board's modes reordered by frequency (an export's are not guaranteed sorted)
-fn sorted_by_f(b: &pianoengine::physics::Board) -> pianoengine::physics::Board {
+fn sorted_by_f(b: &dussek::physics::Board) -> dussek::physics::Board {
     let mut o: Vec<usize> = (0..b.f.len()).collect();
     o.sort_by(|&i, &j| b.f[i].total_cmp(&b.f[j]));
     let by = |v: &[f64]| o.iter().map(|&i| v[i]).collect::<Vec<f64>>();

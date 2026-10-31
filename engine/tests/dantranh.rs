@@ -3,7 +3,7 @@
 //! behind the bridge: `Event::PitchBend` × `Params::bend_range`). Needs the exported instrument
 //! (skipped without).
 
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 
 const DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/dantranh");
 const HARP: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/harp");

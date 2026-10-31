@@ -19,7 +19,7 @@ add_subdirectory(dpf)
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../engine/Cargo.toml)
   find_program(CARGO cargo REQUIRED)
   set(ENGINE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../engine)
-  set(ENGINE_LIB ${ENGINE_DIR}/target/release/${CMAKE_STATIC_LIBRARY_PREFIX}pianoengine${CMAKE_STATIC_LIBRARY_SUFFIX})
+  set(ENGINE_LIB ${ENGINE_DIR}/target/release/${CMAKE_STATIC_LIBRARY_PREFIX}dussek${CMAKE_STATIC_LIBRARY_SUFFIX})
   add_custom_target(engine_cargo
     COMMAND ${CMAKE_COMMAND} -E env MACOSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
             ${CARGO} build --release --lib --manifest-path ${ENGINE_DIR}/Cargo.toml

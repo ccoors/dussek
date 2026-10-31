@@ -2,7 +2,7 @@
 //! note), the modes' slow beating (`BarModes::split`), a damper bar lifted by a held key or the
 //! pedal. Needs the exported instrument (skipped without).
 
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 
 const DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/chimes");
 const SR: f64 = 48000.0;
@@ -36,7 +36,7 @@ fn band_db(x: &[f32], f: f64) -> Vec<f64> {
 #[test]
 fn a_tube_rings_at_its_fourth_mode_twice_the_strike_note() {
     let Ok(inst) = Instrument::load(DIR) else { return };
-    assert!(inst.body() == pianoengine::mic::Body::Chimes && !inst.motor);
+    assert!(inst.body() == dussek::mic::Body::Chimes && !inst.motor);
     for key in [60u8, 66, 77] {
         let st = &inst.notes[key as usize - 21].spec.string;
         let pitch = 440.0 * 2f64.powf((key as f64 - 69.0) / 12.0);

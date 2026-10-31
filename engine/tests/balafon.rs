@@ -2,7 +2,7 @@
 //! fundamental's harmonics up to the 7th and the membranes' noise (`Instrument::membrane`), three
 //! mallets (Params::mallet), no dampers. Needs the exported instrument (skipped without).
 
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 
 const DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/balafon");
 const SR: f64 = 48000.0;
@@ -18,7 +18,7 @@ fn render(e: &mut Engine, n: usize) -> Vec<f32> {
 #[test]
 fn a_bar_buzzes_with_its_harmonics_and_dies_within_a_second() {
     let Ok(inst) = Instrument::load(DIR) else { return };
-    assert!(inst.body() == pianoengine::mic::Body::Balafon && !inst.motor);
+    assert!(inst.body() == dussek::mic::Body::Balafon && !inst.motor);
     let names: Vec<&str> = inst.mallets.iter().map(|m| m.name.as_str()).collect();
     assert_eq!(names, ["traditional", "hard", "soft"]);
     for key in [61u8, 72, 89] {

@@ -2,7 +2,7 @@
 //! response failed on the audio thread: a sparse board's jittered grid once put one at −0.9 Hz).
 //! Needs an exported instrument (skipped without).
 
-use pianoengine::Instrument;
+use dussek::Instrument;
 
 const SRC: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/strumstick");
 

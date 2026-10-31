@@ -5,9 +5,9 @@
 //! C6 played 4–10 dB under its middle's steps below velocity 64.
 mod common;
 
-use pianoengine::instrument::LEVEL_KEYS;
-use pianoengine::velocity::{DYNAMICS_DB, FF_VELOCITY, dynamics_db};
-use pianoengine::{Engine, Event, Instrument, Params, RadiationCache, Tuning};
+use dussek::instrument::LEVEL_KEYS;
+use dussek::velocity::{DYNAMICS_DB, FF_VELOCITY, dynamics_db};
+use dussek::{Engine, Event, Instrument, Params, RadiationCache, Tuning};
 
 const SR: f64 = 48000.0;
 

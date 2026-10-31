@@ -5,10 +5,10 @@
 //! piano (kept on disk), the license credits every source. Needs the exported instruments
 //! (skipped without them).
 
-use pianoengine::roll::files::Export;
-use pianoengine::roll::generate::{self, CANCELLED, Options, generate, generate_with, references, write_export};
-use pianoengine::roll::measure;
-use pianoengine::roll::recipe::Recipe;
+use dussek::roll::files::Export;
+use dussek::roll::generate::{self, CANCELLED, Options, generate, generate_with, references, write_export};
+use dussek::roll::measure;
+use dussek::roll::recipe::Recipe;
 use std::path::{Path, PathBuf};
 
 fn instruments() -> PathBuf {
@@ -80,7 +80,7 @@ fn a_roll_holds_up() {
     assert!(e.json["profile"].as_str().unwrap().starts_with("rolled:"));
     let dir = tmp("holds");
     write_export(&dir, &e, "license").unwrap();
-    assert_eq!(pianoengine::info::info(&dir).unwrap().morph_family, 1);
+    assert_eq!(dussek::info::info(&dir).unwrap().morph_family, 1);
     let _ = std::fs::remove_dir_all(&dir);
 }
 
@@ -208,8 +208,8 @@ fn a_roll_s_export_carries_its_level_table() {
     let e = Export::read(&p).unwrap();
     let dir = tmp("table");
     write_export(&dir, &e, "license").unwrap();
-    let inst = pianoengine::Instrument::load(&dir).unwrap();
-    assert_eq!(inst.dynamics.keys, pianoengine::instrument::LEVEL_TABLE_KEYS);
+    let inst = dussek::Instrument::load(&dir).unwrap();
+    assert_eq!(inst.dynamics.keys, dussek::instrument::LEVEL_TABLE_KEYS);
     let _ = std::fs::remove_dir_all(&dir);
 }
 

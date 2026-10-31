@@ -2,8 +2,8 @@
 //! partials, its mallet (the pluck path's `bar`), the damper bar (lifted by a held key or the pedal).
 //! Needs the exported instrument (skipped without).
 
-use pianoengine::physics::{BarModes, PluckSpec, pluck_amplitude};
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::physics::{BarModes, PluckSpec, pluck_amplitude};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 
 const DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/vibraphone");
 const SR: f64 = 48000.0;
@@ -36,7 +36,7 @@ fn the_mallet_brightens_with_speed_and_hardness() {
 #[test]
 fn bars_compile_to_their_mode_table() {
     let Ok(mut inst) = Instrument::load(DIR) else { return };
-    assert!(inst.body() == pianoengine::mic::Body::Vibraphone);
+    assert!(inst.body() == dussek::mic::Body::Vibraphone);
     let i = 62 - 21;
     let m: BarModes = inst.notes[i].spec.string.modes.clone().expect("a bar");
     let f0 = inst.notes[i].spec.string.f0;
@@ -178,8 +178,8 @@ fn a_bar_that_has_died_away_frees_its_voice() {
 
 #[test]
 fn harmonics_follow_their_law() {
-    use pianoengine::telemetry::{MAX_PARTIALS, Partial};
-    use pianoengine::voice::Voice;
+    use dussek::telemetry::{MAX_PARTIALS, Partial};
+    use dussek::voice::Voice;
     let Ok(mut inst) = Instrument::load(DIR) else { return };
     inst.compile(SR, Tuning::default());
     let note = &inst.notes[62 - 21];

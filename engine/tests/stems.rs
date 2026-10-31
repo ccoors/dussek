@@ -2,8 +2,8 @@
 //! noises, each rendered alone, sum to the full render, at the recording's position and at one whose
 //! radiation runs per bridge zone; and each carries sound.
 
-use pianoengine::mic::MicPosition;
-use pianoengine::{Engine, Event, Instrument, Mix, Params, Tuning};
+use dussek::mic::MicPosition;
+use dussek::{Engine, Event, Instrument, Mix, Params, Tuning};
 use std::path::Path;
 
 const SR: f64 = 48000.0;

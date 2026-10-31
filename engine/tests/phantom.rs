@@ -1,6 +1,6 @@
 //! The phantom partials' level per instrument (`Instrument::phantom`): the engine plays the
 //! instrument's level plus the control's (design 2026-10-20-bass-high-band), both in the bass.
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 
 const ROOT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/");
 const SR: f64 = 48000.0;

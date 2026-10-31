@@ -2,8 +2,8 @@
 //! at β = 0.2): the pluck point's notch, repeats, extreme velocities, the hammer
 //! instruments' loading and the handover. Needs the exported instruments (skipped without).
 
-use pianoengine::physics::{Excitation, PluckSpec};
-use pianoengine::{Engine, Event, Instrument, Tuning};
+use dussek::physics::{Excitation, PluckSpec};
+use dussek::{Engine, Event, Instrument, Tuning};
 
 const DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_a");
 const SR: f64 = 48000.0;
@@ -97,9 +97,9 @@ const OFFSET: f64 = 2.0;
 /// tiny modes and float32 running.
 #[test]
 fn harpsichord_pluck_matches_the_closed_form() {
-    use pianoengine::kernel::{self, LANES};
-    use pianoengine::physics::pluck_amplitude;
-    use pianoengine::voice::Voice;
+    use dussek::kernel::{self, LANES};
+    use dussek::physics::pluck_amplitude;
+    use dussek::voice::Voice;
     let Ok(mut inst) = Instrument::load(HARPSICHORD) else { return };
     inst.compile(SR, Tuning::default());
     assert!(inst.notes.iter().all(|n| matches!(n.spec.excitation, Excitation::Pluck(p) if (0.04..=0.5).contains(&p.beta))));

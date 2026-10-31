@@ -1,8 +1,8 @@
 //! The diffuse room (`noise::room_ir`): its decay per band and its own level (`eq_db`), a cut
 //! taking energy away.
 
-use pianoengine::instrument::RoomSpec;
-use pianoengine::noise::room_ir;
+use dussek::instrument::RoomSpec;
+use dussek::noise::room_ir;
 
 const SR: f64 = 48000.0;
 
@@ -70,8 +70,8 @@ fn a_cut_takes_energy_away() {
 }
 
 /// Level (dB) of key 60 at `mic`, the room off (the board alone), over 0.5 s.
-fn body_db(cut: bool, mic: pianoengine::mic::MicPosition) -> Option<f64> {
-    use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+fn body_db(cut: bool, mic: dussek::mic::MicPosition) -> Option<f64> {
+    use dussek::{Engine, Event, Instrument, Params, Tuning};
     let src = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_f"));
     let dir = if cut {
         src.to_path_buf()
@@ -104,7 +104,7 @@ fn the_room_s_cuts_leave_the_board_at_the_other_positions() {
     // the microphone positions match their level to the recording's total: the room as it was
     // before its cuts (they change the room, not the board), so the board's Player against its
     // Recording stays
-    use pianoengine::mic::MicPosition::{Player, Recording};
+    use dussek::mic::MicPosition::{Player, Recording};
     let Some(with) = body_db(true, Player) else { return };
     let with = with - body_db(true, Recording).unwrap();
     let without = body_db(false, Player).unwrap() - body_db(false, Recording).unwrap();

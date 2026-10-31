@@ -3,7 +3,7 @@
 //! notes struck after it, not on the sounding ones, and not at all on the harpsichords.
 //! Needs the exported instruments (skipped without them).
 
-use pianoengine::{Engine, Event, Instrument, Tuning};
+use dussek::{Engine, Event, Instrument, Tuning};
 
 const ROOT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/");
 const SR: f64 = 32000.0;

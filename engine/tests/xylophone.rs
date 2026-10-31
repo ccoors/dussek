@@ -1,7 +1,7 @@
 //! The xylophone (`proto/export_bars.py --profile xylophone`): the second mode tuned to 3,
 //! two mallets (rosewood, hard rubber), no dampers. Needs the export (skipped without).
 
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 
 const DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/xylophone");
 const SR: f64 = 48000.0;
@@ -17,7 +17,7 @@ fn render(e: &mut Engine, n: usize) -> Vec<f32> {
 #[test]
 fn a_tuned_twelfth_two_mallets_no_dampers() {
     let Ok(inst) = Instrument::load(DIR) else { return };
-    assert!(inst.body() == pianoengine::mic::Body::Xylophone && !inst.motor);
+    assert!(inst.body() == dussek::mic::Body::Xylophone && !inst.motor);
     assert_eq!(inst.mallets.iter().map(|m| m.name.as_str()).collect::<Vec<_>>(), ["rosewood", "hardrubber"]);
     // tuned to 3 in the middle, untuned (below 3) at the top
     let r = |key: usize| inst.notes[key - 21].spec.string.modes.as_ref().unwrap().ratio[1];

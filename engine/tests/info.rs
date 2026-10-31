@@ -1,5 +1,5 @@
 //! `info::info` on the committed exports and on files edited from them (skipped without them).
-use pianoengine::info::{info, Control, Exciter};
+use dussek::info::{info, Control, Exciter};
 use serde_json::Value;
 use std::path::PathBuf;
 
@@ -110,7 +110,7 @@ fn the_report_names_the_morph_family() {
     let mut seen = (0, 0);
     for dir in entries.filter_map(|e| e.ok().map(|e| e.path())).filter(|p| p.join("instrument.json").exists()) {
         let family = info(&dir).unwrap().morph_family;
-        let morphs = pianoengine::Instrument::morph(&[(dir.clone(), 0.5), (PathBuf::from(&a), 0.5)]).is_ok();
+        let morphs = dussek::Instrument::morph(&[(dir.clone(), 0.5), (PathBuf::from(&a), 0.5)]).is_ok();
         assert_eq!(family == 1, morphs, "{}", dir.display());
         if family == 1 { seen.0 += 1 } else { seen.1 += 1 }
     }

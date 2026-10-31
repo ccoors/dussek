@@ -1,4 +1,4 @@
-//! Render a Standard MIDI file to a stereo WAV with the piano engine (and, with `--video`, a video
+//! Render a Standard MIDI file to a stereo WAV with Dussek's engine (and, with `--video`, a video
 //! of it). `midi2wav --help` lists the options (`Cli` below); docs/engine.md describes them. The
 //! `midi2wav` binary and the standalone's `render` (`pe_cli`, through the C interface) run `main`.
 //!
@@ -48,7 +48,7 @@ struct Opts {
 #[command(
     name = "midi2wav",
     version,
-    about = "Render a Standard MIDI file to a stereo WAV with the piano engine (and, with --video, a video of it)",
+    about = "Render a Standard MIDI file to a stereo WAV with Dussek's engine (and, with --video, a video of it)",
     after_help = "Examples:\n  midi2wav instruments/grand_a song.mid song.wav\n  midi2wav instruments/grand_a song.mid song.wav --param room=0.5 --tuning a4=442 --normalize\n  midi2wav instruments/grand_a song.mid song.wav --video song.mp4\n\nThe plugin's Copy CLI (the ⋯ menu) writes a line for its current settings. `--help` lists every key of --param and --tuning.",
     max_term_width = 100
 )]

@@ -2,10 +2,10 @@
 //! the board's radiation moved until Player matches Recording as the references do. Needs the
 //! exported instruments (skipped without them).
 
-use pianoengine::mic::MicPosition;
-use pianoengine::roll::calibrate::{calibrate_positions, match_registers};
-use pianoengine::roll::files::Export;
-use pianoengine::roll::measure;
+use dussek::mic::MicPosition;
+use dussek::roll::calibrate::{calibrate_positions, match_registers};
+use dussek::roll::files::Export;
+use dussek::roll::measure;
 use std::path::Path;
 
 const REFS: [&str; 10] = ["grand_a", "grand_b", "grand_f", "grand_e", "grand_d", "grand_c", "grand_g", "upright_a", "upright_b", "upright_c"];

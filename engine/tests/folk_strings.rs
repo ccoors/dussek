@@ -2,7 +2,7 @@
 //! plucked by fingers or a pick, the guitar's body for the microphones, no dampers but the
 //! player's hand at a key's release (as the harps). Need the exported instruments (skipped without).
 
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 
 const ROOT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/");
 const SR: f64 = 48000.0;
@@ -21,13 +21,13 @@ fn rms(s: &[f32]) -> f64 {
 
 #[test]
 fn single_plucked_strings_on_bodies_of_their_own() {
-    use pianoengine::mic::Body;
+    use dussek::mic::Body;
     for (name, keys, body) in [("psaltery", [70u8, 80, 90], Body::Psaltery), ("strumstick", [50, 62, 81], Body::Strumstick)] {
         let Ok(inst) = Instrument::load(format!("{ROOT}{name}")) else { continue };
         assert!(inst.body() == body, "{name}");
         for key in keys {
             let n = &inst.notes[key as usize - 21];
-            assert!(matches!(n.spec.excitation, pianoengine::physics::Excitation::Pluck(_)), "{name} {key}");
+            assert!(matches!(n.spec.excitation, dussek::physics::Excitation::Pluck(_)), "{name} {key}");
             assert_eq!(n.spec.string.detune_cents.len(), 1, "{name} {key}: one string");
             let cents = 1200.0 * (n.spec.string.f0 / (440.0 * 2f64.powf((key as f64 - 69.0) / 12.0))).log2();
             assert!(cents.abs() < 15.0, "{name} {key}: {cents:+.1} cents");

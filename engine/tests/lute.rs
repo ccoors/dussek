@@ -1,7 +1,7 @@
 //! Harpsichord B's 8′ II choir (register 2) and its lute row: a second pluck point on
 //! the 8′ II strings near the nut (`Params::lute`). Skipped without the exports.
 
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 
 const ROOT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/");
 const SR: f64 = 48000.0;
@@ -205,6 +205,6 @@ fn a_lute_pluck_falls_back_as_register_2() {
 fn the_lute_row_buzzes_with_paper_too() {
     // the paper lies on the strings whichever row plucks them
     let Some(inst) = load("flemish") else { return };
-    let paper = Params { prep: pianoengine::Prep::Paper, paper: 1.0, ..quiet(0, true) };
+    let paper = Params { prep: dussek::Prep::Paper, paper: 1.0, ..quiet(0, true) };
     assert_ne!(run(&inst, paper, &C4, 24000, None), run(&inst, quiet(0, true), &C4, 24000, None));
 }

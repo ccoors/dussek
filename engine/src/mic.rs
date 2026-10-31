@@ -814,7 +814,7 @@ pub enum Body {
     Strumstick,
 }
 
-/// The bodies by the C interface's number (`pianoengine.h` pe_mic_geometry): 0 grand, 1 upright,
+/// The bodies by the C interface's number (`dussek.h` pe_mic_geometry): 0 grand, 1 upright,
 /// 2 harp, 3 lever harp, 4 vibraphone, 5 marimba, 6 xylophone, 7 bells, 8 crotales, 9 guitar,
 /// 10 chimes, 11 hand chimes, 12 kalimba, 13 balafon, 14 psaltery, 15 đàn tranh, 16 strumstick.
 pub const BODIES: [Body; 17] = [
@@ -2044,7 +2044,7 @@ fn paths(src: &Source, mic: [f64; 3], refl: &[Reflector], mic_over_case: bool) -
 /// CONE_EDGE (in sin θ); below coincidence the board moves nearly as a whole and
 /// radiates about evenly (blended smoothly). Normalized to the mean over the
 /// hemisphere, so the fitted spectrum is kept on average. Off with
-/// PIANOENGINE_NO_DIRECTIVITY (checks).
+/// DUSSEK_NO_DIRECTIVITY (checks).
 const CONE_EDGE: f64 = 0.15;
 
 struct Directivity {
@@ -2059,7 +2059,7 @@ fn cone(sin: f64, sin_c: f64) -> f64 {
 
 impl Directivity {
     fn new(n: usize, sr: f64) -> Self {
-        let on = std::env::var_os("PIANOENGINE_NO_DIRECTIVITY").is_none();
+        let on = std::env::var_os("DUSSEK_NO_DIRECTIVITY").is_none();
         let f_c = 1000.0 * (SPEED_OF_SOUND / BENDING_SPEED_1K).powi(2);
         let bins = (0..n / 2 + 1)
             .map(|i| {

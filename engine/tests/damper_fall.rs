@@ -2,7 +2,7 @@
 //! velocity and the user's factor; a quick re-strike catches it in mid-fall; the release
 //! velocity also sets the release thump. Needs the exported instruments (skipped without).
 
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 
 const DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_a");
 const SR: f64 = 32000.0;

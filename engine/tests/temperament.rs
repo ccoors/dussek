@@ -2,8 +2,8 @@
 //! into the strings like the concert pitch; equal temperament leaves them exactly as they
 //! were. Needs the exported instruments (skipped without).
 
-use pianoengine::temperament::offsets;
-use pianoengine::{Instrument, Tuning};
+use dussek::temperament::offsets;
+use dussek::{Instrument, Tuning};
 
 const DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_a");
 
@@ -37,8 +37,8 @@ fn as_recorded_plays_each_key_at_its_recorded_pitch() {
     // "As recorded" adds each key's own deviation from the curve it plays (`NoteSpec::recorded_cents`)
     let dir = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/kalimba");
     let Ok(mut inst) = Instrument::load(dir) else { return };
-    let i = pianoengine::temperament::NAMES.iter().position(|&n| n == "As recorded").expect("an As recorded entry");
-    assert_eq!(i, pianoengine::temperament::AS_RECORDED);
+    let i = dussek::temperament::NAMES.iter().position(|&n| n == "As recorded").expect("an As recorded entry");
+    assert_eq!(i, dussek::temperament::AS_RECORDED);
     assert_eq!(offsets(i, 4), [0.0; 12]);
     inst.compile(48000.0, Tuning::default());
     let equal: Vec<f64> = inst.notes.iter().map(|n| n.f_mean[0]).collect();
@@ -49,6 +49,6 @@ fn as_recorded_plays_each_key_at_its_recorded_pitch() {
     }
     assert!(inst.notes.iter().any(|n| n.spec.recorded_cents.abs() > 20.0), "the tines' own tuning");
     // the spec's temperament index sets it
-    let t = pianoengine::spec::tuning(Tuning::default(), &format!("temperament={i}")).unwrap();
+    let t = dussek::spec::tuning(Tuning::default(), &format!("temperament={i}")).unwrap();
     assert!(t.as_recorded && t.temperament == [0.0; 12]);
 }

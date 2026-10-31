@@ -2,7 +2,7 @@
 //! modes whose ratios drift over the keys, two mallets (plastic, brass), no dampers. Needs the
 //! export (skipped without).
 
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 
 const DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/bells");
 const SR: f64 = 48000.0;
@@ -18,7 +18,7 @@ fn render(e: &mut Engine, n: usize) -> Vec<f32> {
 #[test]
 fn drifting_modes_two_mallets_no_dampers() {
     let Ok(inst) = Instrument::load(DIR) else { return };
-    assert!(inst.body() == pianoengine::mic::Body::Bells && !inst.motor);
+    assert!(inst.body() == dussek::mic::Body::Bells && !inst.motor);
     assert_eq!(inst.mallets.iter().map(|m| m.name.as_str()).collect::<Vec<_>>(), ["plastic", "brass"]);
     // the strong mode near 7 at C5 falls towards 5.4; the torsional one from 11.3 to 4
     let r = |key: usize, j: usize| inst.notes[key - 21].spec.string.modes.as_ref().unwrap().ratio[j];

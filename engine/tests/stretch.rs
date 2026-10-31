@@ -2,8 +2,8 @@
 //! inharmonicity, scaled by `Tuning::stretch`; 0 leaves the strings as fitted. Needs the
 //! exported instruments (skipped without).
 
-use pianoengine::stretch::offsets;
-use pianoengine::{Instrument, Tuning};
+use dussek::stretch::offsets;
+use dussek::{Instrument, Tuning};
 
 const DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_a");
 

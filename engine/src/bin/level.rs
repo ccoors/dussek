@@ -7,7 +7,7 @@
 
 use std::path::Path;
 
-use pianoengine::Instrument;
+use dussek::Instrument;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let dirs: Vec<String> = std::env::args().skip(1).collect();

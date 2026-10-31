@@ -1,8 +1,8 @@
 //! The telemetry frame: what the engine reports about its sounding voices. Needs the
 //! exported instruments (skipped without them), like the other engine tests.
 
-use pianoengine::telemetry::{Frame, KEY_DAMPER, KEY_HAMMER, KEY_WORDS, MAX_PARTIALS, RING_FRAMES};
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::telemetry::{Frame, KEY_DAMPER, KEY_HAMMER, KEY_WORDS, MAX_PARTIALS, RING_FRAMES};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 
 const ROOT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/");
 const SR: f64 = 48000.0;
@@ -198,7 +198,7 @@ fn only_the_loudest_voices_are_listed() {
 /// partials include both polarizations and false-beat copies (probed: 18 horizontal, 24 copies)
 #[test]
 fn horizontal_partials_and_false_beat_copies_are_flagged() {
-    use pianoengine::telemetry::{KIND_COPY, KIND_HORIZ};
+    use dussek::telemetry::{KIND_COPY, KIND_HORIZ};
     let strike = |false_beats: f64| {
         let inst = Instrument::load(format!("{ROOT}grand_a")).ok()?;
         let mut t = Tuning::default();
@@ -236,7 +236,7 @@ fn horizontal_partials_and_false_beat_copies_are_flagged() {
     assert!(ps.iter().any(|p| p.kind & KIND_HORIZ != 0));
 }
 
-use pianoengine::telemetry::{Region, region_size};
+use dussek::telemetry::{Region, region_size};
 
 fn phrase(e: &mut Engine) {
     for (t, ev) in [

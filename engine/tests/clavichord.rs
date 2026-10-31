@@ -3,7 +3,7 @@
 //! whichever is highest), by `Params::bebung` cents at full. Needs the exported instrument (skipped
 //! without).
 
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 
 const DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/clavichord");
 const HARPSICHORD: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/harpsichord");
@@ -52,7 +52,7 @@ fn the_tangent_strikes_without_a_comb() {
     let Ok(inst) = Instrument::load(DIR) else { return };
     let i = 60 - 21;
     match &inst.notes[i].spec.excitation {
-        pianoengine::physics::Excitation::Pluck(p) => assert!(p.tangent),
+        dussek::physics::Excitation::Pluck(p) => assert!(p.tangent),
         _ => panic!("the clavichord's key is not a tangent"),
     }
     assert!(inst.tangent && inst.notes[i].spec.string.detune_cents.len() == 2, "double strung, with tangents");

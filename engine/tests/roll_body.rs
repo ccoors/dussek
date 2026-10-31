@@ -2,9 +2,9 @@
 //! and merged back, a body described and applied (the board's radiation following), the two
 //! microphones' colors equalized. Needs the exported instruments for the later tests.
 
-use pianoengine::roll::bands::{self, grid};
-use pianoengine::roll::body::{self, Body};
-use pianoengine::roll::files::Export;
+use dussek::roll::bands::{self, grid};
+use dussek::roll::body::{self, Body};
+use dussek::roll::files::Export;
 use std::path::Path;
 
 const A: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_a");
@@ -206,8 +206,8 @@ fn notched_fundamentals_are_lifted() {
     let dir = |n: &str| Path::new(env!("CARGO_MANIFEST_DIR")).join("../instruments").join(n);
     let load = |n: &str| Export::read(&dir(n)).ok();
     let (Some(mut e), Some(b), Some(c), Some(d)) = (load("grand_g"), load("grand_b"), load("grand_f"), load("grand_d")) else { return };
-    pianoengine::roll::parts::fine_structure(&mut e, &[&b, &c, &d]).unwrap();
-    let f: Vec<f64> = pianoengine::roll::measure::fundamentals(&e).iter().map(|k| k.1).collect();
+    dussek::roll::parts::fine_structure(&mut e, &[&b, &c, &d]).unwrap();
+    let f: Vec<f64> = dussek::roll::measure::fundamentals(&e).iter().map(|k| k.1).collect();
     let worst = |e: &Export| e.responses().unwrap().iter().filter(|r| r.pol == 0).map(|r| bands::notch_depths(&r.ir, SR, &f).into_iter().fold(f64::INFINITY, f64::min)).fold(f64::INFINITY, f64::min);
     assert!(worst(&e) < -13.0, "the mix: {:.1} dB", worst(&e));
     let before = e.responses().unwrap();

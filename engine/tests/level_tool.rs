@@ -4,7 +4,7 @@
 
 use std::process::Command;
 
-use pianoengine::Instrument;
+use dussek::Instrument;
 
 const A: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_a");
 
@@ -44,12 +44,12 @@ fn level_doc_holds_every_keys_ff_level() {
     assert!(ff.iter().all(|d| d.is_finite() && (-80.0..=6.0).contains(d)), "{ff:?}");
     // C4's: the peak over the level window of the table's own strike at the ff speed
     let sr = inst.reference_sr;
-    let mut e = pianoengine::Engine::with_tuning(inst.clone(), sr, pianoengine::Tuning::default()).unwrap();
-    e.set_params(pianoengine::Params { knock: 0.0, variation: 0.0, ..pianoengine::Params::default() });
-    e.queue(0, pianoengine::Event::NoteOn { key: 60, speed: inst.velocity_speed[2] });
+    let mut e = dussek::Engine::with_tuning(inst.clone(), sr, dussek::Tuning::default()).unwrap();
+    e.set_params(dussek::Params { knock: 0.0, variation: 0.0, ..dussek::Params::default() });
+    e.queue(0, dussek::Event::NoteOn { key: 60, speed: inst.velocity_speed[2] });
     let (mut l, mut r) = (vec![0.0; 256], vec![0.0; 256]);
     let mut peak = 0.0f32;
-    for _ in 0..(pianoengine::instrument::LEVEL_WINDOW_S * sr / 256.0).ceil() as usize {
+    for _ in 0..(dussek::instrument::LEVEL_WINDOW_S * sr / 256.0).ceil() as usize {
         e.process(&mut l, &mut r);
         peak = l.iter().chain(&r).fold(peak, |m, x| m.max(x.abs()));
     }

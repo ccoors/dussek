@@ -5,7 +5,7 @@
 //! counts on the thread being looked at only.
 mod common;
 
-use pianoengine::{Engine, Event, RadiationCache, Tuning};
+use dussek::{Engine, Event, RadiationCache, Tuning};
 use std::alloc::{GlobalAlloc, Layout, System};
 use std::cell::Cell;
 use std::sync::atomic::{AtomicUsize, Ordering};

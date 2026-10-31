@@ -2,7 +2,7 @@
 //! beyond the recordings (design log step 129) while the attack
 //! keeps its level and the pitch stays.
 
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 use std::path::Path;
 
 const SR: f64 = 48000.0;

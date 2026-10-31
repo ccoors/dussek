@@ -4,7 +4,7 @@
 //! clapper (one dynamic recorded), a damper (the ringer's shoulder) lifted by a held key or the
 //! pedal. Needs the exported instrument (skipped without).
 
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 
 const DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/handchimes");
 const SR: f64 = 48000.0;
@@ -24,7 +24,7 @@ fn rms(s: &[f32]) -> f64 {
 #[test]
 fn a_chime_rings_at_its_pitch_with_its_harmonics() {
     let Ok(inst) = Instrument::load(DIR) else { return };
-    assert!(inst.body() == pianoengine::mic::Body::HandChimes && !inst.motor);
+    assert!(inst.body() == dussek::mic::Body::HandChimes && !inst.motor);
     for key in [60u8, 72, 84, 96] {
         let st = &inst.notes[key as usize - 21].spec.string;
         let pitch = 440.0 * 2f64.powf((key as f64 - 69.0) / 12.0);

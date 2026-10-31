@@ -123,11 +123,11 @@ fn stamp(instruments: &Path, name: &str) -> String {
     format!("{exe}|{}|{}|{}", dir.display(), file_stamp(&dir.join("data.bin")), file_stamp(&dir.join("instrument.json")))
 }
 
-/// Where measured pianos are kept between runs: `PIANOENGINE_CACHE`, else the user's cache folder
-/// (`XDG_CACHE_HOME` or `~/.cache`), under `pianoengine/roll`.
+/// Where measured pianos are kept between runs: `DUSSEK_CACHE`, else the user's cache folder
+/// (`XDG_CACHE_HOME` or `~/.cache`), under `dussek/roll`.
 fn cache_dir() -> Option<PathBuf> {
     let env = |k: &str| std::env::var_os(k).filter(|v| !v.is_empty()).map(PathBuf::from);
-    let base = env("PIANOENGINE_CACHE").or_else(|| env("XDG_CACHE_HOME").map(|d| d.join("pianoengine"))).or_else(|| env("HOME").map(|h| h.join(".cache/pianoengine")))?;
+    let base = env("DUSSEK_CACHE").or_else(|| env("XDG_CACHE_HOME").map(|d| d.join("dussek"))).or_else(|| env("HOME").map(|h| h.join(".cache/dussek")))?;
     Some(base.join("roll"))
 }
 

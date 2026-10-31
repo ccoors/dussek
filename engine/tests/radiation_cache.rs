@@ -2,8 +2,8 @@
 //! positions and back computes each one's responses once. Needs the exported instruments.
 
 mod common;
-use pianoengine::mic::MicPosition;
-use pianoengine::{Engine, RadiationCache};
+use dussek::mic::MicPosition;
+use dussek::{Engine, RadiationCache};
 
 const DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_a");
 

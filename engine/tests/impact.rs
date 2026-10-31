@@ -2,7 +2,7 @@
 //! felt force, lowpassed, × gain × (speed / the ff anchor's)^growth, on the bridge with the
 //! strings' force, through the board and the room. The Action knock control sets it.
 
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 use std::path::{Path, PathBuf};
 
 const SR: f64 = 48000.0;

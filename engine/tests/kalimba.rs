@@ -2,7 +2,7 @@
 //! instrument's other tines ringing along (extra modes of each key, `halo`), no dampers. Needs the
 //! exported instrument (skipped without).
 
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 
 const DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/kalimba");
 const SR: f64 = 48000.0;
@@ -24,7 +24,7 @@ fn pitch(key: f64) -> f64 {
 #[test]
 fn a_tine_rings_at_equal_temperament_with_the_other_tines_along() {
     let Ok(inst) = Instrument::load(DIR) else { return };
-    assert!(inst.body() == pianoengine::mic::Body::Kalimba && !inst.motor);
+    assert!(inst.body() == dussek::mic::Body::Kalimba && !inst.motor);
     for key in [48u8, 61, 74, 90] {
         let n = &inst.notes[key as usize - 21];
         let st = &n.spec.string;

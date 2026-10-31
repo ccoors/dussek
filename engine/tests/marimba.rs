@@ -1,7 +1,7 @@
 //! The marimba (`proto/export_bars.py --profile marimba`): bars with four modes, three
 //! mallets to choose from, no dampers. Needs the exported instrument (skipped without).
 
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 
 const DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/marimba");
 const SR: f64 = 48000.0;
@@ -30,7 +30,7 @@ fn level(x: &[f32], f: f64) -> f64 {
 #[test]
 fn bars_with_mallets_and_no_dampers() {
     let Ok(inst) = Instrument::load(DIR) else { return };
-    assert!(inst.body() == pianoengine::mic::Body::Marimba && !inst.motor);
+    assert!(inst.body() == dussek::mic::Body::Marimba && !inst.motor);
     assert_eq!(inst.mallets.iter().map(|m| m.name.as_str()).collect::<Vec<_>>(), ["yarn", "cord", "rubber"]);
     // four modes, each with its onset partner (the same mode in antiphase: from zero over the contact)
     assert!(inst.notes.iter().all(|n| !n.has_damper

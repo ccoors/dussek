@@ -1,4 +1,4 @@
-//! C interface for the plugin wrapper (`plugin/pianoengine.h`).
+//! C interface for the plugin wrapper (`plugin/dussek.h`).
 //!
 //! Threading: `pe_create`/`pe_destroy` and the cache functions load and free (not
 //! real-time safe; call them from a worker thread). All other functions are real-time safe and must be called from one
@@ -211,7 +211,7 @@ impl PeCache {
 }
 
 /// The standalone's command line after its program name (`argc` strings from `argv`): `render` and
-/// midi2wav's arguments (`pianoengine render instruments/grand_a in.mid out.wav …`). Renders as
+/// midi2wav's arguments (`dussek render instruments/grand_a in.mid out.wav …`). Renders as
 /// midi2wav does and returns its exit status (2 for anything but `render`). Prints to the process's
 /// stdout and stderr; any thread, not the audio thread.
 ///
@@ -226,10 +226,10 @@ pub unsafe extern "C" fn pe_cli(argc: i32, argv: *const *const c_char) -> i32 {
         .map(|i| unsafe { CStr::from_ptr(*argv.add(i)) }.to_string_lossy().into_owned())
         .collect();
     if args.first().map(String::as_str) != Some("render") {
-        eprintln!("usage: pianoengine render INSTRUMENT IN.mid OUT.wav [options]   (pianoengine render --help)");
+        eprintln!("usage: dussek render INSTRUMENT IN.mid OUT.wav [options]   (dussek render --help)");
         return 2;
     }
-    crate::midi2wav::main(std::iter::once("pianoengine render".to_string()).chain(args.into_iter().skip(1)))
+    crate::midi2wav::main(std::iter::once("dussek render".to_string()).chain(args.into_iter().skip(1)))
 }
 
 /// At most `n` threads per build (an engine, a morph, a felt's measurement) from now on, for the
@@ -1146,7 +1146,7 @@ pub extern "C" fn pe_temperament_name(index: u32) -> *const c_char {
 }
 
 
-/// The microphone drawing for the UI (pianoengine.h)
+/// The microphone drawing for the UI (dussek.h)
 #[repr(C)]
 pub struct PeMicGeometry {
     pub body: u32,
@@ -1522,7 +1522,7 @@ pub unsafe extern "C" fn pe_telemetry_owner(base: *mut u8, size: usize) -> u32 {
     unsafe { Region::open(base, size) }.map_or(0, |r| r.owner())
 }
 
-/// A control's label in the instrument's own words (pianoengine.h).
+/// A control's label in the instrument's own words (dussek.h).
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct PeLabel {
@@ -1532,7 +1532,7 @@ pub struct PeLabel {
     pub description: [c_char; 1024],
 }
 
-/// What an instrument has (`info::Info` and its menu block; pianoengine.h).
+/// What an instrument has (`info::Info` and its menu block; dussek.h).
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct PeInstrumentInfo {
@@ -1643,7 +1643,7 @@ impl PeInstrumentInfo {
     }
 }
 
-/// What an instrument has (`info::info`, pianoengine.h), from its instrument.json alone (any
+/// What an instrument has (`info::info`, dussek.h), from its instrument.json alone (any
 /// thread). false: the file is missing or rejected, with a message in `err` (`out` untouched).
 ///
 /// # Safety
@@ -2282,7 +2282,7 @@ mod tests {
 
     #[test]
     fn telemetry_frame_matches_the_header() {
-        assert_eq!(std::mem::size_of::<telemetry::Frame>(), 44224); // plugin/src/pianoengine.h: PeTelemetryFrame
+        assert_eq!(std::mem::size_of::<telemetry::Frame>(), 44224); // plugin/src/dussek.h: PeTelemetryFrame
         assert_eq!(std::mem::size_of::<PeDiag>(), 4 * 8 + 4 + 4 + 4 + 4);
     }
 }

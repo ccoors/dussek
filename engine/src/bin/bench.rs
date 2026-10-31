@@ -13,7 +13,7 @@
 
 use std::time::Instant;
 
-use pianoengine::{Engine, Event, Instrument};
+use dussek::{Engine, Event, Instrument};
 
 /// small deterministic generator (xorshift), so every run plays the same notes
 struct Rng(u64);
@@ -149,11 +149,11 @@ struct Run {
     sym: usize,
 }
 
-fn run(inst: Instrument, sr: f64, sc: &Scenario, frames: usize, mic: pianoengine::mic::MicPosition) -> Result<Run, Box<dyn std::error::Error>> {
-    let tuning = pianoengine::Tuning { mic, ..Default::default() };
+fn run(inst: Instrument, sr: f64, sc: &Scenario, frames: usize, mic: dussek::mic::MicPosition) -> Result<Run, Box<dyn std::error::Error>> {
+    let tuning = dussek::Tuning { mic, ..Default::default() };
     let mut engine = Engine::with_tuning(inst, sr, tuning)?;
     if let Some(stops) = std::env::var("BENCH_STOPS").ok().and_then(|v| v.parse::<u32>().ok()) {
-        engine.set_params(pianoengine::Params { stops, ..engine.params() });
+        engine.set_params(dussek::Params { stops, ..engine.params() });
     }
     let mut evs = sc.events.clone();
     evs.sort_by(|a, b| a.0.total_cmp(&b.0));
@@ -181,7 +181,7 @@ fn run(inst: Instrument, sr: f64, sc: &Scenario, frames: usize, mic: pianoengine
 /// frame, and the 64-frame block times of the next 3 s with the telemetry off and on,
 /// alternating (a reader drains the region every ~10 ms, as the UI does).
 fn telemetry_bench(inst: Instrument, sr: f64, ff: f64) -> Result<(), Box<dyn std::error::Error>> {
-    use pianoengine::telemetry::{Frame, Region, region_size};
+    use dussek::telemetry::{Frame, Region, region_size};
     let mut e = Engine::new(inst, sr)?;
     e.queue(0, Event::PedalDown);
     for key in 21..=108u8 {
@@ -229,7 +229,7 @@ fn telemetry_bench(inst: Instrument, sr: f64, ff: f64) -> Result<(), Box<dyn std
 /// One run of the drag benchmark: `drag` the free pair moves 1 cm per build, else it stands; the
 /// block times (s) of a pedalled passage over `secs`, the builds handed over.
 fn drag_run(dir: &str, frames: usize, secs: f64, drag: bool) -> (Vec<f64>, usize, Vec<f64>, Vec<bool>) {
-    use pianoengine::ffi::*;
+    use dussek::ffi::*;
     use std::ffi::CString;
     use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
     use std::sync::Mutex;
@@ -342,7 +342,7 @@ fn drag_run(dir: &str, frames: usize, secs: f64, drag: bool) -> (Vec<f64>, usize
 
 /// a raw pointer passed between the benchmark's threads (each engine used by one at a time)
 #[derive(Clone, Copy)]
-struct SendPtr<T = pianoengine::ffi::PeEngine>(*mut T);
+struct SendPtr<T = dussek::ffi::PeEngine>(*mut T);
 // SAFETY: the benchmark hands each pointer from one thread to the other, never shared
 unsafe impl<T> Send for SendPtr<T> {}
 
@@ -384,7 +384,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let sr = 48000.0;
     let speed = Instrument::load(&args[1])?.velocity_speed;
     // BENCH_MIC=0/1/2: microphone position (zones from 1 on)
-    let mic = pianoengine::mic::MicPosition::from_index(std::env::var("BENCH_MIC").ok().and_then(|s| s.parse().ok()).unwrap_or(0));
+    let mic = dussek::mic::MicPosition::from_index(std::env::var("BENCH_MIC").ok().and_then(|s| s.parse().ok()).unwrap_or(0));
     if std::env::var_os("BENCH_DRAG").is_some() {
         drag_bench(&args[1], frames);
         return Ok(());

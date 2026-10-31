@@ -1,7 +1,7 @@
 //! The audio input (`Engine::process_input`, `Params::input`): a sound at the instrument drives
 //! the free strings through the sympathetic bank. Needs the exports (skipped without).
 
-use pianoengine::{Engine, Event, Instrument, Params};
+use dussek::{Engine, Event, Instrument, Params};
 
 const ROOT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/");
 const SR: f64 = 48000.0;

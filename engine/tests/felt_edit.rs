@@ -3,9 +3,9 @@
 //! at every velocity while its tone changes; Hammer hardness on a hammer piano the same way.
 mod common;
 
-use pianoengine::felt::{FeltCurve, FeltEdit, LIMITS, Quantity, apply};
-use pianoengine::instrument::LEVEL_WINDOW_S;
-use pianoengine::{Engine, Event, Instrument, Params, RadiationCache, Tuning};
+use dussek::felt::{FeltCurve, FeltEdit, LIMITS, Quantity, apply};
+use dussek::instrument::LEVEL_WINDOW_S;
+use dussek::{Engine, Event, Instrument, Params, RadiationCache, Tuning};
 
 const SR: f64 = 48000.0;
 

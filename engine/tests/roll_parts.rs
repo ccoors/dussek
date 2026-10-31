@@ -2,9 +2,9 @@
 //! by the morph's rules, the responses' fine structure mixed from other pianos above 100–200 Hz
 //! with the frame's own bass kept. Needs the exported instruments (skipped without them).
 
-use pianoengine::roll::bands;
-use pianoengine::roll::files::Export;
-use pianoengine::roll::parts::{blend_strings, fine_structure};
+use dussek::roll::bands;
+use dussek::roll::files::Export;
+use dussek::roll::parts::{blend_strings, fine_structure};
 use serde_json::Value;
 use std::path::{Path, PathBuf};
 
@@ -174,7 +174,7 @@ fn the_bass_is_in_phase() {
     let Some((a, m)) = mixed() else { return };
     let (ra, rm) = (a.responses().unwrap(), m.responses().unwrap());
     for pol in 0..2 {
-        let pick = |rs: &[pianoengine::roll::files::Response], c: usize| low(&rs.iter().find(|r| r.pol == pol && r.channel == c).unwrap().ir, 150.0);
+        let pick = |rs: &[dussek::roll::files::Response], c: usize| low(&rs.iter().find(|r| r.pol == pol && r.channel == c).unwrap().ir, 150.0);
         let (ca, cm) = (corr(&pick(&ra, 0), &pick(&ra, 1)), corr(&pick(&rm, 0), &pick(&rm, 1)));
         assert!((ca - cm).abs() <= 0.05, "pol {pol}: the bass's L–R correlation {cm:.2}, the frame's {ca:.2}");
     }

@@ -5,7 +5,7 @@
 
 use std::f64::consts::PI;
 
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 
 const ROOT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/");
 const SR: f64 = 48000.0;
@@ -333,7 +333,7 @@ fn compile_gives_the_sympathetic_partials_the_pad_loss() {
 /// its decay rate (1/s) over 0.25 … 0.75 s after an impulse, the buff switched to `on`
 /// before the impulse and to `then` after 0.25 s.
 fn bank_decay(mut inst: Instrument, key: usize, on: bool, then: bool) -> f64 {
-    use pianoengine::resonance::{Bank, KeyState};
+    use dussek::resonance::{Bank, KeyState};
     for (i, n) in inst.notes.iter_mut().enumerate() {
         let s = &mut n.phys.sym;
         let keep = i == key;
@@ -345,7 +345,7 @@ fn bank_decay(mut inst: Instrument, key: usize, on: bool, then: bool) -> f64 {
     }
     let mut bank = Bank::new(&inst, SR);
     bank.set_buff(on);
-    let mut acc = vec![[0.0f32; pianoengine::kernel::LANES]; 1];
+    let mut acc = vec![[0.0f32; dussek::kernel::LANES]; 1];
     bank.set_key(key, KeyState { driven: true, engage: 0.0 });
     bank.run(&[1.0], &mut acc);
     bank.set_key(key, KeyState { driven: false, engage: 0.0 });
@@ -353,7 +353,7 @@ fn bank_decay(mut inst: Instrument, key: usize, on: bool, then: bool) -> f64 {
     let env = |bank: &mut Bank| {
         let mut peak = 0.0f64;
         for _ in 0..n {
-            let mut a = vec![[0.0f32; pianoengine::kernel::LANES]; 1];
+            let mut a = vec![[0.0f32; dussek::kernel::LANES]; 1];
             bank.run(&[0.0], &mut a);
             peak = peak.max(a[0].iter().map(|&x| x.abs() as f64).sum::<f64>());
         }

@@ -3,7 +3,7 @@
 //! pedal down, Live re-strike on and off, at the Volume's top (+24 dB); the output finite. And the
 //! output guard clears a runaway at once. Skipped without the exports.
 
-use pianoengine::{Engine, Event, Params, Tuning};
+use dussek::{Engine, Event, Params, Tuning};
 
 mod common;
 use common::par;

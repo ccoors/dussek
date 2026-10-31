@@ -2,7 +2,7 @@
 //! as if nothing happened; with another tuning or microphone setup it plays on without
 //! a gap. Needs the exported instruments (skipped without them).
 
-use pianoengine::{Engine, Event, Instrument, Tuning};
+use dussek::{Engine, Event, Instrument, Tuning};
 
 mod common;
 
@@ -52,9 +52,9 @@ fn same_tuning_continues_exactly() {
 #[test]
 fn new_tuning_and_mic_have_no_gap() {
     let mut other = Tuning { pitch_ratio: 446.0 / 440.0, ..Tuning::default() };
-    other.mic = pianoengine::mic::MicPosition::Audience;
+    other.mic = dussek::mic::MicPosition::Audience;
     let mut custom = other;
-    custom.mic = pianoengine::mic::MicPosition::Custom;
+    custom.mic = dussek::mic::MicPosition::Custom;
     custom.mic_setup.mics[0].pos = [-3.0, -2.0, 1.0];
     let soft = Tuning { pillow: 0.7, lid: 0.3, ..other };
     // the pillow target is legitimately much quieter (about -16 dB at 0.7 with the lid at 0.3;
@@ -83,10 +83,10 @@ fn a_moved_pair_sounds_as_if_it_had_always_been_there() {
     // the same strings at another position (the Player's, its bridge zones): the new responses
     // take the old ones' input history, so after the short crossfade the output is the engine's
     // that played there all along, the strings' ring and the room's included
-    let at_player = Tuning { mic: pianoengine::mic::MicPosition::Player, ..Tuning::default() };
+    let at_player = Tuning { mic: dussek::mic::MicPosition::Player, ..Tuning::default() };
     let mut moved = at_player;
-    moved.mic = pianoengine::mic::MicPosition::Custom;
-    moved.mic_setup = at_player.mics_for(pianoengine::mic::Body::Grand).unwrap();
+    moved.mic = dussek::mic::MicPosition::Custom;
+    moved.mic_setup = at_player.mics_for(dussek::mic::Body::Grand).unwrap();
     moved.mic_setup.mics[0].pos[0] += 0.3;
     moved.mic_setup.mics[1].pos[0] += 0.3;
     let (Some(mut a), Some(mut c)) = (engine(at_player), engine(moved)) else { return };
@@ -108,10 +108,10 @@ fn upright(t: Tuning) -> Option<Engine> {
 #[test]
 fn upright_and_grand_bodies_from_the_export() {
     if let Ok(i) = Instrument::load(KNIGHT) {
-        assert_eq!(i.body(), pianoengine::mic::Body::Upright);
+        assert_eq!(i.body(), dussek::mic::Body::Upright);
     }
     if let Ok(i) = Instrument::load(DIR) {
-        assert_eq!(i.body(), pianoengine::mic::Body::Grand);
+        assert_eq!(i.body(), dussek::mic::Body::Grand);
     }
 }
 
@@ -123,10 +123,10 @@ fn upright_positions_change_the_sound_and_recording_does_not() {
         play(&mut e);
         Some(render(e, n, n, None))
     };
-    let Some(rec) = out(pianoengine::mic::MicPosition::Recording) else { return };
-    let Some(rec2) = out(pianoengine::mic::MicPosition::Recording) else { return };
+    let Some(rec) = out(dussek::mic::MicPosition::Recording) else { return };
+    let Some(rec2) = out(dussek::mic::MicPosition::Recording) else { return };
     assert_eq!(rec, rec2, "Recording must stay the fitted sound, deterministically");
-    for mic in [1, 2, 3, 4].map(pianoengine::mic::MicPosition::from_index) {
+    for mic in [1, 2, 3, 4].map(dussek::mic::MicPosition::from_index) {
         let o = out(mic).unwrap();
         let diff: f32 = o.iter().zip(&rec).map(|(a, b)| (a - b).powi(2)).sum();
         let e: f32 = rec.iter().map(|a| a * a).sum();
@@ -136,7 +136,7 @@ fn upright_positions_change_the_sound_and_recording_does_not() {
 
 #[test]
 fn upright_positions_switch_without_gap() {
-    use pianoengine::mic::MicPosition::*;
+    use dussek::mic::MicPosition::*;
     // positions differ in level (close 1 is ~4 dB below close 2 in the left channel),
     // so each window after the switch is compared with both positions played alone
     let rms = |s: &[f32]| (s.iter().map(|x| x * x).sum::<f32>() / s.len() as f32).sqrt();
@@ -166,11 +166,11 @@ fn export_without_body_is_a_grand() {
     let Ok(json) = std::fs::read_to_string(format!("{DIR}/instrument.json")) else { return };
     let mut v: serde_json::Value = serde_json::from_str(&json).unwrap();
     v.as_object_mut().unwrap().remove("body");
-    let dir = std::env::temp_dir().join(format!("pianoengine-nobody-{}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("dussek-nobody-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
     std::fs::write(dir.join("instrument.json"), v.to_string()).unwrap();
     std::fs::copy(format!("{DIR}/data.bin"), dir.join("data.bin")).unwrap();
     let body = Instrument::load(&dir).map(|i| i.body());
     std::fs::remove_dir_all(&dir).unwrap();
-    assert_eq!(body.unwrap(), pianoengine::mic::Body::Grand);
+    assert_eq!(body.unwrap(), dussek::mic::Body::Grand);
 }

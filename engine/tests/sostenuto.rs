@@ -1,7 +1,7 @@
 //! The sostenuto pedal holds up the dampers that are lifted when it goes down, and only
 //! those, until it is up again. Needs the exported instruments (skipped without them).
 
-use pianoengine::{Engine, Event, Instrument, Tuning};
+use dussek::{Engine, Event, Instrument, Tuning};
 
 const DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_a");
 const SR: f64 = 32000.0;

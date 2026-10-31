@@ -3,7 +3,7 @@
 //! every block). The contact must stay finite at the extremes of both settings. Needs the
 //! exported instruments (skipped without them).
 
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 
 const DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_a");
 

@@ -1,7 +1,7 @@
 //! Panic (`Engine::silence`): everything stops within the fade, nothing comes back, and the
 //! next notes play as from a fresh engine. Needs the exports (skipped without).
 
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 
 const ROOT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/");
 const SR: f64 = 48000.0;
@@ -41,7 +41,7 @@ fn panic_stops_everything_within_the_fade() {
         assert!(loud > 1e-3, "{name}: the chord sounds");
         e.silence();
         let after = render(&mut e, 96000);
-        let fade = (pianoengine::SILENCE_S * SR) as usize;
+        let fade = (dussek::SILENCE_S * SR) as usize;
         // within the fade it falls (no jump up), after it nothing at all, for 2 s
         assert!(after[..fade].iter().all(|&v| v <= 1.05 * loud), "{name}");
         let rest = after[fade + 256..].iter().fold(0.0f32, |m, &v| m.max(v));

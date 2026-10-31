@@ -1,7 +1,7 @@
 //! The velocity curve against a file whose notes all sit near one velocity: a steep curve over
 //! that range spreads their loudness (the editor's fix for a file that plays too evenly).
-use pianoengine::velocity::VelocityCurve;
-use pianoengine::{Engine, Event, Instrument};
+use dussek::velocity::VelocityCurve;
+use dussek::{Engine, Event, Instrument};
 
 const SR: f64 = 48000.0;
 

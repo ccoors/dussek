@@ -8,8 +8,8 @@
 //!
 //! Prints "warning: <what>" per statistic the realism check still names (build.py shows those).
 
-use pianoengine::roll::generate::{generate, write_export};
-use pianoengine::roll::recipe::Recipe;
+use dussek::roll::generate::{generate, write_export};
+use dussek::roll::recipe::Recipe;
 use std::path::PathBuf;
 
 fn main() {

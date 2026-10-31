@@ -1,10 +1,10 @@
 //! Free microphones: a custom copy of a preset renders exactly like the preset; switching
 //! to a custom pair mid-note has no gap. Needs the exported instruments (skipped without).
 
-use pianoengine::mic::{Body, MicPosition};
+use dussek::mic::{Body, MicPosition};
 
 mod common;
-use pianoengine::{Event, Tuning};
+use dussek::{Event, Tuning};
 
 const DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_a");
 const SR: f64 = 48000.0;
@@ -37,7 +37,7 @@ fn a_custom_copy_of_a_preset_is_the_preset() {
 
 #[test]
 fn a_cardioid_pair_pointing_away_is_quiet_and_finite() {
-    use pianoengine::mic::{Mic, MicSetup};
+    use dussek::mic::{Mic, MicSetup};
     let pair = |extra_yaw: f64| {
         let m = |x: f64| {
             let b = Mic::toward_board([x, -1.25, 0.45]);

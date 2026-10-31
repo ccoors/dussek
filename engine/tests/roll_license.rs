@@ -1,8 +1,8 @@
 //! A rolled piano's LICENSE.md: its sources' licenses under their names, and its own: CC BY 4.0, or
 //! CC BY-SA 4.0 when any source is ShareAlike (an adaptation keeps that license).
 
-use pianoengine::roll::generate::license;
-use pianoengine::roll::recipe::Recipe;
+use dussek::roll::generate::license;
+use dussek::roll::recipe::Recipe;
 use std::path::PathBuf;
 
 const FIXTURE: &str = include_str!("fixtures/rolled/project.toml");

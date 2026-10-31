@@ -3,7 +3,7 @@
 //! attack, a bolt lowers and detunes the partials by where it sits, paper buzzes), and the
 //! settings that do nothing change nothing. Needs the exported instruments (skipped without).
 
-use pianoengine::{Engine, Event, Instrument, Params, Prep, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Prep, Tuning};
 
 const ROOT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/");
 const SR: f64 = 32000.0;

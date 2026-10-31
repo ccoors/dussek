@@ -1,7 +1,7 @@
 //! A note's level correction (`level_db`, per mallet [pp, mf, ff] dB): a gain on each strike,
 //! interpolated in log₂ speed between the anchor speeds, scaling the strike's new modes only.
-use pianoengine::engine::level_gain;
-use pianoengine::{Engine, Event, Instrument};
+use dussek::engine::level_gain;
+use dussek::{Engine, Event, Instrument};
 use std::path::{Path, PathBuf};
 
 const ROOT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/");

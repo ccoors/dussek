@@ -1,7 +1,7 @@
 //! The strings set ringing as the pedal lifts their dampers (`Voice::kick`, `proto/pedal.py`).
 //! Needs the exports (skipped without).
 
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 
 const ROOT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/");
 const SR: f64 = 48000.0;

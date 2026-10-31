@@ -3,7 +3,7 @@
 use std::f64::consts::PI;
 use std::path::{Path, PathBuf};
 
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 
 const ROOT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_a");
 const SR: f64 = 48000.0;
@@ -23,7 +23,7 @@ fn c2_dir(tag: &str, core: bool) -> Option<PathBuf> {
         e.remove("core_K");
         e.remove("core_depth");
     }
-    let dir = std::env::temp_dir().join(format!("pianoengine-felt-core-{tag}-{}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("dussek-felt-core-{tag}-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).ok()?;
     for e in std::fs::read_dir(ROOT).ok()?.flatten() {

@@ -4,7 +4,7 @@
 
 mod common;
 
-use pianoengine::{Engine, Event, Params, Tuning, Wear};
+use dussek::{Engine, Event, Params, Tuning, Wear};
 
 const DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_a");
 

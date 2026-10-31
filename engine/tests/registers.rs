@@ -2,7 +2,7 @@
 //! stops. Fixture: instruments/registers_fixture (Salamander twice, export.py --add-register
 //! grand_a --octave 0): two identical registers. Skipped without the exports.
 
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 
 const ROOT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/");
 const SR: f64 = 48000.0;
@@ -139,7 +139,7 @@ fn a_rebuild_takes_over_both_registers() {
 #[test]
 fn registers_draw_their_own_wear() {
     let Some(mut inst) = load("registers_fixture") else { return };
-    let worn = Tuning { wear: pianoengine::physics::Wear { tuning: 1.0, seed: 7, ..Default::default() }, ..Tuning::default() };
+    let worn = Tuning { wear: dussek::physics::Wear { tuning: 1.0, seed: 7, ..Default::default() }, ..Tuning::default() };
     inst.compile(SR, worn);
     // a worn instrument's registers drift apart (they beat), each by its own draw
     let differ = (0..88).filter(|&k| inst.notes[k].w != inst.notes[88 + k].w).count();
@@ -171,9 +171,9 @@ fn a_register_plays_on_the_stop_it_names() {
     assert_eq!(second, play(&mut plain, 2, &CHORD, 24000));
     // the 4′'s stop plays nothing here
     assert!(play(&mut named(), 2, &CHORD, 24000).iter().all(|v| *v == 0.0));
-    let report = pianoengine::info::info(&dir).unwrap();
+    let report = dussek::info::info(&dir).unwrap();
     assert_eq!((report.registers, report.stops), (2, 0b101));
-    assert_eq!(pianoengine::info::info(format!("{ROOT}registers_fixture")).unwrap().stops, 0b11);
+    assert_eq!(dussek::info::info(format!("{ROOT}registers_fixture")).unwrap().stops, 0b11);
     std::fs::remove_dir_all(&dir).ok();
 }
 

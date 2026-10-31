@@ -1,8 +1,8 @@
 //! The bridge's mobility along the keyboard (`physics::Mobility`): a factor per key on the
 //! vertical polarization's coupling below 500 Hz; the sympathetic strings follow, the horizontal
 //! polarization does not (design 2026-10-20-bridge-mobility).
-use pianoengine::physics::Mobility;
-use pianoengine::{Instrument, Tuning};
+use dussek::physics::Mobility;
+use dussek::{Instrument, Tuning};
 
 const ROOT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/");
 const SR: f64 = 48000.0;

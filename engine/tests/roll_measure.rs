@@ -3,8 +3,8 @@
 //! roll's own faults (the bass out of phase, the microphones' colors apart) are named. Needs the
 //! exported instruments (skipped without them).
 
-use pianoengine::roll::files::Export;
-use pianoengine::roll::measure::{self, Realism};
+use dussek::roll::files::Export;
+use dussek::roll::measure::{self, Realism};
 use std::path::Path;
 use std::sync::OnceLock;
 
@@ -51,7 +51,7 @@ fn a_long_ring_fails() {
 fn dull_bass_notes_fail() {
     let (Some(r), Some(mut a)) = (realism(), load("grand_a")) else { return };
     let mut c = a.f64s("/correction/C_db").unwrap();
-    let grid = pianoengine::roll::bands::grid();
+    let grid = dussek::roll::bands::grid();
     for row in 0..5 {
         // the bass's five notes (21 … 45): −60 dB above 1 kHz (−20 dB: inside the range since the
         // uprights' rooms were cut, design log step 123; −30 dB since Grand A's felt got its core, its
@@ -85,7 +85,7 @@ fn out_of_phase_bass_is_a_fault() {
             let sign = if (i + r.channel) % 2 == 0 { 1.0 } else { -1.0 };
             mix.iter_mut().zip(x).for_each(|(m, v)| *m += sign * v / norm);
         }
-        let y = pianoengine::roll::bands::recolor(&mix, &r.ir, 48000.0);
+        let y = dussek::roll::bands::recolor(&mix, &r.ir, 48000.0);
         let k = (r.ir.iter().map(|v| v * v).sum::<f64>() / y.iter().map(|v| v * v).sum::<f64>()).sqrt();
         e.set_response(r.pol, r.channel, &y.iter().map(|v| v * k).collect::<Vec<_>>()).unwrap();
     }
@@ -114,7 +114,7 @@ fn player_matches_recording_on_the_references() {
 #[test]
 fn measuring_from_renders_is_measuring() {
     // a roll measures from the renders its calibrations already made: the same numbers
-    use pianoengine::mic::MicPosition;
+    use dussek::mic::MicPosition;
     let Some(e) = load("grand_c") else { return };
     let inst = e.instrument().unwrap();
     let rec = measure::render_notes(&inst, 80.0, MicPosition::Recording).unwrap();
@@ -130,7 +130,7 @@ fn measuring_from_renders_is_measuring() {
 fn a_fundamental_in_a_notch_is_a_fault() {
     // a key's fundamental deep in a notch of the radiation (Grand F's D#7 once lay 31 dB under the
     // response around it: its second partial took over); the references keep theirs above -15 dB
-    use pianoengine::roll::bands;
+    use dussek::roll::bands;
     let Some(e) = load("grand_c") else { return };
     assert!(measure::faults(&e).unwrap().iter().all(|f| !f.contains("notch")), "{:?}", measure::faults(&e).unwrap());
     let key = 60usize;

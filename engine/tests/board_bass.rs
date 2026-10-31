@@ -3,9 +3,9 @@
 //! stays; the extremes stay finite and die away.
 mod common;
 
-use pianoengine::board_bass::shape;
-use pianoengine::mic::MicPosition;
-use pianoengine::{Engine, Event, Instrument, Params, RadiationCache, Tuning};
+use dussek::board_bass::shape;
+use dussek::mic::MicPosition;
+use dussek::{Engine, Event, Instrument, Params, RadiationCache, Tuning};
 use realfft::RealFftPlanner;
 
 const SR: f64 = 48000.0;

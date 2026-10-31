@@ -2,9 +2,9 @@
 //! a render with the control changed equals the one without, bit for bit. The phrase is
 //! loud, pedalled, struck again and released so that every control acts on a piano (the pianos'
 //! set must be empty, which checks the phrase). Skipped without the exports.
-//! The report (`pianoengine::info`) must name exactly the measured sets, for every exported instrument.
+//! The report (`dussek::info`) must name exactly the measured sets, for every exported instrument.
 
-use pianoengine::{Engine, Event, Instrument, Params, Prep, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Prep, Tuning};
 
 mod common;
 use common::par;
@@ -169,14 +169,14 @@ fn acting(a: impl Fn(&str) -> Option<Vec<f32>> + Sync, b: impl Fn(&str) -> Optio
     }).collect()
 }
 
-fn report(name: &str) -> Option<pianoengine::info::Info> {
-    pianoengine::info::info(format!("{ROOT}{name}")).ok()
+fn report(name: &str) -> Option<dussek::info::Info> {
+    dussek::info::info(format!("{ROOT}{name}")).ok()
 }
 
 #[test]
 fn the_controls_list_is_the_reports() {
     let names: Vec<&str> = CONTROLS.iter().map(|(n, _)| *n).collect();
-    let report: Vec<&str> = pianoengine::info::CONTROLS.iter().map(|(_, s)| *s).collect();
+    let report: Vec<&str> = dussek::info::CONTROLS.iter().map(|(_, s)| *s).collect();
     assert_eq!(names, report);
 }
 
@@ -274,9 +274,9 @@ fn the_report_says_where_the_motor_acts() {
 /// with a range of their own: the bars, the harps, the guitars, the zithers).
 #[test]
 fn the_report_says_where_spreading_the_keys_acts() {
-    let at: Change = |_, t| t.mic = pianoengine::mic::MicPosition::Hammers;
+    let at: Change = |_, t| t.mic = dussek::mic::MicPosition::Hammers;
     let spread: Change = |_, t| {
-        t.mic = pianoengine::mic::MicPosition::Hammers;
+        t.mic = dussek::mic::MicPosition::Hammers;
         t.spread_keys = true;
     };
     let mut wrong = Vec::new();

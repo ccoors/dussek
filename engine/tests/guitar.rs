@@ -2,7 +2,7 @@
 //! position, its top's main mode measured (`proto/fit_body_modes.py`). Needs the export
 //! (skipped without).
 
-use pianoengine::{Engine, Event, Instrument, Params, Tuning};
+use dussek::{Engine, Event, Instrument, Params, Tuning};
 
 const DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/guitar");
 const SR: f64 = 48000.0;
@@ -37,7 +37,7 @@ fn level_at(x: &[f32], f: f64, t0: f64) -> f64 {
 #[test]
 fn the_top_mode_takes_the_notes_near_it() {
     let Ok(inst) = Instrument::load(DIR) else { return };
-    assert!(inst.body() == pianoengine::mic::Body::Guitar);
+    assert!(inst.body() == dussek::mic::Body::Guitar);
     let b = &inst.globals.board;
     assert!(b.measured_from < b.f.len() && b.h_share > 0.0, "a measured mode and its horizontal share");
     let mode = b.f[b.measured_from];

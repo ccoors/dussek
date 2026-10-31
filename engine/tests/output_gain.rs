@@ -2,7 +2,7 @@
 //! (Grand G, two soft layers ~5 dB apart) calibrated on its ff played every mf as loud as
 //! the other pianos' ff. Needs the exported instruments (skipped without them).
 
-use pianoengine::{Engine, Event, Instrument, Tuning};
+use dussek::{Engine, Event, Instrument, Tuning};
 
 const DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_a");
 

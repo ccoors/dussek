@@ -15,7 +15,7 @@
 
 use std::time::Instant;
 
-use pianoengine::{Engine, Event, Instrument, Tuning};
+use dussek::{Engine, Event, Instrument, Tuning};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -51,7 +51,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if !(4..=5).contains(&args.len()) {
         return Err("usage: render <instrument dir> <events.json> <out.wav> [sample rate] [--morph DIR=W …]".into());
     }
-    let sides = pianoengine::spec::morph_sides(&args[1], &morph)?;
+    let sides = dussek::spec::morph_sides(&args[1], &morph)?;
     let t0 = Instant::now();
     let inst = Instrument::morph(&sides)?;
     let load = t0.elapsed();
@@ -60,18 +60,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some(s) => s.parse()?,
         None => evs.sr,
     };
-    let base = pianoengine::spec::tuning(inst.tuning, &std::env::var("RENDER_TUNING").unwrap_or_default())?;
+    let base = dussek::spec::tuning(inst.tuning, &std::env::var("RENDER_TUNING").unwrap_or_default())?;
     let mut engine = Engine::with_tuning(inst, sr, base)?;
     if let Some(stops) = std::env::var("RENDER_STOPS").ok().and_then(|v| v.parse::<u32>().ok()) {
-        engine.set_params(pianoengine::Params { stops, ..engine.params() });
+        engine.set_params(dussek::Params { stops, ..engine.params() });
     }
     if let Ok(spec) = std::env::var("RENDER_PARAMS") {
-        engine.set_params(pianoengine::spec::params(engine.params(), &spec)?);
+        engine.set_params(dussek::spec::params(engine.params(), &spec)?);
     }
     let mut switches: Vec<(usize, Tuning)> = Vec::new();
     for sw in std::env::var("RENDER_SWITCH").unwrap_or_default().split(';').filter(|s| !s.is_empty()) {
         let (t, spec) = sw.split_once(':').ok_or(format!("bad switch {sw}"))?;
-        switches.push(((t.parse::<f64>()? * sr) as usize, pianoengine::spec::tuning(base, spec)?));
+        switches.push(((t.parse::<f64>()? * sr) as usize, dussek::spec::tuning(base, spec)?));
     }
 
     // sample positions as the prototype computes them; at equal positions: pedal and

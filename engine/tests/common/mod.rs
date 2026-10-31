@@ -4,7 +4,7 @@
 //! ~20 ms), and a map over every core for independent renders.
 #![allow(dead_code)]
 
-use pianoengine::{Engine, Instrument, RadiationCache, Tuning};
+use dussek::{Engine, Instrument, RadiationCache, Tuning};
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Mutex, OnceLock};

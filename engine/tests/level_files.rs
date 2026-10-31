@@ -6,8 +6,8 @@
 mod common;
 use std::path::{Path, PathBuf};
 
-use pianoengine::Instrument;
-use pianoengine::instrument::stored_level;
+use dussek::Instrument;
+use dussek::instrument::stored_level;
 
 const ROOT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments");
 
