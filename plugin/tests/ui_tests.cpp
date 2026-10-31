@@ -36,6 +36,7 @@
 #include "WorkerPriority.hpp"
 #include "dussek.h"
 #include "DistrhoPluginInfo.h"
+#include "StateVersion.hpp"
 
 #include <algorithm>
 #include <filesystem>
@@ -339,6 +340,37 @@ bool readLock(const std::string& path, std::vector<LockRow>& out)
     return true;
 }
 } // namespace
+
+TEST(the_state_carries_its_version)
+{
+    CHECK(pe::kStateVersion == 1);
+    CHECK(std::string(pe::kStateVersionKey) == "state_version");
+    CHECK(pe::parseStateVersion(nullptr) == 1 && pe::parseStateVersion("") == 1 && pe::parseStateVersion("x") == 1);
+    CHECK(pe::parseStateVersion("1") == 1 && pe::parseStateVersion("7") == 7); // newer: read as far as understood
+    CHECK(pe::migrateState(1, "instrument", "grand_a") == "grand_a");
+    for (const char* k : { "state_version", "ui", "instrument", "velocity_curve", "morph", "felt", "scale_file" })
+        CHECK(pe::stateKnown(k));
+    CHECK(!pe::stateKnown("nonsense"));
+    // a migration leaves a value already in today's form as it is: a version left over from an
+    // older restore never harms a live change
+    for (uint32_t from = 0; from <= pe::kStateVersion; ++from)
+        for (const char* k : { "ui", "instrument", "velocity_curve", "morph", "felt", "scale_file" })
+            CHECK(pe::migrateState(from, k, "grand_a") == pe::migrateState(pe::kStateVersion, k, "grand_a"));
+    // the keys in either order give the same values
+    const std::vector<std::pair<std::string, std::string>> keys
+        = { { "felt", "s:21=6" }, { "instrument", "grand_b" }, { "state_version", "1" } };
+    std::vector<std::string> forward, backward;
+    pe::StateRestore a, b;
+    for (const auto& [k, v] : keys)
+        forward.push_back(a.apply(k, v));
+    for (auto it = keys.rbegin(); it != keys.rend(); ++it)
+        backward.insert(backward.begin(), b.apply(it->first, it->second));
+    CHECK(forward == backward && forward[0] == "s:21=6" && forward[1] == "grand_b");
+    CHECK(a.version() == 1 && b.version() == 1);
+    pe::StateRestore c;
+    c.apply("state_version", "7");
+    CHECK(c.version() == 7 && c.apply("instrument", "grand_a") == "grand_a");
+}
 
 TEST(the_parameter_table_only_grows)
 {

@@ -35,6 +35,7 @@
 #include "PedalMixer.hpp"
 #include "CurveSlot.hpp"
 #include "SharedRegion.hpp"
+#include "StateVersion.hpp"
 #include "TuningWatch.hpp"
 #include "UiState.hpp"
 #include "dussek.h"
@@ -63,7 +64,7 @@ class PianoPlugin : public Plugin
 {
 public:
     PianoPlugin()
-        : Plugin(kTotalParams, (uint32_t)shippedFullPresets().size(), 6)
+        : Plugin(kTotalParams, (uint32_t)shippedFullPresets().size(), 7)
     {
         for (uint32_t i = 0; i < kParamCount; ++i)
             fValues[i] = paramInfo(i).def;
@@ -211,6 +212,15 @@ protected:
 
     void initState(uint32_t index, State& s) override
     {
+        // the state's version first: DPF restores in this order (LV2 by index, VST3 and CLAP as
+        // getState wrote them), so the others are migrated from it (StateVersion.hpp)
+        if (index == 0) {
+            s.key = kStateVersionKey;
+            s.defaultValue = String(kStateVersion);
+            s.hints = 0;
+            return;
+        }
+        --index;
         if (index == 0) {
             s.key = "ui";
             s.defaultValue = formatUiState(UiState {}).c_str();
@@ -244,6 +254,8 @@ protected:
     }
     String getState(const char* key) const override
     {
+        if (std::strcmp(key, kStateVersionKey) == 0)
+            return String(kStateVersion);
         if (std::strcmp(key, "instrument") == 0) {
             std::lock_guard<std::mutex> lock(fInstrumentMutex);
             return String(fInstrument.c_str());
@@ -269,6 +281,11 @@ protected:
     }
     void setState(const char* key, const char* value) override
     {
+        // an older state's value in today's form (the version came first: initState)
+        const std::string migrated = fRestore.apply(key, value != nullptr ? value : "");
+        if (std::strcmp(key, kStateVersionKey) == 0)
+            return;
+        value = migrated.c_str();
         if (std::strcmp(key, "instrument") == 0) {
             {
                 std::lock_guard<std::mutex> lock(fInstrumentMutex);
@@ -850,6 +867,7 @@ private:
     mutable std::mutex fCurveMutex;
     std::string fCurveText; // the "velocity_curve" state, as set
     CurveSlot fCurveSlot;   // its curve, for the audio thread
+    StateRestore fRestore;   // the restored state's version (StateVersion.hpp)
     std::string fInstrument; // the "instrument" state: an id (empty: the menu's first, until the worker resolves it)
     std::string fMorph;      // the "morph" state: the partners' ids, comma-separated (under fInstrumentMutex)
     std::string fScaleFile;  // the "scale_file" state: a Scala file's path (under fInstrumentMutex)
