@@ -2885,3 +2885,34 @@ Step 201's review left three gaps, closed here:
 - With `data/` not mounted, every project built here was passed over and `just check` exited 0. Such
   a project is now named ("built here, but its recordings are not in data/"), and the check fails
   when it leaves nothing checked.
+
+<a id="step-203"></a>
+## 203. CI on three platforms; the plugin ported to macOS and Windows
+
+The repository's CI (GitHub Actions) builds on every push and pull request:
+
+- **Linux** (Ubuntu 24.04): the engine, the plugin and the editor; the plugin's UI tests (with a
+  comma-decimal locale), the prototype's and the editor's suites, `just check`. The engine's suite
+  (565 tests, 6 min on every core of a desktop) runs nightly and by hand (`engine-tests.yml`).
+- **macOS** (arm64, macOS 13.3 and up) and **Windows** (MinGW-w64, for DPF's WASAPI fallback in the
+  standalone): the plugin and its UI tests.
+
+A fresh clone holds no datasets and no caches but the lent ones (step 201). 44 prototype tests read
+a project's analysis cache or a set directly; a test that dies on a missing file under `data/`, or
+on a cache of a project whose recordings are not here either, is now skipped and names what it
+needs (`proto/tests/conftest.py`; with every set here the suite is as before, 478 passed). The
+editor's two corpus tests check their recorded floor of hits only with every set present.
+
+The port, all behind the same code on Linux (its UI tests unchanged, 266):
+
+- The user folders come from one function per platform (`plugin/src/Paths.cpp`): Linux's as
+  before, a relative `XDG_*` ignored as the XDG spec says; macOS's Application Support; Windows'
+  `%APPDATA%`.
+- Folder scans, file stamps, folder making and replacing a saved file go through `std::filesystem`
+  (`std::rename` does not replace an existing file on Windows: a second save of a preset failed).
+- `std::from_chars` for floats is missing from macOS's libc++: `pe::parseFloat` reads a number's
+  extent first and parses only that (libc++'s stream took the letters of a hex float, "1.5x").
+- The telemetry region is a named file mapping on Windows, freed with its last handle; the
+  stale-region sweep and its tests stay Linux's.
+- An instrument opened from a folder accepts Windows' absolute paths ("C:\…", "D:/…").
+- On Windows the plugin links the system libraries Rust's standard library needs.
