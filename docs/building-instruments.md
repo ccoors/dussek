@@ -34,8 +34,8 @@ What `project.toml` holds:
   its own labels for controls whose generic words do not fit, its mallets' display names,
   `reversed_keys` for a keyboard with dark naturals and light sharps (the harpsichords), and
   `hidden` for a test fixture.
-- **The recordings' credit** (`[license]`): `set`, `author`, `url`, `terms` (quoted where the
-  source words them) and `source_license` (`CC0`, `public-domain`, `free-use`, `CC-BY-4.0` or
+- **The recordings' credit** (`[license]`): `set`, `author`, `url` (left out for recordings not
+  published), `terms` (quoted where the source words them) and `source_license` (`CC0`, `public-domain`, `free-use`, `CC-BY-4.0` or
   `CC-BY-SA-4.0`); `by` names who made the instrument when it is not this repository's author.
   `proto/license.py` writes `instruments/<project>/LICENSE.md` from it and from
   the blocks of every project reached through `[uses]`: the instrument is CC BY 4.0, or CC BY-SA
@@ -322,6 +322,7 @@ change against.
 | `analyze.py` | partial frequencies, inharmonicity, decays and tuning per take, with a confidence per measurement |
 | `modes.py` | a bar's, tube's or tine's modes by peak picking, their decays, the strike and the buzz |
 | `split_runs.py` | the Iowa runs cut into one file per note |
+| `split_session.py` | a recording session's passes (`recording-a-piano.md`) cut into one file per strike, the takes checked and ranked, the set's SFZ |
 | `body_decay.py` | the decay between the partials: soundboard and room |
 | `attack_noise.py` | the attack transient (hammer and action noise) per band |
 | `release_noise.py`, `pedal_noise.py` | from a set's release and pedal samples (Salamander's; the harpsichords' own release samples, their notes' partials taken out): the release noise, the pedal's thump and ring |

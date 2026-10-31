@@ -92,6 +92,21 @@ top), a few keys more are welcome if time allows:
 
 ## Afterwards
 
-The files as recorded, with this sheet (or a photo of it). A splitter (not written yet: once the
-recording is there) cuts each pass at the notes' onsets and names the takes after the table; the two
-strikes of each dynamic are compared by level and the more even one kept.
+The files as recorded, with this sheet (or a photo of it). `analysis/split_session.py` cuts each pass
+at its strikes and names the takes after the table (`<key>_<dynamic>_<take>.wav`); a take stopped
+early (a mis-strike, replayed), a wrong note, a key touched rather than struck and a clipped take
+(where the key has another) go to `discarded/`, each with its reason in the pass's JSON. The two
+strikes of each dynamic are ranked by how near their level lies to the neighboring keys' and the more
+even one is played. The releases pass gives each take from its damper's fall; the keys around the
+breaks, played at various velocities, take the dynamic their level is nearest. Then one SFZ file over
+all of it is the set's map, its release regions the dampers' and the release noise's source:
+
+```sh
+R=<the recordings>; D=data/<set>
+python3 analysis/split_session.py $R/pp.wav $D --dynamic pp      # likewise mf, ff
+python3 analysis/split_session.py $R/releases.wav $D --dynamic mf --releases --damped-to 88
+python3 analysis/split_session.py $R/breaks.wav $D --dynamic auto --keys 50,88,89
+python3 analysis/split_session.py --sfz $D --name <set>.sfz
+```
+
+Upright D was recorded so (design log step 204).
