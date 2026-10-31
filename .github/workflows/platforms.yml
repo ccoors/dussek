@@ -45,13 +45,13 @@ jobs:
         run: |
           plugin/tools/package.sh macos
           tar -C dist -czf dist/dussek-macos.tar.gz dussek-macos   # tar keeps the executables' mode
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: github.event_name != 'pull_request'
         with:
-          name: dussek-macos
+          name: dussek-macos.tar.gz
           path: dist/dussek-macos.tar.gz
+          archive: false   # the tarball itself, not a zip around it
           retention-days: 3
-          compression-level: 0
 
   windows:
     runs-on: windows-2025
@@ -106,7 +106,7 @@ jobs:
       - name: Package
         if: github.event_name != 'pull_request'
         run: plugin/tools/package.sh windows
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: github.event_name != 'pull_request'
         with:
           name: dussek-windows

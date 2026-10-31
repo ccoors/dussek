@@ -61,13 +61,13 @@ jobs:
         run: |
           plugin/tools/package.sh linux
           tar -C dist -czf dist/dussek-linux.tar.gz dussek-linux   # tar keeps the executables' mode
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: github.event_name != 'pull_request'
         with:
-          name: dussek-linux
+          name: dussek-linux.tar.gz
           path: dist/dussek-linux.tar.gz
+          archive: false   # the tarball itself, not a zip around it
           retention-days: 3
-          compression-level: 0
       - name: The prototype's suite
         run: just test-proto
       - name: The editor's suite
