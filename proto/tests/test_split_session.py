@@ -118,3 +118,20 @@ def test_a_strike_is_placed_at_its_hammer_not_where_the_smoothed_level_peaks():
     assert len(strikes) == 1
     hammer = int(1.0 * SR) + len(thump) + int(0.11 * SR)
     assert abs(strikes[0]["at"] - hammer) < 0.006 * SR, (strikes[0]["at"] - hammer) / SR
+
+
+def test_a_pedal_pass_tells_down_from_up_by_the_strings_ring():
+    # pedal down: a thump, then the strings ring (110 Hz); pedal up: a thump, the ring stops
+    t = np.arange(int(8.0 * SR)) / SR
+    ring = 10 ** (-45 / 20) * np.sin(2 * np.pi * 110 * t)
+    thump = lambda: 10 ** (-30 / 20) * np.random.default_rng(3).standard_normal(int(0.02 * SR))  # noqa: E731
+    down = thump()
+    x = np.zeros(int(16.0 * SR))
+    a, b = int(2.0 * SR), int(9.0 * SR)
+    x[a:a + len(down)] += down
+    x[a:b] += ring[:b - a]                       # the strings ring from the pedal-down to the pedal-up
+    x[b:b + len(down)] += thump()
+    x += 10 ** (-85 / 20) * np.random.default_rng(4).standard_normal(len(x))
+    ev = SS.split_pedal(np.stack([x, x], axis=1), SR)
+    assert [(e["kind"], e["why"]) for e in ev] == [("down", []), ("up", [])], ev
+    assert abs(ev[0]["start"] - a) < 0.01 * SR and abs(ev[1]["start"] - b) < 0.01 * SR

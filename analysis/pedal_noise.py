@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Sustain-pedal noise from the Salamander pedalD1/2 (pedal down) and pedalU1/2 (pedal
-up) samples.
+up) samples, or a set's own pedal recordings (its source's `pedal = { kind = "files", down = […],
+up = […] }`, e.g. split from a session's pedal pass by split_session.py --pedal; levels as
+recorded, re the median mf note's peak).
 
 A project's `[noises] pedal_up_impacts` replaces the pedal-up takes' impacts (Salamander's: five near-
 equal clicks of its own mechanism, replaced by Upright A's landing and bounces, design log step 122).
@@ -51,8 +53,29 @@ def onset(m, sr):
     return int(np.argmax(env > env.max() * 10 ** (-30 / 20)))
 
 
+def spec(pid):
+    """The source's own pedal recordings (`pedal = { kind = "files", down = […], up = […] }`, paths
+    in its set, levels as recorded), or None: Salamander's takes (TAKES, in its SFZ's mix)."""
+    s = P.source(pid).get("pedal") or {}
+    return s if s.get("kind") == "files" else None
+
+
+def takes(pid):
+    """(kind, name, path, volume dB) of the part's pedal takes."""
+    s = spec(pid)
+    if s is None:
+        return [(kind, name, os.path.join(D.root(pid), name + ".wav"), VOLUME_DB[kind])
+                for kind, names in TAKES.items() for name in names]
+    return [(kind, os.path.splitext(os.path.basename(f))[0], os.path.join(D.root(pid), f), 0.0)
+            for kind in ("down", "up") for f in s.get(kind, [])]
+
+
 def mf_note_peak_mix_db(pid):
+    """The median mf note's peak: as recorded beside the set's own pedal recordings, or in
+    Salamander's SFZ mix (layer v8 at velocity 60)."""
     notes = P.load_cache(pid, "analysis")["samples"]
+    if spec(pid) is not None:
+        return float(np.median([s["peak_dbfs"] for s in notes if "error" not in s and D.dynamic_of(pid, s) == "mf"]))
     mf = [s["peak_dbfs"] for s in notes if "error" not in s and s["layer"] == 8]
     return float(np.median(mf)) + RN.sfz_gain_db(60, RN.VELTRACK_NOTE)
 
@@ -94,23 +117,22 @@ def main():
     out = {"bands_hz": RN.BANDS.tolist(), "tail_bands_hz": TAIL_BANDS.tolist(), "tail_s": list(TAIL_S),
            "hum_bands": [int(np.argmin(np.abs(TAIL_BANDS - h))) for h in HUM_HZ],
            "mf_note_peak_mix_dbfs": ref_db, "down": [], "up": []}
-    for kind, takes in TAKES.items():
-        for name in takes:
-            x, sr = sf.read(os.path.join(D.root(pid), name + ".wav"), always_2d=True)
-            m = x.sum(axis=1)
-            m = m[max(onset(m, sr) - int(0.005 * sr), 0):]
-            imp = RN.impacts(m[:int(0.8 * sr)], sr)
-            end = int((max(t for t, _, _ in imp) + 0.05) * sr)
-            peak_dbfs = float(20 * np.log10(np.abs(x).max()))
-            take = {"name": name, "impacts": imp, "band_db": RN.with_perspective(RN.bands(m[:end], sr), RN.BANDS, curve).tolist(),
-                    "ratio_db": peak_dbfs + VOLUME_DB[kind] - ref_db}
-            if kind == "down":
-                mix = m * 10 ** (VOLUME_DB[kind] / 20)
-                take["tail_db"] = tail_bands_db(mix, sr, ref_db)
-                f, spec = tail_spectrum_db(mix, sr, ref_db)
-                take["tail_spec_db"] = spec.tolist()
-                out["tail_spec_hz"] = f.tolist()
-            out[kind].append(take)
+    for kind, name, path, volume_db in takes(pid):
+        x, sr = sf.read(path, always_2d=True)
+        m = x.sum(axis=1)
+        m = m[max(onset(m, sr) - int(0.005 * sr), 0):]
+        imp = RN.impacts(m[:int(0.8 * sr)], sr)
+        end = int((max(t for t, _, _ in imp) + 0.05) * sr)
+        peak_dbfs = float(20 * np.log10(np.abs(x).max()))
+        take = {"name": name, "impacts": imp, "band_db": RN.with_perspective(RN.bands(m[:end], sr), RN.BANDS, curve).tolist(),
+                "ratio_db": peak_dbfs + volume_db - ref_db}
+        if kind == "down":
+            mix = m * 10 ** (volume_db / 20)
+            take["tail_db"] = tail_bands_db(mix, sr, ref_db)
+            f, spectrum = tail_spectrum_db(mix, sr, ref_db)
+            take["tail_spec_db"] = spectrum.tolist()
+            out["tail_spec_hz"] = f.tolist()
+        out[kind].append(take)
     # a pedal-up rattle of the lender's own mechanism: its landing as another piano's ([noises])
     out["up"] = with_impacts(out["up"], P.section(pid, "noises").get("pedal_up_impacts", []))
     P.write_cache(pid, "pedal_noise", out, indent=1)

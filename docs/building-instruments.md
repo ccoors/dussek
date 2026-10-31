@@ -118,6 +118,8 @@ What `project.toml` holds:
     before the take choice, so where the map keeps one take per key and layer (a `prefer` on a
     take number, an SFZ's `seq_position` or `lorand` filter), the next take takes their place.
     A layer left out whole stays empty, and the layers above it keep their numbers.
+  - `pedal` (`{ kind = "files", down = […], up = […] }`): the set's own pedal recordings, as recorded
+    (`pedal_noise.py`; Salamander's, its four files, without it).
   - `release` and `dampers` (`{ kind = "sfz", file = … }`): the release regions of an SFZ
     file; `release` also `{ kind = "rel_files" }`, the set's `rel1…rel88.wav` (Salamander's).
     `release` gives the release noise; `dampers` gives the damper loss, each partial's first
@@ -322,10 +324,10 @@ change against.
 | `analyze.py` | partial frequencies, inharmonicity, decays and tuning per take, with a confidence per measurement |
 | `modes.py` | a bar's, tube's or tine's modes by peak picking, their decays, the strike and the buzz |
 | `split_runs.py` | the Iowa runs cut into one file per note |
-| `split_session.py` | a recording session's passes (`recording-a-piano.md`) cut into one file per strike, the takes checked and ranked, the set's SFZ |
+| `split_session.py` | a recording session's passes (`recording-a-piano.md`) cut into one file per strike, the takes checked and ranked, the set's SFZ; a pedal pass into pedal-downs and pedal-ups |
 | `body_decay.py` | the decay between the partials: soundboard and room |
 | `attack_noise.py` | the attack transient (hammer and action noise) per band |
-| `release_noise.py`, `pedal_noise.py` | from a set's release and pedal samples (Salamander's; the harpsichords' own release samples, their notes' partials taken out): the release noise, the pedal's thump and ring |
+| `release_noise.py`, `pedal_noise.py` | from a set's release and pedal samples (Salamander's, or a set's own pedal files; the harpsichords' own release samples, their notes' partials taken out): the release noise, the pedal's thump and ring |
 | `damper_decay.py` | the dampers: each partial's first fall in a set's release recordings (a source's `dampers`) |
 | `datasets.py`, `mapping.py`, `project.py` | the sets, a source's files → notes and dynamics, the projects' files and the steps' checks |
 | `survey.py`, `summarize.py` | a set's quality before fitting it (lengths, decays, endings, noise, mislabeled notes); an analysis's label mismatches and overview plots |

@@ -106,7 +106,9 @@ R=<the recordings>; D=data/<set>
 python3 analysis/split_session.py $R/pp.wav $D --dynamic pp      # likewise mf, ff
 python3 analysis/split_session.py $R/releases.wav $D --dynamic mf --releases --damped-to 88
 python3 analysis/split_session.py $R/breaks.wav $D --dynamic auto --keys 50,88,89
+python3 analysis/split_session.py $R/sustain_pedal.wav $D --pedal     # pedal/down_<n>, up_<n>
 python3 analysis/split_session.py --sfz $D --name <set>.sfz
 ```
 
-Upright D was recorded so (design log step 204).
+The pedal pass's events become pedal-downs and pedal-ups by the strings' ring after each; a source's
+`pedal = { kind = "files", … }` names them. Upright D was recorded so (design log steps 204–205).

@@ -37,6 +37,10 @@ its steepest fall (RELEASE_FALL_DB within RELEASE_FALL_S, past RELEASE_AFTER_S),
 written from REL_PRE_S before it (release/<key>_<dynamic>_<take>.wav): the SFZ's release regions.
 `--damped-to KEY` leaves out the keys above it (no damper: their release stops nothing).
 
+The pedal pass (`--pedal`): its events as pedal/down_<n>.wav and pedal/up_<n>.wav by the strings'
+ring after each (`split_pedal`), the files a source's `pedal = { kind = "files", … }` names
+(analysis/pedal_noise.py).
+
 The keys around the breaks (the sheet's second table), played at various velocities: `--dynamic
 auto` gives each take the dynamic whose level at its key the sheet's passes already split into
 <out> put nearest (`assign_dynamics`), and leaves one out that lies between them.
@@ -45,6 +49,7 @@ Usage:
   split_session.py <pass.wav> <out> --dynamic pp [--keys 21:108:3]
   split_session.py <releases.wav> <out> --dynamic mf --releases [--damped-to 88]
   split_session.py <breaks.wav> <out> --dynamic auto --keys 50,88,89   (after the sheet's passes)
+  split_session.py <sustain_pedal.wav> <out> --pedal
   split_session.py --sfz <out> [--name set.sfz]     (the SFZ over every pass split into <out>)
 """
 import argparse
@@ -99,6 +104,11 @@ RELEASE_FALL_S = 0.3
 RELEASE_AFTER_S = 0.5
 REL_PRE_S = 0.05
 KEYS_MIN, KEYS_MAX = 21, 108
+PEDAL_RING_HZ = (56.0, 280.0)
+PEDAL_RING_DB = 3.0
+PEDAL_BEFORE_S = (-1.0, -0.1)
+PEDAL_AFTER_S = (0.5, 1.5)
+PEDAL_TAIL_S = 3.0
 AUTO_TOL_DB = 4.0
 NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
@@ -394,7 +404,7 @@ def sheet_levels(out):
     ref = {}
     for path in glob.glob(os.path.join(out, "*.split.json")):
         doc = json.load(open(path))
-        if doc.get("releases") or doc["dynamic"] == "auto":
+        if doc.get("releases") or doc.get("pedal") or doc["dynamic"] == "auto":
             continue
         for t in doc["takes"]:
             if not t["why"]:
@@ -455,6 +465,56 @@ def write_takes(x, sr, takes, out, dynamic, release=False, stem=""):
         sf.write(os.path.join(out, t["file"]), x[max(a, 0):t["end"]], sr, subtype="PCM_24")
 
 
+def split_pedal(x, sr):
+    """A pedal pass's events: each rise (no pitch asked), a pedal-down where the strings' band
+    PEDAL_RING_HZ rings PEDAL_RING_DB louder over PEDAL_AFTER_S than over PEDAL_BEFORE_S (the dampers
+    lifted, the strings set ringing), a pedal-up where it falls as much (they landed); a down needs
+    PEDAL_TAIL_S to the next event (the ring's window). The rest are left out (unclear)."""
+    m = x.mean(axis=1)
+    e = level_db(x, sr)
+    h = int(FRAME_S * sr)
+    fine = fine_level(m, sr)
+    rs = rises(e)
+    ats = [refine(fine, sr, i * h, rs[n - 1][0] * h + int(REFINE_AFTER_S * sr) if n else 0) for n, (i, _) in enumerate(rs)]
+    band = sosfiltfilt(butter(4, PEDAL_RING_HZ, "bandpass", fs=sr, output="sos"), m)
+    lv = lambda a, b: float(10 * np.log10(np.mean(band[max(a, 0):b] ** 2) + 1e-30)) if b > a else np.nan  # noqa: E731
+    pre = int(WRITE_PRE_S * sr)
+    out = {"down": 0, "up": 0}
+    events = []
+    for n, ((i, r), at) in enumerate(zip(rs, ats)):
+        nxt = ats[n + 1] if n + 1 < len(ats) else len(x)
+        before = lv(at + int(PEDAL_BEFORE_S[0] * sr), at + int(PEDAL_BEFORE_S[1] * sr))
+        after = lv(at + int(PEDAL_AFTER_S[0] * sr), min(at + int(PEDAL_AFTER_S[1] * sr), nxt - pre))
+        change = after - before
+        t = {"start": at, "end": nxt - pre if nxt < len(x) else nxt, "rise_db": r, "ring_change_db": change,
+             "peak_dbfs": float(A.db(np.abs(x[at:nxt]).max())), "why": []}
+        if change >= PEDAL_RING_DB:
+            kind = "down"
+            if nxt - at < PEDAL_TAIL_S * sr:
+                t["why"].append(f"the next event {(nxt - at) / sr:.1f} s after it (the ring wants {PEDAL_TAIL_S:g})")
+        elif change <= -PEDAL_RING_DB:
+            kind = "up"
+        else:
+            kind = "unclear"
+            t["why"].append(f"the ring changes {change:+.1f} dB")
+        t["kind"] = kind
+        if not t["why"]:
+            out[kind] += 1
+            t["take"] = out[kind]
+        events.append(t)
+    return events
+
+
+def write_pedal(x, sr, events, out):
+    pre = int(WRITE_PRE_S * sr)
+    for n, t in enumerate(events, 1):
+        folder = "pedal" if not t["why"] else os.path.join("discarded", "pedal")
+        base = f"{t['kind']}_{t['take']}.wav" if not t["why"] else f"{t['kind']}_event{n}.wav"
+        os.makedirs(os.path.join(out, folder), exist_ok=True)
+        t["file"] = os.path.join(folder, base)
+        sf.write(os.path.join(out, t["file"]), x[max(t["start"] - pre, 0):t["end"]], sr, subtype="PCM_24")
+
+
 def keys_arg(text):
     """'21:108:3' → [21, 24, …, 108]; '38,39,88,89' → those."""
     if ":" in text:
@@ -474,6 +534,8 @@ def write_sfz(out, name):
     groups = {}
     for path in sorted(glob.glob(os.path.join(out, "*.split.json"))):
         doc = json.load(open(path))
+        if doc.get("pedal"):
+            continue
         for t in doc["takes"]:
             if t["why"] or "rank" not in t:
                 continue
@@ -505,6 +567,7 @@ def main():
     ap.add_argument("--keys", default="21:108:3", type=keys_arg, help="the sheet's keys in order")
     ap.add_argument("--releases", action="store_true")
     ap.add_argument("--damped-to", type=int, help="releases: the highest key with a damper")
+    ap.add_argument("--pedal", action="store_true", help="a pedal pass: its events as pedal-down and pedal-up takes")
     ap.add_argument("--sfz", action="store_true", help="write the SFZ over the passes split into out")
     ap.add_argument("--name", default="session.sfz")
     args = ap.parse_args()
@@ -513,6 +576,15 @@ def main():
         print(f"wrote {os.path.join(args.out, args.name)}: {n_att} attack regions, {n_rel} release regions")
         return
     x, sr = sf.read(args.wav, always_2d=True)
+    if args.pedal:
+        events = split_pedal(x, sr)
+        write_pedal(x, sr, events, args.out)
+        stem = re.sub(r"\.wav$", "", os.path.basename(args.wav))
+        with open(os.path.join(args.out, f"{stem}.split.json"), "w") as fh:
+            json.dump({"pass": os.path.basename(args.wav), "pedal": True, "dynamic": "pedal", "sr": sr, "takes": events}, fh, indent=1)
+        for t in events:
+            print(f"  {t['start'] / sr:8.2f} s {t['kind']:>7s} ring {t['ring_change_db']:+5.1f} dB peak {t['peak_dbfs']:6.1f} {t['file']} {'; '.join(t['why'])}")
+        return
     takes, floor = split_pass(x, sr, args.keys, args.releases, args.dynamic == "auto")
     if args.releases and args.damped_to:
         for t in takes:
