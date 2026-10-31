@@ -42,6 +42,12 @@ struct Opts {
     video: Option<video::VideoOpts>,
 }
 
+/// The command line's definition (its options and arguments), for the lock on them
+/// (`tests/cli_lock.rs`).
+pub fn command() -> clap::Command {
+    Cli::command()
+}
+
 /// The command line (`clap`): `-h` the summary, `--help` everything, with the keys of `--param` and
 /// `--tuning`. Every value is checked here, before anything is loaded or rendered.
 #[derive(Parser)]
