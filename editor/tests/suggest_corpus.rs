@@ -25,12 +25,14 @@ fn the_suggestion_against_the_committed_maps() {
     let repo = project::Repo::from_env();
     let cache = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("target/corpus-cache");
     let (mut hits, mut misses) = (Vec::new(), Vec::new());
+    let mut absent = Vec::new();
     for (_, mut src) in project::all_sources(&repo) {
         // the takes left out by ear are no part of what a suggestion can know
         src.as_object_mut().map(|o| o.remove("skip_files"));
         let id = src["id"].as_str().unwrap().to_string();
         let root = src["root"].as_str().unwrap();
         if !repo.data.join(root).is_dir() {
+            absent.push(format!("{id} (data/{root})"));
             continue;
         }
         let data_root = suggest::data_root(&repo.data, root);
@@ -90,6 +92,11 @@ fn the_suggestion_against_the_committed_maps() {
     eprintln!("hits ({}): {}", hits.len(), hits.join(", "));
     for (id, why) in &misses {
         eprintln!("miss {id}: {why}");
+    }
+    if !absent.is_empty() {
+        // the recorded hits are the whole corpus's (a fresh clone has none of its sets)
+        eprintln!("the hits not checked: {} sets not in data/: {}", absent.len(), absent.join(", "));
+        return;
     }
     assert!(hits.len() >= RECORDED_HITS, "{} hits, {} recorded", hits.len(), RECORDED_HITS);
 }

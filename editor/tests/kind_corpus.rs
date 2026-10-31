@@ -22,12 +22,14 @@ fn the_guess_on_the_donors_own_sets() {
     let kinds = project::kinds(&repo);
     let cache = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("target/corpus-cache");
     let (mut hits, mut rows, mut wrong, mut fellows, mut strings) = (0, Vec::new(), Vec::new(), Vec::new(), Vec::new());
+    let mut absent = Vec::new();
     for k in &kinds {
         for d in &k.donors {
             let p = Project::load(&repo, d).unwrap();
             let Some(src) = p.source_ids().first().and_then(|s| p.source_json(s)) else { continue };
             let root = src["root"].as_str().unwrap_or_default();
             if !repo.data.join(root).is_dir() {
+                absent.push(format!("{d} (data/{root})"));
                 continue;
             }
             let items = mapping::items(&src, &suggest::data_root(&repo.data, root)).map(|r| r.items).unwrap_or_default();
@@ -62,6 +64,11 @@ fn the_guess_on_the_donors_own_sets() {
     assert!(unclear.is_empty(), "string sets not read as a string's:\n{}", unclear.join("\n"));
     eprintln!("fellow answers: {}", fellows.join("; "));
     assert!(fellows.len() <= RECORDED_FELLOWS, "{} fellow answers, {RECORDED_FELLOWS} recorded:\n{}", fellows.len(), fellows.join("\n"));
+    if !absent.is_empty() {
+        // the recorded hits are the whole corpus's (a fresh clone has none of its sets)
+        eprintln!("the hits not checked: {} sets not in data/: {}", absent.len(), absent.join(", "));
+        return;
+    }
     assert!(hits >= RECORDED_HITS, "{hits} hits, {RECORDED_HITS} recorded");
 }
 
