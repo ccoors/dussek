@@ -55,6 +55,19 @@ jobs:
           plugin/build/bin/dussek render instruments/grand_a albums/demos/midi/03-glass-rain.mid render.wav --tail 1
           engine/target/release/midi2wav instruments/grand_a albums/demos/midi/03-glass-rain.mid midi2wav.wav --tail 1
           cmp render.wav midi2wav.wav
+      # a build to try on another machine (Actions tab: the run's artifacts; kept 3 days)
+      - name: Package
+        if: github.event_name != 'pull_request'
+        run: |
+          plugin/tools/package.sh linux
+          tar -C dist -czf dist/dussek-linux.tar.gz dussek-linux   # tar keeps the executables' mode
+      - uses: actions/upload-artifact@v4
+        if: github.event_name != 'pull_request'
+        with:
+          name: dussek-linux
+          path: dist/dussek-linux.tar.gz
+          retention-days: 3
+          compression-level: 0
       - name: The prototype's suite
         run: just test-proto
       - name: The editor's suite

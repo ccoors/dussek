@@ -26,3 +26,4 @@ __pycache__/
 
 # the editor's preview of a rolled piano (design log steps 117–118)
 instruments/rolled_preview/
+/dist/

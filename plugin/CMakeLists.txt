@@ -7,6 +7,11 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "13.3" CACHE STRING "the oldest macOS the builds
 project(dussek-plugin VERSION 0.3.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
+# MinGW: its C and C++ runtimes linked in (libstdc++, libgcc, winpthread), so the builds run on a
+# Windows without MSYS2; the system's DLLs stay shared (CI checks the imports: platforms.yml)
+if(MINGW)
+  add_link_options(-static)
+endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dpf/CMakeLists.txt)
