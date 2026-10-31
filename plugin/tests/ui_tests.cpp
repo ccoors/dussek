@@ -40,6 +40,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
+#include <sstream>
 #include <thread>
 #include <cmath>
 #include <cstdio>
@@ -292,6 +293,101 @@ TEST(lid_and_pillow_parameters)
     CHECK(engineLid(vals.data()) == 2.0 && engineTuning(vals.data()).lid == 2.0);
     vals[kMicPosition] = 0; // the recording's lid is open
     CHECK(engineTuning(vals.data()).lid == 1.0);
+}
+
+namespace {
+/// one row of plugin/tests/params.lock: a user parameter as the hosts saw it at a release
+struct LockRow {
+    uint32_t index = 0;
+    std::string symbol, unit, flags, line;
+    float min = 0, max = 0, def = 0;
+};
+
+std::string lockFlags(const pe::ParamInfo& d)
+{
+    std::string f = std::string(d.automatable ? "a" : "") + (d.integer ? "i" : "") + (d.boolean ? "b" : "");
+    return f.empty() ? "-" : f;
+}
+
+std::string lockLine(uint32_t i)
+{
+    const pe::ParamInfo& d = pe::paramInfo(i);
+    char nums[96];
+    std::snprintf(nums, sizeof(nums), "%.9g %.9g %.9g", (double)d.min, (double)d.max, (double)d.def);
+    return std::to_string(i) + " " + d.symbol + " " + nums + " " + (d.unit != nullptr && *d.unit ? d.unit : "-") + " "
+        + lockFlags(d);
+}
+
+/// the lock's rows (`#` lines and blank lines skipped); false when the file is missing or a row is malformed
+bool readLock(const std::string& path, std::vector<LockRow>& out)
+{
+    std::ifstream f(path);
+    if (!f)
+        return false;
+    std::string line;
+    while (std::getline(f, line)) {
+        if (line.empty() || line[0] == '#')
+            continue;
+        std::istringstream in(line);
+        in.imbue(std::locale::classic());
+        LockRow r;
+        r.line = line;
+        if (!(in >> r.index >> r.symbol >> r.min >> r.max >> r.def >> r.unit >> r.flags))
+            return false;
+        out.push_back(r);
+    }
+    return true;
+}
+} // namespace
+
+TEST(the_parameter_table_only_grows)
+{
+    // the user parameters as released: a host saves them by symbol (LV2's ports, DPF's VST3 and CLAP
+    // state) and automates them by index (VST3, CLAP). A locked row never changes; a new parameter
+    // goes at the end and is recorded with it (PE_WRITE_PARAMS_LOCK=1 appends the new rows, never
+    // rewrites one). Changing a locked row is a deliberate edit of the lock (docs/compatibility.md).
+    const std::string path = std::string(PE_TESTS_DIR) + "/params.lock";
+    std::vector<LockRow> lock;
+    const bool read = readLock(path, lock);
+    if (const char* w = std::getenv("PE_WRITE_PARAMS_LOCK"); w != nullptr && *w && read == std::ifstream(path).good()) {
+        std::ofstream out(path, std::ios::app);
+        if (lock.empty())
+            out << "# plugin/tests/params.lock: the user parameters' index symbol min max default unit flags\n"
+                   "# (a automatable, i integer, b boolean). Append only: docs/compatibility.md.\n";
+        for (uint32_t i = (uint32_t)lock.size(); i < pe::kParamCount; ++i)
+            out << lockLine(i) << "\n";
+        out.close();
+        lock.clear();
+        CHECK(readLock(path, lock));
+    }
+    CHECK(read || !lock.empty());
+    for (const LockRow& r : lock) {
+        if (r.index >= pe::kParamCount) {
+            std::printf("  params.lock: row %u (%s) is gone from the table\n", r.index, r.symbol.c_str());
+            CHECK(r.index < pe::kParamCount);
+            continue;
+        }
+        const pe::ParamInfo& d = pe::paramInfo(r.index);
+        const bool same = r.symbol == d.symbol && r.min == d.min && r.max == d.max && r.def == d.def
+            && r.unit == (d.unit != nullptr && *d.unit ? d.unit : "-") && r.flags == lockFlags(d);
+        if (!same)
+            std::printf("  params.lock: locked \"%s\", the table has \"%s\"\n", r.line.c_str(), lockLine(r.index).c_str());
+        CHECK(same);
+    }
+    for (size_t i = 0; i < lock.size(); ++i)
+        CHECK(lock[i].index == i);
+    if (lock.size() < pe::kParamCount)
+        std::printf("  params.lock: %u new parameter(s) not recorded: PE_WRITE_PARAMS_LOCK=1 plugin/build/ui_tests\n",
+            pe::kParamCount - (uint32_t)lock.size());
+    CHECK(lock.size() == pe::kParamCount);
+}
+
+TEST(no_diagnostic_is_automatable)
+{
+    // the diagnostics follow the user table and move when it grows: hosts save them by symbol and
+    // automate only what is automatable, so they need no lock while none is
+    for (uint32_t i = pe::kParamCount; i < pe::kTotalParams; ++i)
+        CHECK(!pe::diagInfo(i).automatable);
 }
 
 TEST(param_table_is_complete)

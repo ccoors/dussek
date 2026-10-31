@@ -139,7 +139,9 @@ protected:
     {
         if (index >= kParamCount) {
             const ParamInfo& d = diagInfo(index);
-            p.hints = (diagIsOutput(index) ? kParameterIsOutput : 0) | kParameterIsHidden | (d.integer ? kParameterIsInteger : 0);
+            // never automatable (ui_tests no_diagnostic_is_automatable): they move when the table grows
+            p.hints = (diagIsOutput(index) ? kParameterIsOutput : 0) | kParameterIsHidden | (d.integer ? kParameterIsInteger : 0)
+                | (d.automatable ? kParameterIsAutomatable : 0);
             p.name = d.name;
             p.symbol = d.symbol;
             p.ranges = ParameterRanges(d.def, d.min, d.max);
