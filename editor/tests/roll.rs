@@ -8,8 +8,8 @@ use pianoengine::roll::recipe::Recipe;
 
 fn cands() -> Candidates {
     Candidates {
-        references: ["grand_a", "grand_b", "grand_f", "grand_e", "grand_d", "grand_c", "grand_g", "upright_a", "upright_b", "upright_c", "upright_d"].map(String::from).to_vec(),
-        grands: ["grand_a", "grand_b", "grand_f", "grand_e", "grand_d", "grand_c", "grand_g"].map(String::from).to_vec(),
+        references: ["grand_a", "grand_b", "grand_f", "grand_e", "grand_d", "grand_c", "grand_g", "grand_h", "upright_a", "upright_b", "upright_c", "upright_d"].map(String::from).to_vec(),
+        grands: ["grand_a", "grand_b", "grand_f", "grand_e", "grand_d", "grand_c", "grand_g", "grand_h"].map(String::from).to_vec(),
     }
 }
 

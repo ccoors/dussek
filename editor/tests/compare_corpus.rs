@@ -66,6 +66,10 @@ const CEILINGS: &[(&str, usize)] = &[
     // engine's partials 1–3 unmoved, −10.5 / −3.8 / −6.9 cents re equal)
     ("grand_a", 13),
     ("grand_e", 15),
+    // 2026-10-31 (design log step 204): its files normalized (levels not judged) and cut while
+    // still sounding (94 of 264 lengths stopped): lengths (G♯1 pp, F♯3 ff, C♯6 mf and ff), pitches
+    // at the top keys (±26–30 cents)
+    ("grand_h", 11),
     ("strumstick", 9),
     // 2 before its knock became the hammer's thump (step 126): C7 at mf and G7 at pp 12 and 19 dB under
     // the recordings, the knock had carried their peaks; 3 before its ring and room by ear (steps
