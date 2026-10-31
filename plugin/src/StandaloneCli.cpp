@@ -20,8 +20,17 @@ void dispatch(int argc, char** argv)
     if (argc < 2 || argv == nullptr || argv[1] == nullptr || std::strcmp(argv[1], "render") != 0)
         return;
 #ifdef _WIN32
-    // a window program: print into the console it was started from, if any
-    if (AttachConsole(ATTACH_PARENT_PROCESS)) {
+    // a window program started from a console has no standard output (a pipe or a file it keeps): it
+    // prints into that console; C's stdio and the handles the engine (Rust) writes through
+    const HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
+    if ((out == nullptr || out == INVALID_HANDLE_VALUE || GetFileType(out) == FILE_TYPE_UNKNOWN)
+        && AttachConsole(ATTACH_PARENT_PROCESS)) {
+        const HANDLE con = CreateFileA("CONOUT$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+            OPEN_EXISTING, 0, nullptr);
+        if (con != INVALID_HANDLE_VALUE) {
+            SetStdHandle(STD_OUTPUT_HANDLE, con);
+            SetStdHandle(STD_ERROR_HANDLE, con);
+        }
         (void)std::freopen("CONOUT$", "w", stdout);
         (void)std::freopen("CONOUT$", "w", stderr);
     }
