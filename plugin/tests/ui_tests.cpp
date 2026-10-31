@@ -427,6 +427,20 @@ TEST(a_display_without_opengl_2_is_named)
           && m.find("sound") != std::string::npos);
 }
 
+TEST(a_picked_file_gives_its_folder)
+{
+    // the instrument picker hands a file (its instrument.json): the folder is what is opened. On
+    // Windows (Wine's too) the path comes with backslashes and a drive
+    CHECK(pe::folderOf("/hm/u/instruments/chimes/instrument.json") == "/hm/u/instruments/chimes");
+    CHECK(pe::folderOf("/instrument.json") == "/" && pe::folderOf("instrument.json").empty());
+    CHECK(pe::fileNameOf("/hm/u/scales/werckmeister.scl") == "werckmeister.scl" && pe::fileNameOf("a.scl") == "a.scl");
+#ifdef _WIN32
+    CHECK(pe::folderOf("Z:\\home\\u\\instruments\\chimes\\instrument.json") == "Z:\\home\\u\\instruments\\chimes");
+    CHECK(pe::folderOf("C:\\instrument.json") == "C:\\" && pe::folderOf("C:/x/y.scl") == "C:/x");
+    CHECK(pe::fileNameOf("Z:\\scales\\werckmeister.scl") == "werckmeister.scl");
+#endif
+}
+
 TEST(the_parameter_table_only_grows)
 {
     // the user parameters as released: a host saves them by symbol (LV2's ports, DPF's VST3 and CLAP

@@ -3423,3 +3423,13 @@ From the maintainer's tries of the test builds:
   standard error and on Windows in a message box, once: the sound still plays.
 - The Windows `TRY-IT.txt` says the "Failed to load JACK DLL" line is expected (DPF tries JACK
   first, then the system's audio).
+
+<a id="step-216"></a>
+## 216. Opening an instrument folder on Windows
+
+Under Wine the maintainer picked an instrument's `instrument.json` in "Open instrument folder…"
+and got "no instrument": the UI cut the picked file to its folder at the last `/`, and a Windows
+path has `\` only (`Z:\home\…\chimes\instrument.json`), so the file itself was taken for the
+folder. `folderOf` and `fileNameOf` (`plugin/src/Paths.hpp`) split at either separator on Windows
+and keep a drive's root; the Scala file's start folder and its label in the Temperament menu
+used the same `/` split.

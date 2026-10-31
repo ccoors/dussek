@@ -30,4 +30,10 @@ DataDirs dataDirs();
 /// PATH variable; null: none). Empty: none found.
 std::string standaloneExecutable(const std::string& self, bool selfIsStandalone, const char* path);
 
+/// The folder a file lies in (a file browser's answer): up to its last separator, `/` (on Windows
+/// also `\`); a root kept ("/", "C:\"); empty for a bare name.
+std::string folderOf(const std::string& file);
+/// A path's last part (after its last separator, as folderOf splits): the file's name.
+std::string fileNameOf(const std::string& file);
+
 } // namespace pe

@@ -890,8 +890,7 @@ private:
         char msg[256];
         if (pe_scale_info(fScaleFile.c_str(), msg, sizeof(msg)) == 0)
             return "Scala file: unreadable";
-        const size_t slash = fScaleFile.find_last_of('/');
-        return fScaleFile.substr(slash == std::string::npos ? 0 : slash + 1);
+        return fileNameOf(fScaleFile);
     }
 
     /// the file browser for the instrument menu's last entry: an instrument folder anywhere, by its
@@ -910,7 +909,7 @@ private:
         fBrowsing = Browsing::Scale;
         FileBrowserOptions o;
         o.title = "Choose a Scala scale (.scl)";
-        fScaleDir = fScaleFile.empty() ? std::string() : fScaleFile.substr(0, fScaleFile.find_last_of('/'));
+        fScaleDir = folderOf(fScaleFile);
         o.startDir = fScaleDir.empty() ? nullptr : fScaleDir.c_str(); // the options hold the pointer only
         openFileBrowser(o);
     }
@@ -921,8 +920,7 @@ private:
             return; // cancelled: as it was
         if (fBrowsing == Browsing::Instrument) {
             // the folder of the file chosen (its instrument.json, or any file in it)
-            std::string dir = path;
-            dir = dir.substr(0, std::max<size_t>(1, dir.find_last_of('/')));
+            const std::string dir = folderOf(path);
             if (Catalog::outside(dir) == nullptr) {
                 d_stderr2("Dussek: %s: no instrument (an instrument.json and a data.bin the engine accepts)", dir.c_str());
                 return;

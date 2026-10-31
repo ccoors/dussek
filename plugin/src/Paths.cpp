@@ -98,4 +98,32 @@ DataDirs dataDirs()
     return dataDirs([](const char* name) { return static_cast<const char*>(std::getenv(name)); }, hostPlatform());
 }
 
+std::string folderOf(const std::string& file)
+{
+#ifdef _WIN32
+    const size_t cut = file.find_last_of("/\\");
+#else
+    const size_t cut = file.find_last_of('/');
+#endif
+    if (cut == std::string::npos)
+        return std::string();
+    if (cut == 0)
+        return file.substr(0, 1); // "/"
+#ifdef _WIN32
+    if (cut == 2 && file[1] == ':')
+        return file.substr(0, 3); // "C:\"
+#endif
+    return file.substr(0, cut);
+}
+
+std::string fileNameOf(const std::string& file)
+{
+#ifdef _WIN32
+    const size_t cut = file.find_last_of("/\\");
+#else
+    const size_t cut = file.find_last_of('/');
+#endif
+    return cut == std::string::npos ? file : file.substr(cut + 1);
+}
+
 } // namespace pe
