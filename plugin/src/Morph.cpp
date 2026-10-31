@@ -39,7 +39,8 @@ Point2 morphCorner(uint32_t n, uint32_t i)
 {
     if (n == 2)
         return { 0.0f, i == 0 ? 1.0f : -1.0f };
-    const double a = M_PI / 2 - 2 * M_PI * (double)i / (double)std::max(n, 1u);
+    const double pi = 3.14159265358979323846; // M_PI is POSIX, not C++
+    const double a = pi / 2 - 2 * pi * (double)i / (double)std::max(n, 1u);
     return { (float)std::cos(a), (float)std::sin(a) };
 }
 

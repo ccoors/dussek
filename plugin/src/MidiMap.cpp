@@ -4,14 +4,12 @@
 
 #include <algorithm>
 #include <cmath>
-#include <cerrno>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
-#include <sys/stat.h>
-#include <unistd.h>
 
 namespace pe {
 
@@ -125,22 +123,13 @@ MidiMap MidiMap::parse(const std::string& text)
     return m;
 }
 
-namespace {
-/// every missing directory above path
-bool makeParents(const std::string& path)
-{
-    for (size_t i = path.find('/', 1); i != std::string::npos; i = path.find('/', i + 1)) {
-        const std::string dir = path.substr(0, i);
-        if (mkdir(dir.c_str(), 0755) != 0 && errno != EEXIST)
-            return false;
-    }
-    return true;
-}
-} // namespace
-
 bool MidiMap::save(const std::string& path) const
 {
-    if (path.empty() || !makeParents(path))
+    std::error_code ec;
+    if (path.empty())
+        return false;
+    std::filesystem::create_directories(std::filesystem::path(path).parent_path(), ec);
+    if (ec)
         return false;
     const std::string tmp = path + ".tmp";
     {
@@ -154,7 +143,8 @@ bool MidiMap::save(const std::string& path) const
             return false;
         }
     }
-    if (std::rename(tmp.c_str(), path.c_str()) != 0) {
+    std::filesystem::rename(tmp, path, ec); // replaces the old file, also on Windows (std::rename does not)
+    if (ec) {
         std::remove(tmp.c_str());
         return false;
     }

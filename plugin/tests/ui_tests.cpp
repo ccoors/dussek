@@ -5726,3 +5726,24 @@ TEST(parse_float_as_from_chars_without_it)
         std::setlocale(LC_NUMERIC, saved.c_str());
     }
 }
+
+TEST(saving_again_replaces_the_file)
+{
+    // the presets and the MIDI map are written to a temporary file and renamed over the old one;
+    // std::rename does not replace an existing file on Windows
+    const std::filesystem::path dir = std::filesystem::temp_directory_path() / ("pe-replace-" + std::to_string(pe::SharedRegion::randomToken()));
+    const std::string presets = (dir / "pianoengine" / "presets").string();
+    float v[pe::kParamCount] = {};
+    for (uint32_t i = 0; i < pe::kParamCount; ++i)
+        v[i] = pe::paramInfo(i).def;
+    std::string err;
+    CHECK(pe::saveUserPreset(presets, pe::presetFrom("Twice", pe::PresetScope::Mics, 0, v, {}), err) && err.empty());
+    v[pe::kMicSpacing] = 70;
+    CHECK(pe::saveUserPreset(presets, pe::presetFrom("Twice", pe::PresetScope::Mics, 0, v, {}), err) && err.empty());
+    const std::vector<pe::Preset> user = pe::loadUserPresets(presets);
+    CHECK(user.size() == 1);
+    MidiMap m;
+    const std::string map = (dir / "config" / "midi-map.txt").string();
+    CHECK(m.save(map) && m.save(map));
+    std::filesystem::remove_all(dir);
+}

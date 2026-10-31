@@ -14,6 +14,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <dirent.h>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <sys/stat.h>
@@ -269,18 +270,16 @@ bool saveUserPreset(const std::string& dir, const Preset& p, std::string& error)
 {
     error.clear();
     if (dir.empty()) {
-        error = "no folder for presets (neither XDG_DATA_HOME nor HOME set)";
+        error = "no folder for presets (the environment names no user folder)";
         return false;
     }
     // the folder and its parents (…/pianoengine/presets)
-    for (size_t i = 1; i <= dir.size(); ++i)
-        if (i == dir.size() || dir[i] == '/') {
-            const std::string part = dir.substr(0, i);
-            if (mkdir(part.c_str(), 0755) != 0 && errno != EEXIST) {
-                error = "cannot make " + part + ": " + std::strerror(errno);
-                return false;
-            }
-        }
+    std::error_code ec;
+    std::filesystem::create_directories(dir, ec);
+    if (ec) {
+        error = "cannot make " + dir + ": " + ec.message();
+        return false;
+    }
     const std::string path = presetFile(dir, p.name), tmp = path + ".tmp";
     {
         std::ofstream f(tmp, std::ios::trunc);
@@ -290,8 +289,9 @@ bool saveUserPreset(const std::string& dir, const Preset& p, std::string& error)
             return false;
         }
     }
-    if (std::rename(tmp.c_str(), path.c_str()) != 0) {
-        error = "cannot write " + path + ": " + std::strerror(errno);
+    std::filesystem::rename(tmp, path, ec); // replaces the old file, also on Windows (std::rename does not)
+    if (ec) {
+        error = "cannot write " + path + ": " + ec.message();
         std::remove(tmp.c_str());
         return false;
     }
