@@ -94,8 +94,13 @@ depth_mm = [0.44, 0.32, 0.39, 0.56, 0.59, 0.69, 0.72, 0.62, 0.57, 0.6, 0.64, 0.5
 # start at 41 Hz, below which its response is held flat; the fundamentals of A0–G♯1 sat +6.6 dB
 # over partials 2–4 against the recording (keys D1–E1 +14 … +24 dB); 31.5 Hz −8 and 45 Hz −1.5 dB
 # bring the median near 0 dB (−10/−3 overshot to −1.7). Not yet heard
+# the strings' bass by ear (2026-10-31): v2 heard with the Bass control at +4 dB "is also helping";
+# the instrument carries it, so its Bass at 0 dB sounds as that: the control's shape (0.8 at 31.5 Hz,
+# 1 at 45, 0.8 at 63, 0.5 at 90, 0.25 at 125, 0 from 180 Hz) × 4 dB as rows of their own, the last
+# four (least squares, within 0.04 dB from 27 to 600 Hz); the recording lies 5–13 dB under Grand E's
+# at 50–125 Hz, the engine 0 … +5 dB over the recording there before this
 [board]
-trim_db = [[31.5, -8.0], [45.0, -1.5]]
+trim_db = [[31.5, -8.0], [45.0, -1.5], [22.5, 3.6], [31.5, -0.77], [45.0, 4.37], [90.0, 1.97]]
 # the board's low modes ring longer (2026-10-27, by ear on Grands A and B; the fits never see it):
 # at loss factor 4 % where that rings longer than the fitted overlap, below 450 Hz; the board's own
 # response 0.45–0.6 s below 200 Hz (was ~0.15 s), a grand's board glued into its rim ~0.5 s (Plath)

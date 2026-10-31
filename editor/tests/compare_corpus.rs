@@ -68,8 +68,9 @@ const CEILINGS: &[(&str, usize)] = &[
     ("grand_e", 15),
     // 2026-10-31 (design log step 204): its files normalized (levels not judged) and cut while
     // still sounding (94 of 264 lengths stopped): lengths (G♯1 pp, F♯3 ff, C♯6 mf and ff), pitches
-    // at the top keys (±26–30 cents)
-    ("grand_h", 11),
+    // at the top keys (±26–30 cents); 11 before its bass by ear (+4 dB of the Bass control's shape):
+    // C♯1 pp's pitch read −77 cents (its spectrum +14.4 dB rms), G♯1 mf's length ×0.49
+    ("grand_h", 13),
     ("strumstick", 9),
     // 2 before its knock became the hammer's thump (step 126): C7 at mf and G7 at pp 12 and 19 dB under
     // the recordings, the knock had carried their peaks; 3 before its ring and room by ear (steps

@@ -3205,3 +3205,9 @@ pieces: +2 dB at 4 kHz, +3.4 … +4.8 at 5 kHz, +6 … +9 at 6.3–8 kHz, below 
 lies 5–13 dB under Grand E's at 50–125 Hz (the pieces: Grand H 4–11 dB under Grand E at 62–125 Hz).
 At Player Grand H also gains 500 Hz (+4.7 dB re Recording, Grand E −2.7). Adding body past the
 recording is a choice by ear: open.
+
+Heard (v2): the brightness "works in its favor", the change from mf to ff fine, and the Bass control
+at +4 dB "is also helping". Grand H now carries that bass: `[board] trim_db` rows (22.5 Hz +3.6,
+31.5 Hz −0.77, 45 Hz +4.37, 90 Hz +1.97 dB, beside the lowest octave's own) make the Bass control's
+shape × 4 dB within 0.04 dB from 27 to 600 Hz; both act on every key's correction. On the two pieces
+the export at Bass 0 equals v2 at Bass +4 dB within 0.1 dB in every third octave (24 Hz–10 kHz).
