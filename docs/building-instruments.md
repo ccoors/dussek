@@ -100,6 +100,10 @@ What `project.toml` holds:
   Sustain control divides it (Upright A and B 150 % to C5, 200 % at C7; Upright C 150 %). The export
   writes each note's `sustain`; the engine multiplies the control's value by it, so the control's
   100 % is the instrument's own ring. Only the export reads it.
+- **The ringing along by ear** (`[sympathetic]`): `percent` (0–300), the strings' sympathetic drive
+  (the export's `transfer`) re the fitted one, as the plugin's Sympathetic resonance control scales it
+  on a string instrument, so the control's 100 % is the instrument's own (Upright D 25 %: its undamped
+  treble rang on its own, step 206). Only the export reads it.
 - **The unison** (`[unison]`): `width`, the fitted detune of each key's strings scaled as the
   plugin's Unison width scales it, set by ear (0.05–2; Grand B 0.6: its beats ran 25–60 % faster
   than its recording's); `treble`, a factor on it along the keys (`[[key, factor], …]`,
@@ -128,7 +132,8 @@ What `project.toml` holds:
 - **`[noises] perspective_db`** (`[[Hz, dB], …]`): a tilt for the release and pedal noises' band
   spectra, where the lender's microphones were closer than its borrowers' (Salamander's: −13 dB
   from 6.4 kHz up, design log step 121). Only those two steps and what reads their caches read it.
-  Its `pedal_up_impacts` replaces the pedal-up takes' impacts (time, level, decay) with another
+  Its `pedal_level_db` moves every pedal thump's level (not the ring's target: Upright D −4.5 dB, its
+  thumps played over its recordings, step 206). Its `pedal_up_impacts` replaces the pedal-up takes' impacts (time, level, decay) with another
   recording's (Salamander's rattle with Upright A's landing, step 122).
 - **`[release_noise] level_db`**: a level for the release noise the `release_noise` step writes,
   re the sample author's mix (Salamander's: −12 dB, design log step 120; the harpsichords' −4.5 …

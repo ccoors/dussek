@@ -412,6 +412,22 @@ def impact_trim_db(table, note):
 SUSTAIN_PERCENT = (25.0, 800.0)
 
 
+# the plugin's Sympathetic resonance range, in percent
+SYMPATHETIC_PERCENT = (0.0, 300.0)
+
+
+def sympathetic_factor(table):
+    """The strings' ringing along re the fitted coupling (×) from a project's [sympathetic] percent, set
+    by ear: the sympathetic strings' drive (the export's transfer) scaled as the plugin's Sympathetic
+    resonance control scales it on a string instrument, so its 100 % is the instrument's own; 1 without."""
+    if not table:
+        return 1.0
+    v = table.get("percent")
+    if set(table) != {"percent"} or not isinstance(v, (int, float)) or not SYMPATHETIC_PERCENT[0] <= v <= SYMPATHETIC_PERCENT[1]:
+        raise ValueError(f"[sympathetic]: percent, {SYMPATHETIC_PERCENT[0]:.0f} … {SYMPATHETIC_PERCENT[1]:.0f}: {table}")
+    return v / 100.0
+
+
 def sustain_factor(table, note):
     """A key's ring re the fitted one (×) from a project's [sustain] table: percent, (key, %) anchors set
     by ear, linear between and held beyond (as the Sustain control: every mode's decay rate divided by
@@ -645,7 +661,8 @@ def main():
                   "rise_s": SB.KNOCK_RISE_S} if kn else None,
         "release": {"bands_hz": bands_hz.tolist(), "length_s": release.LENGTH_S, "rise_s": release.RISE_S},
         "pedal": pedal_doc(prof),
-        "sympathetic": {"transfer": resonance.TRANSFER, "f_max": resonance.F_MAX},
+        "sympathetic": {"transfer": resonance.TRANSFER * sympathetic_factor(P.section(prof.dataset, "sympathetic")),
+                        "f_max": resonance.F_MAX},
         # the synthetic soundboard's modes: the bridge admittance (board.py)
         "board": {"f": blob.add(board.f), "sigma": blob.add(board.sigma), "phi": blob.add(board.phi),
                   "density": board.density,

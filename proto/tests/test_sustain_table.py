@@ -17,3 +17,14 @@ def test_the_anchors_are_linear_between_and_held_beyond():
 def test_a_bad_table_is_refused(bad):
     with pytest.raises(ValueError, match="sustain"):
         EX.sustain_factor(bad, 60)
+
+
+def test_the_sympathetic_ring_by_ear_scales_the_strings_drive():
+    assert EX.sympathetic_factor({}) == 1.0 and EX.sympathetic_factor(None) == 1.0
+    assert EX.sympathetic_factor({"percent": 25.0}) == 0.25
+    # 100 % without a table: the transfer exactly as before (every other instrument's export unchanged)
+    import resonance
+    assert resonance.TRANSFER * EX.sympathetic_factor({}) == resonance.TRANSFER
+    for bad in ({"percent": 400.0}, {"percent": -1.0}, {"percent": "25"}, {"percent": 25.0, "keys": [60]}):
+        with pytest.raises(ValueError):
+            EX.sympathetic_factor(bad)

@@ -4,7 +4,8 @@ up) samples, or a set's own pedal recordings (its source's `pedal = { kind = "fi
 up = […] }`, e.g. split from a session's pedal pass by split_session.py --pedal; levels as
 recorded, re the median mf note's peak).
 
-A project's `[noises] pedal_up_impacts` replaces the pedal-up takes' impacts (Salamander's: five near-
+A project's `[noises] pedal_level_db` moves every thump's level (not the ring's target); its
+`[noises] pedal_up_impacts` replaces the pedal-up takes' impacts (Salamander's: five near-
 equal clicks of its own mechanism, replaced by Upright A's landing and bounces, design log step 122).
 
 Pedal down is a mechanical thump (4–5 impacts within ~0.5 s: pedal, trapwork, damper
@@ -43,6 +44,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 VOLUME_DB = {"down": -20.0, "up": -19.0}
 TAKES = {"down": ["pedalD1", "pedalD2"], "up": ["pedalU1", "pedalU2"]}
 TAIL_S = (0.5, 3.0)
+FLOOR_S = 0.5
+OWN_THUMP_S = 0.35
+FLOOR_CLIP_DB = 80.0
 TAIL_BANDS = 25.0 * 2 ** (np.arange(0, 19) / 3)   # 25 Hz … 1.6 kHz (the lowest strings ring below 50 Hz)
 HUM_HZ = (50.0, 100.0, 150.0)
 
@@ -102,6 +106,23 @@ def tail_spectrum_db(m, sr, ref_db):
     return f[sel], 10 * np.log10(P[sel] + 1e-30) - ref_db
 
 
+def band_energies(x, sr):
+    """1/3-octave band energies (release_noise.BANDS) of a Hann-windowed segment, per sample."""
+    P = np.abs(np.fft.rfft(x * np.hanning(len(x)))) ** 2 / len(x)
+    f = np.fft.rfftfreq(len(x), 1 / sr)
+    return np.array([P[(f >= fc * 2 ** (-1 / 6)) & (f < fc * 2 ** (1 / 6))].sum() for fc in RN.BANDS])
+
+
+def thump_bands(m, sr, end):
+    """A recorded take's thump bands (dB re the strongest) over its first `end` samples, the take's
+    own floor (its last FLOOR_S: the room, its hiss) taken out per band: in a room's recording the
+    floor filled the highs of a quiet pedal-up 25–30 dB under its strongest band, which the
+    resynthesis put under every impact (a click)."""
+    e = band_energies(m[:end], sr) - band_energies(m[-int(FLOOR_S * sr):], sr)
+    e = np.maximum(e, e.max() * 10 ** (-FLOOR_CLIP_DB / 10))
+    return 10 * np.log10(e / e.max())
+
+
 def with_impacts(takes, patterns):
     """The takes with their impacts replaced by the patterns, take i by pattern i mod their count
     (the project's [noises] pedal_up_impacts); the band spectrum and level kept."""
@@ -114,6 +135,9 @@ def main():
     pid = sys.argv[1]
     ref_db = mf_note_peak_mix_db(pid)
     curve = RN.perspective(pid)   # [noises] perspective_db: the thump as heard from further away
+    own = spec(pid)
+    # [noises] pedal_level_db: the thumps' level moved (the ring's target stays the recording's)
+    level_db = float(P.section(pid, "noises").get("pedal_level_db", 0.0))
     out = {"bands_hz": RN.BANDS.tolist(), "tail_bands_hz": TAIL_BANDS.tolist(), "tail_s": list(TAIL_S),
            "hum_bands": [int(np.argmin(np.abs(TAIL_BANDS - h))) for h in HUM_HZ],
            "mf_note_peak_mix_dbfs": ref_db, "down": [], "up": []}
@@ -121,11 +145,15 @@ def main():
         x, sr = sf.read(path, always_2d=True)
         m = x.sum(axis=1)
         m = m[max(onset(m, sr) - int(0.005 * sr), 0):]
-        imp = RN.impacts(m[:int(0.8 * sr)], sr)
+        # a set's own takes, recorded in a room: the thump within OWN_THUMP_S (the later blips its room's:
+        # their highs, under every impact of the resynthesis, made a pedal-up click)
+        imp = RN.impacts(m[:int((0.8 if own is None else OWN_THUMP_S) * sr)], sr)
         end = int((max(t for t, _, _ in imp) + 0.05) * sr)
         peak_dbfs = float(20 * np.log10(np.abs(x).max()))
-        take = {"name": name, "impacts": imp, "band_db": RN.with_perspective(RN.bands(m[:end], sr), RN.BANDS, curve).tolist(),
-                "ratio_db": peak_dbfs + volume_db - ref_db}
+        # a set's own takes, recorded in a room: their floor out of the bands
+        b = RN.bands(m[:end], sr) if own is None else thump_bands(m, sr, end)
+        take = {"name": name, "impacts": imp, "band_db": RN.with_perspective(b, RN.BANDS, curve).tolist(),
+                "ratio_db": peak_dbfs + volume_db - ref_db + level_db}
         if kind == "down":
             mix = m * 10 ** (volume_db / 20)
             take["tail_db"] = tail_bands_db(mix, sr, ref_db)
