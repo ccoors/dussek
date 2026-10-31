@@ -179,7 +179,7 @@ const std::vector<Preset>& shippedPresets()
 
 std::string formatPreset(const Preset& p)
 {
-    std::string s = "# Dussek preset\nname = " + p.name + "\nscope = " + (p.scope == PresetScope::All ? "all" : "mics") + "\n";
+    std::string s = "# Dussek preset\nversion = " + std::to_string(kStateVersion) + "\nname = " + p.name + "\nscope = " + (p.scope == PresetScope::All ? "all" : "mics") + "\n";
     if (p.scope == PresetScope::Mics)
         s += std::string("body = ") + bodyName(p.body) + "\n";
     for (const auto& [k, v] : p.values)
@@ -202,7 +202,9 @@ bool parsePreset(const std::string& text, Preset& out)
         if (eq == std::string::npos)
             continue;
         const std::string k = trim(line.substr(0, eq)), v = trim(line.substr(eq + 1));
-        if (k == "name") {
+        if (k == "version") {
+            p.version = parseStateVersion(v.c_str());
+        } else if (k == "name") {
             p.name = v;
         } else if (k == "scope") {
             scope = v == "mics" || v == "all";
@@ -219,6 +221,8 @@ bool parsePreset(const std::string& text, Preset& out)
     }
     if (p.name.empty() || !scope || (p.scope == PresetScope::Mics && !body))
         return false;
+    for (auto& [k, v] : p.states)
+        v = migrateState(p.version, k, v);
     out = std::move(p);
     return true;
 }

@@ -5,6 +5,8 @@
 // the user's are files in presetDir(), one per preset, a key = value per line, parameters by symbol.
 // Pure (no UI, no DSP): tested by ui_tests.
 #pragma once
+#include "StateVersion.hpp"
+
 #include <cstdint>
 #include <string>
 #include <utility>
@@ -16,6 +18,9 @@ enum class PresetScope : uint32_t { Mics, All };
 
 struct Preset {
     std::string name;
+    /// the state version it was written at (its file's `version`; without one 1): its states are
+    /// migrated from it (StateVersion.hpp)
+    uint32_t version = kStateVersion;
     PresetScope scope = PresetScope::Mics;
     /// the body type a microphone preset belongs to (pe_mic_geometry's index; ignored for All)
     uint32_t body = 0;

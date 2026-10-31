@@ -372,6 +372,31 @@ TEST(the_state_carries_its_version)
     CHECK(c.version() == 7 && c.apply("instrument", "grand_a") == "grand_a");
 }
 
+TEST(user_files_carry_a_version)
+{
+    // presets and MIDI maps are the player's own files: each says which version wrote it; an older
+    // or a newer one loads what it understands (docs/compatibility.md)
+    pe::Preset p;
+    p.name = "Mine";
+    p.scope = pe::PresetScope::All;
+    p.values = { { "volume", 3.0f } };
+    const std::string text = pe::formatPreset(p);
+    CHECK(text.find("\nversion = 1\n") != std::string::npos);
+    pe::Preset q;
+    CHECK(pe::parsePreset("name = Old\nscope = all\nparam.volume = 2\n", q) && q.version == 1);
+    CHECK(pe::parsePreset("# a later release\nversion = 2\nname = New\nscope = all\nfuture = x\nparam.volume = 2\n"
+                          "param.not_a_parameter = 5\nstate.instrument = grand_b\n",
+              q));
+    CHECK(q.version == 2 && q.name == "New" && q.scope == pe::PresetScope::All);
+    CHECK(q.values.size() == 2 && q.values[0].first == "volume" && q.states.size() == 1);
+    MidiMap m;
+    m.tie(kMicLX, 1, 22);
+    CHECK(m.text().find("\nversion 1\n") != std::string::npos && MidiMap::parse(m.text()).version == 1);
+    const MidiMap later = MidiMap::parse("version 2\nknob 1 2 3\nprogram_change on\ncc 2 22 mic_l_x\n");
+    CHECK(later.version == 2 && later.programChange && later.find(kMicLX) != nullptr && later.find(kMicLX)->cc == 22);
+    CHECK(MidiMap::parse("cc 2 22 mic_l_x\n").version == 1);
+}
+
 TEST(the_parameter_table_only_grows)
 {
     // the user parameters as released: a host saves them by symbol (LV2's ports, DPF's VST3 and CLAP
