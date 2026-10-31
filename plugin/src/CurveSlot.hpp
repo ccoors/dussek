@@ -4,7 +4,7 @@
 // One writer, one reader; a sequence lock over atomic words: the audio thread never waits or
 // allocates (a copy that a publish overlapped counts as nothing; the next block takes it).
 #pragma once
-#include "pianoengine.h"
+#include "dussek.h"
 
 #include <atomic>
 #include <cstdint>
@@ -72,7 +72,7 @@ public:
 
 private:
     static constexpr int kWords = (sizeof(PeVelocityCurve) + 3) / 4;
-    static_assert(sizeof(PeVelocityCurve) == 20, "PeVelocityCurve layout (pianoengine.h)");
+    static_assert(sizeof(PeVelocityCurve) == 20, "PeVelocityCurve layout (dussek.h)");
 
     void write(const PeVelocityCurve& c)
     {

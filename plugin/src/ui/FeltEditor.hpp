@@ -5,7 +5,7 @@
 // point is dropped. The stiffness shows dB re the shipped felt; the others their own units.
 #pragma once
 #include "Layout.hpp"
-#include "pianoengine.h"
+#include "dussek.h"
 
 #include <string>
 

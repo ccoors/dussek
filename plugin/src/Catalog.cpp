@@ -63,7 +63,7 @@ const PeLabel* InstrumentEntry::label(const char* symbol) const
 std::vector<std::string> Catalog::searchPaths(const char* resources)
 {
     std::vector<std::string> p;
-    if (const char* env = std::getenv("PIANOENGINE_INSTRUMENTS"); env != nullptr && *env)
+    if (const char* env = std::getenv("DUSSEK_INSTRUMENTS"); env != nullptr && *env)
         p.push_back(env);
     if (resources != nullptr)
         p.push_back(std::string(resources) + "/instruments");
@@ -86,7 +86,7 @@ bool Catalog::entryAt(const std::string& path, const std::string& id, Instrument
     InstrumentEntry e;
     char err[512] = {};
     if (!pe_instrument_info(dir.c_str(), &e.info, err, sizeof(err))) {
-        message = std::string("PianoEngine: ") + err;
+        message = std::string("Dussek: ") + err;
         return false;
     }
     e.id = id;
@@ -113,7 +113,7 @@ Catalog Catalog::scan(const std::vector<std::string>& paths)
                 continue;
             }
             if (const InstrumentEntry* seen = c.find(id)) {
-                c.fMessages.push_back("PianoEngine: " + e.dir + " shadowed by " + seen->dir);
+                c.fMessages.push_back("Dussek: " + e.dir + " shadowed by " + seen->dir);
                 continue;
             }
             c.fEntries.push_back(e);

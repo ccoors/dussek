@@ -1,7 +1,7 @@
 // The instruments found in the search paths: what the menu lists and the "instrument" state
 // names (by directory name, never by position, so a rescan changes nothing else).
 #pragma once
-#include "pianoengine.h"
+#include "dussek.h"
 
 #include <memory>
 #include <string>
@@ -24,8 +24,8 @@ struct InstrumentEntry {
 /// The instruments found, in menu order (hidden ones kept, for a session that names one).
 class Catalog {
 public:
-    /// the search paths, in precedence order: $PIANOENGINE_INSTRUMENTS, <resources>/instruments,
-    /// the user data folder's instruments (pe::dataDirs: ~/.local/share/pianoengine/instruments on
+    /// the search paths, in precedence order: $DUSSEK_INSTRUMENTS, <resources>/instruments,
+    /// the user data folder's instruments (pe::dataDirs: ~/.local/share/dussek/instruments on
     /// Linux), then its snapshots folder (proto/snapshot.py); unset ones left out
     static std::vector<std::string> searchPaths(const char* resources);
     /// every subdirectory with an instrument.json (that the engine's report accepts) and a data.bin

@@ -2,7 +2,7 @@
 // morph: up to a few hundred ms): one thread for the UI's life, the newest request replacing one
 // still waiting, the UI taking the result when it polls (its idle) and never waiting on it.
 #pragma once
-#include "pianoengine.h"
+#include "dussek.h"
 
 #include <condition_variable>
 #include <mutex>

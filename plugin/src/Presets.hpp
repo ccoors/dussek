@@ -40,7 +40,7 @@ const char* bodyName(uint32_t body);
 bool bodyIndex(const std::string& name, uint32_t& body);
 
 /// the shipped presets: the grand's and the upright's microphones, then the full presets (Default,
-/// then the repository's plugin/presets/*.pepreset, embedded by the build)
+/// then the repository's plugin/presets/*.dussek-preset, embedded by the build)
 const std::vector<Preset>& shippedPresets();
 /// the shipped full presets, Default first, then in their files' order (the plugin's programs)
 std::vector<const Preset*> shippedFullPresets();

@@ -1,9 +1,9 @@
-// The standalone's command line: `pianoengine render INSTRUMENT IN.mid OUT.wav [options]` renders a
+// The standalone's command line: `dussek render INSTRUMENT IN.mid OUT.wav [options]` renders a
 // MIDI file as midi2wav does (pe_cli, the engine's code), then exits; anything else starts the
 // standalone as usual. It runs before DPF's main (which has no hook for it): a constructor on Linux
 // and macOS (glibc and dyld pass it the arguments), a static initializer on Windows. Linked into the
 // standalone only.
-#include "pianoengine.h"
+#include "dussek.h"
 
 #include <cstdio>
 #include <cstdlib>

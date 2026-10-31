@@ -1,5 +1,5 @@
 /*
- * DPF wrapper around the Rust engine (pianoengine.h): MIDI, sustain pedal, parameters,
+ * DPF wrapper around the Rust engine (dussek.h): MIDI, sustain pedal, parameters,
  * instrument loading off the audio thread.
  *
  * Loading: a worker thread creates engines (instrument × sample rate × tuning) and hands
@@ -37,7 +37,7 @@
 #include "SharedRegion.hpp"
 #include "TuningWatch.hpp"
 #include "UiState.hpp"
-#include "pianoengine.h"
+#include "dussek.h"
 
 #include <atomic>
 #include <chrono>
@@ -94,7 +94,7 @@ public:
             // anything in the setup (the sweep, the region) can throw: go on without diagnostics (the token stays 0)
             fRegion.reset();
             fValues[kDiagToken] = 0.0f;
-            d_stderr2("PianoEngine: diagnostics region unavailable (the strip and the sound are unaffected)");
+            d_stderr2("Dussek: diagnostics region unavailable (the strip and the sound are unaffected)");
         }
         fRequestRate = getSampleRate();
         fRequest.fetch_add(1);
@@ -118,7 +118,7 @@ public:
     }
 
 protected:
-    const char* getLabel() const override { return "PianoEngine"; }
+    const char* getLabel() const override { return "Dussek"; }
     const char* getDescription() const override
     {
         return "Physically modeled pianos, harpsichords, a clavichord, harps, guitars, zithers and "
@@ -126,7 +126,8 @@ protected:
                "of a real one. Strings with hammer, plectrum or mallet, soundboard, room, dampers, "
                "pedals and sympathetic resonance.";
     }
-    const char* getMaker() const override { return "PianoEngine"; }
+    const char* getMaker() const override { return "Christian Friedrich Coors"; }
+    const char* getHomePage() const override { return kProjectUrl; }
     const char* getLicense() const override { return "AGPL-3.0-or-later"; }
     uint32_t getVersion() const override
     {
@@ -782,14 +783,14 @@ private:
             reload.loaded(dirs, statStamp, seconds());
             fBuilding.store(true, std::memory_order_relaxed);
             if (std::find(dirs.begin(), dirs.end(), std::string()) != dirs.end())
-                d_stderr2("PianoEngine: instrument '%s' not found (set PIANOENGINE_INSTRUMENTS)", id.c_str());
+                d_stderr2("Dussek: instrument '%s' not found (set DUSSEK_INSTRUMENTS)", id.c_str());
             else {
                 std::vector<const char*> ptrs;
                 for (const std::string& d : dirs)
                     ptrs.push_back(d.c_str());
                 pe_cache_set_quick(cache, !refine); // a felt measured in seconds: first as last measured
                 if ((engine = pe_create_morph(ptrs.data(), weights.data(), (uint32_t)ptrs.size(), rate, &tuning, &felt, cache, err, sizeof(err))) == nullptr)
-                    d_stderr2("PianoEngine: %s", err);
+                    d_stderr2("Dussek: %s", err);
             }
             refineDue = engine != nullptr && pe_cache_provisional(cache);
             lock.lock();

@@ -78,7 +78,7 @@ const Tie* MidiMap::find(uint32_t target) const
 
 std::string MidiMap::text() const
 {
-    std::string s = "# PianoEngine MIDI map: program_change on|off, one \"cc <channel 1-16> <cc 0-127> <control>\" per tie\n";
+    std::string s = "# Dussek MIDI map: program_change on|off, one \"cc <channel 1-16> <cc 0-127> <control>\" per tie\n";
     s += programChange ? "program_change on\n" : "program_change off\n";
     s += softTakeover ? "soft_takeover on\n" : "soft_takeover off\n";
     for (const Tie& t : fTies)

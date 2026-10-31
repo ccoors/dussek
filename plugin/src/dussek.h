@@ -6,8 +6,8 @@
  * at a time (the audio thread). Event frames are relative to the start of the next
  * pe_process call; give events in time order.
  */
-#ifndef PIANOENGINE_H
-#define PIANOENGINE_H
+#ifndef DUSSEK_H
+#define DUSSEK_H
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -267,7 +267,7 @@ typedef struct PeInstrumentInfo {
 bool pe_instrument_info(const char* instrument_dir, PeInstrumentInfo* out, char* err, size_t err_len);
 
 /* the standalone's command line after its program name: "render" and midi2wav's arguments
- * (pianoengine render instruments/grand_a in.mid out.wav ...); renders as midi2wav does, printing to
+ * (dussek render instruments/grand_a in.mid out.wav ...); renders as midi2wav does, printing to
  * stdout and stderr, and returns the exit status (2 for anything but "render") */
 int32_t pe_cli(int32_t argc, const char* const* argv);
 /* e (fresh, not yet processed) takes over from old, the engine it replaces: sounding

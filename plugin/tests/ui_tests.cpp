@@ -34,10 +34,12 @@
 #include "Tooltip.hpp"
 #include "UiState.hpp"
 #include "WorkerPriority.hpp"
-#include "pianoengine.h"
+#include "dussek.h"
+#include "DistrhoPluginInfo.h"
 
 #include <algorithm>
 #include <filesystem>
+#include <fstream>
 #include <thread>
 #include <cmath>
 #include <cstdio>
@@ -1888,11 +1890,11 @@ size_t drainAudio(TelemetryClient& c, float& peak)
     }
     return total;
 }
-// the grand_a instrument directory: PIANOENGINE_INSTRUMENTS if it has one, else the source
+// the grand_a instrument directory: DUSSEK_INSTRUMENTS if it has one, else the source
 // tree's; empty (and a stderr line, so that a skip is visible) when there is none
 std::string salamanderDir(const char* test)
 {
-    const char* env = std::getenv("PIANOENGINE_INSTRUMENTS");
+    const char* env = std::getenv("DUSSEK_INSTRUMENTS");
     for (const std::string& base : { std::string(env ? env : ""), std::string(PE_INSTRUMENTS_DIR) }) {
         if (base.empty()) continue;
         const std::string dir = base + "/grand_a";
@@ -4096,12 +4098,12 @@ TEST(the_default_settings_copy_as_a_short_command_line)
     // the Pedal ring at −10 dB (midi2wav plays them as fitted), the motor on (the vibraphone's), the wear's variant 1
     const std::string tail = " in.mid out.wav --rate 48000 --param pedal=0.1,pedal_ring=0.31622776,voicing=0.05,motor=1 --tuning seed=1";
     const std::string line = cliLine(defaults(0, 0, 0));
-    CHECK(line == "pianoengine render /i/grand_a" + tail);
+    CHECK(line == "dussek render /i/grand_a" + tail);
     // a directory that needs quoting, the latch, a rate that is no whole number
     std::vector<float> v = defaults(0, 0, 0);
     v[kSustainLatch] = 1;
     CHECK(midi2wavLine(v.data(), "/a b/it's", 44100.5)
-        == "pianoengine render '/a b/it'\\''s' in.mid out.wav --rate 44100.5 --param pedal=0.1,pedal_ring=0.31622776,voicing=0.05,motor=1 --tuning seed=1 --latch");
+        == "dussek render '/a b/it'\\''s' in.mid out.wav --rate 44100.5 --param pedal=0.1,pedal_ring=0.31622776,voicing=0.05,motor=1 --tuning seed=1 --latch");
 }
 
 TEST(touch_tab_has_a_graph_and_no_empty_note)
@@ -4279,7 +4281,7 @@ TEST(a_bent_velocity_curve_copies_into_the_command_line)
     CHECK(pe_velocity_curve_parse("1:1,64:100,127:127", &c));
     const std::vector<float> v = defaults(0, 0, 0);
     CHECK(midi2wavLine(v.data(), "/i/grand_a", 48000, &c)
-        == "pianoengine render /i/grand_a in.mid out.wav --rate 48000 --velocity-curve 1:1,64:100,127:127 "
+        == "dussek render /i/grand_a in.mid out.wav --rate 48000 --velocity-curve 1:1,64:100,127:127 "
            "--param pedal=0.1,pedal_ring=0.31622776,voicing=0.05,motor=1 --tuning seed=1");
     CHECK(midi2wavLine(v.data(), "/i/grand_a", 48000, nullptr) == cliLine(v));
 }
@@ -4602,10 +4604,10 @@ TEST(the_dsp_finds_an_id_where_the_catalog_does)
     t.add("bundle/instruments", "bad", "harp", R"({"name": "Fine", "group": "Harps"})");
     // the platform's user folder (pe::dataDirs), from the variable it reads, inside the tree
     const char* var = pe::hostPlatform() == pe::Platform::Linux ? "XDG_DATA_HOME" : pe::hostPlatform() == pe::Platform::MacOS ? "HOME" : "APPDATA";
-    const char* env = std::getenv("PIANOENGINE_INSTRUMENTS");
+    const char* env = std::getenv("DUSSEK_INSTRUMENTS");
     const char* xdg = std::getenv(var);
     const std::string envWas = env ? env : "", xdgWas = xdg ? xdg : "";
-    setEnv("PIANOENGINE_INSTRUMENTS", t.path("env").c_str());
+    setEnv("DUSSEK_INSTRUMENTS", t.path("env").c_str());
     setEnv(var, t.path("xdg").c_str());
     const std::string data = pe::dataDirs().data;
     CHECK(data.rfind(t.path("xdg"), 0) == 0);
@@ -4620,7 +4622,7 @@ TEST(the_dsp_finds_an_id_where_the_catalog_does)
     CHECK(instrumentDir(bundle.c_str(), "").empty() && instrumentDir(bundle.c_str(), "nonesuch").empty());
     CHECK(c.find("harp@t-1") != nullptr && c.find("harp@t-1")->group == "Snapshots");
     CHECK(Catalog::searchPaths(bundle.c_str()).back() == data + "/snapshots");
-    if (env) setEnv("PIANOENGINE_INSTRUMENTS", envWas.c_str()); else unsetEnv("PIANOENGINE_INSTRUMENTS");
+    if (env) setEnv("DUSSEK_INSTRUMENTS", envWas.c_str()); else unsetEnv("DUSSEK_INSTRUMENTS");
     if (xdg) setEnv(var, xdgWas.c_str()); else unsetEnv(var);
 }
 
@@ -5698,11 +5700,20 @@ TEST(a_preset_reads_back_from_its_file)
     CHECK(!pe::parsePreset("scope = all\n", q));               // no name
 }
 
+TEST(the_plugin_is_named_dussek)
+{
+    // the name, the maker and the IDs under ccoors.de (fixed from the first release on)
+    CHECK(std::string(DISTRHO_PLUGIN_NAME) == "Dussek");
+    CHECK(std::string(DISTRHO_PLUGIN_BRAND) == "Christian Friedrich Coors");
+    CHECK(std::string(DISTRHO_PLUGIN_URI) == "https://ccoors.de/plugins/dussek");
+    CHECK(std::string(DISTRHO_PLUGIN_CLAP_ID) == "de.ccoors.dussek");
+}
+
 TEST(user_presets_save_load_and_delete)
 {
     const std::string tmpl = tempDir("pe-presets-");
     CHECK(!tmpl.empty());
-    const std::string dir = tmpl + "/pianoengine/presets"; // made with its parents
+    const std::string dir = tmpl + "/dussek/presets"; // made with its parents
     float v[pe::kParamCount] = {};
     for (uint32_t i = 0; i < pe::kParamCount; ++i)
         v[i] = pe::paramInfo(i).def;
@@ -5713,11 +5724,16 @@ TEST(user_presets_save_load_and_delete)
     CHECK(std::all_of(mine.values.begin(), mine.values.end(), [](const auto& kv) { return kv.first != "volume"; }));
     std::string err;
     CHECK(pe::saveUserPreset(dir, mine, err) && err.empty());
-    CHECK(pe::presetFile(dir, "My/close: pair") == dir + "/My_close_ pair.pepreset");
+    CHECK(pe::presetFile(dir, "My/close: pair") == dir + "/My_close_ pair.dussek-preset");
     const pe::Preset all = pe::presetFrom("Everything", pe::PresetScope::All, 0, v, { { "instrument", "grand_b" }, { "ui", "tab=2" } });
     CHECK(pe::saveUserPreset(dir, all, err));
     std::vector<pe::Preset> user = pe::loadUserPresets(dir);
     CHECK(user.size() == 2 && user[0].name == "Everything" && user[1].name == "My/close: pair");
+    { // a file of the old extension is not a preset
+        std::ofstream old(dir + "/Old.pepreset");
+        old << "# a preset\nname = Old\nscope = all\n";
+    }
+    CHECK(pe::loadUserPresets(dir).size() == 2);
     CHECK(user[0].states.size() == 1 && user[0].states[0].second == "grand_b"); // the UI's state not a preset's
     // offered: the grand's shipped first, then the user's; an upright sees none of the grand's
     const std::vector<const pe::Preset*> grand = pe::presetsFor(pe::PresetScope::Mics, 0, user);
@@ -5776,18 +5792,18 @@ TEST(data_dirs_per_platform)
         };
     };
     auto d = pe::dataDirs(env({{"HOME", "/hm/u"}}), Platform::Linux);
-    CHECK(d.data == "/hm/u/.local/share/pianoengine" && d.config == "/hm/u/.config/pianoengine");
+    CHECK(d.data == "/hm/u/.local/share/dussek" && d.config == "/hm/u/.config/dussek");
     d = pe::dataDirs(env({{"HOME", "/hm/u"}, {"XDG_DATA_HOME", "/x/d"}, {"XDG_CONFIG_HOME", "/x/c"}}), Platform::Linux);
-    CHECK(d.data == "/x/d/pianoengine" && d.config == "/x/c/pianoengine");
+    CHECK(d.data == "/x/d/dussek" && d.config == "/x/c/dussek");
     // a relative XDG folder is not one (the XDG spec): the default instead
     d = pe::dataDirs(env({{"HOME", "/hm/u"}, {"XDG_DATA_HOME", "rel"}, {"XDG_CONFIG_HOME", "rel"}}), Platform::Linux);
-    CHECK(d.data == "/hm/u/.local/share/pianoengine" && d.config == "/hm/u/.config/pianoengine");
+    CHECK(d.data == "/hm/u/.local/share/dussek" && d.config == "/hm/u/.config/dussek");
     d = pe::dataDirs(env({}), Platform::Linux);
     CHECK(d.data.empty() && d.config.empty());
     d = pe::dataDirs(env({{"HOME", "/Users/u"}, {"XDG_DATA_HOME", "/x/d"}}), Platform::MacOS);
-    CHECK(d.data == "/Users/u/Library/Application Support/PianoEngine" && d.config == d.data);
+    CHECK(d.data == "/Users/u/Library/Application Support/Dussek" && d.config == d.data);
     d = pe::dataDirs(env({{"APPDATA", "C:\\Users\\u\\AppData\\Roaming"}, {"HOME", "/c/Users/u"}}), Platform::Windows);
-    CHECK(d.data == "C:\\Users\\u\\AppData\\Roaming/PianoEngine" && d.config == d.data);
+    CHECK(d.data == "C:\\Users\\u\\AppData\\Roaming/Dussek" && d.config == d.data);
     d = pe::dataDirs(env({{"HOME", "/c/Users/u"}}), Platform::Windows);
     CHECK(d.data.empty());
     // the process's own: the readers agree with it
@@ -5835,7 +5851,7 @@ TEST(saving_again_replaces_the_file)
     // the presets and the MIDI map are written to a temporary file and renamed over the old one;
     // std::rename does not replace an existing file on Windows
     const std::filesystem::path dir = std::filesystem::temp_directory_path() / ("pe-replace-" + std::to_string(pe::SharedRegion::randomToken()));
-    const std::string presets = (dir / "pianoengine" / "presets").string();
+    const std::string presets = (dir / "dussek" / "presets").string();
     float v[pe::kParamCount] = {};
     for (uint32_t i = 0; i < pe::kParamCount; ++i)
         v[i] = pe::paramInfo(i).def;
@@ -5882,7 +5898,7 @@ TEST(copy_cli_finds_the_standalone)
 {
     // Copy CLI's program: the standalone's own path in the standalone; in a plugin the standalone next
     // to its bundle (a release's folder, or plugin/build/bin behind `just install`'s links), else on
-    // PATH; empty: none found (the line then says plain `pianoengine`)
+    // PATH; empty: none found (the line then says plain `dussek`)
     namespace fs = std::filesystem;
     const fs::path root = tempDir("pe-standalone-");
     const auto file = [](const fs::path& p) {
@@ -5892,44 +5908,44 @@ TEST(copy_cli_finds_the_standalone)
             std::fclose(f);
     };
 #ifdef _WIN32
-    const char* exe = "pianoengine.exe";
+    const char* exe = "dussek.exe";
     const char sep = ';';
 #else
-    const char* exe = "pianoengine";
+    const char* exe = "dussek";
     const char sep = ':';
 #endif
     const fs::path bin = root / "build" / "bin";
     file(bin / exe);
-    file(bin / "pianoengine.lv2" / "pianoengine_dsp.so");
-    file(bin / "pianoengine.vst3" / "Contents" / "x86_64-linux" / "pianoengine.so");
-    file(bin / "pianoengine.clap");
+    file(bin / "dussek.lv2" / "dussek_dsp.so");
+    file(bin / "dussek.vst3" / "Contents" / "x86_64-linux" / "dussek.so");
+    file(bin / "dussek.clap");
     const auto same = [](const std::string& a, const fs::path& b) { std::error_code ec; return !a.empty() && fs::equivalent(a, b, ec); };
     CHECK(pe::standaloneExecutable((bin / exe).string(), true, nullptr) == (bin / exe).string());
-    CHECK(same(pe::standaloneExecutable((bin / "pianoengine.lv2" / "pianoengine_dsp.so").string(), false, nullptr), bin / exe));
-    CHECK(same(pe::standaloneExecutable((bin / "pianoengine.vst3" / "Contents" / "x86_64-linux" / "pianoengine.so").string(), false, nullptr), bin / exe));
-    CHECK(same(pe::standaloneExecutable((bin / "pianoengine.clap").string(), false, nullptr), bin / exe));
+    CHECK(same(pe::standaloneExecutable((bin / "dussek.lv2" / "dussek_dsp.so").string(), false, nullptr), bin / exe));
+    CHECK(same(pe::standaloneExecutable((bin / "dussek.vst3" / "Contents" / "x86_64-linux" / "dussek.so").string(), false, nullptr), bin / exe));
+    CHECK(same(pe::standaloneExecutable((bin / "dussek.clap").string(), false, nullptr), bin / exe));
 #ifndef _WIN32
-    // `just install`: ~/.lv2/pianoengine.lv2 a link to the build's bundle
+    // `just install`: ~/.lv2/dussek.lv2 a link to the build's bundle
     fs::create_directories(root / "home" / ".lv2");
     std::error_code ec;
-    fs::create_directory_symlink(bin / "pianoengine.lv2", root / "home" / ".lv2" / "pianoengine.lv2", ec);
+    fs::create_directory_symlink(bin / "dussek.lv2", root / "home" / ".lv2" / "dussek.lv2", ec);
     if (!ec)
-        CHECK(same(pe::standaloneExecutable((root / "home" / ".lv2" / "pianoengine.lv2" / "pianoengine_dsp.so").string(), false, nullptr), bin / exe));
+        CHECK(same(pe::standaloneExecutable((root / "home" / ".lv2" / "dussek.lv2" / "dussek_dsp.so").string(), false, nullptr), bin / exe));
 #endif
 #ifndef _WIN32
-    // macOS: the VST3's binary is named pianoengine too; the standalone is the .app's (Windows has no .app)
+    // macOS: the VST3's binary is named dussek too; the standalone is the .app's (Windows has no .app)
     const fs::path mac = root / "mac";
-    file(mac / "pianoengine.vst3" / "Contents" / "MacOS" / "pianoengine");
-    file(mac / "pianoengine.app" / "Contents" / "MacOS" / "pianoengine");
-    CHECK(same(pe::standaloneExecutable((mac / "pianoengine.vst3" / "Contents" / "MacOS" / "pianoengine").string(), false, nullptr),
-        mac / "pianoengine.app" / "Contents" / "MacOS" / "pianoengine"));
+    file(mac / "dussek.vst3" / "Contents" / "MacOS" / "dussek");
+    file(mac / "dussek.app" / "Contents" / "MacOS" / "dussek");
+    CHECK(same(pe::standaloneExecutable((mac / "dussek.vst3" / "Contents" / "MacOS" / "dussek").string(), false, nullptr),
+        mac / "dussek.app" / "Contents" / "MacOS" / "dussek"));
 #endif
     // a package's layout: the plugin in lib/lv2, the program on PATH
     const fs::path pkg = root / "pkg";
-    file(pkg / "lib" / "lv2" / "pianoengine.lv2" / "pianoengine_dsp.so");
+    file(pkg / "lib" / "lv2" / "dussek.lv2" / "dussek_dsp.so");
     file(pkg / "bin" / exe);
     const std::string path = (root / "nowhere").string() + sep + (pkg / "bin").string();
-    const std::string plugin = (pkg / "lib" / "lv2" / "pianoengine.lv2" / "pianoengine_dsp.so").string();
+    const std::string plugin = (pkg / "lib" / "lv2" / "dussek.lv2" / "dussek_dsp.so").string();
     CHECK(same(pe::standaloneExecutable(plugin, false, path.c_str()), pkg / "bin" / exe));
     CHECK(pe::standaloneExecutable(plugin, false, nullptr).empty());
     CHECK(pe::standaloneExecutable("", false, nullptr).empty());
@@ -5938,9 +5954,9 @@ TEST(copy_cli_finds_the_standalone)
     std::vector<float> v(pe::kParamCount);
     for (uint32_t i = 0; i < pe::kParamCount; ++i)
         v[i] = pe::paramInfo(i).def;
-    CHECK(midi2wavLine(v.data(), "/i/grand_a", 48000).rfind("pianoengine render /i/grand_a ", 0) == 0);
-    CHECK(midi2wavLine(v.data(), "/i/grand_a", 48000, nullptr, {}, std::string(), std::string(), "/opt/my apps/pianoengine")
-              .rfind("'/opt/my apps/pianoengine' render /i/grand_a ", 0) == 0);
+    CHECK(midi2wavLine(v.data(), "/i/grand_a", 48000).rfind("dussek render /i/grand_a ", 0) == 0);
+    CHECK(midi2wavLine(v.data(), "/i/grand_a", 48000, nullptr, {}, std::string(), std::string(), "/opt/my apps/dussek")
+              .rfind("'/opt/my apps/dussek' render /i/grand_a ", 0) == 0);
 }
 
 TEST(about_is_the_last_tab)

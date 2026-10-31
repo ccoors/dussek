@@ -2,7 +2,7 @@
 // worker builds it, the live Hammer hardness beside it, the state's keeping across a restore, and the
 // Original toggle's input (kDiagFeltOriginalIn). Pure: tested in ui_tests.
 #pragma once
-#include "pianoengine.h"
+#include "dussek.h"
 
 #include <string>
 

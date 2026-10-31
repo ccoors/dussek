@@ -5,7 +5,7 @@
  */
 #pragma once
 #include "Params.hpp"
-#include "pianoengine.h"
+#include "dussek.h"
 
 #include <string>
 #include <utility>
@@ -44,19 +44,19 @@ PeTuning engineTuning(const float* values);
 bool sameTuning(const PeTuning& a, const PeTuning& b);
 
 /// the directory of instrument `id` (a directory's name, the "instrument" state): the catalog's
-/// entry for it, the first search path (Catalog::searchPaths: $PIANOENGINE_INSTRUMENTS,
+/// entry for it, the first search path (Catalog::searchPaths: $DUSSEK_INSTRUMENTS,
 /// `resources`/instruments, the user's data directory) where it is an instrument the engine
 /// accepts (Catalog::entryAt); empty if none is
 std::string instrumentDir(const char* resources, const char* id);
 
 /// the shell command that renders a MIDI file with these settings (the standalone's `render`, which is
 /// midi2wav; `midi2wav` takes the same arguments):
-/// `pianoengine render '<dir>' in.mid out.wav --rate <rate> [--velocity-curve …] [--param …] [--tuning …] [--latch]`
+/// `dussek render '<dir>' in.mid out.wav --rate <rate> [--velocity-curve …] [--param …] [--tuning …] [--latch]`
 /// (`curve`: the velocity curve, a state; null: straight)
 /// `morph`: each partner's directory and weight (one --morph per weight above 0); `felt`: the Felt tab's
 /// "felt" state (--felt where not empty); `scale`: the "scale_file" state (--scl with the temperament key
 /// where the temperament is its "Scala file"); `program`: the standalone's path (standaloneExecutable;
-/// empty: `pianoengine`, found on PATH)
+/// empty: `dussek`, found on PATH)
 std::string midi2wavLine(const float* values, const std::string& dir, double rate, const PeVelocityCurve* curve = nullptr,
     const std::vector<std::pair<std::string, float>>& morph = {}, const std::string& felt = std::string(),
     const std::string& scale = std::string(), const std::string& program = std::string());

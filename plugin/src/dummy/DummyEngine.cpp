@@ -1,10 +1,10 @@
 /*
- * Silent stand-in for the Rust engine (pianoengine.h): a buildable dummy for when the
+ * Silent stand-in for the Rust engine (dussek.h): a buildable dummy for when the
  * engine is missing. The UI runs fully, the sound is silence, the diagnostics are zero.
  * Not a real engine: pe_create never fails, pe_process writes zeros.
  */
 
-#include "pianoengine.h"
+#include "dussek.h"
 
 #include <cstdio>
 #include <cstring>

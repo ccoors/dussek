@@ -102,7 +102,7 @@ const WearAspect* wearAspect(uint32_t index);
 /// the compiled wear in PeTuning order
 extern const Param kCompiledWear[5];
 
-/// the Mallet parameter's values: an instrument's own mallets, at most this many (pianoengine.h PE_INFO_MALLETS)
+/// the Mallet parameter's values: an instrument's own mallets, at most this many (dussek.h PE_INFO_MALLETS)
 constexpr uint32_t kMalletCount = 8;
 constexpr float kOffDb = -40.0f; // levels at or below this are off
 

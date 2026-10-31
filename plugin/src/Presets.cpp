@@ -3,7 +3,7 @@
 #include "Paths.hpp"
 
 #include "Params.hpp"
-#include "pianoengine.h"
+#include "dussek.h"
 
 #include <algorithm>
 #include <cctype>
@@ -156,7 +156,7 @@ const std::vector<Preset>& shippedPresets()
         const float uOrtfL[6] = { -0.085f, -1.00f, 0.45f, 50, -55, -24 }, uOrtfR[6] = { 0.085f, -1.00f, 0.45f, 50, 55, -24 };
         v.push_back(custom("ORTF at the player's seat", kUpright, uOrtfL, uOrtfR));
         // the full presets: Default (every parameter and state at its default, the instrument the menu's
-        // first), then the repository's plugin/presets/*.pepreset, embedded by the build
+        // first), then the repository's plugin/presets/*.dussek-preset, embedded by the build
         Preset d;
         d.name = "Default";
         d.scope = PresetScope::All;
@@ -179,7 +179,7 @@ const std::vector<Preset>& shippedPresets()
 
 std::string formatPreset(const Preset& p)
 {
-    std::string s = "# PianoEngine preset\nname = " + p.name + "\nscope = " + (p.scope == PresetScope::All ? "all" : "mics") + "\n";
+    std::string s = "# Dussek preset\nname = " + p.name + "\nscope = " + (p.scope == PresetScope::All ? "all" : "mics") + "\n";
     if (p.scope == PresetScope::Mics)
         s += std::string("body = ") + bodyName(p.body) + "\n";
     for (const auto& [k, v] : p.values)
@@ -236,7 +236,8 @@ std::vector<Preset> loadUserPresets(const std::string& dir)
     std::error_code ec;
     for (fs::directory_iterator it(dir.empty() ? fs::path() : fs::path(dir), ec), end; !dir.empty() && !ec && it != end; it.increment(ec)) {
         const std::string n = it->path().filename().string();
-        if (n.size() < 9 || n.compare(n.size() - 9, 9, ".pepreset") != 0)
+        const std::string ext = ".dussek-preset";
+        if (n.size() <= ext.size() || n.compare(n.size() - ext.size(), ext.size(), ext) != 0)
             continue;
         std::ifstream f(dir + "/" + n);
         std::stringstream ss;
@@ -259,7 +260,7 @@ std::string presetFile(const std::string& dir, const std::string& name)
     safe = trim(safe);
     if (safe.empty())
         safe = "preset";
-    return dir + "/" + safe + ".pepreset";
+    return dir + "/" + safe + ".dussek-preset";
 }
 
 bool saveUserPreset(const std::string& dir, const Preset& p, std::string& error)
@@ -269,7 +270,7 @@ bool saveUserPreset(const std::string& dir, const Preset& p, std::string& error)
         error = "no folder for presets (the environment names no user folder)";
         return false;
     }
-    // the folder and its parents (…/pianoengine/presets)
+    // the folder and its parents (…/dussek/presets)
     std::error_code ec;
     std::filesystem::create_directories(dir, ec);
     if (ec) {

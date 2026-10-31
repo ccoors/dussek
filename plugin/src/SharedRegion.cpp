@@ -1,6 +1,6 @@
 #include "SharedRegion.hpp"
 
-#include "pianoengine.h"
+#include "dussek.h"
 
 #include <cerrno>
 #include <chrono>

@@ -909,7 +909,7 @@ private:
             std::string dir = path;
             dir = dir.substr(0, std::max<size_t>(1, dir.find_last_of('/')));
             if (Catalog::outside(dir) == nullptr) {
-                d_stderr2("PianoEngine: %s: no instrument (an instrument.json and a data.bin the engine accepts)", dir.c_str());
+                d_stderr2("Dussek: %s: no instrument (an instrument.json and a data.bin the engine accepts)", dir.c_str());
                 return;
             }
             chooseInstrument(dir);
@@ -917,7 +917,7 @@ private:
         }
         char msg[256];
         if (pe_scale_info(path, msg, sizeof(msg)) == 0) {
-            d_stderr2("PianoEngine: %s", msg);
+            d_stderr2("Dussek: %s", msg);
             return; // not a scale: the temperament as it was
         }
         fScaleFile = path;
@@ -1130,10 +1130,10 @@ private:
         const std::string line = midi2wavLine(v.data(), dir, getSampleRate(), &fEdit.curve(), morph, bent ? fFelt.text() : std::string(),
             fScaleFile, program);
         if (!setClipboard("text/plain", line.c_str(), line.size())) {
-            d_stderr2("PianoEngine: the clipboard took nothing; the command line: %s", line.c_str());
+            d_stderr2("Dussek: the clipboard took nothing; the command line: %s", line.c_str());
             return;
         }
-        showNote("Copied", "The command line (pianoengine render) for the current settings is on the clipboard.", fLayout.menu);
+        showNote("Copied", "The command line (dussek render) for the current settings is on the clipboard.", fLayout.menu);
     }
 
     // ---- the About tab: the instrument's LICENSE.md, read when the instrument changes (not per frame)
@@ -1152,7 +1152,7 @@ private:
     void copyLink()
     {
         if (!setClipboard("text/plain", kProjectUrl, std::strlen(kProjectUrl))) {
-            d_stderr2("PianoEngine: the clipboard took nothing; the link: %s", kProjectUrl);
+            d_stderr2("Dussek: the clipboard took nothing; the link: %s", kProjectUrl);
             return;
         }
         showNote("Copied", "The project's link is on the clipboard.", shown(fLayout.aboutCopy, true, fScroll));
@@ -1257,7 +1257,7 @@ private:
             const std::string name = o[(size_t)cur]->name;
             fDeleteArmedAt = {};
             if (!deleteUserPreset(*o[(size_t)cur]))
-                d_stderr2("PianoEngine: could not delete the preset %s", o[(size_t)cur]->file.c_str());
+                d_stderr2("Dussek: could not delete the preset %s", o[(size_t)cur]->file.c_str());
             fUserPresets = loadUserPresets(presetDir());
             if (const Row* r = rowFor(shownRow(row)))
                 showNote("Deleted", "The preset “" + name + "” is gone.", shown(r->control, r->scrolls, fScroll));
@@ -2257,7 +2257,7 @@ private:
         if (fMap.update(path, edit))
             setDiag(kDiagMapSeqIn, std::fmod(fValues[kDiagMapSeqIn] + 1.0f, 16777216.0f));
         else
-            d_stderr2("PianoEngine: the MIDI map could not be written to '%s': the change is not kept", path.c_str());
+            d_stderr2("Dussek: the MIDI map could not be written to '%s': the change is not kept", path.c_str());
         relayout(); // the MIDI tab's rows, the tags' room
         repaint();
     }

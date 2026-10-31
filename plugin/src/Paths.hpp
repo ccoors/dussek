@@ -15,9 +15,9 @@ struct DataDirs {
     std::string config; ///< MIDI maps
 };
 
-/// Linux: $XDG_DATA_HOME/pianoengine and $XDG_CONFIG_HOME/pianoengine (absolute ones only), else
-/// ~/.local/share/pianoengine and ~/.config/pianoengine; macOS: ~/Library/Application Support/PianoEngine
-/// for both; Windows: %APPDATA%\PianoEngine for both. `env` reads a variable (nullptr: unset).
+/// Linux: $XDG_DATA_HOME/dussek and $XDG_CONFIG_HOME/dussek (absolute ones only), else
+/// ~/.local/share/dussek and ~/.config/dussek; macOS: ~/Library/Application Support/Dussek
+/// for both; Windows: %APPDATA%\Dussek for both. `env` reads a variable (nullptr: unset).
 DataDirs dataDirs(const std::function<const char*(const char*)>& env, Platform platform);
 
 /// the process's: its environment, this platform

@@ -1,14 +1,15 @@
 #ifndef DISTRHO_PLUGIN_INFO_H_INCLUDED
 #define DISTRHO_PLUGIN_INFO_H_INCLUDED
 
-// working name; no product names or trademarks
-#define DISTRHO_PLUGIN_BRAND   "PianoEngine"
-#define DISTRHO_PLUGIN_NAME    "PianoEngine"
-#define DISTRHO_PLUGIN_URI     "urn:pianoengine:piano"
-#define DISTRHO_PLUGIN_CLAP_ID "local.pianoengine.piano"
+// the name, the maker and the IDs, under ccoors.de: fixed from the first release on (a host finds a
+// saved session's plugin by them)
+#define DISTRHO_PLUGIN_BRAND   "Christian Friedrich Coors"
+#define DISTRHO_PLUGIN_NAME    "Dussek"
+#define DISTRHO_PLUGIN_URI     "https://ccoors.de/plugins/dussek"
+#define DISTRHO_PLUGIN_CLAP_ID "de.ccoors.dussek"
 
-#define DISTRHO_PLUGIN_BRAND_ID  PnEn
-#define DISTRHO_PLUGIN_UNIQUE_ID PnoA
+#define DISTRHO_PLUGIN_BRAND_ID  Ccrs
+#define DISTRHO_PLUGIN_UNIQUE_ID Dsek
 
 #define DISTRHO_PLUGIN_HAS_UI           1
 #define DISTRHO_UI_USE_NANOVG           1

@@ -26,23 +26,23 @@ DataDirs dataDirs(const std::function<const char*(const char*)>& env, Platform p
     switch (platform) {
     case Platform::Windows:
         if (const std::string app = get("APPDATA"); !app.empty())
-            d.data = d.config = app + "/PianoEngine";
+            d.data = d.config = app + "/Dussek";
         break;
     case Platform::MacOS:
         if (const std::string home = get("HOME"); !home.empty())
-            d.data = d.config = home + "/Library/Application Support/PianoEngine";
+            d.data = d.config = home + "/Library/Application Support/Dussek";
         break;
     case Platform::Linux: {
         // the XDG spec: a relative path is invalid and ignored
         const auto xdg = [&](const char* name, const char* fallback) {
             if (const std::string v = get(name); !v.empty() && v[0] == '/')
-                return v + "/pianoengine";
+                return v + "/dussek";
             if (const std::string home = get("HOME"); !home.empty())
                 return home + fallback;
             return std::string();
         };
-        d.data = xdg("XDG_DATA_HOME", "/.local/share/pianoengine");
-        d.config = xdg("XDG_CONFIG_HOME", "/.config/pianoengine");
+        d.data = xdg("XDG_DATA_HOME", "/.local/share/dussek");
+        d.config = xdg("XDG_CONFIG_HOME", "/.config/dussek");
         break;
     }
     }
@@ -57,10 +57,10 @@ std::string standaloneExecutable(const std::string& self, bool selfIsStandalone,
     if (selfIsStandalone)
         return self;
 #ifdef _WIN32
-    const char* const names[] = { "pianoengine.exe" };
+    const char* const names[] = { "dussek.exe" };
     const char sep = ';';
 #else
-    const char* const names[] = { "pianoengine", "pianoengine.app/Contents/MacOS/pianoengine" };
+    const char* const names[] = { "dussek", "dussek.app/Contents/MacOS/dussek" };
     const char sep = ':';
 #endif
     std::error_code ec;
@@ -69,7 +69,7 @@ std::string standaloneExecutable(const std::string& self, bool selfIsStandalone,
         for (const char* n : names) {
             const fs::path c = dir / n;
             std::error_code e;
-            // not the plugin itself (a macOS VST3's or CLAP's binary is named pianoengine too)
+            // not the plugin itself (a macOS VST3's or CLAP's binary is named dussek too)
             if (fs::is_regular_file(c, e) && !fs::equivalent(c, me, e))
                 return c.string();
         }

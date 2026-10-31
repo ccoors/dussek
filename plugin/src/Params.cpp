@@ -1,5 +1,5 @@
 #include "Params.hpp"
-#include "pianoengine.h"
+#include "dussek.h"
 #include <cstring>
 
 namespace pe {
@@ -378,8 +378,8 @@ const char* const kMalletNumbers[kMalletCount] = { "1", "2", "3", "4", "5", "6",
 
 /// the Instrument menu's row (kInstrumentRow): no parameter
 const ParamInfo kInstrumentInfo { "Instrument", "instrument", nullptr,
-    "The instrument, by group: every instrument found in the search paths ($PIANOENGINE_INSTRUMENTS, the "
-    "bundle's own, ~/.local/share/pianoengine/instruments, then .../snapshots for git snapshots), each modeled "
+    "The instrument, by group: every instrument found in the search paths ($DUSSEK_INSTRUMENTS, the "
+    "bundle's own, ~/.local/share/dussek/instruments, then .../snapshots for git snapshots), each modeled "
     "from its own recordings. "
     "Switching loads it (a moment).",
     0, 0, 0, false, true, false, kGroupInstrument };
