@@ -416,7 +416,24 @@ Layout computeLayout(float width, float height, Tab tab, const UiContext& ctx)
         l.programSwitch = { x, y, w, kLineH };
         y += line;
         l.takeoverSwitch = { x, y, w, kLineH };
-        bottom = y + line;
+        y += line;
+        if (ctx.nativeAudio) {
+            y += kGap;
+            l.subheadings.push_back({ "Audio and MIDI", { x, y, w, kSubheadH } });
+            y += kSubheadH;
+            float cx = x + std::min(textWidth("Buffer") + 16, w * 0.3f);
+            for (int i = 0; i < kBufferSizeCount; ++i) {
+                const float cw = std::min(textWidth("1024") + 16, std::max(1.0f, (x + w - cx) / (kBufferSizeCount - i) - kGap));
+                l.bufferChips[i] = { cx, y, cw, kLineH };
+                cx += cw + kGap;
+            }
+            y += line;
+            const float bw = std::min(textWidth("Rescan") + 20, w);
+            l.rescanMidi = { x, y, w, kLineH };
+            l.rescanButton = { x + w - bw, y, bw, kLineH };
+            y += line;
+        }
+        bottom = y;
     } else if (tab == kTabMorph) {
         const float x = panelX, w = std::max(panelW, 1.0f);
         if (ctx.inst == nullptr || ctx.inst->info.morph_family == 0) {

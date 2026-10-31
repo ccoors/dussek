@@ -5,6 +5,7 @@
  */
 #include "DistrhoUI.hpp"
 #include "DistrhoPluginUtils.hpp"
+#include "DistrhoStandaloneUtils.hpp"
 #include "OpenGL-include.hpp"
 #include "CurveEdit.hpp"
 #include "FeltEditor.hpp"
@@ -48,6 +49,10 @@ public:
         : UI(DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT)
     {
         loadSharedResources();
+        // the standalone on its own audio (no JACK): the MIDI inputs present open at start, others
+        // by the MIDI tab's Rescan (a request reopens them all, cutting held notes)
+        if (isUsingNativeAudio() && supportsMIDI() && !isMIDIEnabled())
+            requestMIDI();
         fCatalog = sharedCatalog(resources());
         fChoice = choose(*fCatalog, "");
         for (uint32_t i = 0; i < kParamCount; ++i)
@@ -614,6 +619,7 @@ private:
         c.previousTied = fMap.find(kTargetPrevious) != nullptr;
         c.knobTied = fMap.find(kTargetKnob) != nullptr;
         c.partners = (uint32_t)partners().size();
+        c.nativeAudio = isUsingNativeAudio();
         return c;
     }
     uint32_t stored(uint32_t i) const { return (uint32_t)std::max(0L, std::lround(fValues[i])); }
@@ -2401,10 +2407,40 @@ private:
             ControlLook c { title, std::string(), on ? 1.0f : 0.0f, true, fHotSwitch == i + 1, false, nullptr };
             drawCompactRow(*this, r, c);
         }
+        if (fLayout.rescanMidi.w > 0) { // the standalone on its own audio
+            fontSize(theme::fontSize);
+            fillColor(theme::dim);
+            textAlign(ALIGN_LEFT | ALIGN_MIDDLE);
+            const Rect& c0 = fLayout.bufferChips[0];
+            text(fLayout.rescanMidi.x + 4, c0.y + c0.h / 2, "Buffer", nullptr);
+            const uint now = getBufferSize();
+            for (int i = 0; i < kBufferSizeCount; ++i) {
+                const std::string n = std::to_string(kBufferSizes[i]);
+                ControlLook c { n.c_str(), std::string(), now == kBufferSizes[i] ? 1.0f : 0.0f, supportsBufferSizeChanges(), false, false,
+                    nullptr };
+                drawToggle(*this, fLayout.bufferChips[i], c);
+            }
+            const MidiRow r { -1, kParamCount, fLayout.rescanMidi, fLayout.rescanButton };
+            drawMidiRow(*this, r, "MIDI inputs", isMIDIEnabled() ? "open (Rescan for ones plugged in since)" : "none open", "Rescan",
+                false, false);
+        }
     }
 
     bool clickMidiTab(Point2 p)
     {
+        if (fLayout.rescanButton.contains(p.x, p.y)) {
+            if (supportsMIDI())
+                requestMIDI();
+            repaint();
+            return true;
+        }
+        for (int i = 0; i < kBufferSizeCount; ++i)
+            if (fLayout.bufferChips[i].contains(p.x, p.y)) {
+                if (supportsBufferSizeChanges())
+                    requestBufferSizeChange(kBufferSizes[i]);
+                repaint();
+                return true;
+            }
         if (fLayout.programSwitch.contains(p.x, p.y)) {
             const bool on = !fMap.programChange;
             commitMap([on](MidiMap& m) { m.programChange = on; });

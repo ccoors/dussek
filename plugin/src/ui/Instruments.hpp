@@ -46,6 +46,7 @@ struct UiContext {
     uint32_t midiTies = 0;
     bool nextTied = false, previousTied = false, knobTied = false;
     uint32_t partners = 0; // the morph's partners (the Morph tab's rows after the main one)
+    bool nativeAudio = false; // the standalone on its own audio, without JACK: its row on the MIDI tab
 };
 /// the preparations that act on an instrument (Prep indices: 1 plucked, 2 muted, 3 harmonic,
 /// 4 bolt, 5 paper; None, 0, is always there and not listed), in menu order, into `values`

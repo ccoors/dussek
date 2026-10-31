@@ -27,6 +27,14 @@ through `pw-jack`:
 
 Without the script: `pw-jack plugin/build/bin/pianoengine`.
 
+Without a JACK server the standalone plays on its own audio (DPF's fallback: CoreAudio on macOS,
+WASAPI on Windows, PulseAudio or ALSA on Linux) to the default output. It opens every MIDI input
+present at start; the MIDI tab then has an **Audio and MIDI** row: the buffer size (128 … 1024
+frames) and **Rescan**, which opens the MIDI inputs plugged in since (it reopens them all, so a
+held note stops). In a host and under JACK the row is not shown. On Linux the fallback does not
+play yet (RtAudio rejects PulseAudio's default output); JACK, or PipeWire's JACK layer, is the
+way there.
+
 LV2 hosts need the worker feature, as Ardour, Carla and Jalv have. Without it, the velocity
 curve's edits do not reach the sound.
 

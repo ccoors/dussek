@@ -5826,3 +5826,30 @@ TEST(saving_again_replaces_the_file)
     CHECK(m.save(map) && m.save(map));
     std::filesystem::remove_all(dir);
 }
+
+TEST(the_standalones_audio_row_shows_only_on_its_own_audio)
+{
+    // the standalone without JACK (DPF's native audio: CoreAudio, WASAPI) has a row of its own on the
+    // MIDI tab: the buffer size, and a rescan of the MIDI inputs; a host or JACK shows none
+    UiContext c = ctxOf(0, 1, 0);
+    for (float w : { kMinWidth, kDefaultWidth, 1600.0f }) {
+        const Layout off = computeLayout(w, kDefaultHeight, kTabMidi, c);
+        CHECK(off.rescanMidi.w == 0 && off.bufferChips[0].w == 0);
+        c.nativeAudio = true;
+        const Layout on = computeLayout(w, kDefaultHeight, kTabMidi, c);
+        c.nativeAudio = false;
+        CHECK(on.rescanMidi.w > 0 && on.rescanButton.w > 0 && !on.rescanMidi.overlaps(on.takeoverSwitch));
+        CHECK(on.rescanButton.x >= on.rescanMidi.x && on.rescanButton.x + on.rescanButton.w <= on.rescanMidi.x + on.rescanMidi.w + 0.5f);
+        for (int i = 0; i < kBufferSizeCount; ++i) {
+            const Rect& b = on.bufferChips[i];
+            CHECK(b.w > 0 && b.x >= on.content.x && b.x + b.w <= on.content.x + on.content.w + 0.5f);
+            CHECK(!b.overlaps(on.takeoverSwitch) && !b.overlaps(on.rescanMidi));
+            for (int j = i + 1; j < kBufferSizeCount; ++j)
+                CHECK(!b.overlaps(on.bufferChips[j]));
+        }
+    }
+    c.nativeAudio = true;
+    for (Tab t : { kTabSound, kTabExtras })
+        CHECK(computeLayout(kDefaultWidth, kDefaultHeight, t, c).rescanMidi.w == 0);
+    CHECK(kBufferSizes[0] == 128 && kBufferSizes[kBufferSizeCount - 1] == 1024);
+}
