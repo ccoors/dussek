@@ -5056,6 +5056,13 @@ TEST(an_instrument_folder_anywhere_is_an_entry)
     CHECK(Catalog::outside("grand_a") == nullptr && Catalog::outside("") == nullptr); // a name, not a path
     const Catalog none;
     CHECK(choose(none, dir).entry == e && instrumentDir(nullptr, dir.c_str()) == dir);
+#ifdef _WIN32
+    // the file browser's form: backslashes
+    std::string back = dir;
+    std::replace(back.begin(), back.end(), '/', '\\');
+    const InstrumentEntry* b = Catalog::outside(back + "\\");
+    CHECK(b != nullptr && b->name == "Grand A");
+#endif
 }
 
 TEST(learn_input_takes_only_targets)

@@ -144,17 +144,25 @@ const InstrumentEntry* Catalog::find(const std::string& id) const
 
 const InstrumentEntry* Catalog::outside(const std::string& id)
 {
-    if (id.size() < 2 || id[0] != '/')
+    // an absolute path: "/…", on Windows "C:\…" or "C:/…" (a backslash is a separator there only)
+#ifdef _WIN32
+    const char* const seps = "/\\";
+#else
+    const char* const seps = "/";
+#endif
+    if (id.size() < 2 || !std::filesystem::path(id).is_absolute())
         return nullptr;
     static std::mutex mutex;
     static std::map<std::string, std::unique_ptr<InstrumentEntry>> kept; // never freed: pointers stay valid
     std::lock_guard<std::mutex> lock(mutex);
     std::string dir = id;
-    while (dir.size() > 1 && dir.back() == '/')
+    while (dir.size() > 1 && std::strchr(seps, dir.back()) != nullptr)
         dir.pop_back();
     if (const auto it = kept.find(dir); it != kept.end())
         return it->second.get();
-    const size_t slash = dir.find_last_of('/');
+    const size_t slash = dir.find_last_of(seps);
+    if (slash == std::string::npos)
+        return nullptr;
     InstrumentEntry e;
     std::string message;
     if (!entryAt(slash == 0 ? std::string("/") : dir.substr(0, slash), dir.substr(slash + 1), e, message)) {
