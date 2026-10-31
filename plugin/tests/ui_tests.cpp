@@ -5892,12 +5892,14 @@ TEST(copy_cli_finds_the_standalone)
     if (!ec)
         CHECK(same(pe::standaloneExecutable((root / "home" / ".lv2" / "pianoengine.lv2" / "pianoengine_dsp.so").string(), false, nullptr), bin / exe));
 #endif
-    // macOS: the VST3's binary is named pianoengine too; the standalone is the .app's
+#ifndef _WIN32
+    // macOS: the VST3's binary is named pianoengine too; the standalone is the .app's (Windows has no .app)
     const fs::path mac = root / "mac";
     file(mac / "pianoengine.vst3" / "Contents" / "MacOS" / "pianoengine");
     file(mac / "pianoengine.app" / "Contents" / "MacOS" / "pianoengine");
     CHECK(same(pe::standaloneExecutable((mac / "pianoengine.vst3" / "Contents" / "MacOS" / "pianoengine").string(), false, nullptr),
         mac / "pianoengine.app" / "Contents" / "MacOS" / "pianoengine"));
+#endif
     // a package's layout: the plugin in lib/lv2, the program on PATH
     const fs::path pkg = root / "pkg";
     file(pkg / "lib" / "lv2" / "pianoengine.lv2" / "pianoengine_dsp.so");
