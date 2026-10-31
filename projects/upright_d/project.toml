@@ -109,7 +109,11 @@ levels = "recorded"
 dampers = { kind = "sfz", file = "own-upright.sfz" }
 # its pedal pass, split by the strings' ring after each event (split_session.py --pedal): four
 # pedal-downs, three pedal-ups (nine events left out: unclear, or the next too soon)
-pedal = { kind = "files", down = ["pedal/down_1.wav", "pedal/down_2.wav", "pedal/down_3.wav", "pedal/down_4.wav"], up = ["pedal/up_1.wav", "pedal/up_2.wav", "pedal/up_3.wav"] }
+# The engine plays the downs in turn whatever the press: down_3 and down_4 are stomps (−10.1 and −4.6 dB
+# re the mf note, their clack at the onset: the highs over 4 kHz −37 / −38 dB re the peak in the first
+# 5 ms, down_1 and down_2's −138 / −68), which every third and fourth press played ("sometimes
+# clicky", 2026-10-31): the thumps the two normal presses; the ring's target every press (heard right)
+pedal = { kind = "files", down = ["pedal/down_1.wav", "pedal/down_2.wav"], up = ["pedal/up_1.wav", "pedal/up_2.wav", "pedal/up_3.wav"], ring = ["pedal/down_1.wav", "pedal/down_2.wav", "pedal/down_3.wav", "pedal/down_4.wav"] }
 
 [part.source.map]
 kind = "sfz"

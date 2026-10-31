@@ -3108,3 +3108,28 @@ recording shows nothing; 25 % puts them 10 dB under its floor. A project's `[sym
 string instrument, so the control's 100 % is the instrument's own; without it the transfer is as
 before (every other export unchanged). Upright D: 25 %.
 
+<a id="step-207"></a>
+## 207. Upright D's pedal: the stomps out of the round robin
+
+Heard live in the plugin (the maintainer): "Sometimes pressing the pedal it's clicky, sometimes it
+isn't." The engine plays a pedal-down's take in turn (`Engine::set_pedal`: the take index advances at
+each pedal-up, the downs and the ups modulo their counts); a press's speed and depth are not read (a
+CC64 jump and a 0.4 s ramp play the same take at the same level, the thump where the dampers' engage
+crosses half, about CC64 64; a half press under that plays none). Each press at the Recording position
+(peak dBFS; the highs over 4 kHz re its peak in the first 5 ms):
+
+| press | 1 | 2 | 3 | 4 |
+|---|---|---|---|---|
+| Upright D, step 206 (down_1 … down_4) | −46.6, −138 | −37.7, −68 | −35.3, −37 | −30.6, −38 |
+| Upright A (Salamander's two) | −42.7, −113 | −46.9, −109 | as 1 | as 2 |
+
+No press starts on a step (the largest sample step −28 … −33 dB re its peak), the onsets are the
+recording's; every third and fourth press played down_3 and down_4, the pass's two stomps, whose clack
+the recording holds (their highs at the onset −31 / −35 dB re the peak recorded, the normal presses'
+−39 / −32 over the take but none at the onset), 16 dB over the softest. Upright D's thumps are now its
+two normal presses (−46.8 / −37.8 dBFS, the highs −57 / −68); the ring keeps its target from all four
+downs (heard right: −41.4 dB re the mf note as before), a source's `pedal.ring`, read by `pedal.py`
+in place of the downs (Salamander's cache has none: its path unchanged). `pedal_noise.py` warns of a
+take 6 dB over its kind's median (down_4 +6.9 dB). Choosing the take by the press (its speed) would
+be the engine's; not here.
+
