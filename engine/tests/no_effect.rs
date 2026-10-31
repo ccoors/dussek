@@ -45,6 +45,7 @@ const CONTROLS: &[(&str, Change)] = &[
     ("variation", |p, _| p.variation = 2.0),
     ("board_bass", |_, t| t.board_bass_db = 12.0),
     ("restrike", |p, _| p.restrike = 1.0),
+    ("pedal_ring", |p, _| p.pedal_ring = 0.0),
 ];
 
 fn render(name: &str, change: Option<Change>) -> Option<Vec<f32>> {

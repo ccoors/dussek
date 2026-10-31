@@ -22,7 +22,7 @@ enum Param : uint32_t {
     // tuning
     kConcertPitch, kTemperament, kTemperamentKey, kStretch, kUnisonWidth,
     // noises & resonance
-    kKnock, kRelease, kPedalNoise, kSympathetic, kAudioInput, kDamperFall,
+    kKnock, kRelease, kPedalNoise, kPedalRing, kSympathetic, kAudioInput, kDamperFall,
     // condition: the macro, the variant, per-aspect offsets
     kCondition, kWearVariant, kWearHammers, kWearVoicing, kWearAction, kWearDampers, kWearUnisons,
     kWearTuning, kWearFalseBeats, kWearStrings, kWearSoundboard,

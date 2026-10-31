@@ -23,7 +23,7 @@ fn noise(n: usize, seed: u64) -> Vec<f32> {
 fn burst(name: &str, level: f32, pedal: bool) -> Option<(Vec<f32>, usize)> {
     let inst = Instrument::load(format!("{ROOT}{name}")).ok()?;
     let mut e = Engine::new(inst, SR).unwrap();
-    e.set_params(Params { input: level, pedal: 0.0, room: 0.0, ..Params::default() });
+    e.set_params(Params { input: level, pedal: 0.0, pedal_ring: 0.0, room: 0.0, ..Params::default() });
     if pedal {
         e.queue(0, Event::PedalDown);
     }

@@ -59,6 +59,7 @@ pub struct PeParams {
     pub knock: f32,
     pub release: f32,
     pub pedal: f32,
+    pub pedal_ring: f32,
     pub sympathetic: f32,
     pub volume: f32,
     /// hammer felt stiffness factor (1 = as fitted), from the next strike
@@ -863,6 +864,7 @@ fn params_from(p: &PeParams) -> Params {
         knock: clean(p.knock, 16.0),
         release: clean(p.release, 16.0),
         pedal: clean(p.pedal, 16.0),
+        pedal_ring: clean(p.pedal_ring, 16.0),
         sympathetic: clean(p.sympathetic, 4.0),
         volume: clean(p.volume, 16.0),
         hardness: if p.hardness.is_finite() { p.hardness.clamp(0.05, 20.0) } else { 1.0 },
@@ -1731,6 +1733,7 @@ mod tests {
             knock: 1.0,
             release: 1.0,
             pedal: 1.0,
+            pedal_ring: 1.0,
             sympathetic: 1.0,
             volume: 1.0,
             hardness: 1.0,
@@ -1859,7 +1862,7 @@ mod tests {
             return; // no export
         }
         let p = PeParams {
-            room: 1.0, knock: 1.0, release: 1.0, pedal: 1.0, sympathetic: 1.0, volume: 1.0, hardness: 1.0,
+            room: 1.0, knock: 1.0, release: 1.0, pedal: 1.0, pedal_ring: 1.0, sympathetic: 1.0, volume: 1.0, hardness: 1.0,
             hammer_wear: 0.0, voicing_wear: 0.0, damper_wear: 0.0, action_wear: 0.0, phantom: 0.0,
             grooves: 0.0, damper_buzz: 0.0, rattle: 0.0, stops: 5, damper_fall: 1.0,
             prep: 0, pluck_pos: 0.2, pluck_bright: 1.0, mute: 0.6, harmonic: 2, paper: 0.5, buff: 0, lute: 1,
@@ -1893,6 +1896,7 @@ mod tests {
             knock: 1.0,
             release: 1.0,
             pedal: 1.0,
+            pedal_ring: 1.0,
             sympathetic: 1.0,
             volume: 1.0,
             hardness: 1.0,

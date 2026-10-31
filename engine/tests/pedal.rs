@@ -32,6 +32,36 @@ fn press(name: &str, thump: bool, kick: Option<(f64, f64)>) -> Option<Vec<f32>> 
     Some(l)
 }
 
+/// A pedal press at 0.1 s (left channel), the instrument as exported, at `params` (no room).
+fn press_at(name: &str, params: Params) -> Option<Vec<f32>> {
+    let inst = Instrument::load(format!("{ROOT}{name}")).ok()?;
+    inst.pedal.as_ref()?;
+    let mut e = Engine::with_tuning(inst, SR, Tuning::default()).unwrap();
+    e.set_params(Params { room: 0.0, ..params });
+    e.queue(4800, Event::PedalDown);
+    let n = 48000;
+    let (mut l, mut r) = (vec![0.0; n], vec![0.0; n]);
+    for (cl, cr) in l.chunks_mut(256).zip(r.chunks_mut(256)) {
+        e.process(cl, cr);
+    }
+    Some(l)
+}
+
+#[test]
+fn the_thumps_and_the_ring_have_their_own_gains() {
+    // the Pedal noise control sets the thumps, the Pedal ring the strings set ringing as the dampers
+    // lift: either at 0 leaves the other as it is alone
+    for name in ["grand_a", "upright_d"] {
+        let Some(thump) = press(name, true, None) else { continue };
+        let ring = press(name, false, None).unwrap();
+        assert_eq!(press_at(name, Params { pedal_ring: 0.0, ..Params::default() }).unwrap(), thump, "{name}: the thumps");
+        assert_eq!(press_at(name, Params { pedal: 0.0, ..Params::default() }).unwrap(), ring, "{name}: the ring");
+        let half = press_at(name, Params { pedal: 0.0, pedal_ring: 0.5, ..Params::default() }).unwrap();
+        let peak = |x: &[f32]| x.iter().fold(0.0f32, |m, v| m.max(v.abs()));
+        assert!((peak(&half) / peak(&ring) - 0.5).abs() < 0.01, "{name}: the ring at half its gain");
+    }
+}
+
 /// RBJ highpass biquad at `fc`.
 fn highpass(x: &[f32], fc: f64) -> Vec<f64> {
     let w = 2.0 * std::f64::consts::PI * fc / SR;

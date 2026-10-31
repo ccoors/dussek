@@ -56,6 +56,7 @@ uint32_t controlOf(uint32_t param)
     switch (param) {
     case kSympathetic: return PE_CONTROL_SYMPATHETIC;
     case kPedalNoise: return PE_CONTROL_PEDAL_NOISE;
+    case kPedalRing: return PE_CONTROL_PEDAL_RING;
     case kKnock: return PE_CONTROL_KNOCK;
     case kRelease: return PE_CONTROL_RELEASE;
     case kHammerHardness: return PE_CONTROL_HAMMER_HARDNESS;

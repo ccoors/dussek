@@ -114,7 +114,7 @@ const std::vector<TabGroup>& tabGroups(Tab t)
         { { nullptr, { kConcertPitch, kTemperament, kTemperamentKey, kStretch, kUnisonWidth } } },
         { { nullptr, { kWearVariant, kWearHammers, kWearVoicing, kWearAction, kWearDampers, kWearUnisons, kWearTuning,
                        kWearFalseBeats, kWearStrings, kWearSoundboard } } },
-        { { "Noises", { kKnock, kRelease, kPedalNoise, kSympathetic, kAudioInput, kDamperFall } },
+        { { "Noises", { kKnock, kRelease, kPedalNoise, kPedalRing, kSympathetic, kAudioInput, kDamperFall } },
           { "Defects", { kHammerGrooves, kDamperBuzz, kRattle, kPhantom } },
           { "Preparation", { kPrepMode, kPluckPosition, kPluckBrightness, kMuteStrength, kHarmonicNumber, kBoltMass,
                                kBoltPosition, kPaperBuzz } } },

@@ -44,7 +44,7 @@ fn engine(name: &str, t: Tuning) -> Option<Engine> {
 /// damper-lift kick off: sums compare; the kick rings every register's lifted strings)
 fn play(e: &mut Engine, stops: u32, events: &[(u64, Event)], n: usize) -> Vec<f32> {
     // no strike variation: each register's strikes would draw their own (two hammers)
-    e.set_params(Params { stops, knock: 0.0, release: 0.0, sympathetic: 0.0, pedal: 0.0, variation: 0.0, ..Params::default() });
+    e.set_params(Params { stops, knock: 0.0, release: 0.0, sympathetic: 0.0, pedal: 0.0, pedal_ring: 0.0, variation: 0.0, ..Params::default() });
     for &(t, ev) in events {
         e.queue(t, ev);
     }
@@ -86,7 +86,7 @@ fn each_stop_plays_its_register_and_both_add() {
 fn no_stops_is_silent_on_a_register_instrument() {
     let Some(mut e) = engine("registers_fixture", Tuning::default()) else { return };
     // pedal 0: the fixture (Salamander) rings its strings when a key lifts their dampers
-    e.set_params(Params { stops: 0, pedal: 0.0, ..Params::default() });
+    e.set_params(Params { stops: 0, pedal: 0.0, pedal_ring: 0.0, ..Params::default() });
     for &(t, ev) in &CHORD {
         e.queue(t, ev);
     }
@@ -106,7 +106,7 @@ fn switching_stops_leaves_ringing_strings_alone() {
     let (Some(mut a), Some(mut b)) = (engine("registers_fixture", Tuning::default()), engine("registers_fixture", Tuning::default())) else { return };
     let steady = play(&mut a, 1, &CHORD[..2], 24000);
     let mut switched = play(&mut b, 1, &CHORD[..2], 12000);
-    b.set_params(Params { stops: 2, knock: 0.0, release: 0.0, sympathetic: 0.0, pedal: 0.0, ..Params::default() });
+    b.set_params(Params { stops: 2, knock: 0.0, release: 0.0, sympathetic: 0.0, pedal: 0.0, pedal_ring: 0.0, ..Params::default() });
     let (mut l, mut r) = (vec![0.0; 12000], vec![0.0; 12000]);
     b.process(&mut l, &mut r);
     switched.extend_from_slice(&l);

@@ -352,8 +352,12 @@ ParamInfo make(uint32_t i)
                         "out of tune, which hammers are worn). Rebuilds the instrument.";
         break;
     case kPedalNoise: set("Pedal noise", "pedal_noise", "dB", -20, kOffDb, 12);
-        p.description = "The sustain pedal's own noise: its thump going down and up, and the strings' ring when the "
-                        "dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.";
+        p.description = "The sustain pedal's thump going down and up. -20 dB by default, 0 dB as recorded; the left "
+                        "end is off.";
+        break;
+    case kPedalRing: set("Pedal ring", "pedal_ring", "dB", -20, kOffDb, 12);
+        p.description = "The strings set ringing as the sustain pedal lifts their dampers. -20 dB by default, 0 dB as "
+                        "fitted; the left end is off.";
         break;
     }
     return p;

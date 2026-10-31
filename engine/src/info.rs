@@ -49,10 +49,11 @@ pub enum Control {
     Variation,
     BoardBass,
     Restrike,
+    PedalRing,
 }
 
 /// The controls and their symbols (the plugin's parameter symbols).
-pub const CONTROLS: [(Control, &str); 26] = [
+pub const CONTROLS: [(Control, &str); 27] = [
     (Control::Sympathetic, "sympathetic"),
     (Control::PedalNoise, "pedal_noise"),
     (Control::Knock, "knock"),
@@ -79,6 +80,7 @@ pub const CONTROLS: [(Control, &str); 26] = [
     (Control::Variation, "variation"),
     (Control::BoardBass, "board_bass"),
     (Control::Restrike, "restrike"),
+    (Control::PedalRing, "pedal_ring"),
 ];
 
 /// A control's label in the instrument's own words.
@@ -232,6 +234,7 @@ fn report(f: &Facts, menu: Option<Menu>) -> Info {
         }
     };
     set(Control::PedalNoise, !f.pedal);
+    set(Control::PedalRing, !f.pedal_ring);
     set(Control::HammerGrooves, !hammer);
     set(Control::Release, all(&|n| !n.impacts));
     // the Action knock control sets the knock or a piano's impact on the board

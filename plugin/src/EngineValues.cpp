@@ -103,6 +103,7 @@ PeParams engineParams(const float* values)
         dbGain(v[kKnock]),
         dbGain(v[kRelease]),
         dbGain(v[kPedalNoise]),
+        dbGain(v[kPedalRing]),
         v[kSympathetic] / 100.0f,
         dbGain(v[kVolume]),
         std::pow(10.0f, v[kHammerHardness] / 20.0f),

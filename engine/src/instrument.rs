@@ -1008,6 +1008,8 @@ pub(crate) struct Facts {
     /// the hammer's impact on the board (the Action knock control sets it)
     pub impact: bool,
     pub pedal: bool,
+    /// the pedal's kick sets strings ringing as their dampers lift
+    pub pedal_ring: bool,
     /// a membrane on the sympathetic control (the balafon's gourds)
     pub membrane_sympathetic: bool,
     pub mallets: Vec<String>,
@@ -1057,6 +1059,7 @@ pub(crate) fn facts(dir: &Path) -> Result<Facts, Error> {
         knock: raw.knock.is_some(),
         impact: raw.impact.is_some(),
         pedal: raw.pedal.is_some(),
+        pedal_ring: raw.pedal.as_ref().is_some_and(|p| p.kick.amp > 0.0),
         membrane_sympathetic: raw.membrane.as_ref().is_some_and(|m| m.sympathetic),
         mallets: raw.mallets.iter().map(|m| m.name.clone()).collect(),
         level_table: !stored_dynamics(dir).is_empty(),

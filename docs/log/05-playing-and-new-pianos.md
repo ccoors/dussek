@@ -3296,3 +3296,15 @@ ring is still heard starting. The engine keeps its "1 = as fitted" (`midi2wav` p
 recorded); the plugin's Copy CLI line carries `pedal=0.1`, so a render sounds as the plugin does.
 Saved sessions keep their own value. A thump apart from the ring would be a second control; not
 now.
+
+<a id="step-211"></a>
+## 211. The pedal's thumps and its ring, two controls
+
+Step 210's control scaled the thumps and the ring together: at −20 dB the ring the lifted dampers
+start (the maintainer: wanted) was 20 dB down with the thumps (not wanted). Now two: **Pedal
+noise** the thumps going down and up (the engine's `pedal`, the one-shots), **Pedal ring** the
+strings' kick as their dampers lift (`pedal_ring`, `Engine::lift_kick`; a `--param` key and a
+control in the instrument report, inert where the export has no kick: the 13 pianos show it, as
+the Pedal noise). Both start at −20 dB, so nothing sounds different until one is moved; either at
+0 leaves the other bit for bit as it plays alone (`engine/tests/pedal.rs`), and the ring follows
+its gain (half the gain, half the peak within 1 %).

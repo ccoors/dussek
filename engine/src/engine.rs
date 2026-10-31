@@ -217,8 +217,10 @@ pub struct Params {
     pub room: f32,
     pub knock: f32,
     pub release: f32,
-    /// sustain-pedal noise: thumps and the strings' ring when the dampers lift
+    /// the sustain pedal's thumps going down and up
     pub pedal: f32,
+    /// the strings' ring as the sustain pedal lifts their dampers (`Pedal`'s kick)
+    pub pedal_ring: f32,
     /// sympathetic resonance coupling (× the fitted TRANSFER)
     pub sympathetic: f32,
     /// hammer felt stiffness (× the fitted; force at a given compression), from the next strike
@@ -306,6 +308,7 @@ impl Default for Params {
             knock: 1.0,
             release: 1.0,
             pedal: 1.0,
+            pedal_ring: 1.0,
             sympathetic: 1.0,
             hardness: 1.0,
             hammer_wear: 0.0,
@@ -1606,7 +1609,7 @@ impl Engine {
     /// The strings j (= r·88 + key − 21) ring as their dampers leave them (`Pedal`, `Voice::kick`).
     fn lift_kick(&mut self, i: usize) {
         let Some(p) = &self.inst.pedal else { return };
-        let gain = self.params.pedal as f64 * p.kick_amp;
+        let gain = self.params.pedal_ring as f64 * p.kick_amp;
         let note = &self.inst.notes[i];
         let bell = (-0.5 * ((note.note as f64 - p.kick_center) / p.kick_spread).powi(2)).exp();
         if gain * bell > 1e-4 * p.kick_amp {

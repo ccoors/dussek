@@ -24,7 +24,8 @@ typedef struct PeParams {
     float room;
     float knock;
     float release;
-    float pedal;       /* sustain-pedal noise: thumps and the strings' ring */
+    float pedal;       /* the sustain pedal's thumps */
+    float pedal_ring;  /* the strings' ring as the sustain pedal lifts their dampers */
     float sympathetic;
     float volume;
     float hardness;       /* hammer felt stiffness factor, from the next strike */
@@ -218,7 +219,7 @@ enum {
     PE_CONTROL_WEAR_DAMPERS, PE_CONTROL_WEAR_ACTION, PE_CONTROL_PHANTOM, PE_CONTROL_UNISON_WIDTH, PE_CONTROL_STRETCH,
     PE_CONTROL_WEAR_UNISONS, PE_CONTROL_WEAR_TUNING, PE_CONTROL_WEAR_STRINGS, PE_CONTROL_WEAR_SOUNDBOARD,
     PE_CONTROL_WEAR_FALSE_BEATS, PE_CONTROL_AUDIO_INPUT, PE_CONTROL_DYNAMICS, PE_CONTROL_SUSTAIN, PE_CONTROL_VARIATION,
-    PE_CONTROL_BOARD_BASS, PE_CONTROL_RESTRIKE, PE_CONTROL_COUNT
+    PE_CONTROL_BOARD_BASS, PE_CONTROL_RESTRIKE, PE_CONTROL_PEDAL_RING, PE_CONTROL_COUNT
 };
 /* what plucks or strikes the strings (PeInstrumentInfo.exciter) */
 enum { PE_EXCITER_HAMMER, PE_EXCITER_QUILL, PE_EXCITER_FINGER, PE_EXCITER_PICK, PE_EXCITER_TANGENT, PE_EXCITER_MALLET,

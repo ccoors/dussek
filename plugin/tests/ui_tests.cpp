@@ -293,7 +293,7 @@ TEST(lid_and_pillow_parameters)
 
 TEST(param_table_is_complete)
 {
-    CHECK(kParamCount == 77);
+    CHECK(kParamCount == 78);
     std::set<std::string> symbols;
     for (uint32_t i = 0; i < kParamCount; ++i) {
         const ParamInfo& p = paramInfo(i);
@@ -491,7 +491,7 @@ TEST(instrument_capabilities)
     CHECK(std::string(displayName(kHammerHardness, kPsa)) == "Pick brightness");
     CHECK(std::string(displayName(kHammerHardness, kVib)) == "Mallet hardness");
     // the vibraphone (engine/tests/no_effect.rs INACTIVE_VIBRAPHONE): no lid, no buff
-    for (uint32_t i : { kSympathetic, kPedalNoise, kKnock, kRelease, kHammerGrooves, kWearAction, kUnisonWidth, kStretch, kWearUnisons })
+    for (uint32_t i : { kSympathetic, kPedalNoise, kPedalRing, kKnock, kRelease, kHammerGrooves, kWearAction, kUnisonWidth, kStretch, kWearUnisons })
         CHECK(!paramActive(i, kVib, 1, 0) && paramActive(i, 0, 1, 0));
     CHECK(!paramActive(kLid, kVib, 1, 0) && !profileHasBuff(kVib) && paramActive(kHammerHardness, kVib, 1, 0));
     CHECK(std::string(displayName(kHammerHardness, 0)) == "Hammer hardness");
@@ -499,7 +499,7 @@ TEST(instrument_capabilities)
     CHECK(std::string(displayName(kWearVariant, 0)) == "Variant");
     // Task 3's harpsichord list (update together with engine/tests/no_effect.rs)
     for (uint32_t p : { kHarpA, kHarpB, kHarpC, kHarpD, kHarpE, kHarpF }) {
-        CHECK(!paramActive(kPedalNoise, p, 1, 0));
+        CHECK(!paramActive(kPedalNoise, p, 1, 0) && !paramActive(kPedalRing, p, 1, 0));
         CHECK(!paramActive(kHammerGrooves, p, 1, 0));
         CHECK(!paramActive(kUnisonWidth, p, 1, 0));
         CHECK(!paramActive(kStretch, p, 1, 0));
@@ -537,7 +537,7 @@ TEST(instrument_capabilities)
     CHECK(hasBuffRow(kHarpA) && !hasBuffRow(kHarp) && !hasBuffRow(kHarpB2) && !hasBuffRow(0));
     CHECK(!paramActive(kLid, kHarpB2, 1, 0) && !paramActive(kRelease, kHarpB2, 1, 0) && !paramActive(kBuff, kHarpB2, 1, 0));
     CHECK(std::string(displayName(kHammerHardness, kHarpB2)) == "Finger brightness");
-    CHECK(!paramActive(kPedalNoise, kHarp, 1, 0) && !paramActive(kStretch, kHarp, 1, 0) && paramActive(kHammerHardness, kHarp, 1, 0));
+    CHECK(!paramActive(kPedalNoise, kHarp, 1, 0) && !paramActive(kPedalRing, kHarp, 1, 0) && !paramActive(kStretch, kHarp, 1, 0) && paramActive(kHammerHardness, kHarp, 1, 0));
     CHECK(paramActive(kSympathetic, kHarp, 1, 0) && paramActive(kDamperFall, kHarp, 1, 0));
 }
 
@@ -635,7 +635,7 @@ TEST(the_marimba_has_mallets_and_no_dampers)
     CHECK(paramInfo(kMallet).integer && paramInfo(kMallet).def == 0.0f && paramInfo(kMallet).group == kGroupInstrument);
     CHECK(std::string(displayName(kHammerHardness, kMar)) == "Mallet hardness");
     // engine/tests/no_effect.rs INACTIVE_MARIMBA, the damper fall and the latch (no dampers), no lid, no motor
-    for (uint32_t i : { kSympathetic, kPedalNoise, kKnock, kRelease, kHammerGrooves, kDamperBuzz, kWearDampers, kWearAction,
+    for (uint32_t i : { kSympathetic, kPedalNoise, kPedalRing, kKnock, kRelease, kHammerGrooves, kDamperBuzz, kWearDampers, kWearAction,
              kUnisonWidth, kStretch, kWearUnisons, kDamperFall, kSustainLatch, kLid, kMotor, kMotorSpeed })
         CHECK(!paramActive(i, kMar, 1, 0));
     CHECK(paramActive(kHammerHardness, kMar, 1, 0) && paramActive(kRoom, kMar, 1, 0) && paramActive(kDamperFall, kVib, 1, 0));
@@ -682,7 +682,7 @@ TEST(the_bebung_is_the_clavichords)
         && paramInfo(kBebung).group == kGroupInstrument && std::string(paramInfo(kBebung).symbol) == "bebung");
     CHECK(std::string(displayName(kHammerHardness, kCla)) == "Tangent brightness");
     // engine/tests/no_effect.rs INACTIVE_CLAVICHORD (double strung: the unisons act)
-    for (uint32_t i : { kPedalNoise, kHammerGrooves, kStretch })
+    for (uint32_t i : { kPedalNoise, kPedalRing, kHammerGrooves, kStretch })
         CHECK(!paramActive(i, kCla, 1, 0));
     for (uint32_t i : { kUnisonWidth, kWearUnisons, kRelease, kKnock, kDamperFall, kSympathetic })
         CHECK(paramActive(i, kCla, 1, 0));
@@ -709,7 +709,7 @@ TEST(the_bend_range_is_the_dan_tranhs)
         && std::string(paramInfo(kBendRange).symbol) == "bend_range");
     CHECK(std::string(displayName(kHammerHardness, kDan)) == "Pick brightness" && !paramActive(kLid, kDan, 1, 0));
     // engine/tests/no_effect.rs INACTIVE_HARP
-    for (uint32_t i : { kPedalNoise, kRelease, kHammerGrooves, kUnisonWidth, kStretch, kWearUnisons })
+    for (uint32_t i : { kPedalNoise, kPedalRing, kRelease, kHammerGrooves, kUnisonWidth, kStretch, kWearUnisons })
         CHECK(!paramActive(i, kDan, 1, 0));
     int lo = 0, hi = 0;
     profileRecorded(kDan, lo, hi);
@@ -727,7 +727,7 @@ TEST(the_tubular_bells_are_bars_with_a_damper_bar)
     CHECK(kChi < kProfileCount && profileChimes(kChi) && profileBars(kChi) && profileBody(kChi) == BodyKind::Chimes);
     CHECK(!profileHasMotor(kChi) && !profileHasMallets(kChi) && !paramActive(kMallet, kChi, 1, 0) && !paramActive(kLid, kChi, 1, 0));
     // engine/tests/no_effect.rs INACTIVE_CHIMES; the damper bar: its fall and the latch act
-    for (uint32_t i : { kSympathetic, kPedalNoise, kKnock, kRelease, kHammerGrooves, kWearAction, kUnisonWidth, kStretch, kWearUnisons,
+    for (uint32_t i : { kSympathetic, kPedalNoise, kPedalRing, kKnock, kRelease, kHammerGrooves, kWearAction, kUnisonWidth, kStretch, kWearUnisons,
              kWearFalseBeats })
         CHECK(!paramActive(i, kChi, 1, 0));
     for (uint32_t i : { kDamperFall, kSustainLatch, kWearDampers, kDamperBuzz, kHammerHardness, kRoom })
@@ -744,7 +744,7 @@ TEST(the_hand_chimes_are_bars_damped_as_the_vibraphone)
     CHECK(!profileHasMotor(kHch) && !profileHasMallets(kHch) && !paramActive(kMallet, kHch, 1, 0) && !paramActive(kLid, kHch, 1, 0));
     // engine/tests/no_effect.rs: INACTIVE_VIBRAPHONE; the damper: its fall and the latch act; metal tubes keep their
     // pitch, and have no soundboard, strings or false beats to wear (`Wear::on`)
-    for (uint32_t i : { kSympathetic, kPedalNoise, kKnock, kRelease, kHammerGrooves, kWearAction, kUnisonWidth, kStretch, kWearUnisons,
+    for (uint32_t i : { kSympathetic, kPedalNoise, kPedalRing, kKnock, kRelease, kHammerGrooves, kWearAction, kUnisonWidth, kStretch, kWearUnisons,
              kWearFalseBeats, kWearSoundboard, kWearStrings, kWearTuning })
         CHECK(!paramActive(i, kHch, 1, 0));
     for (uint32_t i : { kDamperFall, kSustainLatch, kWearDampers, kDamperBuzz, kHammerHardness, kRoom })
@@ -762,7 +762,7 @@ TEST(the_kalimba_is_plucked_tines_without_dampers)
     // engine/tests/no_effect.rs: INACTIVE_MARIMBA (no dampers) but the knock (the thumb's click) and the
     // sympathetic resonance (the other tines ringing along); the tines drift in their bridge, but have no soundboard,
     // strings or false beats to wear (`Wear::on`)
-    for (uint32_t i : { kPedalNoise, kRelease, kHammerGrooves, kDamperBuzz, kWearDampers, kUnisonWidth,
+    for (uint32_t i : { kPedalNoise, kPedalRing, kRelease, kHammerGrooves, kDamperBuzz, kWearDampers, kUnisonWidth,
              kStretch, kWearUnisons, kDamperFall, kSustainLatch, kWearFalseBeats, kWearSoundboard, kWearStrings })
         CHECK(!paramActive(i, kKal, 1, 0));
     for (uint32_t i : { kHammerHardness, kRoom, kWearTuning, kKnock, kWearAction, kSympathetic })
@@ -800,7 +800,7 @@ TEST(the_balafon_has_three_mallets_and_no_dampers)
     CHECK(!profileHasMotor(kBal) && profileHasMallets(kBal) && paramActive(kMallet, kBal, 1, 0) && !paramActive(kLid, kBal, 1, 0));
     // engine/tests/no_effect.rs: INACTIVE_MARIMBA but the knock and the action's wear (the mallet's contact on the
     // wood) and the sympathetic resonance (the gourds' buzz)
-    for (uint32_t i : { kPedalNoise, kRelease, kHammerGrooves, kDamperBuzz, kWearDampers, kUnisonWidth,
+    for (uint32_t i : { kPedalNoise, kPedalRing, kRelease, kHammerGrooves, kDamperBuzz, kWearDampers, kUnisonWidth,
              kStretch, kWearUnisons, kDamperFall, kSustainLatch })
         CHECK(!paramActive(i, kBal, 1, 0));
     CHECK(paramActive(kKnock, kBal, 1, 0) && paramActive(kWearAction, kBal, 1, 0) && std::string(displayName(kKnock, kBal)) == "Mallet click");
@@ -815,7 +815,7 @@ TEST(the_strumstick_and_the_psaltery_are_fingered_strings)
 {
     // engine/tests/no_effect.rs INACTIVE_HARP (no dampers but the hand, no mechanism coming back up)
     for (uint32_t p : { kStr, kPsa }) {
-        for (uint32_t i : { kPedalNoise, kRelease, kHammerGrooves, kUnisonWidth, kStretch, kWearUnisons })
+        for (uint32_t i : { kPedalNoise, kPedalRing, kRelease, kHammerGrooves, kUnisonWidth, kStretch, kWearUnisons })
             CHECK(!paramActive(i, p, 1, 0));
         for (uint32_t i : { kSympathetic, kKnock, kDamperFall, kHammerHardness, kRoom })
             CHECK(paramActive(i, p, 1, 0));
@@ -1441,7 +1441,7 @@ TEST(sweep_ignores_an_out_of_range_owner_pid)
 
 TEST(diagnostic_parameters_extend_the_table)
 {
-    CHECK(kParamCount == 77); // the user-visible table (diagnostics come after it)
+    CHECK(kParamCount == 78); // the user-visible table (diagnostics come after it)
     CHECK((uint32_t)kDiagPedalIn == (uint32_t)kParamCount);
     CHECK((uint32_t)kTotalParams == (uint32_t)kParamCount + 24);
     for (uint32_t i = kParamCount; i < kTotalParams; ++i) {
@@ -4065,19 +4065,41 @@ static std::string cliLine(const std::vector<float>& v)
     return midi2wavLine(v.data(), "/i/grand_a", 48000);
 }
 
+TEST(the_pedal_ring_is_a_control_of_its_own)
+{
+    // the thumps (Pedal noise) and the strings' ring as the dampers lift (Pedal ring), each its own
+    // gain, both −20 dB by default; the ring beside the noise in the Noises group
+    const ParamInfo& r = paramInfo(kPedalRing);
+    CHECK(std::string(r.symbol) == "pedal_ring" && r.def == -20.0f && r.min == kOffDb && r.max == 12.0f);
+    CHECK(paramInfo(kPedalNoise).def == -20.0f);
+    std::vector<float> v = defaults(0, 0, 0);
+    v[kPedalNoise] = kOffDb;
+    v[kPedalRing] = 0.0f;
+    const PeParams p = engineParams(v.data());
+    CHECK(p.pedal == 0.0f && p.pedal_ring == 1.0f);
+    CHECK(paramActive(kPedalRing, 0, 1, 0) && !paramActive(kPedalRing, kVib, 1, 0));
+    const Layout l = computeLayout(900, 600, kTabExtras, ctxOf(0, 1, 0));
+    int noise = -1, ring = -1;
+    for (size_t i = 0; i < l.rows.size(); ++i) {
+        if (l.rows[i].param == kPedalNoise) noise = (int)i;
+        if (l.rows[i].param == kPedalRing) ring = (int)i;
+    }
+    CHECK(noise >= 0 && ring == noise + 1);
+}
+
 TEST(the_default_settings_copy_as_a_short_command_line)
 {
-    // the plugin's defaults differ from the engine's (midi2wav's) in four: the Condition's Normal
-    // zone (the voicing's wear 0.05; midi2wav plays the export mint), the Pedal noise at −20 dB
-    // (midi2wav plays it as fitted), the motor on (the vibraphone's), the wear's variant 1
-    const std::string tail = " in.mid out.wav --rate 48000 --param pedal=0.1,voicing=0.05,motor=1 --tuning seed=1";
+    // the plugin's defaults differ from the engine's (midi2wav's) in five: the Condition's Normal
+    // zone (the voicing's wear 0.05; midi2wav plays the export mint), the Pedal noise and the Pedal
+    // ring at −20 dB (midi2wav plays them as fitted), the motor on (the vibraphone's), the wear's variant 1
+    const std::string tail = " in.mid out.wav --rate 48000 --param pedal=0.1,pedal_ring=0.1,voicing=0.05,motor=1 --tuning seed=1";
     const std::string line = cliLine(defaults(0, 0, 0));
     CHECK(line == "pianoengine render /i/grand_a" + tail);
     // a directory that needs quoting, the latch, a rate that is no whole number
     std::vector<float> v = defaults(0, 0, 0);
     v[kSustainLatch] = 1;
     CHECK(midi2wavLine(v.data(), "/a b/it's", 44100.5)
-        == "pianoengine render '/a b/it'\\''s' in.mid out.wav --rate 44100.5 --param pedal=0.1,voicing=0.05,motor=1 --tuning seed=1 --latch");
+        == "pianoengine render '/a b/it'\\''s' in.mid out.wav --rate 44100.5 --param pedal=0.1,pedal_ring=0.1,voicing=0.05,motor=1 --tuning seed=1 --latch");
 }
 
 TEST(touch_tab_has_a_graph_and_no_empty_note)
@@ -4256,7 +4278,7 @@ TEST(a_bent_velocity_curve_copies_into_the_command_line)
     const std::vector<float> v = defaults(0, 0, 0);
     CHECK(midi2wavLine(v.data(), "/i/grand_a", 48000, &c)
         == "pianoengine render /i/grand_a in.mid out.wav --rate 48000 --velocity-curve 1:1,64:100,127:127 "
-           "--param pedal=0.1,voicing=0.05,motor=1 --tuning seed=1");
+           "--param pedal=0.1,pedal_ring=0.1,voicing=0.05,motor=1 --tuning seed=1");
     CHECK(midi2wavLine(v.data(), "/i/grand_a", 48000, nullptr) == cliLine(v));
 }
 
