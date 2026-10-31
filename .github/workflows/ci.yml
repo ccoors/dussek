@@ -23,7 +23,9 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             cmake ninja-build pkg-config \
             libgl-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libdbus-1-dev \
-            libjack-jackd2-dev libasound2-dev libpulse-dev
+            libjack-jackd2-dev libasound2-dev libpulse-dev locales
+          # a comma-decimal locale: the UI state's and the presets' numbers are tested under it
+          sudo locale-gen de_DE.UTF-8
       - uses: dtolnay/rust-toolchain@stable
       - uses: taiki-e/install-action@v2
         with:
