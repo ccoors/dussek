@@ -122,8 +122,11 @@ What `project.toml` holds:
     before the take choice, so where the map keeps one take per key and layer (a `prefer` on a
     take number, an SFZ's `seq_position` or `lorand` filter), the next take takes their place.
     A layer left out whole stays empty, and the layers above it keep their numbers.
-  - `pedal` (`{ kind = "files", down = […], up = […] }`): the set's own pedal recordings, as recorded
-    (`pedal_noise.py`; Salamander's, its four files, without it).
+  - `pedal` (`{ kind = "files", down = […], up = […], ring = […] }`): the set's own pedal recordings,
+    as recorded (`pedal_noise.py`; Salamander's, its four files, without it). The engine plays the
+    downs in turn whatever the press, so a take far over the others (a stomp) sounds on every n-th
+    press: the build warns of one 6 dB over its kind's median. `ring`, if given, are the pedal-downs
+    the ring is fitted to (the downs without it).
   - `release` and `dampers` (`{ kind = "sfz", file = … }`): the release regions of an SFZ
     file; `release` also `{ kind = "rel_files" }`, the set's `rel1…rel88.wav` (Salamander's).
     `release` gives the release noise; `dampers` gives the damper loss, each partial's first

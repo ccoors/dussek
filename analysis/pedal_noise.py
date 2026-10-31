@@ -2,7 +2,7 @@
 """Sustain-pedal noise from the Salamander pedalD1/2 (pedal down) and pedalU1/2 (pedal
 up) samples, or a set's own pedal recordings (its source's `pedal = { kind = "files", down = […],
 up = […] }`, e.g. split from a session's pedal pass by split_session.py --pedal; levels as
-recorded, re the median mf note's peak).
+recorded, re the median mf note's peak; its `ring = […]`, pedal-downs for the ring's target alone).
 
 A project's `[noises] pedal_level_db` moves every thump's level (not the ring's target); its
 `[noises] pedal_up_impacts` replaces the pedal-up takes' impacts (Salamander's: five near-
@@ -46,6 +46,7 @@ TAKES = {"down": ["pedalD1", "pedalD2"], "up": ["pedalU1", "pedalU2"]}
 TAIL_S = (0.5, 3.0)
 FLOOR_S = 0.5
 OWN_THUMP_S = 0.35
+STOMP_DB = 6.0
 FLOOR_CLIP_DB = 80.0
 TAIL_BANDS = 25.0 * 2 ** (np.arange(0, 19) / 3)   # 25 Hz … 1.6 kHz (the lowest strings ring below 50 Hz)
 HUM_HZ = (50.0, 100.0, 150.0)
@@ -123,6 +124,21 @@ def thump_bands(m, sr, end):
     return 10 * np.log10(e / e.max())
 
 
+def loud_takes(out):
+    """The takes lying STOMP_DB over the median of their kind: the engine plays a kind's takes in turn
+    whatever the press (its speed and depth are not read), so such a take (a stomp, its clack in the
+    highs) sounds on every n-th press (a set's own pedal pass, pressed at various strengths: every third
+    and fourth press clicked). (kind, name, dB over the median)."""
+    rows = []
+    for kind in ("down", "up"):
+        r = [t["ratio_db"] for t in out[kind]]
+        if len(r) < 2:
+            continue
+        med = float(np.median(r))
+        rows += [(kind, t["name"], t["ratio_db"] - med) for t in out[kind] if t["ratio_db"] - med > STOMP_DB]
+    return rows
+
+
 def with_impacts(takes, patterns):
     """The takes with their impacts replaced by the patterns, take i by pattern i mod their count
     (the project's [noises] pedal_up_impacts); the band spectrum and level kept."""
@@ -161,8 +177,20 @@ def main():
             take["tail_spec_db"] = spectrum.tolist()
             out["tail_spec_hz"] = f.tolist()
         out[kind].append(take)
+    # the ring's targets from more pedal-downs than the thumps play (a source's `ring`: every press,
+    # the stomps among them, while the thumps keep the normal presses)
+    for f in (own or {}).get("ring", []):
+        x, sr = sf.read(os.path.join(D.root(pid), f), always_2d=True)
+        m = x.sum(axis=1)
+        m = m[max(onset(m, sr) - int(0.005 * sr), 0):]
+        _, spectrum = tail_spectrum_db(m, sr, ref_db)
+        out.setdefault("ring", []).append({"name": os.path.splitext(os.path.basename(f))[0],
+                                           "tail_db": tail_bands_db(m, sr, ref_db), "tail_spec_db": spectrum.tolist()})
     # a pedal-up rattle of the lender's own mechanism: its landing as another piano's ([noises])
     out["up"] = with_impacts(out["up"], P.section(pid, "noises").get("pedal_up_impacts", []))
+    for kind, name, over in loud_takes(out):
+        print(f"warning: pedal-{kind} take {name} lies {over:.1f} dB over its kind's median: played in turn, "
+              f"it sounds on every {len(out[kind])}th press whatever the press")
     P.write_cache(pid, "pedal_noise", out, indent=1)
     path = P.cache_path(pid, "pedal_noise")
     for kind in TAKES:

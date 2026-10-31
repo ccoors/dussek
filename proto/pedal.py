@@ -170,7 +170,10 @@ def main():
     ref = mf_peak(prof)
     t0, t1 = d["tail_s"]
     sf = np.array(d["tail_spec_hz"])
-    spec = np.mean([10 ** (np.array(t["tail_spec_db"]) / 10) for t in d["down"]], axis=0)   # energy re ref²
+    # the ring's targets: a set's own ring takes where it names them (the pedal-downs it plays as thumps
+    # may be fewer), else its pedal-downs
+    rings = d.get("ring") or d["down"]
+    spec = np.mean([10 ** (np.array(t["tail_spec_db"]) / 10) for t in rings], axis=0)   # energy re ref²
 
     # radiation response of the mono sum at every mode frequency
     h = SB.make_filter(prof, "full", sr, "v").sum(axis=0)
@@ -192,7 +195,7 @@ def main():
     tail = 0.5 * sr * (np.exp(-2 * SIG * t0) - np.exp(-2 * SIG * t1)) / (2 * SIG) * (W * Hm) ** 2
     # band energies of the recording (upper bounds) and the bins of the modes
     bands = np.array(d["tail_bands_hz"])
-    band_rec = np.mean([t["tail_db"] for t in d["down"]], axis=0)
+    band_rec = np.mean([t["tail_db"] for t in rings], axis=0)
     band_of = np.array([np.argmin(np.abs(np.log(fm / bands))) if bands[0] * 2 ** (-1 / 6) <= fm < bands[-1] * 2 ** (1 / 6)
                         else -1 for fm in np.abs(F)])
     inband = band_of >= 0
