@@ -30,6 +30,8 @@ void drawMorphPad(DGL_NAMESPACE::NanoVG& vg, const Rect& pad, const std::vector<
     bool building, bool hot);
 /// where the instrument does not morph
 void drawMorphNote(DGL_NAMESPACE::NanoVG& vg, const Rect& r);
+/// the About tab: its lines, the project's link and its Copy link button (`hot`: under the pointer)
+void drawAboutTab(DGL_NAMESPACE::NanoVG& vg, const Layout& l, bool hot);
 /// the tooltip's height at `width`: the title, the wrapped description (may be empty) and the gestures
 float tooltipHeight(DGL_NAMESPACE::NanoVG& vg, float width, const char* title, const char* body, const char* gestures);
 void drawTooltip(DGL_NAMESPACE::NanoVG& vg, const Rect& r, const char* title, const char* body, const char* gestures);

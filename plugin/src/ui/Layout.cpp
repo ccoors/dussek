@@ -1,4 +1,5 @@
 #include "Layout.hpp"
+#include "DistrhoPluginInfo.h"
 #include "MidiMap.hpp"
 #include "Morph.hpp"
 #include "Format.hpp"
@@ -97,7 +98,7 @@ Kind paramKind(uint32_t param)
 
 const char* tabName(Tab t)
 {
-    static const char* const names[kTabCount] = { "Sound", "Morph", "Touch", "Felt", "Mics", "Tuning", "Condition", "Extras", "MIDI" };
+    static const char* const names[kTabCount] = { "Sound", "Morph", "Touch", "Felt", "Mics", "Tuning", "Condition", "Extras", "MIDI", "About" };
     return names[t < kTabCount ? t : 0];
 }
 
@@ -119,6 +120,7 @@ const std::vector<TabGroup>& tabGroups(Tab t)
           { "Preparation", { kPrepMode, kPluckPosition, kPluckBrightness, kMuteStrength, kHarmonicNumber, kBoltMass,
                                kBoltPosition, kPaperBuzz } } },
         {}, // MIDI: MIDI learn's ties, no parameters
+        {}, // About: the plugin's and the instrument's text, no parameters
     };
     return g[t < kTabCount ? t : 0];
 }
@@ -317,10 +319,18 @@ Layout computeLayout(float width, float height, Tab tab, const UiContext& ctx)
     const std::vector<uint32_t> mic = visibleOf(drawingParams(), ctx);
     const float line = kLineH + kLineGap;
     float panelX = pad, panelW = inner;
+    // the tab bar's width on one row
+    float tabsW = 0;
+    for (uint32_t t = 0; t < kTabCount; ++t)
+        tabsW += textWidth(tabName((Tab)t)) + 4 + (t > 0 ? 2 : 0);
     if (l.wide) {
         // the drawing and its rows stay put on the left; short windows shrink the views so the rows
-        // stay in view
-        const float micW = (inner - pad) * 0.55f;
+        // stay in view. The drawing takes 55 % of the width, down to half where that puts the tabs
+        // on one row (the default window)
+        float share = 0.55f;
+        if (const float one = 1 - (tabsW + 0.5f) / (inner - pad); one < share && one >= 0.5f)
+            share = one;
+        const float micW = (inner - pad) * share;
         const float full = std::min(micW * 0.45f, 260.0f), room = h - pad - y - kGap - mic.size() * line + kLineGap;
         const float viewH = std::max(std::min(full, room), 1.0f);
         const float topW = (micW - kGap) * 0.58f;
@@ -336,7 +346,7 @@ Layout computeLayout(float width, float height, Tab tab, const UiContext& ctx)
     // the tab bar (wraps where the five do not fit)
     float tx = panelX, ty = y;
     for (uint32_t t = 0; t < kTabCount; ++t) {
-        const float bw = std::max(1.0f, std::min(textWidth(tabName((Tab)t)) + 4, panelW)); // nine fit one row at the default width
+        const float bw = std::max(1.0f, std::min(textWidth(tabName((Tab)t)) + 4, panelW)); // ten fit one row at the default width
         if (tx > panelX && tx + bw > panelX + panelW) {
             tx = panelX;
             ty += kTabH + 2;
@@ -494,6 +504,48 @@ Layout computeLayout(float width, float height, Tab tab, const UiContext& ctx)
                 l.feltSmall[i] = across ? Rect { gx + i * (sw + kGap), sy, sw, smallH } : Rect { gx, sy + i * (smallH + kGap), sw, smallH };
             bottom = l.feltSmall[2].y + smallH + kLineGap;
         }
+    } else if (tab == kTabAbout) {
+        const float x = panelX, w = std::max(panelW, 1.0f), tw = std::max(w - 8, 1.0f); // the text 4 px in from each side
+        float y = cy;
+        auto lines = [&](const std::vector<TextLine>& text, LineStyle style, LineStyle heading) {
+            for (const TextLine& t : wrapLines(text, tw)) {
+                l.aboutLines.push_back({ t.text, { x + 4, y, tw, kTextLineH }, t.heading ? heading : style });
+                y += kTextLineH;
+            }
+        };
+        auto line = [&](const std::string& text, LineStyle style) { lines({ { text, false } }, style, style); };
+        auto subheading = [&](const char* title) {
+            y += kGap;
+            l.subheadings.push_back({ title, { x, y, w, kSubheadH } });
+            y += kSubheadH + kLineGap;
+        };
+        line(std::string(DISTRHO_PLUGIN_NAME) + " " + versionText(), LineStyle::Title);
+        line(std::string("Built from commit ") + buildCommit(), LineStyle::Dim);
+        line(kPluginLicenseLine, LineStyle::Dim);
+        // the link, its button at the right end (under it where they do not fit)
+        y += kLineGap;
+        const float bw = std::min(textWidth("Copy link") + 20, w), urlW = textWidth(kProjectUrl) + 8;
+        l.aboutLink = { x, y, std::max(1.0f, std::min(urlW, w)), kLineH };
+        if (urlW + kGap + bw <= w) {
+            l.aboutCopy = { x + w - bw, y, bw, kLineH };
+        } else {
+            y += kLineH + kLineGap;
+            l.aboutCopy = { x, y, bw, kLineH };
+        }
+        y += kLineH;
+        subheading("Instrument");
+        if (ctx.inst == nullptr) {
+            line("The chosen instrument is missing.", LineStyle::Text);
+        } else {
+            line(ctx.inst->name, LineStyle::Title);
+            line(ctx.inst->dir, LineStyle::Dim);
+            y += kTextLineH / 2;
+            if (ctx.license != nullptr && !ctx.license->empty())
+                lines(*ctx.license, LineStyle::Text, LineStyle::Heading);
+            else
+                line("No LICENSE.md in its folder: its terms are unknown.", LineStyle::Text);
+        }
+        bottom = y + kLineGap; // the last line's gap, taken off below
     } else if (blocks.empty() && !l.drawingScrolls) {
         l.emptyNote = { panelX, cy, std::max(panelW, 1.0f), kLineH };
         bottom = cy + line;

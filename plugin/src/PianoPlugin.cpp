@@ -19,6 +19,7 @@
 
 #include "DistrhoPlugin.hpp"
 #include "DistrhoPluginUtils.hpp"
+#include "About.hpp"
 #include "Catalog.hpp"
 #include "FileWatch.hpp"
 #include "Morph.hpp"
@@ -127,7 +128,11 @@ protected:
     }
     const char* getMaker() const override { return "PianoEngine"; }
     const char* getLicense() const override { return "AGPL-3.0-or-later"; }
-    uint32_t getVersion() const override { return d_version(0, 3, 0); }
+    uint32_t getVersion() const override
+    {
+        const pe::Version v = pe::pluginVersion(); // plugin/CMakeLists.txt's project version
+        return d_version(v.major, v.minor, v.patch);
+    }
 
     void initParameter(uint32_t index, Parameter& p) override
     {

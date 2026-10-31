@@ -1,6 +1,7 @@
 // What the UI knows about an instrument: its catalog entry (the engine's report and the
 // export's menu block, Catalog.hpp), never its name.
 #pragma once
+#include "About.hpp"
 #include "Catalog.hpp"
 
 #include <bitset>
@@ -38,7 +39,7 @@ bool paramActive(uint32_t param, const InstrumentEntry& e, uint32_t micPosition,
 /// what the shown controls depend on besides the window: the instrument (nullptr: missing), the
 /// microphone position and the Preparation parameter (as stored); MIDI learn: the parameters
 /// tied to a CC (their labels leave room for the tag), the number of ties and whether Next /
-/// Previous instrument are among them (the MIDI tab)
+/// Previous instrument are among them (the MIDI tab); the instrument's license (the About tab)
 struct UiContext {
     const InstrumentEntry* inst = nullptr;
     uint32_t micPosition = 0, prep = 0;
@@ -47,6 +48,7 @@ struct UiContext {
     bool nextTied = false, previousTied = false, knobTied = false;
     uint32_t partners = 0; // the morph's partners (the Morph tab's rows after the main one)
     bool nativeAudio = false; // the standalone on its own audio, without JACK: its row on the MIDI tab
+    const std::vector<TextLine>* license = nullptr; // the instrument's LICENSE.md as plain lines (the About tab; nullptr: none)
 };
 /// the preparations that act on an instrument (Prep indices: 1 plucked, 2 muted, 3 harmonic,
 /// 4 bolt, 5 paper; None, 0, is always there and not listed), in menu order, into `values`

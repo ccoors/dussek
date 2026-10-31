@@ -165,6 +165,20 @@ void drawMorphNote(NanoVG& vg, const Rect& r)
         NanoVG::ALIGN_LEFT | NanoVG::ALIGN_MIDDLE);
 }
 
+void drawAboutTab(NanoVG& vg, const Layout& l, bool hot)
+{
+    vg.fontSize(theme::fontSize);
+    for (const AboutLine& a : l.aboutLines) {
+        const DGL_NAMESPACE::Color& c = a.style == LineStyle::Dim ? theme::dim : a.style == LineStyle::Heading ? theme::accentText : theme::text;
+        label(vg, a.rect.x, a.rect.y + a.rect.h / 2, a.text.c_str(), c, NanoVG::ALIGN_LEFT | NanoVG::ALIGN_MIDDLE);
+    }
+    const Rect& k = l.aboutLink;
+    vg.save();
+    vg.intersectScissor(k.x, k.y, k.w, k.h);
+    label(vg, k.x + 4, k.y + k.h / 2, kProjectUrl, theme::accentText, NanoVG::ALIGN_LEFT | NanoVG::ALIGN_MIDDLE);
+    vg.restore();
+    drawPlainButton(vg, l.aboutCopy, "Copy link", true, hot);
+}
 void drawTieTag(NanoVG& vg, const Row& r, const char* text, const char* labelText)
 {
     DGL_NAMESPACE::Rectangle<float> b;

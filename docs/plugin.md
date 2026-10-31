@@ -94,7 +94,7 @@ The UI is NanoVG and scalable: the host's HiDPI factor × a zoom of 100–400 %.
     close positions.
   The drawing shows where the engine really puts the microphones, its limits included. The
   position, distance and spacing are under it.
-- **Nine tabs**: Sound, Morph, Touch, Felt, Mics, Tuning, Condition, Extras, MIDI. Only the controls
+- **Ten tabs**: Sound, Morph, Touch, Felt, Mics, Tuning, Condition, Extras, MIDI, About. Only the controls
   that act on the instrument, at its microphone position and with its preparation, are shown
   (`engine/tests/no_effect.rs`).
 - **Layout**: wide windows put the drawing beside the panel and flow the panel into up to three
@@ -665,6 +665,20 @@ the controller, not a sound, so Reset, presets and saved sessions leave them alo
 work while no instrument plays, so a knob can step away from one that does not load. Hosts that
 take a plugin's own parameter changes (the JACK standalone, Carla) save the values MIDI set;
 others hear of them only through the open UI.
+
+## About
+
+The last tab says what plays:
+
+- **The plugin**: its name and version, the commit it was built from (`git describe --always
+  --dirty` at build time, "unknown" when built from a source tarball) and its license
+  (AGPL-3.0-or-later, `LICENSE`).
+- **The project's link**, with **Copy link** (the plugin opens no browser: DPF has no portable way
+  to, so the link goes to the clipboard).
+- **The instrument**: its name, its folder and its `LICENSE.md` (every export carries one; an
+  instrument opened from a folder elsewhere has it in that folder). The Markdown shows as plain
+  text, wrapped to the tab's width and scrolling where it is longer; the file is read when the
+  instrument changes. A folder without the file says so.
 
 ## For tests
 

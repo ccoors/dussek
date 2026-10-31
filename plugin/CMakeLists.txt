@@ -3,7 +3,8 @@
 cmake_minimum_required(VERSION 3.22)
 # macOS: the oldest release the builds run on (libc++'s std::to_chars for floats: 13.3)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "13.3" CACHE STRING "the oldest macOS the builds run on")
-project(pianoengine-plugin LANGUAGES C CXX)
+# the plugin's version: the hosts' (getVersion) and the About tab's
+project(pianoengine-plugin VERSION 0.3.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -57,7 +58,7 @@ target_link_libraries(pianoengine PUBLIC Threads::Threads ${CMAKE_DL_LIBS} m)
 target_sources(pianoengine-jack PRIVATE src/StandaloneCli.cpp)
 
 # pure logic shared by the DSP and the UI, and its tests (no window)
-add_library(pe_common STATIC src/Catalog.cpp src/Params.cpp src/EngineValues.cpp src/PedalMixer.cpp src/ui/Format.cpp src/ui/Instruments.cpp src/ui/Layout.cpp src/ui/MicMap.cpp src/ui/Spectro.cpp src/ui/Strip.cpp src/ui/StripInteraction.cpp src/ui/Viz.cpp src/ui/Tooltip.cpp src/ui/UiState.cpp src/SharedRegion.cpp src/ui/TelemetryClient.cpp src/ui/CurveEdit.cpp src/ui/FeltEditor.cpp src/ui/NoteHistory.cpp src/MidiMap.cpp src/MidiRoute.cpp src/Morph.cpp src/FileWatch.cpp src/Presets.cpp src/Paths.cpp src/Numbers.cpp)
+add_library(pe_common STATIC src/Catalog.cpp src/Params.cpp src/EngineValues.cpp src/PedalMixer.cpp src/ui/About.cpp src/ui/BuildInfo.cpp src/ui/Format.cpp src/ui/Instruments.cpp src/ui/Layout.cpp src/ui/MicMap.cpp src/ui/Spectro.cpp src/ui/Strip.cpp src/ui/StripInteraction.cpp src/ui/Viz.cpp src/ui/Tooltip.cpp src/ui/UiState.cpp src/SharedRegion.cpp src/ui/TelemetryClient.cpp src/ui/CurveEdit.cpp src/ui/FeltEditor.cpp src/ui/NoteHistory.cpp src/MidiMap.cpp src/MidiRoute.cpp src/Morph.cpp src/FileWatch.cpp src/Presets.cpp src/Paths.cpp src/Numbers.cpp)
 target_include_directories(pe_common PUBLIC src src/ui)
 # the shipped full presets (presets/*.pepreset), embedded as text: Presets.cpp parses them (the files
 # name instruments, which the code may not)
@@ -71,6 +72,18 @@ foreach(f ${PE_PRESET_FILES})
 endforeach()
 file(CONFIGURE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/generated/ShippedPresets.inc CONTENT "${PE_PRESET_TEXTS}" @ONLY)
 target_include_directories(pe_common PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated)
+# the version and the commit for the About tab (BuildInfo.cpp): the commit read at every build
+# (cmake/BuildCommit.cmake; "unknown" without git or outside a checkout)
+find_package(Git QUIET)
+set(PE_COMMIT_HEADER ${CMAKE_CURRENT_BINARY_DIR}/generated/BuildCommit.h)
+add_custom_target(pe_build_commit
+  COMMAND ${CMAKE_COMMAND} "-DROOT=${CMAKE_CURRENT_SOURCE_DIR}/.." "-DGIT=${GIT_EXECUTABLE}" "-DOUT=${PE_COMMIT_HEADER}"
+          -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/BuildCommit.cmake
+  BYPRODUCTS ${PE_COMMIT_HEADER}
+  VERBATIM)
+add_dependencies(pe_common pe_build_commit)
+set_source_files_properties(src/ui/BuildInfo.cpp PROPERTIES COMPILE_DEFINITIONS
+  "PE_VERSION_MAJOR=${PROJECT_VERSION_MAJOR};PE_VERSION_MINOR=${PROJECT_VERSION_MINOR};PE_VERSION_PATCH=${PROJECT_VERSION_PATCH}")
 target_link_libraries(pe_common PUBLIC ${PE_ENGINE_LIB})
 target_link_libraries(pe_common PUBLIC Threads::Threads ${CMAKE_DL_LIBS} m)
 set_target_properties(pe_common PROPERTIES POSITION_INDEPENDENT_CODE ON)

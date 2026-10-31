@@ -2,6 +2,7 @@
 // wide: the microphone drawing on the left and a tabbed panel on the right, narrow: one column
 // with the drawing in the Mics tab. Only the tab's content scrolls.
 #pragma once
+#include "About.hpp"
 #include "Instruments.hpp"
 
 #include <cstdint>
@@ -13,7 +14,7 @@ namespace pe {
 struct Rect { float x = 0, y = 0, w = 0, h = 0;
     bool contains(float px, float py) const { return px >= x && px < x + w && py >= y && py < y + h; }
     bool overlaps(const Rect& o) const { return x < o.x + o.w && o.x < x + w && y < o.y + o.h && o.y < y + h; } };
-enum Tab : uint32_t { kTabSound, kTabMorph, kTabTouch, kTabFelt, kTabMics, kTabTuning, kTabCondition, kTabExtras, kTabMidi, kTabCount };
+enum Tab : uint32_t { kTabSound, kTabMorph, kTabTouch, kTabFelt, kTabMics, kTabTuning, kTabCondition, kTabExtras, kTabMidi, kTabAbout, kTabCount };
 enum class Kind { Slider, Toggle, Dropdown };
 /// a control: its row and the row's parts (the label; the control: a slider's track, a switch, a
 /// menu box; the value text, click to type). Compact rows put them on one line; the header's keep
@@ -29,6 +30,9 @@ struct MidiRow { int tie; uint32_t target; Rect rect, button; };
 /// a Morph tab row: the list's `index`-th instrument (0: the main one, without buttons), its move up,
 /// move down and remove buttons
 struct MorphRow { int index; Rect rect, up, down, remove; };
+/// an About tab line: its text, its rect and how it looks
+enum class LineStyle { Title, Text, Dim, Heading };
+struct AboutLine { std::string text; Rect rect; LineStyle style; };
 struct Layout {
     bool wide = false;
     int columns = 1;                // the content's columns
@@ -63,11 +67,17 @@ struct Layout {
     // kFeltLabelW to the left, kLineH below), the other three small under it; `feltNote` a line
     // under the graph ("measuring…"), or alone where the felt does not apply
     Rect feltChips[4], feltOriginal, feltReset, feltGraph, feltSmall[3], feltNote;
+    // the About tab (empty on the others), in layout coordinates: its lines (the plugin's name and
+    // version, commit and license; the instrument's name, folder and LICENSE.md, wrapped to the
+    // width), the project's link and its Copy link button (beside it, or under it where it does not fit)
+    std::vector<AboutLine> aboutLines;
+    Rect aboutLink, aboutCopy;
 };
 constexpr float kDefaultWidth = 900, kDefaultHeight = 600, kMinWidth = 420, kMinHeight = 360, kBreakpoint = 760;
 constexpr float kRowH = 30, kPad = 12, kGap = 6;           // header rows, dropdown lists
 constexpr float kLineH = 22, kLineGap = 4, kSubheadH = 18; // compact rows, group subheadings
 constexpr float kTabH = 26;
+constexpr float kTextLineH = 18;    // a line of the About tab's text
 constexpr float kColumnWidth = 360; // a content column per this much panel width, up to kMaxColumns
 constexpr int kMaxColumns = 3;
 constexpr float kValueW = 76;       // a compact slider's value text, at least (its longest text widens it)

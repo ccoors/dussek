@@ -1,4 +1,5 @@
 #include "check.hpp"
+#include "About.hpp"
 #include "Catalog.hpp"
 #include "CurveSlot.hpp"
 #include "CurveEdit.hpp"
@@ -1080,7 +1081,7 @@ TEST(ui_state_round_trip_and_bad_input)
     const UiState d = parseUiState("garbage");
     CHECK(d.tab == kTabSound && d.zoom == 100);
     CHECK(parseUiState("tab=9;zoom=999").zoom == 100);         // not a zoom step
-    CHECK(parseUiState("tab=9;zoom=999").tab == kTabSound);    // no such tab
+    CHECK(parseUiState("tab=10;zoom=999").tab == kTabSound);   // no such tab
     CHECK(parseUiState(nullptr).zoom == 100 && parseUiState(nullptr).tab == kTabSound);
     // a state saved before the tabs: the open sections are dropped (Sound), the rest stays
     const UiState old = parseUiState("open=21;zoom=150;diag=1;view=1;lo=55;hi=8000;floor=-70");
@@ -3490,9 +3491,9 @@ TEST(felt_tab_on_a_harp_shows_the_note_only)
     CHECK(l.feltGraph.w == 0 && l.feltNote.w > 0 && l.feltOriginal.w == 0 && l.feltReset.w == 0);
 }
 
-TEST(nine_tabs_fit_two_rows)
+TEST(ten_tabs_fit_two_rows)
 {
-    CHECK((int)kTabCount == 9);
+    CHECK((int)kTabCount == 10);
     for (float w : { kDefaultWidth, kMinWidth }) {
         const Layout l = computeLayout(w, kDefaultHeight, kTabSound, ctxOf(0, 1, 0));
         float lo = l.tabs[0].rect.y, hi = lo;
@@ -4979,7 +4980,7 @@ TEST(gestures_mention_midi_learn_where_it_works)
 
 TEST(midi_tab_lists_every_tie_and_the_switch)
 {
-    CHECK(std::string(tabName(kTabMidi)) == "MIDI" && kTabMidi + 1 == kTabCount);
+    CHECK(std::string(tabName(kTabMidi)) == "MIDI" && kTabMidi + 1 == kTabAbout);
     // the default window keeps the tab bar on one row
     const Layout d = computeLayout(kDefaultWidth, kDefaultHeight, kTabSound, ctxOf(0, 1, 0));
     CHECK(d.tabs.size() == kTabCount && d.tabs.back().rect.y == d.tabs.front().rect.y);
@@ -5940,4 +5941,150 @@ TEST(copy_cli_finds_the_standalone)
     CHECK(midi2wavLine(v.data(), "/i/grand_a", 48000).rfind("pianoengine render /i/grand_a ", 0) == 0);
     CHECK(midi2wavLine(v.data(), "/i/grand_a", 48000, nullptr, {}, std::string(), std::string(), "/opt/my apps/pianoengine")
               .rfind("'/opt/my apps/pianoengine' render /i/grand_a ", 0) == 0);
+}
+
+TEST(about_is_the_last_tab)
+{
+    CHECK(std::string(tabName(kTabAbout)) == "About" && kTabAbout + 1 == kTabCount);
+    CHECK(tabGroups(kTabAbout).empty()); // no parameters
+    // the default window keeps the ten tabs on one row (the drawing gives up a little width for it)
+    const Layout d = computeLayout(kDefaultWidth, kDefaultHeight, kTabSound, ctxOf(0, 1, 0));
+    CHECK(d.tabs.size() == kTabCount && d.tabs.back().rect.y == d.tabs.front().rect.y);
+    CHECK(d.topView.w + d.frontView.w + kGap >= 0.5f * (kDefaultWidth - 3 * kPad) - 0.5f);
+    // a wide window keeps the drawing's share as before
+    const Layout big = computeLayout(1600, kDefaultHeight, kTabSound, ctxOf(0, 1, 0));
+    CHECK_NEAR(big.topView.w + big.frontView.w + kGap, 0.55f * (1600 - 3 * kPad), 0.5);
+}
+
+TEST(the_version_and_the_commit_are_known)
+{
+    const Version v = pluginVersion();
+    CHECK(versionText() == std::to_string(v.major) + "." + std::to_string(v.minor) + "." + std::to_string(v.patch));
+    CHECK(v.major + v.minor + v.patch > 0);
+    const std::string c = buildCommit();
+    CHECK(!c.empty() && c.find('\n') == std::string::npos && c.find('"') == std::string::npos);
+}
+
+TEST(markdown_becomes_plain_lines)
+{
+    const std::string md = "\n# License: Grand A (`grand_a`)\r\n\r\nThis instrument was made by **someone**.\nIt is licensed.\n\n\n"
+                           "- **Set A** by X, https://a.example/: CC0.\n- **Set B** by Y\n  continued here.\n\n"
+                           "## Credit\nCredit it as: A.\n\n";
+    const std::vector<TextLine> want {
+        { "License: Grand A (grand_a)", true }, { "", false },
+        { "This instrument was made by someone. It is licensed.", false }, { "", false },
+        { "• Set A by X, https://a.example/: CC0.", false }, { "• Set B by Y continued here.", false }, { "", false },
+        { "Credit", true }, { "Credit it as: A.", false } };
+    const std::vector<TextLine> got = markdownLines(md);
+    CHECK(got == want);
+    CHECK(markdownLines("").empty() && markdownLines("\n\n").empty());
+    CHECK((markdownLines("a *b* c") == std::vector<TextLine> { { "a *b* c", false } })); // only ** goes
+}
+
+TEST(lines_wrap_to_the_width)
+{
+    const std::string url = "https://theremin.music.uiowa.edu/MISpiano.html";
+    const std::vector<TextLine> in { { "License: Grand A (grand_a)", true }, { "", false },
+        { "It is licensed under the Creative Commons Attribution 4.0 International license, " + url + ".", false },
+        { "• Salamander Grand Piano V3 by Alexander Holm: public domain.", false } };
+    for (float w : { 120.0f, 200.0f, 380.0f, 1000.0f }) {
+        const std::vector<TextLine> out = wrapLines(in, w);
+        std::string words, back;
+        for (const TextLine& l : in) words += l.text + " ";
+        bool blank = false;
+        for (const TextLine& l : out) {
+            CHECK(textWidth(l.text.c_str()) <= w);
+            back += l.text + " ";
+            blank = blank || l.text.empty();
+        }
+        CHECK(blank); // the blank line stays
+        // the same words in the same order (the breaks and the list's indent aside)
+        auto squeeze = [](const std::string& s) { std::string r; for (char c : s) if (c != ' ') r += c; return r; };
+        CHECK(squeeze(back) == squeeze(words));
+        CHECK(out.front().heading && out.front().text.rfind("License", 0) == 0);
+        if (w >= 1000) CHECK(out.size() == in.size()); // nothing to wrap
+    }
+    // at 200 px: the URL (47 characters, 329 px) is broken, the list item's further lines indented
+    const std::vector<TextLine> narrow = wrapLines(in, 200);
+    CHECK(narrow.size() > in.size() + 3);
+    size_t item = 0;
+    for (size_t i = 0; i < narrow.size(); ++i)
+        if (narrow[i].text.rfind("• ", 0) == 0) item = i;
+    CHECK(item > 0 && item + 1 < narrow.size() && narrow[item + 1].text.rfind("  ", 0) == 0);
+    // a heading wraps as a heading; no width still ends, a character a line
+    const std::vector<TextLine> h = wrapLines({ { "A long heading that wraps", true } }, 80);
+    CHECK(h.size() > 1 && std::all_of(h.begin(), h.end(), [](const TextLine& l) { return l.heading; }));
+    const std::vector<TextLine> tiny = wrapLines({ { "abc def", false } }, 1);
+    CHECK(tiny.size() == 6);
+    CHECK(wrapLines({ { "ä ö ü", false } }, 7).size() == 3); // UTF-8: characters, not bytes
+}
+
+TEST(every_export_carries_a_license_the_about_tab_reads)
+{
+    for (const InstrumentEntry* e : committed().menu()) {
+        std::string md;
+        CHECK(readTextFile(e->dir + "/LICENSE.md", md));
+        const std::vector<TextLine> lines = markdownLines(md);
+        CHECK(!lines.empty() && lines.front().heading && lines.front().text.find(e->name) != std::string::npos);
+        for (const TextLine& l : wrapLines(lines, 300))
+            CHECK(textWidth(l.text.c_str()) <= 300 && l.text.find("**") == std::string::npos && l.text.find('`') == std::string::npos);
+    }
+    std::string none = "x";
+    CHECK(!readTextFile(std::string(PE_TESTS_DIR) + "/no such file.md", none) && none.empty());
+}
+
+TEST(the_about_tab_lays_out_its_lines_in_the_content)
+{
+    std::string md;
+    CHECK(readTextFile(entryOf(0).dir + "/LICENSE.md", md));
+    const std::vector<TextLine> license = markdownLines(md);
+    for (float w : { kMinWidth, kDefaultWidth, 1600.0f })
+        for (float h : { kMinHeight, kDefaultHeight }) {
+            UiContext c = ctxOf(0, 1, 0);
+            c.license = &license;
+            const Layout l = computeLayout(w, h, kTabAbout, c);
+            CHECK(l.emptyNote.w == 0 && l.aboutLines.size() > license.size());
+            CHECK(std::none_of(l.rows.begin(), l.rows.end(), [](const Row& r) { return r.scrolls; }));
+            const Rect& k = l.content;
+            auto inside = [&](const Rect& r) { return r.w > 0 && r.x >= k.x - 1e-3f && r.x + r.w <= k.x + k.w + 0.5f && r.y >= k.y; };
+            float y = k.y;
+            for (const AboutLine& a : l.aboutLines) {
+                CHECK(inside(a.rect) && a.rect.y >= y - 1e-3f); // top to bottom, none over another
+                CHECK(textWidth(a.text.c_str()) <= a.rect.w + 0.5f);
+                CHECK(!a.rect.overlaps(l.aboutCopy));
+                y = a.rect.y + a.rect.h;
+            }
+            CHECK(inside(l.aboutCopy) && inside(l.aboutLink) && !l.aboutLink.overlaps(l.aboutCopy));
+            CHECK(l.contentHeight >= y - k.y - 0.5f);
+            for (const Subheading& s : l.subheadings)
+                for (const AboutLine& a : l.aboutLines)
+                    CHECK(!s.rect.overlaps(a.rect));
+            // the plugin's name and version first, the commit, the license; then the instrument
+            CHECK(l.aboutLines[0].text.find(versionText()) != std::string::npos);
+            auto has = [&](const std::string& s) {
+                return std::any_of(l.aboutLines.begin(), l.aboutLines.end(), [&](const AboutLine& a) { return a.text.find(s) != std::string::npos; });
+            };
+            CHECK(has(buildCommit()) && has("AGPL-3.0-or-later") && has(entryOf(0).name) && has("Salamander"));
+            CHECK(l.aboutLink.w > 0);
+        }
+    // the license scrolls in a small window
+    UiContext c = ctxOf(0, 1, 0);
+    c.license = &license;
+    CHECK(maxScroll(computeLayout(kMinWidth, kMinHeight, kTabAbout, c)) > 0);
+    // no LICENSE.md, no instrument: said plainly
+    auto says = [](const Layout& l, const char* s) {
+        return std::any_of(l.aboutLines.begin(), l.aboutLines.end(), [&](const AboutLine& a) { return a.text.find(s) != std::string::npos; });
+    };
+    CHECK(says(computeLayout(kDefaultWidth, kDefaultHeight, kTabAbout, ctxOf(0, 1, 0)), "No LICENSE.md"));
+    UiContext none {};
+    CHECK(says(computeLayout(kDefaultWidth, kDefaultHeight, kTabAbout, none), "missing"));
+    // a tiny window: every line still inside
+    for (float w : { 100.0f, 200.0f }) {
+        const Layout t = computeLayout(w, 80, kTabAbout, c);
+        for (const AboutLine& a : t.aboutLines)
+            CHECK(a.rect.w > 0 && a.rect.x + a.rect.w <= w + 1e-3f);
+    }
+    // the other tabs carry none of it
+    for (Tab t : { kTabSound, kTabMidi, kTabFelt })
+        CHECK(computeLayout(kDefaultWidth, kDefaultHeight, t, c).aboutLines.empty() && computeLayout(kDefaultWidth, kDefaultHeight, t, c).aboutCopy.w == 0);
 }

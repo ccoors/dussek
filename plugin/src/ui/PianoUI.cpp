@@ -7,6 +7,7 @@
 #include "DistrhoPluginUtils.hpp"
 #include "DistrhoStandaloneUtils.hpp"
 #include "OpenGL-include.hpp"
+#include "About.hpp"
 #include "CurveEdit.hpp"
 #include "FeltEditor.hpp"
 #include "FeltFetch.hpp"
@@ -57,6 +58,7 @@ public:
             requestMIDI();
         fCatalog = sharedCatalog(resources());
         fChoice = choose(*fCatalog, "");
+        loadLicense();
         for (uint32_t i = 0; i < kParamCount; ++i)
             fValues[i] = paramInfo(i).def;
         for (uint32_t i = kParamCount; i < kTotalParams; ++i)
@@ -265,6 +267,8 @@ protected:
             drawMorphTab();
         if (tab() == kTabFelt)
             drawFeltTab();
+        if (tab() == kTabAbout)
+            drawAboutTab(*this, fLayout, fHotCopyLink);
         if (fLayout.drawingScrolls)
             drawViews();
         restore();
@@ -354,6 +358,10 @@ protected:
             return true;
         if (tab() == kTabMorph && fPressInContent && pressMorph(p))
             return true;
+        if (tab() == kTabAbout && fPressInContent && fLayout.aboutCopy.contains(p.x, p.y)) {
+            copyLink();
+            return true;
+        }
         if (viewAt(fLayout, wx, wy, fScroll) >= 0 && clickMicViews(p)) // only where the drawing is shown
             return true;
         const int i = rowAt(fLayout, wx, wy, fScroll);
@@ -622,6 +630,7 @@ private:
         c.knobTied = fMap.find(kTargetKnob) != nullptr;
         c.partners = (uint32_t)partners().size();
         c.nativeAudio = isUsingNativeAudio();
+        c.license = fLicenseFound ? &fLicense : nullptr;
         return c;
     }
     uint32_t stored(uint32_t i) const { return (uint32_t)std::max(0L, std::lround(fValues[i])); }
@@ -706,6 +715,7 @@ private:
     /// another instrument (chosen here or by the host's state): its body, its controls
     void instrumentChanged()
     {
+        loadLicense();
         askShippedFelt(); // the Felt tab's graphs: the new instrument's felt
         if (micDragging())
             return;
@@ -1126,6 +1136,28 @@ private:
         showNote("Copied", "The command line (pianoengine render) for the current settings is on the clipboard.", fLayout.menu);
     }
 
+    // ---- the About tab: the instrument's LICENSE.md, read when the instrument changes (not per frame)
+    std::vector<TextLine> fLicense;
+    bool fLicenseFound = false;
+    bool fHotCopyLink = false;
+
+    void loadLicense()
+    {
+        std::string md;
+        fLicenseFound = fChoice.entry != nullptr && readTextFile(fChoice.entry->dir + "/LICENSE.md", md);
+        fLicense = markdownLines(md);
+    }
+
+    /// the About tab's Copy link: the project's link to the clipboard (DPF opens no browser)
+    void copyLink()
+    {
+        if (!setClipboard("text/plain", kProjectUrl, std::strlen(kProjectUrl))) {
+            d_stderr2("PianoEngine: the clipboard took nothing; the link: %s", kProjectUrl);
+            return;
+        }
+        showNote("Copied", "The project's link is on the clipboard.", shown(fLayout.aboutCopy, true, fScroll));
+    }
+
     void drawCopiedNote()
     {
         if (!copiedNote())
@@ -1310,6 +1342,8 @@ private:
         if (const CatalogPtr c = sharedCatalog(resources()); c != fCatalog) {
             fCatalog = c;
             fChoice = choose(*fCatalog, fChoice.id);
+            loadLicense();
+            relayout();
             repaint();
         }
         fDiag.idle(); // telemetry poll and repaint while the analysis panel is open
@@ -2578,6 +2612,8 @@ private:
                     : r.remove.contains(p.x, p.y) ? b + 3 : r.rect.contains(p.x, p.y) ? b : -1;
             }
         }
+        const bool hotCopy = inC && tab() == kTabAbout && fLayout.aboutCopy.contains(p.x, p.y);
+        if (hotCopy != fHotCopyLink) { fHotCopyLink = hotCopy; repaint(); }
         if (hotMidi != fHotMidi || hotSwitch != fHotSwitch) { fHotMidi = hotMidi; fHotSwitch = hotSwitch; repaint(); }
         fTip.hover(hotPanic ? panicTip() : hotMenu ? menuTip() : overCurve ? curveTip() : hotSwitch == 1 ? programTip() : hotSwitch == 2 ? takeoverTip()
                 : hotMidi >= 0 ? midiTip((size_t)hotMidi) : hotMorph >= 0 ? hotMorph : hotRow, nowMs());

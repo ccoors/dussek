@@ -3309,3 +3309,36 @@ the Pedal noise). The noise starts at −20 dB, the ring at −10 dB: chosen by 
 "even if it's not entirely realistic. Sounds best to me"), 10 dB over the ring as step 210 played
 it beside the thumps. Either at 0 leaves the other bit for bit as it plays alone
 (`engine/tests/pedal.rs`), and the ring follows its gain (half the gain, half the peak within 1 %).
+<a id="step-212"></a>
+## 212. The About tab
+
+Asked for by the maintainer: a page in the plugin with its name, version and commit, the project's
+link, and what the loaded instrument is, mostly its `LICENSE.md`. It is the last tab, after MIDI.
+
+- **The version** has one source: `plugin/CMakeLists.txt`'s `project(… VERSION 0.3.0)`, read by
+  `BuildInfo.cpp` for the tab and for `getVersion()` (the hosts'), which named its own numbers
+  before.
+- **The commit** is read at every build, not at configure time (a configure-time value goes stale
+  with each commit): `plugin/cmake/BuildCommit.cmake`, run by `cmake -P` (portable, no shell),
+  writes `git describe --always --dirty` into a generated header, and rewrites it only when it
+  changes, so a build without a new commit compiles nothing again. Without a `.git` in the
+  repository's root (a source tarball, or the tree inside another checkout) or without git: "unknown".
+- **The link** (`kProjectUrl`, the repository until its site is up) goes to the clipboard with
+  **Copy link**, the path the menu's Copy CLI takes: DPF has no portable way to open a URL (only a
+  web view), and a dependency for it was not wanted.
+- **The instrument**: its menu name, its folder (the catalog entry's, so an instrument opened from a
+  folder elsewhere reads that folder's `LICENSE.md`) and the file as plain text. `markdownLines`
+  (pure, `About.cpp`) drops the heading marks, `**` and backticks, joins a paragraph's lines and
+  keeps the list items and blank lines; `wrapLines` wraps them to the tab's width with the layout's
+  text estimate, breaking a word longer than a line (the sets' URLs at narrow widths) and indenting
+  a list item's further lines. The file is read when the instrument changes, the wrap done with the
+  layout. A folder without the file says "No LICENSE.md in its folder: its terms are unknown."
+- **The tab bar**: the ten tabs need 429 px on one row and the default window's panel had 389. The
+  drawing takes 55 % of the width as before, down to half where that keeps the tabs on one row:
+  at the default 900 px the drawing is 435 px wide (475 before), from 990 px on it is as before;
+  windows under 895 px wrap the tabs onto a second row, as they did.
+
+`ui_tests` checks the cleaning and the wrapping (every line within the width, the words kept in
+order, a URL broken, a list item indented), every committed export's `LICENSE.md` read and wrapped,
+the tab's lines inside the content area at the minimum, default and a wide window and a tiny one,
+the license scrolling in a small window, and the plain lines for a missing file or instrument.
