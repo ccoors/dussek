@@ -71,6 +71,9 @@ const CEILINGS: &[(&str, usize)] = &[
     // at the top keys (±26–30 cents); 11 before its bass by ear (+4 dB of the Bass control's shape):
     // C♯1 pp's pitch read −77 cents (its spectrum +14.4 dB rms), G♯1 mf's length ×0.49
     ("grand_h", 13),
+    // its first export (step 209): C4's recording 5 dB under its neighbors (C4 pp and mf +12 dB re the
+    // medians, the even levels' curve), A0's early decay ×0.2 at mf and ff, ten more at the edges
+    ("grand_i", 14),
     ("strumstick", 9),
     // 2 before its knock became the hammer's thump (step 126): C7 at mf and G7 at pp 12 and 19 dB under
     // the recordings, the knock had carried their peaks; 3 before its ring and room by ear (steps

@@ -1,0 +1,232 @@
+# grand_i: made from grand_a's project file (the closest key range, the usual one) (the comments are grand_a's)
+[project]
+family = "struck"
+# no release recordings of its own: the release noise and the pedal noise borrowed (Salamander's
+# material), the dampers Grand E's (measured from its release recordings)
+skip = ["release_noise", "dampers", "pedal_noise"]
+body = "grand"
+
+[menu]
+name = "Grand I"
+group = "Grand pianos"
+
+[strings]
+design = "grand"
+# its own synthetic board (Grand A's seed is 1)
+board_seed = 31
+# the strings' high-frequency loss fitted (fit_coupling.py's loss stage): C2's 4.5–6.5 kHz lay −16 / −22
+# / −34 dB at 0.3 / 0.6 / 1.5 s in the engine (room off), −6 / −10 / −24 in the recording; the loss is
+# measured from total decays that hold the board's share, and the model adds its coupling again;
+# halving b3 matched 4.5–6.5 kHz and overshot 3–4.5 kHz (design 2026-10-20-bass-high-band)
+high_loss = true
+# the per-key correction fitted in bands above the tracked partials (soundboard.py): the analysis's 60
+# partials end at 2.2–4.5 kHz in A0–C2, where the recordings' attack lay 12–24 dB over the engine's at
+# 4–16 kHz (A1, C2 at ff), the correction without data there (design 2026-10-20-bass-high-band)
+band_correction = true
+# unison mistuning scale from the beat rates of the partial envelopes (0.2–4 s, partials
+# 1–6, notes 45–87, ff), recording vs the model's analytic envelopes: Salamander beats
+# like 0.87 cents (model ×1: 1.29), Iowa like 1.35 cents (model ×1: 0.82, ×3: 2.08).
+# The EDC fit alone cannot pin it down (Salamander drifts to the bound with ~1 dB gain)
+detune = 0.7
+
+[uses]
+# measured from release recordings (design log step 119)
+dampers = "grand_e"
+release = "grand_a"
+pedal = "grand_a"
+
+# the hammer's thump (step 126) 12 dB down on every key: heard far too intense in playing (the user,
+# 2026-10-19; the demo's single notes had not shown it)
+[export]
+# the phantom partials (the strings' tension modulation): the recordings' energy between the bass
+# partials at 0.5–2 kHz grows +0.5 … +1.0 dB per dB of the note in A0–A1, the engine's without them
+# lies 20–40 dB under it; by ear 0.05 of 0, 0.025, 0.05, 0.1, 0.15, 0.2, 0.25 (2026-10-20)
+phantom = 0.05
+# the level by loudness (2026-10-31, steps 173 and 177): a phrase in its middle (an arpeggio at velocity
+# 80, chords at 95) lay at −30.2 LUFS at Recording and −30.9 at Player (EBU R128), their midpoint 2.3 dB
+# under the grands' median (−28.3 LUFS, measured alike); +2 dB
+output_gain_db = 2.0
+
+[impact]
+trim_db = [[21, -12.0]]
+
+# the export voices the piano to one level curve, as a voicer leaves it (design log step 138): each
+# key's ff level corrected to a smooth trend through the keys' levels; the board's character stays
+# in each key's tone. Its own trend (Grand A's target lifted its treble up to +15 dB over its own: its
+# recording's top octave falls 10–18 dB re its middle, inside the other grands' −3 … −24 dB at C8)
+[even_levels]
+window_keys = 9
+
+# the felt solved from the recording (2026-10-31, step 141's way; the fits never see it): within a note,
+# octave bands 1, 2 and 4 kHz re the fundamental's over the first second (tone_check.py), the engine −
+# the recording at pp, mf and ff in the bass, middle and treble; two probes (p −0.4, +3 dB) and least
+# squares: rms 5.0 → 3.9 dB from Grand A's pair (2.09, +3.4 dB). Grand A's core by ear left out: with it
+# the bass at ff sat +6.7/+8.1 dB (2/4 kHz) over the recording, without it +3.6/+4.3
+[felt]
+p = 1.83
+stiffness_db = 1.8
+
+# the board's tone (2026-10-31; the fits never see it). The lowest octaves: its board fit's data start
+# at 66 Hz, below which the response is held flat; the bass's fundamentals sat over partials 2–4
+# against the recording (tone_check.py): A0–G♯1 +23.4 dB (D♯1 and F♯1 +31 … +36: the recording's D♯1
+# fundamental lies 51 dB under its partials 2–4), A1–G♯2 +7.7 dB. Rows by least squares over the keys
+# (31.5, 45 Hz at the bound). Grand A's 250 Hz row in the bass left out: Grand I's bass bands sat
+# 12–19 dB under the recording's re the fundamental. The treble's rows Grand A's (its upper partials
+# at mf +5.2 dB at 4 kHz over the recording with them)
+[board]
+trim_db = [[31.5, -12.0], [45.0, -12.0], [63.0, -8.5], [4000.0, -4.0, 60.0, 72.0], [8000.0, -4.0, 60.0, 72.0]]
+# the board's low modes ring longer (2026-10-27, by ear on Grands A and B; the fits never see it):
+# at loss factor 4 % where that rings longer than the fitted overlap, below 450 Hz; the board's own
+# response 0.45–0.6 s below 200 Hz (was ~0.15 s), a grand's board glued into its rim ~0.5 s (Plath)
+# (design log step 184)
+low_eta = 0.04
+
+# the unison toward the top key (2026-10-27, unison_check.py; the fits never see it): the fitted
+# detune is measured from beats below the top octaves and held above them; the recording's beats
+# (partials 1–3) grow to 6.5 cents at keys 102–107, the engine's stayed at 1.3; their ratio from
+# key 78 up, a line in log: ×4.65 at 108; measured again on that export (three strings beat at
+# their neighbors' gaps, half the spread): ×3.16, held at 12 (design log step 183). Grand I's
+# (2026-10-31): recording / engine ×1.51 at 108 with it, the factor at its bound; C4–F5 the engine's
+# beats 1.3–1.6 times the recording's, F♯5–C♯7 0.7–0.9 times (unison_check.py)
+[unison]
+treble = [[78, 1.0], [108, 12.00]]
+
+[[part]]
+id = "grand_i"
+
+[[part.source]]
+id = "grand_i"
+role = "main"
+root = "olpc-grand"
+# the set holds each sampled key (every third from A0) struck by the reproducing piano at about 16
+# strengths, each as a held note (to its end, 15–23 s in the bass), a note released at about 7 s and
+# a staccato note (to E♭6; from F♯6 up held notes and a few staccato ones); the files are named
+# by the MIDI velocity played, which differs from key to key. Per key the held note nearest MIDI
+# 14, 60 and 124, the velocities the engine plays its pp, mf and ff at (a pair of equal peaks: the
+# longer one, held). The layer's name is its key and velocity (the regex's dynamic group holds the
+# note's), named pp, mf or ff below
+dynamics = { pp = "pp", mf = "mf", ff = "ff" }
+# as recorded: the noise floor alike in every file (−92 dBFS, a gate under it), the peaks rising
+# with the velocity on every key
+levels = "recorded"
+
+[part.source.map]
+kind = "pattern"
+glob = "*.flac"
+regex = 'pno(?P<dynamic>(?P<note>\d+)v\d+)leg\.flac'
+note = { group = "note", style = "midi" }
+layers = [
+    "021v16", "024v17", "27v15", "030v17", "033v12", "036v12", "039v14", "042v12", "045v15",
+    "048v14", "051v12", "054v15", "057v17", "060v17", "063v15", "066v15", "069v15", "072v15",
+    "075v15", "078v15", "081v15", "084v15", "087v15", "090v10", "093v15", "096v15", "099v12",
+    "102v12", "105v15", "108v15", "021v64", "024v60", "27v56", "030v60", "033v65", "036v55",
+    "039v55", "042v60", "045v60", "048v60", "051v65", "054v55", "057v65", "060v55", "063v65",
+    "066v60", "069v60", "072v55", "075v60", "078v55", "081v60", "084v55", "087v55", "090v65",
+    "093v60", "096v60", "099v60", "102v60", "105v64", "108v60", "021v123", "024v124", "27v125",
+    "030v124", "033v123", "036v120", "039v125", "042v123", "045v124", "048v125", "051v125",
+    "054v125", "057v123", "060v125", "063v125", "066v125", "069v125", "072v123", "075v123",
+    "078v123", "081v125", "084v123", "087v123", "090v127", "093v127", "096v127", "099v127",
+    "102v127", "105v127", "108v125",
+]
+order = "note"
+
+[part.source.map.dynamic_names]
+"021v16" = "pp"
+"024v17" = "pp"
+"27v15" = "pp"
+"030v17" = "pp"
+"033v12" = "pp"
+"036v12" = "pp"
+"039v14" = "pp"
+"042v12" = "pp"
+"045v15" = "pp"
+"048v14" = "pp"
+"051v12" = "pp"
+"054v15" = "pp"
+"057v17" = "pp"
+"060v17" = "pp"
+"063v15" = "pp"
+"066v15" = "pp"
+"069v15" = "pp"
+"072v15" = "pp"
+"075v15" = "pp"
+"078v15" = "pp"
+"081v15" = "pp"
+"084v15" = "pp"
+"087v15" = "pp"
+"090v10" = "pp"
+"093v15" = "pp"
+"096v15" = "pp"
+"099v12" = "pp"
+"102v12" = "pp"
+"105v15" = "pp"
+"108v15" = "pp"
+"021v64" = "mf"
+"024v60" = "mf"
+"27v56" = "mf"
+"030v60" = "mf"
+"033v65" = "mf"
+"036v55" = "mf"
+"039v55" = "mf"
+"042v60" = "mf"
+"045v60" = "mf"
+"048v60" = "mf"
+"051v65" = "mf"
+"054v55" = "mf"
+"057v65" = "mf"
+"060v55" = "mf"
+"063v65" = "mf"
+"066v60" = "mf"
+"069v60" = "mf"
+"072v55" = "mf"
+"075v60" = "mf"
+"078v55" = "mf"
+"081v60" = "mf"
+"084v55" = "mf"
+"087v55" = "mf"
+"090v65" = "mf"
+"093v60" = "mf"
+"096v60" = "mf"
+"099v60" = "mf"
+"102v60" = "mf"
+"105v64" = "mf"
+"108v60" = "mf"
+"021v123" = "ff"
+"024v124" = "ff"
+"27v125" = "ff"
+"030v124" = "ff"
+"033v123" = "ff"
+"036v120" = "ff"
+"039v125" = "ff"
+"042v123" = "ff"
+"045v124" = "ff"
+"048v125" = "ff"
+"051v125" = "ff"
+"054v125" = "ff"
+"057v123" = "ff"
+"060v125" = "ff"
+"063v125" = "ff"
+"066v125" = "ff"
+"069v125" = "ff"
+"072v123" = "ff"
+"075v123" = "ff"
+"078v123" = "ff"
+"081v125" = "ff"
+"084v123" = "ff"
+"087v123" = "ff"
+"090v127" = "ff"
+"093v127" = "ff"
+"096v127" = "ff"
+"099v127" = "ff"
+"102v127" = "ff"
+"105v127" = "ff"
+"108v125" = "ff"
+
+# the recordings' credit and terms (proto/license.py writes instruments/<project>/LICENSE.md); the set's
+# full title, naming the piano's maker, in data/SOURCES.md
+[license]
+set = "The Zenph Studios grand piano multisamples for OLPC"
+author = "Zenph Studios, for the One Laptop per Child sound library"
+url = "https://creativecommons.org/2008/03/27/85-gb-of-cc-licensed-samples-for-the-olpc/"
+terms = "Released with the OLPC sound library \"under a CC BY license\" (the announcement), CC BY 3.0; its files now in the Wayback Machine (data/SOURCES.md)."
+source_license = "CC-BY-3.0"

@@ -57,6 +57,7 @@ const CEILINGS: &[(&str, f32)] = &[
     ("grand_a", 8.2),
     ("grand_e", 2.4),
     ("grand_h", 2.0),
+    ("grand_i", 1.2),
     ("strumstick", 17.6),
     ("upright_b", 5.0),
     ("vibraphone", 2.4),
