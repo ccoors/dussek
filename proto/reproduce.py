@@ -129,6 +129,12 @@ def main():
     without = [n for n in names if not exporter(n)]
     if without:
         ap.error("no committed export to reproduce (or a rolled piano's): " + ", ".join(without))
+    # an export needs its project's caches: a project never built in this checkout (a fresh clone)
+    # cannot be exported again here, which is no difference (as `just check` passes over it)
+    for n in names:
+        if not build._built_here(n):
+            print(f"{n}: not built here (no caches), not reproduced", flush=True)
+    names = [n for n in names if build._built_here(n)]
     scratch = args.keep or tempfile.mkdtemp(prefix="pianoengine-reproduce-")
     bad = 0
     try:
@@ -144,7 +150,8 @@ def main():
     finally:
         if not args.keep:
             shutil.rmtree(scratch, ignore_errors=True)
-    print(f"{len(names) - bad} of {len(names)} exports reproduce" + (f"; {bad} differ" if bad else ""))
+    print(f"{len(names) - bad} of {len(names)} exports reproduce" + (f"; {bad} differ" if bad else "")
+          + ("" if names else " (nothing built here)"))
     sys.exit(1 if bad else 0)
 
 

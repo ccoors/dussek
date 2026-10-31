@@ -187,7 +187,8 @@ named and passed over too; if that leaves nothing checked (a disk with the sets 
 check fails. A build whose lender is taken as committed fails before its first step when git lacks
 a cache it reads of that lender, naming the read (`uses.<role>:cache.<name>`), and
 `proto/tests/test_fresh_clone.py` fails when a committed lent cache is not the one its borrowers'
-ledgers were built from (a lender refit, its cache left out of the commit). `just reproduce` (`proto/reproduce.py`) exports each project with `--out` into a
+ledgers were built from (a lender refit, its cache left out of the commit). `just reproduce` (`proto/reproduce.py`) passes over a project never built in this checkout
+(an export needs its caches) and exports each other project with `--out` into a
 scratch folder (half the cores at a time, `--jobs`), from the fits and caches as they are and with today's code and engine, and lists
 per file the fields that differ and by how much (dB fields in dB, release peaks as the dB of their
 ratio). A difference is a sound change waiting for the next export: run it before merging a change

@@ -25,3 +25,20 @@ def test_rounding_is_no_difference():
     a = {"notes": [{"release": {"peak": [1.0]}, "level_db": [[0.5]]}], "gain": 2.0}
     b = {"notes": [{"release": {"peak": [1.0 + 1e-15]}, "level_db": [[0.5 + 1e-9]]}], "gain": 2.0 * (1 + 1e-12)}
     assert R.differences(a, b) == []
+
+
+def test_a_project_not_built_here_is_not_reproduced(monkeypatch, capsys):
+    # a fresh clone has no caches but the lent ones: its exports cannot be made again there, which is
+    # no difference (as `just check` passes over it)
+    import build
+    monkeypatch.setattr(build, "_built_here", lambda n: n == "grand_a")
+    checked = []
+    monkeypatch.setattr(R, "check", lambda name, scratch: checked.append(name) or [])
+    monkeypatch.setattr("sys.argv", ["reproduce.py", "grand_a", "grand_b"])
+    try:
+        R.main()
+    except SystemExit as e:
+        assert e.code == 0
+    out = capsys.readouterr().out
+    assert checked == ["grand_a"]
+    assert "grand_b: not built here" in out and "1 of 1 exports reproduce" in out
