@@ -1,0 +1,11 @@
+# A shipped full preset (design log step 179): every control at its default, then these.
+# A production piano that cuts through an arrangement, measured against FluidR3's piano (program 0)
+# on a pop ballad: Grand A at Close 1 with the hardest hammer and a quarter of the room puts the
+# spectrum on FluidR3's (centroid 485 Hz against 469; 2-4 kHz -14.0 dB re the total against -14.2;
+# above 4 kHz -22.2 against -21.7; the defaults: 318 Hz, -24.4, -40.2).
+name = Production, bright
+scope = all
+state.instrument = grand_a
+param.mic_position = 3
+param.hammer_hardness = 12
+param.room = -12

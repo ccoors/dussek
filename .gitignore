@@ -1,0 +1,28 @@
+# Audio datasets (large, third-party; see data/SOURCES.md for how to obtain them)
+/data/*
+!/data/*.md
+!/data/*.txt
+!/data/*.py
+*.wav
+*.aiff
+*.flac
+
+# The maintainer's private material: its own repository (AGENTS.md)
+/private/
+
+# Generated output (the projects' caches: analysis results, fits' intermediate files, logs)
+/projects/*/cache/
+# except what a lender lends (tracked with git add -f; proto/tests/test_fresh_clone.py lists them)
+
+__pycache__/
+*.pyc
+/proto/out/
+/engine/target/
+/editor/target/
+/plugin/build/
+
+# Brainstorming companion (mockups)
+/.superpowers/
+
+# the editor's preview of a rolled piano (design log steps 117–118)
+instruments/rolled_preview/

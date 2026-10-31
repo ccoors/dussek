@@ -1,0 +1,143 @@
+# VCSL's balafon: 6 bars (C♯4, F4, C5, F5, C6, F6; named an octave lower) with three mallets at
+# three dynamics (vl1–vl3, the recorded levels kept), one take each; the strike's short-lived peaks
+# (`strike`) and the gourds' buzz between the lines (`rattle`, analysis/modes.py)
+[project]
+family = "bars"
+body = "balafon"
+
+[menu]
+name = "Balafon"
+group = "Percussion"
+# the mallets' names as the menu shows them (the file's are the fits' ids)
+mallets = ["Traditional", "Hard", "Soft"]
+# the mallet's contact on the wood and the gourds' buzz (the generic labels speak of a key's knock and of strings)
+labels.knock = { name = "Mallet click", description = "The mallet's contact on the wood at each strike (its own for each mallet), against the recording. The left end is off." }
+labels.sympathetic = { name = "Gourd buzz", description = "How strongly the gourds' membranes buzz with each bar (their noise and the fundamental's harmonics): 100 % as recorded, 0 off, more exaggerates it." }
+
+# the balafon (VCSL's: 6 wooden bars C♯4–F6 over gourds; traditional, hard and soft mallets at
+# three dynamics, the recorded levels kept): the fundamental weak in the bass (the second mode
+# the strongest there), the bars' modes from 3.87 (C♯4) to 2.30 (F6), 8.10 to 3.93 and, on the
+# two lowest, 12.27 and 10.98; all fast (45–200 dB/s). The gourds' membranes buzz: the
+# fundamental's harmonics up to the 7th at −19 to −40 dB (the fit's harmonics). Each bar's own
+# gourd peak beside the fundamental (1.06–1.67: no track over the keys) is left out. The upper
+# modes' levels from the spectrum (`spec_levels`: a spike at the strike before their ring), the
+# mallets' dynamics as the traditional one's (`tied`)
+[bars]
+tracks = [1.0, [[61, 3.87], [65, 3.62], [72, 3.13], [77, 2.777], [84, 2.527], [89, 2.303]], [[61, 8.095], [65, 7.15], [72, 5.775], [77, 5.12], [84, 4.44], [89, 3.93]], [[61, 12.267], [65, 10.98]]]
+tol = [0.03, 0.03, 0.03, 0.03]
+scale_cutoff = true
+fast_decays = true
+hold_sigma = true
+spec_levels = true
+tied = { 1 = 0, 2 = 0 }
+strike = true
+strike_line_db = 15.0
+strike_all = true
+rattle = true
+
+# the balafon: no dampers (the bars die within a second); its gourds' membranes buzz (`membrane`)
+# the balafon's membranes: between the modes' lines the recordings hold noise 14–26 dB under their
+# total over 50–300 ms (the engine without: 42–72); re the fundamental its spectrum (each octave
+# band's median, mf) flat from 1 to 2 kHz, then −16 dB per octave, 8 dB under at 250–500 Hz, and
+# harder strikes buzz more and brighter (pp → ff: 1 kHz +2 dB, 2 kHz +12, 4 kHz +18). The engine's
+# membrane (Voice::membrane, instrument::Membrane: noise × the bar's own rectified level), its
+# filters and growth by a grid search on those bands over the first 0.15 s: 3.3 dB rms over the
+# three dynamics and 1–8 kHz (the fixed filters of 200 Hz and 2 × 1.6 kHz: 5.3). Its level per key
+# (`per_key`: each gourd its own, −38 … −56 dB at mf, the analysis's rattle_db) and per mallet; the
+# strike's level the bar's swing (the modes' root sum of squares: their sum cancels with the onset's
+# partners). Refitted on it (octave bands 250 Hz–16 kHz over 50–300 ms, 54 takes): high-passed at
+# 0.7 × the key's fundamental (the recordings' buzz starts at each bar's pitch), three poles at
+# 2.5 kHz, growth 0.3, no tilt (0.2 opened a hard strike's 8–16 kHz 9–11 dB over): 4.2 dB rms (4 or
+# 6 poles at 2.5–4 kHz: 4.7–15)
+# the strike: each mode from zero over the mallet's contact (BALAFON_ONSET_S; released all at once the
+# modes summed to a step, a click of one sample), and the contact's own noise on the wood: a burst
+# above 6 kHz in the first 3 ms, re the note over 5–100 ms −18 dB (traditional), −24 (hard), −31
+# (soft): the engine's knock at each key's level, per mallet re the traditional's
+# the buzz per mallet (the engine's Mallet::buzz): for the same swing of the bar, re the
+# recordings' (the analysis's rattle_db over the 18 takes of each) the engine's buzzed a median
+# +2.3 dB with the traditional mallet, +4.8 with the hard one, +10.2 with the soft one
+# VCSL's bars' room: its energy re the body's (the bars' body is ~15 ms: the direct sound). The
+# generic room at the body's energy held their fast modes up (decaying 0.64–0.69 × as fast as
+# recorded: its tail under them) and filled the hand chimes' swell (their fundamentals' first
+# 8 ms 20–38 dB under its top: −3 dB reached at 76 ms where the recordings reach it at 28)
+[export]
+# the level by loudness (2026-10-27, design log step 173): a phrase in its middle (an arpeggio at
+# velocity 80, chords at 95) lay -2.9 dB re the grands' median (-28.9 LUFS, EBU R128); the
+# calibration sets the median key's ff peak, and held tones sound louder than struck ones at one peak
+gain_db = 3.0
+motor = false
+membrane = { level = 0.5, hp_ratio = 0.7, lp_hz = 2500.0, poles = 3, growth = 0.3, tilt = 0.0, sympathetic = true, per_key = true }
+room = { t60 = "vcsl_dry", gain = 0.01 }
+flat_body = true
+onset_s = 0.001
+knock = { level_db = -4.5, decay_s = 0.003, cutoff_hz = 16000.0, q = 1.0, rise_s = 0.0005, per_key = true }
+mallet_knock_db = [0.0, -3.0, -12.0]
+mallet_buzz_db = [-2.0, -5.0, -10.0]
+
+[[part]]
+id = "balafon"
+
+[[part.source]]
+id = "balafon_trad"
+role = "mallet"
+mallet = "traditional"
+root = "vcsl"
+dynamics = { pp = "pp", mf = "mf", ff = "ff" }
+levels = "normalized"
+extra = { strike = true, rattle = true }
+
+[part.source.map]
+kind = "pattern"
+glob = "Idiophones/Struck Idiophones/Balafon/Traditional Mallet/EthnicXylo_*.wav"
+regex = 'EthnicXylo_[a-z]+M_(?P<note>[A-G]#?\d)_(?P<dynamic>vl\d)_rr(?P<take>\d+)_Mid\.wav'
+note = { group = "note", shift = 12 }
+layers = ["vl1", "vl2", "vl3"]
+dynamic_names = { vl1 = "pp", vl2 = "mf", vl3 = "ff" }
+prefer = ["take"]
+order = "note"
+
+[[part.source]]
+id = "balafon_hard"
+role = "mallet"
+mallet = "hard"
+root = "vcsl"
+dynamics = { pp = "pp", mf = "mf", ff = "ff" }
+levels = "normalized"
+extra = { strike = true, rattle = true }
+
+[part.source.map]
+kind = "pattern"
+glob = "Idiophones/Struck Idiophones/Balafon/Hard Mallet/EthnicXylo_*.wav"
+regex = 'EthnicXylo_[a-z]+M_(?P<note>[A-G]#?\d)_(?P<dynamic>vl\d)_rr(?P<take>\d+)_Mid\.wav'
+note = { group = "note", shift = 12 }
+layers = ["vl1", "vl2", "vl3"]
+dynamic_names = { vl1 = "pp", vl2 = "mf", vl3 = "ff" }
+prefer = ["take"]
+order = "note"
+
+[[part.source]]
+id = "balafon_soft"
+role = "mallet"
+mallet = "soft"
+root = "vcsl"
+dynamics = { pp = "pp", mf = "mf", ff = "ff" }
+levels = "normalized"
+extra = { strike = true, rattle = true }
+
+[part.source.map]
+kind = "pattern"
+glob = "Idiophones/Struck Idiophones/Balafon/Soft Mallet/EthnicXylo_*.wav"
+regex = 'EthnicXylo_[a-z]+M_(?P<note>[A-G]#?\d)_(?P<dynamic>vl\d)_rr(?P<take>\d+)_Mid\.wav'
+note = { group = "note", shift = 12 }
+layers = ["vl1", "vl2", "vl3"]
+dynamic_names = { vl1 = "pp", vl2 = "mf", vl3 = "ff" }
+prefer = ["take"]
+order = "note"
+
+# the recordings' credit and terms (proto/license.py writes instruments/<project>/LICENSE.md)
+[license]
+set = "VCSL: Balafon"
+author = "Versilian Studios"
+url = "https://github.com/sgossner/VCSL"
+terms = "The Versilian Community Sample Library."
+source_license = "CC0"

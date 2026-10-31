@@ -1,0 +1,352 @@
+{
+ "part:flemish4:attack_noise": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "e85b32e881c40d49",
+   "project.sources": "d3a0ee3946e4df86"
+  },
+  "seq": 230,
+  "version": 2
+ },
+ "part:flemish4:body_decay": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "e85b32e881c40d49",
+   "project.sources": "d3a0ee3946e4df86"
+  },
+  "seq": 228,
+  "version": 1
+ },
+ "part:flemish4:coupling": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "e85b32e881c40d49",
+   "cache.damper": "5df6e0e2761359d3",
+   "fit.body_modes": "59145b317d2c2d52",
+   "fit.felt_bass_factor": "59145b317d2c2d52",
+   "fit.felt_curve": "59145b317d2c2d52",
+   "fit.felt_f05_at_c4": "59145b317d2c2d52",
+   "fit.felt_log2_slope_per_semitone": "59145b317d2c2d52",
+   "fit.felt_p": "59145b317d2c2d52",
+   "fit.hammer_speeds": "e1e72f68b470384e",
+   "fit.pluck": "6eec52a9d0d12f91",
+   "fit.polarizations": "59145b317d2c2d52",
+   "fit.radiation": "4d80fca1b4a8bf5a",
+   "project.sources": "d3a0ee3946e4df86",
+   "project.strings": "c371d1aa973c6442",
+   "project.uses": "5b5dd3d36d53869f",
+   "uses.dampers:cache.damper": "fc1ae8411e2bb167"
+  },
+  "seq": 234,
+  "version": 2
+ },
+ "part:flemish4:knock": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "e85b32e881c40d49",
+   "cache.attack": "ced4b9b8eaedad42",
+   "cache.body": "f306b496463411fe",
+   "cache.damper": "5df6e0e2761359d3",
+   "fit.body_modes": "59145b317d2c2d52",
+   "fit.coupling": "917328d6a33d0edb",
+   "fit.felt_bass_factor": "59145b317d2c2d52",
+   "fit.felt_curve": "59145b317d2c2d52",
+   "fit.felt_f05_at_c4": "59145b317d2c2d52",
+   "fit.felt_log2_slope_per_semitone": "59145b317d2c2d52",
+   "fit.felt_p": "59145b317d2c2d52",
+   "fit.hammer_speeds": "e1e72f68b470384e",
+   "fit.pluck": "6eec52a9d0d12f91",
+   "fit.polarizations": "59145b317d2c2d52",
+   "fit.radiation": "4d80fca1b4a8bf5a",
+   "fit.room": "59145b317d2c2d52",
+   "fit.soundboard": "723c14e1ce231ef1",
+   "project.strings": "c371d1aa973c6442",
+   "project.uses": "5b5dd3d36d53869f",
+   "uses.dampers:cache.damper": "fc1ae8411e2bb167"
+  },
+  "seq": 238,
+  "version": 3
+ },
+ "part:flemish4:pluck": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "e85b32e881c40d49",
+   "fit.felt_p": "59145b317d2c2d52",
+   "fit.string_scatter_cents": "59145b317d2c2d52",
+   "project.sources": "d3a0ee3946e4df86",
+   "project.strings": "c371d1aa973c6442"
+  },
+  "seq": 226,
+  "version": 1
+ },
+ "part:flemish4:register": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "e85b32e881c40d49",
+   "cache.body": "f306b496463411fe",
+   "cache.damper": "5df6e0e2761359d3",
+   "fit.body_modes": "59145b317d2c2d52",
+   "fit.coupling": "917328d6a33d0edb",
+   "fit.felt_bass_factor": "59145b317d2c2d52",
+   "fit.felt_curve": "59145b317d2c2d52",
+   "fit.felt_f05_at_c4": "59145b317d2c2d52",
+   "fit.felt_log2_slope_per_semitone": "59145b317d2c2d52",
+   "fit.felt_p": "59145b317d2c2d52",
+   "fit.hammer_speeds": "e1e72f68b470384e",
+   "fit.pluck": "6eec52a9d0d12f91",
+   "fit.polarizations": "59145b317d2c2d52",
+   "fit.radiation": "4d80fca1b4a8bf5a",
+   "fit.room": "59145b317d2c2d52",
+   "project.sources": "d3a0ee3946e4df86",
+   "project.strings": "c371d1aa973c6442",
+   "project.uses": "5b5dd3d36d53869f",
+   "uses.dampers:cache.damper": "fc1ae8411e2bb167",
+   "uses.levels:cache.analysis": "6e9c960fd025b2e5",
+   "uses.levels:project.sources": "6e9c960fd025b2e5"
+  },
+  "seq": 236,
+  "version": 1
+ },
+ "part:flemish4:release_noise": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "e85b32e881c40d49",
+   "project.noises": "95cb9b4f84ceff13",
+   "project.release_noise": "3262fa49f6e4d17b",
+   "project.sources": "d3a0ee3946e4df86"
+  },
+  "seq": 240,
+  "version": 3
+ },
+ "part:flemish4:soundboard": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "e85b32e881c40d49",
+   "cache.damper": "5df6e0e2761359d3",
+   "fit.body_modes": "59145b317d2c2d52",
+   "fit.felt_bass_factor": "59145b317d2c2d52",
+   "fit.felt_curve": "59145b317d2c2d52",
+   "fit.felt_f05_at_c4": "59145b317d2c2d52",
+   "fit.felt_log2_slope_per_semitone": "59145b317d2c2d52",
+   "fit.felt_p": "59145b317d2c2d52",
+   "fit.hammer_speeds": "e1e72f68b470384e",
+   "fit.pluck": "6eec52a9d0d12f91",
+   "fit.polarizations": "59145b317d2c2d52",
+   "project.sources": "d3a0ee3946e4df86",
+   "project.strings": "c371d1aa973c6442",
+   "project.uses": "5b5dd3d36d53869f",
+   "uses.dampers:cache.damper": "fc1ae8411e2bb167"
+  },
+  "seq": 232,
+  "version": 1
+ },
+ "part:flemish8:attack_noise": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "10140f05b6b07e90",
+   "project.sources": "0ab24882a6f581ae"
+  },
+  "seq": 229,
+  "version": 2
+ },
+ "part:flemish8:body_decay": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "10140f05b6b07e90",
+   "project.sources": "0ab24882a6f581ae"
+  },
+  "seq": 227,
+  "version": 1
+ },
+ "part:flemish8:coupling": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "10140f05b6b07e90",
+   "cache.damper": "5df6e0e2761359d3",
+   "fit.body_modes": "59145b317d2c2d52",
+   "fit.felt_bass_factor": "59145b317d2c2d52",
+   "fit.felt_curve": "59145b317d2c2d52",
+   "fit.felt_f05_at_c4": "59145b317d2c2d52",
+   "fit.felt_log2_slope_per_semitone": "59145b317d2c2d52",
+   "fit.felt_p": "59145b317d2c2d52",
+   "fit.hammer_speeds": "e1e72f68b470384e",
+   "fit.pluck": "d72cf7bf1de816ef",
+   "fit.polarizations": "59145b317d2c2d52",
+   "fit.radiation": "0595131ecc65ccf5",
+   "project.sources": "0ab24882a6f581ae",
+   "project.strings": "bcd978a1b6d998ba",
+   "project.uses": "5b5dd3d36d53869f",
+   "uses.dampers:cache.damper": "fc1ae8411e2bb167"
+  },
+  "seq": 233,
+  "version": 2
+ },
+ "part:flemish8:knock": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "10140f05b6b07e90",
+   "cache.attack": "8dad0ecf03e12668",
+   "cache.body": "a32bf596ff0f78a3",
+   "cache.damper": "5df6e0e2761359d3",
+   "fit.body_modes": "59145b317d2c2d52",
+   "fit.coupling": "9c3a57b8fe4098d8",
+   "fit.felt_bass_factor": "59145b317d2c2d52",
+   "fit.felt_curve": "59145b317d2c2d52",
+   "fit.felt_f05_at_c4": "59145b317d2c2d52",
+   "fit.felt_log2_slope_per_semitone": "59145b317d2c2d52",
+   "fit.felt_p": "59145b317d2c2d52",
+   "fit.hammer_speeds": "e1e72f68b470384e",
+   "fit.pluck": "d72cf7bf1de816ef",
+   "fit.polarizations": "59145b317d2c2d52",
+   "fit.radiation": "0595131ecc65ccf5",
+   "fit.room": "59145b317d2c2d52",
+   "fit.soundboard": "2fdc072441d7aa4f",
+   "project.strings": "bcd978a1b6d998ba",
+   "project.uses": "5b5dd3d36d53869f",
+   "uses.dampers:cache.damper": "fc1ae8411e2bb167"
+  },
+  "seq": 237,
+  "version": 3
+ },
+ "part:flemish8:pluck": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "10140f05b6b07e90",
+   "fit.felt_p": "59145b317d2c2d52",
+   "fit.string_scatter_cents": "59145b317d2c2d52",
+   "project.sources": "0ab24882a6f581ae",
+   "project.strings": "bcd978a1b6d998ba"
+  },
+  "seq": 225,
+  "version": 1
+ },
+ "part:flemish8:register": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "10140f05b6b07e90",
+   "cache.body": "a32bf596ff0f78a3",
+   "cache.damper": "5df6e0e2761359d3",
+   "fit.body_modes": "59145b317d2c2d52",
+   "fit.coupling": "9c3a57b8fe4098d8",
+   "fit.felt_bass_factor": "59145b317d2c2d52",
+   "fit.felt_curve": "59145b317d2c2d52",
+   "fit.felt_f05_at_c4": "59145b317d2c2d52",
+   "fit.felt_log2_slope_per_semitone": "59145b317d2c2d52",
+   "fit.felt_p": "59145b317d2c2d52",
+   "fit.hammer_speeds": "e1e72f68b470384e",
+   "fit.pluck": "d72cf7bf1de816ef",
+   "fit.polarizations": "59145b317d2c2d52",
+   "fit.radiation": "0595131ecc65ccf5",
+   "fit.room": "59145b317d2c2d52",
+   "project.sources": "0ab24882a6f581ae",
+   "project.strings": "bcd978a1b6d998ba",
+   "project.uses": "5b5dd3d36d53869f",
+   "uses.dampers:cache.damper": "fc1ae8411e2bb167",
+   "uses.levels:cache.analysis": "6e9c960fd025b2e5",
+   "uses.levels:project.sources": "6e9c960fd025b2e5"
+  },
+  "seq": 235,
+  "version": 1
+ },
+ "part:flemish8:release_noise": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "10140f05b6b07e90",
+   "project.noises": "95cb9b4f84ceff13",
+   "project.release_noise": "3262fa49f6e4d17b",
+   "project.sources": "0ab24882a6f581ae"
+  },
+  "seq": 239,
+  "version": 3
+ },
+ "part:flemish8:soundboard": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "10140f05b6b07e90",
+   "cache.damper": "5df6e0e2761359d3",
+   "fit.body_modes": "59145b317d2c2d52",
+   "fit.felt_bass_factor": "59145b317d2c2d52",
+   "fit.felt_curve": "59145b317d2c2d52",
+   "fit.felt_f05_at_c4": "59145b317d2c2d52",
+   "fit.felt_log2_slope_per_semitone": "59145b317d2c2d52",
+   "fit.felt_p": "59145b317d2c2d52",
+   "fit.hammer_speeds": "e1e72f68b470384e",
+   "fit.pluck": "d72cf7bf1de816ef",
+   "fit.polarizations": "59145b317d2c2d52",
+   "project.sources": "0ab24882a6f581ae",
+   "project.strings": "bcd978a1b6d998ba",
+   "project.uses": "5b5dd3d36d53869f",
+   "uses.dampers:cache.damper": "fc1ae8411e2bb167"
+  },
+  "seq": 231,
+  "version": 1
+ },
+ "project:flemish:export": {
+  "commit": "f10f901",
+  "inputs": {
+   "cache.*": "b8ca933c82afcdab",
+   "cache.analysis": "d3e2085c3012a7b4",
+   "cache.body": "88eb7415f43a2901",
+   "cache.damper": "5df6e0e2761359d3",
+   "cache.pedal_noise": "5df6e0e2761359d3",
+   "cache.release": "fa2e35cf9017cab3",
+   "fit.*": "5e1c0ed8989ef737",
+   "fit.body_modes": "54d97db5ae11273b",
+   "fit.coupling": "ad930d0976c9d97d",
+   "fit.felt_bass_factor": "54d97db5ae11273b",
+   "fit.felt_curve": "54d97db5ae11273b",
+   "fit.felt_f05_at_c4": "54d97db5ae11273b",
+   "fit.felt_log2_slope_per_semitone": "54d97db5ae11273b",
+   "fit.felt_p": "54d97db5ae11273b",
+   "fit.flat": "54d97db5ae11273b",
+   "fit.gain": "54d97db5ae11273b",
+   "fit.hammer_speeds": "ed3c8e9b66070fb2",
+   "fit.impact": "54d97db5ae11273b",
+   "fit.knock": "c35c0e683049171f",
+   "fit.notes": "54d97db5ae11273b",
+   "fit.pedal": "54d97db5ae11273b",
+   "fit.pluck": "9da31cc016882769",
+   "fit.polarizations": "54d97db5ae11273b",
+   "fit.pos": "54d97db5ae11273b",
+   "fit.radiation": "d64f6c39af4b9795",
+   "fit.room": "54d97db5ae11273b",
+   "fit.soundboard": "d882476c56ff9704",
+   "fit.string_scatter_cents": "54d97db5ae11273b",
+   "project.*": "5f7d8148d8e2b6ae",
+   "project.export": "99775f2046b7dfab",
+   "project.impact": "fe44a8cccd89edae",
+   "project.level_corrections": "95cb9b4f84ceff13",
+   "project.project": "f212b7fedf7bfd22",
+   "project.sources": "e170533ed09085bb",
+   "project.strings": "a53dccc5af0b3099",
+   "project.uses": "8cfd6be772938455",
+   "uses.buff:fit.flat": "70453e9d8c731282",
+   "uses.buff:fit.gain": "0c8d54d3fc841e8a",
+   "uses.buff:fit.notes": "c6ce71c9887c91b8",
+   "uses.buff:fit.pos": "36b2b1d3fbe7e581",
+   "uses.dampers:cache.damper": "fc1ae8411e2bb167",
+   "uses.main:*": "6e9c960fd025b2e5",
+   "uses.main:project.level_corrections": "6e9c960fd025b2e5",
+   "uses.pedal:cache.pedal_noise": "6e9c960fd025b2e5",
+   "uses.release:cache.release": "6e9c960fd025b2e5"
+  },
+  "seq": 242,
+  "version": 2
+ },
+ "source:flemish4:analyze": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "project.sources": "d3a0ee3946e4df86"
+  },
+  "seq": 224,
+  "version": 1
+ },
+ "source:flemish8:analyze": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "project.sources": "0ab24882a6f581ae"
+  },
+  "seq": 223,
+  "version": 1
+ }
+}

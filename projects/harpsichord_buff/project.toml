@@ -1,0 +1,41 @@
+# the buff stop's source (proto/fit_buff.py), not an instrument: VCSL's English harpsichord
+# without and with its buff (VCSL calls it "Lute"; it damps and darkens, as a buff does)
+[project]
+family = "buff"
+
+[[part]]
+id = "harpsichord_buff"
+
+[[part.source]]
+id = "english"
+role = "main"
+root = "vcsl-keys"
+
+[part.source.map]
+kind = "sfz"
+files = ["Harpsichord, English - Normal.sfz"]
+filter = [{ opcode = "trigger", default = "attack", in = ["attack"] }, { opcode = "seq_position", default = "1", in = ["1"] }]
+folders = ["Sustains", "NoSus"]
+prefer_substring = "/NoSus/"
+layers = "rank"
+
+[[part.source]]
+id = "english_buff"
+role = "buff"
+root = "vcsl-keys"
+
+[part.source.map]
+kind = "sfz"
+files = ["Harpsichord, English - Lute.sfz"]
+filter = [{ opcode = "trigger", default = "attack", in = ["attack"] }, { opcode = "seq_position", default = "1", in = ["1"] }]
+folders = ["Sustains", "NoSus"]
+prefer_substring = "/NoSus/"
+layers = "rank"
+
+# the recordings' credit and terms (proto/license.py writes instruments/<project>/LICENSE.md)
+[license]
+set = "VCSL Keys: Harpsichord \"English\""
+author = "Versilian Studios"
+url = "https://github.com/sgossner/VCSL"
+terms = "The Versilian Community Sample Library."
+source_license = "CC0"

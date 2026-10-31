@@ -1,0 +1,10 @@
+{
+ "part:harpsichord_buff:fit_buff": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "project.sources": "c4ddf67635e9ba86"
+  },
+  "seq": 6,
+  "version": 1
+ }
+}

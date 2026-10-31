@@ -1,0 +1,45 @@
+{
+ "part:xylophone:bars": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "1fa8fbb0ae4ceea4",
+   "project.bars": "c951bdea10d90c76",
+   "project.sources": "7dc6534f78c3207f"
+  },
+  "seq": 40,
+  "version": 2
+ },
+ "project:xylophone:export_bars": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "fit.hammer_speeds": "0a2af2cd1b85740f",
+   "fit.keys": "e2e0e75698bd9420",
+   "fit.mallet": "d32ed346447990e0",
+   "fit.mallets": "f4ad73870aab8a0c",
+   "fit.recorded": "41a35b2eb3def30d",
+   "project.export": "81bf8fb608f8fc2a",
+   "project.level_corrections": "95cb9b4f84ceff13",
+   "project.menu": "08426444a82035d9",
+   "project.project": "4b6e4f5ee1c1fc20",
+   "project.sources": "7dc6534f78c3207f"
+  },
+  "seq": 41,
+  "version": 4
+ },
+ "source:xylophone_hardrubber:modes": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "project.sources": "52f93b3237db4413"
+  },
+  "seq": 39,
+  "version": 1
+ },
+ "source:xylophone_rosewood:modes": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "project.sources": "c0b4b73894e7a8c6"
+  },
+  "seq": 38,
+  "version": 1
+ }
+}

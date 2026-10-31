@@ -1,0 +1,57 @@
+//! The `level` tool writes an instrument's ff level (`Instrument::ff_level`) and a hammer piano's
+//! level table (`Instrument::level_curve`) to its level.json.
+//! Needs the exported instruments (skipped without them).
+
+use std::process::Command;
+
+use pianoengine::Instrument;
+
+const A: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_a");
+
+#[test]
+fn the_tool_writes_the_measured_level() {
+    if !std::path::Path::new(A).exists() {
+        return;
+    }
+    let dir = std::path::PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join("level_a");
+    std::fs::create_dir_all(&dir).unwrap();
+    for f in ["instrument.json", "data.bin"] {
+        std::fs::copy(std::path::Path::new(A).join(f), dir.join(f)).unwrap();
+    }
+    let _ = std::fs::remove_file(dir.join("level.json"));
+    let status = Command::new(env!("CARGO_BIN_EXE_level")).arg(&dir).status().unwrap();
+    assert!(status.success());
+    let v: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(dir.join("level.json")).unwrap()).unwrap();
+    assert_eq!(v["keys"], serde_json::json!([48, 60, 72]));
+    let inst = Instrument::load(&dir).unwrap();
+    let want = inst.ff_level().unwrap();
+    assert!((v["ff_db"].as_f64().unwrap() - want).abs() < 1e-9, "{v} against {want}");
+    // a hammer piano: its level over the hammer speed, read back as the velocity's map
+    let want = inst.level_curve().unwrap();
+    assert_eq!(inst.dynamics.keys, want.keys);
+    assert!(inst.dynamics.db.iter().flatten().zip(want.db.iter().flatten()).all(|(a, b)| (a - b).abs() < 1e-9));
+}
+
+#[test]
+fn level_doc_holds_every_keys_ff_level() {
+    if !std::path::Path::new(A).exists() {
+        return;
+    }
+    let inst = Instrument::load(A).unwrap();
+    let doc = inst.level_doc().unwrap();
+    let ff: Vec<f64> = doc["key_ff_db"].as_array().expect("key_ff_db").iter().map(|v| v.as_f64().unwrap()).collect();
+    assert_eq!(ff.len(), 88);
+    assert!(ff.iter().all(|d| d.is_finite() && (-80.0..=6.0).contains(d)), "{ff:?}");
+    // C4's: the peak over the level window of the table's own strike at the ff speed
+    let sr = inst.reference_sr;
+    let mut e = pianoengine::Engine::with_tuning(inst.clone(), sr, pianoengine::Tuning::default()).unwrap();
+    e.set_params(pianoengine::Params { knock: 0.0, variation: 0.0, ..pianoengine::Params::default() });
+    e.queue(0, pianoengine::Event::NoteOn { key: 60, speed: inst.velocity_speed[2] });
+    let (mut l, mut r) = (vec![0.0; 256], vec![0.0; 256]);
+    let mut peak = 0.0f32;
+    for _ in 0..(pianoengine::instrument::LEVEL_WINDOW_S * sr / 256.0).ceil() as usize {
+        e.process(&mut l, &mut r);
+        peak = l.iter().chain(&r).fold(peak, |m, x| m.max(x.abs()));
+    }
+    assert!((ff[60 - 21] - 20.0 * (peak as f64).log10()).abs() < 0.01, "{} against {}", ff[39], 20.0 * (peak as f64).log10());
+}

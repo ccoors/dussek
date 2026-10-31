@@ -1,0 +1,69 @@
+# VCSL's hand chimes: 19 tubes C4–C7 (named C3–C6) a whole tone apart, one take each at one
+# dynamic, every file normalized (−15 dBFS peak)
+[project]
+family = "bars"
+body = "handchimes"
+
+[menu]
+name = "Hand chimes"
+group = "Percussion"
+
+# the hand chimes (VCSL's, C4–C7 a whole tone apart; one take each, normalized): a tuned tube
+# on a handle, struck by a clapper inside. The fundamental rings 2–22 dB/s, its harmonics 2, 3
+# and 5 at −24 to −40 dB decay 2–4 × faster (the fit's harmonics); two modes up to E5, fast
+# (25–190 dB/s): one from 1.49 (D4) to 1.57 (G♯4), one from 5.99 (C4) to 5.80 (D5). One
+# dynamic: an assumed clapper (a hard one: 6 dB a step, the cutoff opening half an octave a
+# step) and an assumed damper (the ringer's shoulder: a held key lifts it, as the vibraphone's).
+# The tubes' other modes and the strike's short-lived ones, per take (`strike`)
+[bars]
+tracks = [1.0, [[62, 1.493], [64, 1.514], [66, 1.574], [68, 1.55]], [[60, 5.988], [62, 5.93], [64, 5.883], [66, 5.819], [72, 5.996], [74, 5.802], [76, 5.903]]]
+tol = [0.03, 0.04, 0.03]
+scale_cutoff = true
+fast_decays = true
+mallet = { speeds = { pp = 0.25, mf = 1.0, ff = 3.0 }, f_q = 3000.0, fq_oct_per_step = 0.5, order = 2.0, beta = 0.3 }
+damper_db_s = 60.0
+strike = true
+
+# the hand chimes: damped on the ringer's shoulder (a held key or the pedal lifts it)
+# VCSL's bars' room: its energy re the body's (the bars' body is ~15 ms: the direct sound). The
+# generic room at the body's energy held their fast modes up (decaying 0.64–0.69 × as fast as
+# recorded: its tail under them) and filled the hand chimes' swell (their fundamentals' first
+# 8 ms 20–38 dB under its top: −3 dB reached at 76 ms where the recordings reach it at 28)
+[export]
+# the level by loudness (2026-10-27, design log step 173): a phrase in its middle (an arpeggio at
+# velocity 80, chords at 95) lay +9.2 dB re the grands' median (-28.9 LUFS, EBU R128); the
+# calibration sets the median key's ff peak, and held tones sound louder than struck ones at one peak
+# the level re-matched (2026-10-27, design log step 177): the plugin starts at Player with all keys
+# spread; the phrase's midpoint of Recording and Player lay +1.6 dB re the grands' (step 173's phrase)
+gain_db = -10.5
+damper = "pedal"
+motor = false
+room = { t60 = "vcsl_dry", gain = 0.01 }
+
+[[part]]
+id = "handchimes"
+
+[[part.source]]
+id = "handchimes"
+role = "mallet"
+mallet = "clapper"
+root = "vcsl"
+dynamics = { mf = "mf" }
+levels = "normalized"
+extra = { strike = true }
+
+[part.source.map]
+kind = "pattern"
+glob = "Idiophones/Struck Idiophones/Hand Chimes/sus_*.wav"
+regex = 'sus_(?P<note>[A-G]#?\d)_r\d+_main\.wav'
+note = { group = "note", shift = 12 }
+dynamic = "mf"
+order = "path"
+
+# the recordings' credit and terms (proto/license.py writes instruments/<project>/LICENSE.md)
+[license]
+set = "VCSL: Hand Chimes"
+author = "Versilian Studios"
+url = "https://github.com/sgossner/VCSL"
+terms = "The Versilian Community Sample Library."
+source_license = "CC0"

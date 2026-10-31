@@ -1,0 +1,37 @@
+{
+ "part:handchimes:bars": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "084838167d8485f9",
+   "project.bars": "233c3a61c06110af",
+   "project.sources": "2214dc634d404786"
+  },
+  "seq": 33,
+  "version": 2
+ },
+ "project:handchimes:export_bars": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "fit.hammer_speeds": "865597ba492192c3",
+   "fit.keys": "4fef1684c02f3a92",
+   "fit.mallet": "fde2c10758203146",
+   "fit.mallets": "b3a357b29a926f97",
+   "fit.recorded": "69259c0deb3f3791",
+   "project.export": "d2587f78663516d8",
+   "project.level_corrections": "1d8fc6ceb1f94c63",
+   "project.menu": "6016e4ccbc5a3bdf",
+   "project.project": "2bcf52a85766d929",
+   "project.sources": "2214dc634d404786"
+  },
+  "seq": 34,
+  "version": 4
+ },
+ "source:handchimes:modes": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "project.sources": "2214dc634d404786"
+  },
+  "seq": 32,
+  "version": 1
+ }
+}

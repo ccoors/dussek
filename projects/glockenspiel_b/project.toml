@@ -1,0 +1,61 @@
+# Glockenspiel B: VCSL's glockenspiel (data/vcsl, CC0): seven bars G5–C8 (G5, C6, G6, C7, G7, G♯7,
+# C8), named an octave below where they sound, at three dynamics (soft, medium, loud: medians
+# −10.5, −4.2 and 0 dB; G7 soft and medium only, G♯7 loud only), stereo, 44.1 kHz, 2.8–7.5 s (most
+# faded to digital silence, G5 cut at −60 dB). Made with the editor's wizard from the Bells' project
+# file (the closest overtones and decay): their body, fit settings and export, the tracks derived
+# from these recordings.
+[project]
+family = "bars"
+body = "bells"
+
+[menu]
+name = "Glockenspiel B"
+group = "Percussion"
+
+# steel bars, no resonators, no dampers: the modes derived from the takes (the bars fit, tracks =
+# "auto"): 3.03 to 2.68 times the fundamental (G5 to C8; Ethan Winer's 2.74 to 2.66, the Bells'
+# 3.29 to 2.9; −20 to −30 dB re the fundamental), quiet ones near 4.1, at 5.1 and 5.7 to 5.3 (to
+# C7), 9.6 to 8.3 and 12.8 to 12.5 in the bass. The three dynamics lie 10 dB apart: the mallet's
+# fit hits its bounds (the cutoff 3 octaves per step, order 6; speeds 0.78, 1 and 1.15)
+[bars]
+scale_cutoff = true
+fast_decays = true
+# the modes' tracks derived from the recordings by the bars fit (numbers here pin them by hand)
+tracks = "auto"
+
+# the bars ring 5 s and more (G5's fundamental 6 dB/s): a piece's notes pile up, as the Bells'
+# do, so their level: 8 dB under the calibration
+[export]
+motor = false
+# the level by loudness (2026-10-27, design log step 173): a phrase in its middle (an arpeggio at
+# velocity 80, chords at 95) lay +3.1 dB re the grands' median (-28.9 LUFS, EBU R128); the
+# calibration sets the median key's ff peak, and held tones sound louder than struck ones at one peak
+gain_db = -11.0
+
+[[part]]
+id = "glockenspiel_b"
+
+[[part.source]]
+id = "glockenspiel_b"
+role = "mallet"
+root = "vcsl"
+levels = "recorded"
+dynamics = { pp = "soft", mf = "medium", ff = "loud" }
+mallet = "mallet"
+
+[part.source.map]
+kind = "pattern"
+glob = "Idiophones/Struck Idiophones/Glockenspiel/*.wav"
+regex = 'glock_(?P<dynamic>medium|soft|loud)_(?P<note>[A-Ga-g][#bs]?\d)_(?P<take>\d+)\.wav'
+note = { group = "note", shift = 12 }
+layers = ["soft", "medium", "loud"]
+prefer = ["take"]
+order = "note"
+
+# the recordings' credit and terms (proto/license.py writes instruments/<project>/LICENSE.md)
+[license]
+set = "VCSL: Glockenspiel"
+author = "Versilian Studios"
+url = "https://github.com/sgossner/VCSL"
+terms = "The Versilian Community Sample Library."
+source_license = "CC0"

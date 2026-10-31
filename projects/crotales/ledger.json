@@ -1,0 +1,37 @@
+{
+ "part:crotales:bars": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "3ec574d627c119a4",
+   "project.bars": "2344095992da4d11",
+   "project.sources": "60625cb0e37a156f"
+  },
+  "seq": 35,
+  "version": 2
+ },
+ "project:crotales:export_bars": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "fit.hammer_speeds": "8f36832a410e1dcb",
+   "fit.keys": "52169b27af8116c7",
+   "fit.mallet": "58fdbaa01bc3f8fa",
+   "fit.mallets": "0cb45f8fa411e8fa",
+   "fit.recorded": "d95435407f9cdb27",
+   "project.export": "e4824166aa25366c",
+   "project.level_corrections": "1d8fc6ceb1f94c63",
+   "project.menu": "32a9430bfd00a8df",
+   "project.project": "1d1accf4b5d27fa5",
+   "project.sources": "60625cb0e37a156f"
+  },
+  "seq": 36,
+  "version": 4
+ },
+ "source:crotales:modes": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "project.sources": "60625cb0e37a156f"
+  },
+  "seq": 34,
+  "version": 1
+ }
+}

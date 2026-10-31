@@ -1,0 +1,126 @@
+# Iowa MIS percussion (anechoic, 2013): octave runs split per note by analysis/split_runs.py
+# the marimba (no dampers): normal strokes with yarn, cord and rubber mallets
+[project]
+# recorded anechoic (Iowa MIS): the Compare page renders it without a room, as it was recorded
+recorded_dry = true
+family = "bars"
+body = "marimba"
+
+[menu]
+name = "Marimba"
+group = "Percussion"
+# the mallets' names as the menu shows them (the file's are the fits' ids)
+mallets = ["Yarn", "Cord", "Rubber"]
+
+# the marimba's cutoff scales with the bar (`cutoff_scale`): in the same 1–2 kHz the treble's
+# fundamentals rise 6 dB from mf to ff, the middle's second modes 20
+# the third mode stays at 9.9–10.1 where it is found (±25 % took 2·f2 at 7.98 near C4)
+[bars]
+tracks = [1.0, 4.0, 10.0, 18.7]
+tol = [0.03, 0.12, 0.1, 0.06]
+scale_cutoff = true
+
+# the marimba: each mode from zero over 0.5 ms (MARIMBA_ONSET_S)
+# the marimba's and the kalimba's modes also stepped at the strike: in its first 0.2 ms the marimba
+# reached 0.19 of the strike's peak (the recordings 0.07; 1 ms frames already as recorded), the
+# kalimba 0.64 (0.02: the recordings rise over ~6 ms, the tine coming in at 7 ms). From zero over
+# 0.5 ms (0.05) and 4 ms (0.03; 8 ms only 2–4 dB nearer in the first frames): preferred by ear
+[export]
+# the level by loudness (2026-10-27, design log step 173): a phrase in its middle (an arpeggio at
+# velocity 80, chords at 95) lay +14.3 dB re the grands' median (-28.9 LUFS, EBU R128); the
+# calibration sets the median key's ff peak, and held tones sound louder than struck ones at one peak
+gain_db = -14.5
+motor = false
+onset_s = 0.0005
+
+[[part]]
+id = "marimba"
+
+[[part.source]]
+id = "marimba_yarn"
+role = "mallet"
+mallet = "yarn"
+root = "iowa-mis-percussion"
+dynamics = { pp = "pp", mf = "mf", ff = "ff" }
+levels = "normalized"
+# the Iowa runs: true levels within each octave run, each run at its own gain or touch (the
+# marimba's yarn pp C6–B6 9 dB over the runs around it): level corrections within a run only
+level_groups = "octave"
+
+[part.source.map]
+kind = "pattern"
+glob = "notes/marimba.yarn/*/*.wav"
+match = "relpath"
+regex = 'notes/marimba\.yarn/(?P<dynamic>pp|mf|ff)/(?P<midi>\d+)\.wav'
+note = { group = "midi", style = "midi" }
+layers = ["pp", "mf", "ff"]
+order = "layer"
+
+# from the Compare page, 2026-10-15: dB per recorded key, each octave run re its neighbors (level_groups), smoothed (running median over 5 keys, then ¼ ½ ¼); the export interpolates between the keys and holds the ends
+[part.source.level_corrections]
+keys = [36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96]
+pp = [5.9, 5.9, 5.9, 6.0, 6.3, 6.9, 7.1, 6.8, 6.5, 6.1, 5.7, 5.6, 5.4, 4.8, 4.0, 3.6, 3.5, 3.5, 3.5, 3.5, 2.9, 0.6, -1.3, -0.2, 0.8, 0.4, -0.5, -1.0, -1.0, -0.7, -0.1, 0.1, 0.1, -0.5, -1.5, -2.7, -3.4, -3.4, -4.2, -4.3, -2.8, -1.2, -0.3, -0.1, -0.1, -0.1, -0.2, -0.2, -0.2, -0.2, 0.2, 0.9, 1.2, 1.2, 1.2, 1.2, -0.0, -1.9, -2.3, -2.0, -1.7]
+mf = [0.9, 0.7, 0.5, -0.1, -0.3, 0.1, 0.1, -0.2, -0.2, -0.5, -0.6, -0.1, 0.2, 0.2, 0.3, 0.8, 1.8, 2.5, 2.5, 1.9, 1.2, 0.8, 0.6, 0.9, 1.2, 1.0, -0.3, -2.2, -3.0, -2.4, -1.1, -0.4, -0.5, -0.8, -1.1, -2.1, -3.9, -4.8, -4.9, -4.7, -4.2, -3.3, -2.2, -1.4, -1.5, -2.3, -2.2, -1.7, -1.7, -1.3, -0.5, 0.3, 0.9, 1.1, 1.1, 1.1, 0.9, 0.5, 0.5, 0.6, 0.7]
+ff = [1.3, 1.1, 1.3, 1.6, 1.3, 0.8, 0.6, 0.8, 1.1, 1.0, 1.3, 1.8, 1.9, 1.9, 2.2, 2.7, 2.9, 2.9, 2.8, 2.7, 2.6, 2.6, 2.6, 2.7, 3.0, 2.9, 2.2, 1.4, 1.1, 1.4, 2.1, 2.5, 2.5, 1.7, -0.2, -2.6, -4.8, -5.4, -6.5, -8.1, -8.7, -8.8, -8.8, -8.1, -6.6, -5.2, -4.7, -4.7, -4.3, -3.2, -1.8, -0.9, -0.4, -0.2, -0.2, -0.2, -0.6, -1.7, -2.7, -3.2, -2.8]
+
+[[part.source]]
+id = "marimba_cord"
+role = "mallet"
+mallet = "cord"
+root = "iowa-mis-percussion"
+dynamics = { pp = "pp", mf = "mf", ff = "ff" }
+levels = "normalized"
+# the Iowa runs: true levels within each octave run, each run at its own gain or touch (the
+# marimba's yarn pp C6–B6 9 dB over the runs around it): level corrections within a run only
+level_groups = "octave"
+
+[part.source.map]
+kind = "pattern"
+glob = "notes/marimba.cord/*/*.wav"
+match = "relpath"
+regex = 'notes/marimba\.cord/(?P<dynamic>pp|mf|ff)/(?P<midi>\d+)\.wav'
+note = { group = "midi", style = "midi" }
+layers = ["pp", "mf", "ff"]
+order = "layer"
+
+# from the Compare page, 2026-10-15: dB per recorded key, each octave run re its neighbors (level_groups), smoothed (running median over 5 keys, then ¼ ½ ¼); the export interpolates between the keys and holds the ends
+[part.source.level_corrections]
+keys = [36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96]
+pp = [-5.3, -5.4, -5.3, -4.9, -3.9, -2.8, -2.1, -2.2, -1.8, -1.6, -2.1, -2.1, -1.7, -1.3, -0.7, -0.1, 0.8, 1.8, 2.5, 3.0, 3.2, 3.2, 3.2, 2.8, 2.0, 1.3, -0.5, -2.9, -3.9, -2.7, -0.4, 0.8, -0.0, -1.6, -2.4, -3.2, -3.8, -3.8, -4.0, -3.7, -3.1, -2.9, -3.1, -3.1, -2.8, -2.3, -1.5, -0.5, 0.7, 1.2, 1.6, 2.0, 1.6, 1.2, 1.2, 1.2, 2.1, 4.1, 5.5, 5.9, 5.9]
+mf = [-1.7, -2.0, -1.7, -1.4, -0.6, 0.6, 1.3, 1.5, 1.6, 1.4, 1.0, 1.5, 2.3, 2.5, 2.9, 3.4, 3.4, 3.5, 3.7, 4.2, 4.4, 4.1, 3.7, 3.9, 3.8, 3.4, 2.8, 2.3, 2.0, 1.8, 2.1, 2.3, 1.9, 1.1, 0.5, -0.2, -0.7, -0.7, -0.7, -0.2, 0.6, 0.8, 0.9, 0.9, -0.1, -1.7, -2.1, -1.8, -1.8, -1.8, -1.8, -1.8, -2.6, -4.0, -4.6, -4.6, -5.4, -6.6, -6.8, -6.6, -6.4]
+ff = [0.4, 0.2, 0.4, 0.5, 0.2, -0.2, -0.5, -0.5, -0.5, -0.4, -0.1, 0.6, 0.9, 0.9, 1.2, 1.6, 1.8, 1.8, 1.8, 1.5, 1.0, 0.6, 0.4, 0.4, 0.3, -0.0, -0.7, -1.7, -2.1, -1.6, -0.4, 0.5, 1.0, 1.7, 2.0, 1.5, 0.8, 0.4, 0.3, 0.4, 0.3, 0.1, 0.1, 0.1, -0.5, -1.5, -1.5, -1.1, -1.1, -1.0, -0.2, 0.7, 0.8, 0.6, 0.6, 0.6, -0.4, -2.5, -3.6, -3.9, -4.1]
+
+[[part.source]]
+id = "marimba_rubber"
+role = "mallet"
+mallet = "rubber"
+root = "iowa-mis-percussion"
+dynamics = { pp = "pp", mf = "mf", ff = "ff" }
+levels = "normalized"
+# the Iowa runs: true levels within each octave run, each run at its own gain or touch (the
+# marimba's yarn pp C6–B6 9 dB over the runs around it): level corrections within a run only
+level_groups = "octave"
+
+[part.source.map]
+kind = "pattern"
+glob = "notes/marimba.rubber/*/*.wav"
+match = "relpath"
+regex = 'notes/marimba\.rubber/(?P<dynamic>pp|mf|ff)/(?P<midi>\d+)\.wav'
+note = { group = "midi", style = "midi" }
+layers = ["pp", "mf", "ff"]
+order = "layer"
+
+# from the Compare page, 2026-10-15: dB per recorded key, each octave run re its neighbors (level_groups), smoothed (running median over 5 keys, then ¼ ½ ¼); the export interpolates between the keys and holds the ends
+[part.source.level_corrections]
+keys = [36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96]
+pp = [2.5, 1.8, 1.2, 0.1, 0.1, 1.4, 1.8, 1.7, 1.8, 1.7, 1.8, 2.7, 3.8, 4.1, 4.0, 4.0, 4.0, 4.0, 4.0, 3.6, 2.4, 1.3, 0.8, 0.7, 0.6, -0.2, -0.5, -0.2, -1.0, -1.0, 0.7, 0.8, -0.4, -0.9, -1.0, -1.8, -2.2, -1.2, -0.0, 0.3, 0.5, 0.8, 1.0, 1.7, 2.4, 2.1, 1.9, 1.9, 1.0, -0.6, -1.4, -1.7, -1.8, -1.6, -1.6, -1.2, -0.3, -0.5, -1.5, -1.8, -2.1]
+mf = [-3.1, -3.2, -2.9, -2.2, -1.2, 0.1, 0.6, 0.6, 0.6, 0.6, 0.5, 0.5, 0.5, 0.5, 0.8, 1.4, 1.9, 2.2, 2.3, 2.3, 2.3, 2.2, 2.0, 2.5, 3.0, 2.7, 1.7, 1.2, 1.2, 1.9, 3.4, 4.3, 4.4, 4.1, 3.6, 2.8, 2.3, 1.8, 0.7, 0.3, 0.4, 0.3, 0.3, 0.3, -0.4, -1.1, -0.5, -0.4, -0.7, -0.6, -0.4, 0.2, 1.1, 1.5, 1.5, 1.5, -1.1, -5.1, -5.9, -5.3, -4.7]
+ff = [-0.3, -0.4, -0.3, -0.3, -0.6, -0.9, -1.2, -1.5, -1.7, -1.7, -1.5, -1.1, -0.8, -0.7, -0.4, 0.6, 1.5, 2.0, 2.2, 1.9, 1.3, 1.1, 1.0, 1.2, 1.5, 1.4, 0.7, 0.1, -0.0, 0.4, 1.4, 2.2, 2.2, 1.7, 1.3, 0.5, -0.2, -0.5, -1.1, -0.8, -0.1, -0.1, -0.1, 0.2, 0.1, -1.0, -1.1, -0.7, -0.7, -0.1, 1.5, 2.7, 2.8, 2.7, 2.7, 2.7, 1.7, -0.3, -1.4, -1.5, -1.6]
+
+# the recordings' credit and terms (proto/license.py writes instruments/<project>/LICENSE.md)
+[license]
+set = "University of Iowa Musical Instrument Samples: Marimba"
+author = "University of Iowa Electronic Music Studios"
+url = "https://theremin.music.uiowa.edu/MISmarimba.html"
+terms = "\"Since 1997, these recordings have been freely available on this website and may be downloaded and used for any projects, without restrictions.\" (https://theremin.music.uiowa.edu/MIS.html)"
+source_license = "free-use"

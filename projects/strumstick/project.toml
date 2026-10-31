@@ -1,0 +1,64 @@
+# VCSL's strumstick (a three-string fretted dulcimer, D3–A3–D4 open, the melody string diatonic
+# to A5), played with the fingers: 19 notes at three dynamics (vl1–vl3), named an octave low
+[project]
+family = "fingered"
+body = "strumstick"
+
+[menu]
+name = "Strumstick"
+group = "Guitars"
+
+[strings]
+design = "stick_dulcimer"
+# low_weighted: its fundamental rings on while the upper partials fall fast and unevenly (the
+# fundamental 6–12 dB/s, partials 2–6 25–150 dB/s): b1 the low partials' rate (the median weighted
+# 1/n², as horiz_gain), b3 the rest's excess over it, their single line's rate (the plain median ran
+# the fundamental 2–7 × too fast)
+# fingered: plucked by fingers (or picks), no dampers (a hand), a body of its own (engine mic::Body)
+traits = ["fingered", "low_weighted"]
+board_seed = 20
+detune = 1.0
+min_loss_rows = 3
+edge_rows_low = 3
+# its strings ring between the partials ("rooms" of 5–20 s): VCSL's dry studio, as its harp
+# measures it (0.2–0.5 s)
+room_t60 = "vcsl_dry"
+
+[uses]
+dampers = "grand_e"
+release = "grand_a"
+
+# the level by loudness (2026-10-27, design log step 173): a phrase in its middle (an arpeggio at
+# velocity 80, chords at 95) lay -4.2 dB re the grands' median (-28.9 LUFS, EBU R128); the
+# calibration sets the median key's ff peak, and held tones sound louder than struck ones at one peak
+[export]
+output_gain_db = 4.0
+
+[[part]]
+id = "strumstick"
+
+[[part.source]]
+id = "strumstick"
+role = "main"
+root = "vcsl"
+dynamics = { pp = "pp", mf = "mf", ff = "ff" }
+levels = "recorded"
+
+[part.source.map]
+kind = "pattern"
+glob = "Chordophones/Composite Chordophones/Strumstick/Finger/Strumstick_Finger_*.wav"
+regex = 'Strumstick_Finger_Str(?P<string>\d)_Main_(?P<note>[A-G]#?\d)_(?P<dynamic>vl\d)_rr(?P<take>\d+)\.wav'
+note = { group = "note", shift = 12 }
+layers = ["vl1", "vl2", "vl3"]
+dynamic_names = { vl1 = "pp", vl2 = "mf", vl3 = "ff" }
+prefer = ["take"]
+fields = { string = "int" }
+order = "note"
+
+# the recordings' credit and terms (proto/license.py writes instruments/<project>/LICENSE.md)
+[license]
+set = "VCSL: Strumstick"
+author = "Versilian Studios"
+url = "https://github.com/sgossner/VCSL"
+terms = "The Versilian Community Sample Library."
+source_license = "CC0"

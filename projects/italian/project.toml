@@ -1,0 +1,63 @@
+# Harpsichord D: VCSL's Italian harpsichord, 32 notes F♯1–B5
+[project]
+family = "plucked"
+body = "harpsichord"
+
+[menu]
+name = "Harpsichord D"
+group = "Harpsichords"
+# the strip draws dark naturals and light sharps, as many harpsichords have them
+reversed_keys = true
+
+[strings]
+design = "harpsichord_8"
+board_seed = 14
+detune = 1.0
+# one recorded layer: the knock's q is not identifiable; the harpsichord's knock gains ~10 dB
+# per dynamic step (Penttinen 2006), a step being a doubling of the pluck "speed"
+fixed_q = [1.660964047443681]
+
+[uses]
+dampers = "grand_e"
+buff = "harpsichord_buff"
+
+# the level by loudness (2026-10-27, design log step 173): a phrase in its middle (an arpeggio at
+# velocity 80, chords at 95) lay +3.9 dB re the grands' median (-28.9 LUFS, EBU R128); the
+# calibration sets the median key's ff peak, and held tones sound louder than struck ones at one peak
+[export]
+output_gain_db = -4.0
+
+[release_noise]
+# heard too loud (the user, 2026-10-27): its release samples (their partials out, design log step 182)
+# put the noise's peak at -33.7 dB re the note's (velocity 80 at Player, the median over C3–F5), the
+# grands' at −40 … −44; -4.5 dB puts it at −38, a harpsichord's action a little more present
+level_db = -4.5
+
+[[part]]
+id = "italian"
+
+[[part.source]]
+id = "italian"
+role = "main"
+root = "vcsl-keys"
+# one layer, played normally: the reference (mf)
+dynamics = { mf = "1/1" }
+levels = "recorded"
+# its own release samples: the release regions of its SFZ (release_noise.py)
+release = { kind = "sfz", file = "Harpsichord, Italian.sfz" }
+
+[part.source.map]
+kind = "sfz"
+files = ["Harpsichord, Italian.sfz"]
+filter = [{ opcode = "trigger", default = "attack", in = ["attack"] }, { opcode = "seq_position", default = "1", in = ["1"] }]
+folders = ["Sustains", "NoSus"]
+prefer_substring = "/NoSus/"
+layers = "rank"
+
+# the recordings' credit and terms (proto/license.py writes instruments/<project>/LICENSE.md)
+[license]
+set = "VCSL Keys: Harpsichord \"Italian\""
+author = "Versilian Studios"
+url = "https://github.com/sgossner/VCSL"
+terms = "The Versilian Community Sample Library."
+source_license = "CC0"

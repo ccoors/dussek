@@ -1,0 +1,19 @@
+[package]
+name = "pianoengine"
+version = "0.1.0"
+edition = "2024"
+license = "AGPL-3.0-or-later"
+
+[lib]
+# rlib for the Rust binaries, staticlib for the plugin wrapper (C ABI, src/ffi.rs)
+crate-type = ["rlib", "staticlib"]
+
+[dependencies]
+clap = { version = "4", features = ["derive", "wrap_help"] }
+hound = "3.5.1"
+midly = "0.5.3"
+realfft = "3.5.0"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = { version = "1.0.151", features = ["float_roundtrip"] }
+tiny-skia = { version = "0.11", default-features = false, features = ["std", "simd"] }
+toml_edit = "0.25.17"

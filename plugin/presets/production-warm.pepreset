@@ -1,0 +1,9 @@
+# A shipped full preset (design log step 179): every control at its default, then these.
+# A production piano with even levels, measured against SGM's piano (program 0): Grand B at the
+# default position with 25 dB of Dynamics matches its loudness range (a pop ballad 13.9 LU against
+# 14.0, a ballade 15.3 against 16.1; the default's 19.2 and 19.6) and its spectrum (2-4 kHz -24.8 dB
+# re the total against -24.7, above 4 kHz -47.1 against -46.9).
+name = Production, warm
+scope = all
+state.instrument = grand_b
+param.dynamics = 25

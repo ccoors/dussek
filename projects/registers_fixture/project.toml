@@ -1,0 +1,28 @@
+# the registers test fixture (engine/tests/registers.rs): Salamander twice, format 6 (export.py
+# with a second register of the same part at 0 semitones)
+[project]
+family = "derived"
+body = "grand"
+
+[menu]
+name = "Registers fixture"
+group = "Other"
+# the registers test fixture: not in the menu (a session may still name it)
+hidden = true
+
+[uses]
+main = "grand_a"
+# Grand A's dampers are Grand E's: the export reads them from there
+dampers = "grand_e"
+
+[export]
+main = "grand_a"
+registers = [{ part = "grand_a", octave = 0 }]
+
+# its strings are Grand A's ([uses] main): Grand A's recordings
+[license]
+set = "Salamander Grand Piano V3"
+author = "Alexander Holm"
+url = "https://rytmenpinne.wordpress.com/sounds-and-such/salamander-grandpiano/"
+terms = "\"As of 4.3.2022, this is now public domain!\" (its author's page; CC BY 3.0 before)."
+source_license = "public-domain"

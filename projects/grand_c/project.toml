@@ -1,0 +1,101 @@
+# Grand C: Bengt Nilsson's Headroom Piano (CC BY 4.0), close microphones, every
+# third key from A0
+[project]
+family = "struck"
+skip = ["release_noise", "dampers", "pedal_noise"]
+body = "grand"
+
+[menu]
+name = "Grand C"
+group = "Grand pianos"
+
+[strings]
+design = "grand"
+board_seed = 11
+detune = 1.0
+id_max_partial = 60
+
+[uses]
+dampers = "grand_e"
+release = "grand_a"
+pedal = "grand_a"
+
+# the level by loudness (2026-10-27, design log step 173): a phrase in its middle (an arpeggio at
+# velocity 80, chords at 95) lay +3.2 dB re the grands' median (-28.9 LUFS, EBU R128); the
+# calibration sets the median key's ff peak, and held tones sound louder than struck ones at one peak
+[export]
+output_gain_db = -3.0
+
+[[part]]
+id = "grand_c"
+
+[[part.source]]
+id = "grand_c"
+role = "main"
+root = "headroom-piano"
+# layers 1, 2 and 5 (SFZ velocities 1–59, 60–89, 90–105, 106–119, 120–127 for LEVEL1–5): the
+# engine plays mf at MIDI 60 (layer 2 starts there), ff at 124. One gain for all (the noise floor
+# alike in every layer; from A5 up 15–20 dB less rumble below 500 Hz, the same above: another
+# session's room, not another gain)
+dynamics = { pp = "L1", mf = "L2", ff = "L5" }
+levels = "recorded"
+
+[part.source.map]
+kind = "pattern"
+glob = "Samples/HEADROOM PIANO LEVEL* CLOSE *.flac"
+regex = 'HEADROOM PIANO LEVEL(?P<dynamic>\d) CLOSE (?P<midi>\d+)\.flac'
+note = { group = "midi", style = "midi" }
+layers = ["1", "2", "5"]
+dynamic_format = "L{}"
+order = "note"
+
+# the export voices the piano to one level curve, as a voicer leaves it (design log step 138): each
+# key's ff level corrected to a smooth trend through the keys' levels; the board's character stays
+# in each key's tone. Heard as "a lot cleaner … mint condition" (2026-10-21); the Condition's
+# Normal zone adds the unevenness back at runtime (the voicing's level scatter, step 139)
+[even_levels]
+window_keys = 9
+
+# the felt set from the recording at the played mf/ff velocities (2026-10-22; the fits never see it):
+# mf sat dark (−3.3/−9.1 dB at 1–2/2–4 kHz) and it opened too much to ff; solved p 1.99 and +5.5 dB,
+# heard as "extremely bright", then +3.0 dB by ear ("feels right")
+[felt]
+p = 1.99
+stiffness_db = 3.0
+
+# the room by ear (2026-10-22; the fits never see it): the fitted room left 8 kHz uncut beside −12.6 dB
+# at 4 kHz and carried the top octave over the dry sound (+1.5 dB re dry over 0.1–1.5 s, 4–8 kHz
+# −2.6), its synthetic tail heard as a rattle though its level between the partials matched the
+# recording's; 8 kHz cut as 4 kHz cured it
+[room]
+trim_db = [[8000, -12.6]]
+
+# the board's lowest octave by ear (2026-10-23; the fits never see it): its board fit's data start at
+# 77 Hz, below which the board's response is held flat; the bass's fundamentals sat over partials 2–4
+# against the recording: C1–C2 (33–65 Hz) 14–25 dB, the octave A0–G♯1 18 dB, A1–G♯2 7 dB. Rows by
+# least squares over the keys bring the two octaves to −2 and −1 dB; heard as "a very clear
+# difference … more realistic". The heavy bass before (liked too) comes back with an EQ after the
+# plugin: a bell at about 45 Hz, +20 dB, two octaves wide
+[board]
+trim_db = [[31.5, -12.0], [45.0, -12.0], [63.0, -8.0]]
+# the board's low modes ring longer (2026-10-27, by ear on Grands A and B; the fits never see it):
+# at loss factor 4 % where that rings longer than the fitted overlap, below 450 Hz; the board's own
+# response 0.45–0.6 s below 200 Hz (was ~0.15 s), a grand's board glued into its rim ~0.5 s (Plath)
+# (design log step 184)
+low_eta = 0.04
+
+# the unison toward the top key (2026-10-27, unison_check.py; the fits never see it): the fitted
+# detune is measured from beats below the top octaves and held above them; the recording's beats
+# (partials 1–3) grow to 3.0 cents at keys 96–101, the engine's stayed at 2.5; their ratio from
+# key 78 up, a line in log: ×1.39 at 108; measured again on that export (three strings beat at
+# their neighbors' gaps, half the spread): ×1.30 (design log step 183)
+[unison]
+treble = [[78, 1.0], [108, 1.81]]
+
+# the recordings' credit and terms (proto/license.py writes instruments/<project>/LICENSE.md)
+[license]
+set = "Headroom Piano"
+author = "Bengt Nilsson"
+url = "https://github.com/sfzinstruments/BengtNilsson.HeadroomPiano"
+terms = "Its author asks that the original name, \"Headroom Piano\", be kept."
+source_license = "CC-BY-4.0"

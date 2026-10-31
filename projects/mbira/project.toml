@@ -1,0 +1,92 @@
+# VCSL's mbira dzaVadzimu from Zimbabwe (nyamaropa tuning, lowest B): 24 tines B2–C♯6 (named an
+# octave low; B4 and C♯5 twice, both kept), one pluck each at one dynamic, the recorded levels kept
+# (peaks −32 … −13 dBFS); its buzzers on the board (`rattle`)
+[project]
+family = "bars"
+body = "kalimba"
+
+[menu]
+name = "Mbira A"
+group = "Thumb pianos"
+# the instrument's own words: the thumb plucks the tines (the generic labels speak of hammers)
+labels.hammer_hardness = { name = "Thumb brightness" }
+labels.knock = { name = "Thumb click", description = "The thumb's click on the tine at each note, against the recording. The left end is off." }
+labels.sympathetic = { name = "Ringing tines", description = "How strongly the other tines ring along with the played one: 100 % as recorded (in the treble the bass tines outlast the played one), 0 off, more exaggerates it." }
+
+# the kalimba (VCSL's Tanzanian one, G2–C♯7; one pluck each, normalized): a steel tine clamped at
+# one end, its cantilever modes 1 : 6.3–6.8 : ~18 (theory 1 : 6.27 : 17.55), the second strongest
+# at the pluck in the bass (it dies within 0.1 s), the third in the bass only. The tines are tuned
+# up to 65 cents off the names: played at equal temperament. The other tines ring along (`halo`)
+# at −10 to −45 dB, in the treble outlasting the plucked one. One dynamic: an assumed thumb.
+# No dampers (the tines ring out)
+[bars]
+tracks = [1.0, 6.47, 18.0]
+tol = [0.03, 0.05, 0.03]
+scale_cutoff = true
+fast_decays = true
+mallet = { speeds = { pp = 0.3, mf = 1.0, ff = 2.5 }, f_q = 2500.0, fq_oct_per_step = 0.5, order = 1.0, beta = 0.0 }
+equal_tuning = true
+halo = true
+
+# the kalimba: no dampers (the tines ring out); the other tines ringing along are modes of
+# each key (`with_extras`); the thumb's click on the tine (`knock`); the tines' rattle (`membrane`)
+# the kalimba's click (the thumb on the tine, the tine on the bridge): the recordings' 4–12 kHz band
+# lies 3–20 dB over the modes' in the first 10 ms, falling over 30–80 ms. A noise burst (the
+# engine's knock: 80 Hz … cutoff, decay_s) at level_db re the keys' median radiated peak at mf
+# the mbira's buzzers (bottle caps or shells on its board), measured as the kalimba's rattle: the
+# band between the lines −26 … −55 dB re the fundamental (the kalimba −53 … −76); the membrane's level
+# 2.0 (the kalimba 0.2: its per-key gain held at 100 on the loudest buzzers)
+# the kalimba's rattle (the tines on the bridge): between the lines the recordings hold noise from
+# 250 Hz to 8 kHz that follows each tine and dies about twice as fast as it (1 kHz re the
+# fundamental: −53 dB over 50–150 ms, −68 over 150–300, −78 over 300–500; the engine without it
+# 12–54 dB under): the balafon's membrane (Voice::membrane) on the bar's level squared
+# (`power` 2), its filters and level by a grid search over 500 Hz–8 kHz and 50–500 ms: 4.5 dB rms
+# (2 kHz 4–9 dB over: the recordings dip there)
+# the marimba's and the kalimba's modes also stepped at the strike: in its first 0.2 ms the marimba
+# reached 0.19 of the strike's peak (the recordings 0.07; 1 ms frames already as recorded), the
+# kalimba 0.64 (0.02: the recordings rise over ~6 ms, the tine coming in at 7 ms). From zero over
+# 0.5 ms (0.05) and 4 ms (0.03; 8 ms only 2–4 dB nearer in the first frames): preferred by ear
+# VCSL's bars' room: its energy re the body's (the bars' body is ~15 ms: the direct sound). The
+# generic room at the body's energy held their fast modes up (decaying 0.64–0.69 × as fast as
+# recorded: its tail under them) and filled the hand chimes' swell (their fundamentals' first
+# 8 ms 20–38 dB under its top: −3 dB reached at 76 ms where the recordings reach it at 28)
+[export]
+# the level by loudness (design log step 173's measure): a phrase in its middle (an arpeggio at
+# velocity 80, chords at 95) lay -2.1 dB re the kalimba's (the tines' own family, set by step 173)
+gain_db = -6.5
+motor = false
+room = { t60 = "vcsl_dry", gain = 0.01 }
+membrane = { level = 2.0, hp_hz = 300.0, lp_hz = 6000.0, poles = 2, power = 2.0, per_key = true }
+flat_body = true
+onset_s = 0.004
+knock = { level_db = -4.0, decay_s = 0.03, cutoff_hz = 12000.0, q = 1.0, rise_s = 0.0005 }
+
+[[part]]
+id = "mbira"
+
+[[part.source]]
+id = "mbira"
+role = "mallet"
+mallet = "thumb"
+root = "vcsl"
+dynamics = { mf = "mf" }
+levels = "recorded"
+extra = { fund_cents = 90.0, halo = true }
+# its lowest tine, named A♯1, sounds B2 + 17 cents (the set's "Low B"): relabeled
+relabel = { 46 = 47 }
+
+[part.source.map]
+kind = "pattern"
+glob = "Idiophones/Plucked Idiophones/Mbira dzaVadzimu Nyamaropa, Zimbabwe, Low B/MBira4_pluck_Main_*.wav"
+regex = 'MBira4_pluck_Main_(?P<note>[A-G]#?\d)_\d+_50_100_rr\d+\.wav'
+note = { group = "note", shift = 12 }
+dynamic = "mf"
+order = "path"
+
+# the recordings' credit and terms (proto/license.py writes instruments/<project>/LICENSE.md)
+[license]
+set = "VCSL: Mbira dzaVadzimu Nyamaropa"
+author = "Versilian Studios"
+url = "https://github.com/sgossner/VCSL"
+terms = "The Versilian Community Sample Library."
+source_license = "CC0"

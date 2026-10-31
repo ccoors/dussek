@@ -1,0 +1,253 @@
+{
+ "part:guitar:attack_noise": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "2ea8e61a52d6a666",
+   "project.sources": "011e04209343f2b2"
+  },
+  "seq": 155,
+  "version": 2
+ },
+ "part:guitar:body_decay": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "2ea8e61a52d6a666",
+   "project.sources": "011e04209343f2b2"
+  },
+  "seq": 154,
+  "version": 1
+ },
+ "part:guitar:body_modes": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "2ea8e61a52d6a666",
+   "cache.damper": "5df6e0e2761359d3",
+   "fit.felt_p": "59145b317d2c2d52",
+   "fit.hammer_speeds": "e1e72f68b470384e",
+   "fit.pluck": "cf6d664af364d6e6",
+   "fit.string_scatter_cents": "59145b317d2c2d52",
+   "project.sources": "011e04209343f2b2",
+   "project.strings": "9ff297b2e298b720",
+   "project.uses": "e297d68e7f5ab8b3",
+   "uses.dampers:cache.damper": "fc1ae8411e2bb167"
+  },
+  "seq": 151,
+  "version": 1
+ },
+ "part:guitar:body_modes#2": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "2ea8e61a52d6a666",
+   "cache.damper": "5df6e0e2761359d3",
+   "fit.felt_p": "59145b317d2c2d52",
+   "fit.hammer_speeds": "e1e72f68b470384e",
+   "fit.pluck": "cf6d664af364d6e6",
+   "fit.polarizations": "85f2017b5e60d45f",
+   "fit.string_scatter_cents": "59145b317d2c2d52",
+   "project.sources": "011e04209343f2b2",
+   "project.strings": "9ff297b2e298b720",
+   "project.uses": "e297d68e7f5ab8b3",
+   "uses.dampers:cache.damper": "fc1ae8411e2bb167"
+  },
+  "seq": 153,
+  "version": 1
+ },
+ "part:guitar:coupling": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "2ea8e61a52d6a666",
+   "cache.damper": "5df6e0e2761359d3",
+   "fit.body_modes": "e477a428e30af6bb",
+   "fit.felt_bass_factor": "59145b317d2c2d52",
+   "fit.felt_curve": "59145b317d2c2d52",
+   "fit.felt_f05_at_c4": "59145b317d2c2d52",
+   "fit.felt_log2_slope_per_semitone": "59145b317d2c2d52",
+   "fit.felt_p": "59145b317d2c2d52",
+   "fit.hammer_speeds": "e1e72f68b470384e",
+   "fit.pluck": "cf6d664af364d6e6",
+   "fit.polarizations": "85f2017b5e60d45f",
+   "fit.radiation": "dfc4b1b3171e1d2e",
+   "project.sources": "011e04209343f2b2",
+   "project.strings": "9ff297b2e298b720",
+   "project.uses": "e297d68e7f5ab8b3",
+   "uses.dampers:cache.damper": "fc1ae8411e2bb167"
+  },
+  "seq": 157,
+  "version": 2
+ },
+ "part:guitar:knock": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "2ea8e61a52d6a666",
+   "cache.attack": "ccace19f1737c85d",
+   "cache.body": "bc9c44ac689f5016",
+   "cache.damper": "5df6e0e2761359d3",
+   "fit.body_modes": "e477a428e30af6bb",
+   "fit.coupling": "15a486da99c9d258",
+   "fit.felt_bass_factor": "59145b317d2c2d52",
+   "fit.felt_curve": "59145b317d2c2d52",
+   "fit.felt_f05_at_c4": "59145b317d2c2d52",
+   "fit.felt_log2_slope_per_semitone": "59145b317d2c2d52",
+   "fit.felt_p": "59145b317d2c2d52",
+   "fit.hammer_speeds": "e1e72f68b470384e",
+   "fit.pluck": "cf6d664af364d6e6",
+   "fit.polarizations": "85f2017b5e60d45f",
+   "fit.radiation": "dfc4b1b3171e1d2e",
+   "fit.room": "59145b317d2c2d52",
+   "fit.soundboard": "88dc6b6f6e975465",
+   "project.strings": "9ff297b2e298b720",
+   "project.uses": "e297d68e7f5ab8b3",
+   "uses.dampers:cache.damper": "fc1ae8411e2bb167"
+  },
+  "seq": 159,
+  "version": 3
+ },
+ "part:guitar:pluck": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "2ea8e61a52d6a666",
+   "fit.felt_p": "59145b317d2c2d52",
+   "fit.string_scatter_cents": "59145b317d2c2d52",
+   "project.sources": "011e04209343f2b2",
+   "project.strings": "9ff297b2e298b720"
+  },
+  "seq": 149,
+  "version": 1
+ },
+ "part:guitar:polarizations": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "2ea8e61a52d6a666",
+   "cache.damper": "5df6e0e2761359d3",
+   "project.sources": "011e04209343f2b2",
+   "project.strings": "9ff297b2e298b720",
+   "project.uses": "e297d68e7f5ab8b3",
+   "uses.dampers:cache.damper": "fc1ae8411e2bb167"
+  },
+  "seq": 150,
+  "version": 1
+ },
+ "part:guitar:polarizations#2": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "2ea8e61a52d6a666",
+   "cache.damper": "5df6e0e2761359d3",
+   "project.sources": "011e04209343f2b2",
+   "project.strings": "9ff297b2e298b720",
+   "project.uses": "e297d68e7f5ab8b3",
+   "uses.dampers:cache.damper": "fc1ae8411e2bb167"
+  },
+  "seq": 152,
+  "version": 1
+ },
+ "part:guitar:register": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "2ea8e61a52d6a666",
+   "cache.body": "bc9c44ac689f5016",
+   "cache.damper": "5df6e0e2761359d3",
+   "fit.body_modes": "e477a428e30af6bb",
+   "fit.coupling": "15a486da99c9d258",
+   "fit.felt_bass_factor": "59145b317d2c2d52",
+   "fit.felt_curve": "59145b317d2c2d52",
+   "fit.felt_f05_at_c4": "59145b317d2c2d52",
+   "fit.felt_log2_slope_per_semitone": "59145b317d2c2d52",
+   "fit.felt_p": "59145b317d2c2d52",
+   "fit.hammer_speeds": "e1e72f68b470384e",
+   "fit.pluck": "cf6d664af364d6e6",
+   "fit.polarizations": "85f2017b5e60d45f",
+   "fit.radiation": "dfc4b1b3171e1d2e",
+   "fit.room": "59145b317d2c2d52",
+   "project.sources": "011e04209343f2b2",
+   "project.strings": "9ff297b2e298b720",
+   "project.uses": "e297d68e7f5ab8b3",
+   "uses.dampers:cache.damper": "fc1ae8411e2bb167",
+   "uses.levels:cache.analysis": "6e9c960fd025b2e5",
+   "uses.levels:project.sources": "6e9c960fd025b2e5"
+  },
+  "seq": 158,
+  "version": 1
+ },
+ "part:guitar:soundboard": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "2ea8e61a52d6a666",
+   "cache.damper": "5df6e0e2761359d3",
+   "fit.body_modes": "e477a428e30af6bb",
+   "fit.felt_bass_factor": "59145b317d2c2d52",
+   "fit.felt_curve": "59145b317d2c2d52",
+   "fit.felt_f05_at_c4": "59145b317d2c2d52",
+   "fit.felt_log2_slope_per_semitone": "59145b317d2c2d52",
+   "fit.felt_p": "59145b317d2c2d52",
+   "fit.hammer_speeds": "e1e72f68b470384e",
+   "fit.pluck": "cf6d664af364d6e6",
+   "fit.polarizations": "85f2017b5e60d45f",
+   "project.sources": "011e04209343f2b2",
+   "project.strings": "9ff297b2e298b720",
+   "project.uses": "e297d68e7f5ab8b3",
+   "uses.dampers:cache.damper": "fc1ae8411e2bb167"
+  },
+  "seq": 156,
+  "version": 1
+ },
+ "project:guitar:export": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.*": "e856fab0c5ed58f8",
+   "cache.analysis": "2ea8e61a52d6a666",
+   "cache.body": "bc9c44ac689f5016",
+   "cache.damper": "5df6e0e2761359d3",
+   "cache.pedal_noise": "5df6e0e2761359d3",
+   "cache.release": "5df6e0e2761359d3",
+   "fit.*": "ac0a7559628b35d9",
+   "fit.body_modes": "e477a428e30af6bb",
+   "fit.coupling": "15a486da99c9d258",
+   "fit.felt_bass_factor": "59145b317d2c2d52",
+   "fit.felt_curve": "59145b317d2c2d52",
+   "fit.felt_f05_at_c4": "59145b317d2c2d52",
+   "fit.felt_log2_slope_per_semitone": "59145b317d2c2d52",
+   "fit.felt_p": "59145b317d2c2d52",
+   "fit.flat": "59145b317d2c2d52",
+   "fit.gain": "59145b317d2c2d52",
+   "fit.hammer_speeds": "e1e72f68b470384e",
+   "fit.impact": "59145b317d2c2d52",
+   "fit.knock": "cd8ffde483bf888b",
+   "fit.notes": "59145b317d2c2d52",
+   "fit.pedal": "59145b317d2c2d52",
+   "fit.pluck": "cf6d664af364d6e6",
+   "fit.polarizations": "85f2017b5e60d45f",
+   "fit.pos": "59145b317d2c2d52",
+   "fit.radiation": "dfc4b1b3171e1d2e",
+   "fit.room": "59145b317d2c2d52",
+   "fit.soundboard": "88dc6b6f6e975465",
+   "fit.string_scatter_cents": "59145b317d2c2d52",
+   "project.*": "c213d128e6eca889",
+   "project.export": "c03424c425c1c952",
+   "project.impact": "95cb9b4f84ceff13",
+   "project.level_corrections": "1d8fc6ceb1f94c63",
+   "project.project": "b41569f9245ab092",
+   "project.sources": "011e04209343f2b2",
+   "project.strings": "9ff297b2e298b720",
+   "project.uses": "e297d68e7f5ab8b3",
+   "uses.buff:fit.flat": "6e9c960fd025b2e5",
+   "uses.buff:fit.gain": "6e9c960fd025b2e5",
+   "uses.buff:fit.notes": "6e9c960fd025b2e5",
+   "uses.buff:fit.pos": "6e9c960fd025b2e5",
+   "uses.dampers:cache.damper": "fc1ae8411e2bb167",
+   "uses.main:*": "6e9c960fd025b2e5",
+   "uses.main:project.level_corrections": "6e9c960fd025b2e5",
+   "uses.pedal:cache.pedal_noise": "6e9c960fd025b2e5",
+   "uses.release:cache.release": "13cc8e848cb8374b"
+  },
+  "seq": 160,
+  "version": 2
+ },
+ "source:guitar:analyze": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "project.sources": "011e04209343f2b2"
+  },
+  "seq": 148,
+  "version": 1
+ }
+}

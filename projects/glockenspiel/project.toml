@@ -1,0 +1,56 @@
+# Glockenspiel A: Ethan Winer's glockenspiel (data/ethanwiner-soundfonts, the SFZ conversion of his
+# SoundFont): ten bars G5–B7, every second or third key, one dynamic, stereo, "a fairly live room".
+# Made with the editor's wizard from the Bells' project file (the closest overtones): their body,
+# fit settings and export, the tracks derived from these recordings.
+[project]
+family = "bars"
+body = "bells"
+
+[menu]
+name = "Glockenspiel A"
+group = "Percussion"
+
+# steel bars, no resonators, no dampers (the release "simulates damping the bars with your hand",
+# the set's page says: the engine's bars ring out): the modes derived from the takes (the bars
+# fit, tracks = "auto"): 2.74 to 2.66 times the fundamental, the strongest; 5.3 to 4.9; 8.7 to
+# 8.1; 12.7 to 12.1; 17.5 (the bass)
+[bars]
+scale_cutoff = true
+fast_decays = true
+# the modes' tracks derived from the recordings by the bars fit (numbers here pin them by hand)
+tracks = "auto"
+# one dynamic recorded: the mallet's speeds and lowpass assumed
+mallet = { speeds = { pp = 0.25, mf = 1.0, ff = 3.0 }, f_q = 3000.0, fq_oct_per_step = 0.5, order = 2.0, beta = 0.3 }
+
+# the bars ring 5 s and more (the lowest's fundamental 12 dB/s): a piece's notes pile up, as
+# the Bells' do, so their level: 8 dB under the calibration
+[export]
+motor = false
+# the level by loudness (2026-10-27, design log step 173): a phrase in its middle (an arpeggio at
+# velocity 80, chords at 95) lay -8.1 dB re the grands' median (-28.9 LUFS, EBU R128); the
+# calibration sets the median key's ff peak, and held tones sound louder than struck ones at one peak
+gain_db = 0.0
+
+[[part]]
+id = "glockenspiel"
+
+[[part.source]]
+id = "glockenspiel"
+role = "mallet"
+root = "ethanwiner-soundfonts"
+levels = "recorded"
+dynamics = { mf = "1/1" }
+mallet = "mallet"
+
+[part.source.map]
+kind = "sfz"
+files = ["Ethan Winer Collection/Ethan's Glock.sfz"]
+prefix = "Ethan Winer Collection/Samples/glockenspiel/"
+
+# the recordings' credit and terms (proto/license.py writes instruments/<project>/LICENSE.md)
+[license]
+set = "Ethan Winer's Glockenspiel"
+author = "Ethan Winer"
+url = "https://ethanwiner.com/ewsf2.html"
+terms = "\"These files are made available for you to use in any way you'd like, royalty free, including for commercial projects, with no attribution required.\""
+source_license = "free-use"

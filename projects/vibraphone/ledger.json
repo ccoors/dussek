@@ -1,0 +1,45 @@
+{
+ "part:vibraphone:bars": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "4dd522a03a7d0fde",
+   "project.bars": "8aa0ba41cea9ef4a",
+   "project.sources": "6f068a00dd21e219"
+  },
+  "seq": 52,
+  "version": 2
+ },
+ "project:vibraphone:export_bars": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "fit.hammer_speeds": "ccea8f2e456036e1",
+   "fit.keys": "02e3b618028c64ab",
+   "fit.mallet": "864b8541c63338c8",
+   "fit.mallets": "237a7597f5a632e8",
+   "fit.recorded": "cfaff2059d891de6",
+   "project.export": "b9b6d7068b282e14",
+   "project.level_corrections": "206d1c9651ceb45b",
+   "project.menu": "0d9b4b34f88d389b",
+   "project.project": "aeecca70be0694d3",
+   "project.sources": "6f068a00dd21e219"
+  },
+  "seq": 53,
+  "version": 4
+ },
+ "source:vibraphone:modes": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "project.sources": "ec97c3103ba06e2e"
+  },
+  "seq": 50,
+  "version": 1
+ },
+ "source:vibraphone_damp:modes": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "project.sources": "26a0579fac6444d6"
+  },
+  "seq": 51,
+  "version": 1
+ }
+}

@@ -1,0 +1,11 @@
+# cargo nextest run --release (AGENTS.md "Build and test"): every test of every test binary in
+# parallel; plain `cargo test` runs the binaries one after another.
+[profile.default]
+# run everything: a failing test must not hide another (cargo test stopped at the first failing binary)
+fail-fast = false
+slow-timeout = { period = "60s" }
+
+# timed on the audio thread: alone, not beside 15 other renders (it is the known flaky one)
+[[profile.default.overrides]]
+filter = "test(switching_costs_little_on_the_audio_thread)"
+threads-required = "num-test-threads"

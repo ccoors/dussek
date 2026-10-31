@@ -1,0 +1,109 @@
+# Grand K: VCSL's Grand Piano K (1–4 layers per note): dynamics by the file's layer number
+[project]
+family = "struck"
+skip = ["release_noise", "dampers", "pedal_noise"]
+body = "grand"
+
+[menu]
+name = "Grand F"
+group = "Grand pianos"
+
+[strings]
+design = "grand"
+board_seed = 4
+detune = 1.0
+id_max_partial = 60
+# partial levels needed below a frequency for it to count as covered (20 by default): Grand K
+# (bass every 3 semitones, 15 rows below 92 Hz) lost them all, and H held its 0 dB maximum below
+# 92 Hz (a boomy bass, the recorded fundamentals there are 30–45 dB under partial 2)
+edge_rows_low = 8
+
+[uses]
+dampers = "grand_e"
+release = "grand_a"
+pedal = "grand_a"
+
+# the level by loudness (2026-10-27, design log step 173): a phrase in its middle (an arpeggio at
+# velocity 80, chords at 95) lay -2.0 dB re the grands' median (-28.9 LUFS, EBU R128); the
+# calibration sets the median key's ff peak, and held tones sound louder than struck ones at one peak
+[export]
+output_gain_db = 2.0
+
+[[part]]
+id = "grand_f"
+
+[[part.source]]
+id = "grand_f"
+role = "main"
+root = "vcsl-keys"
+# velocity ranges v1 0–54, v2 55–83, v3 84–106, v4 107–127
+dynamics = { pp = "v1", mf = "v2", ff = "v4" }
+levels = "recorded"
+# left out by ear (2026-10-16): C7 v1 (the file says C6) stops at 3.0 s while it still sounds, A7 v1
+# (A6) at 1.4 s, played quieter than its neighbors
+skip_files = ["Grand Piano, K/Sustains/GPiano_sus_C6_v1_rr1_Player.flac", "Grand Piano, K/Sustains/GPiano_sus_A6_v1_rr1_Player.flac"]
+
+[part.source.map]
+kind = "sfz"
+files = ["Grand Piano, K.sfz"]
+filter = [{ opcode = "trigger", default = "attack", in = ["attack"] }, { opcode = "seq_position", default = "1", in = ["1"] }]
+folders = ["Sustains", "NoSus"]
+prefer_substring = "/NoSus/"
+layers = "rank"
+dynamic_from = { regex = '_vl?(\d+)_', format = "v{}" }
+
+# the export voices the piano to one level curve, as a voicer leaves it (design log step 138): each
+# key's ff level corrected to a smooth trend through the keys' levels; the board's character stays
+# in each key's tone. Heard as "a lot cleaner … mint condition" (2026-10-21); the Condition's
+# Normal zone adds the unevenness back at runtime (the voicing's level scatter, step 139)
+[even_levels]
+window_keys = 9
+
+# the felt set from the recording at the played mf/ff velocities (2026-10-22; the fits never see it):
+# too bright at both (mf +9.7/+8.1 dB, ff +4.9/+4.0 at 1–2/2–4 kHz re 200–500 Hz) and opening too
+# little from mf to ff; solved for exponent and stiffness (mf +1.1/+0.2, ff −0.3/−5.4 after), heard
+# as "definitely better"
+[felt]
+p = 2.16
+stiffness_db = -5.8
+
+# the felt's core by ear (2026-10-22; design 2026-10-20-felt-core): the felt above was solved on C2–C5,
+# its softer stiffness left the bass's ff attack short of the recording (A0–B2: 2–4 kHz −11.8, 4–6 kHz
+# −20.0, 6–8 kHz −12.8 dB; the report against voicing-1: −4.0, −9.2, −7.9), mf right. A core at 6 N,
+# its depth just past mf's compression (mf unchanged), full to D♭2 and gone by C3: −1.3, −10.2, −1.7 dB.
+# Fading out by C4 instead overshot F♯2–G♯3 by 5–13 dB at 2–4 kHz; heard, the user chose the faithful
+# fade (the longer one had its appeal: a curve for the runtime felt controls)
+[felt_core]
+notes = [21, 39, 48]
+f05 = [6.0, 6.0, 0.0]
+depth_mm = [1.9, 1.42, 1.18]
+
+# the board's tone by ear (2026-10-22; the fits never see it): the bass and low middle sat heavy re the
+# recording at mf (keys C2–C4, re 1 kHz: 63 Hz +4.5, 125 Hz +3.0, 250 Hz +6.1 dB), heard as "boomy" on
+# a Schubert Impromptu; trimmed: 125 Hz −0.4, 250 Hz +2.7 dB (its room keeps most of the 63 Hz excess).
+# The treble (2026-10-22): within a note, re the band of its fundamental, its upper partials sat
+# +6.1/+1.8 dB (mf/ff, 4 kHz) over the recording; trimmed from C5 up (keys: from 0 to full) to
+# +2.6/+0.3 dB, the middle left alone; heard as an improvement
+[board]
+trim_db = [[63.0, -4.0], [125.0, -3.0], [250.0, -3.0], [4000.0, -4.0, 60.0, 72.0]]
+# the board's low modes ring longer (2026-10-27, by ear on Grands A and B; the fits never see it):
+# at loss factor 4 % where that rings longer than the fitted overlap, below 450 Hz; the board's own
+# response 0.45–0.6 s below 200 Hz (was ~0.15 s), a grand's board glued into its rim ~0.5 s (Plath)
+# (design log step 184)
+low_eta = 0.04
+
+# the unison toward the top key (2026-10-27, unison_check.py; the fits never see it): the fitted
+# detune is measured from beats below the top octaves and held above them; the recording's beats
+# (partials 1–3) grow to 2.0 cents at keys 102–107, the engine's stayed at 1.6; their ratio from
+# key 78 up, a line in log: ×3.86 at 108; measured again on that export (three strings beat at
+# their neighbors' gaps, half the spread): ×1.73 (design log step 183)
+[unison]
+treble = [[78, 1.0], [108, 6.68]]
+
+# the recordings' credit and terms (proto/license.py writes instruments/<project>/LICENSE.md)
+[license]
+set = "VCSL Keys: Grand \"K\""
+author = "Versilian Studios"
+url = "https://github.com/sgossner/VCSL"
+terms = "The Versilian Community Sample Library."
+source_license = "CC0"

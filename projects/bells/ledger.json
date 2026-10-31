@@ -1,0 +1,45 @@
+{
+ "part:bells:bars": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "26f144334e13e0e8",
+   "project.bars": "1c98c1261f746a78",
+   "project.sources": "1f2ebdd79e55cc8e"
+  },
+  "seq": 44,
+  "version": 2
+ },
+ "project:bells:export_bars": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "fit.hammer_speeds": "b3ccb1b9c913a58b",
+   "fit.keys": "615e00b001b8e2ec",
+   "fit.mallet": "220314d0bc975ad3",
+   "fit.mallets": "20a30e794c1312c3",
+   "fit.recorded": "199f33b3e81c9289",
+   "project.export": "6716fc5b1c08f9d7",
+   "project.level_corrections": "dc6b8c25776f82a8",
+   "project.menu": "a07c810a877af42a",
+   "project.project": "a5df5d8b6390b78b",
+   "project.sources": "1f2ebdd79e55cc8e"
+  },
+  "seq": 45,
+  "version": 4
+ },
+ "source:bells_brass:modes": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "project.sources": "09d336a55b260dbf"
+  },
+  "seq": 43,
+  "version": 1
+ },
+ "source:bells_plastic:modes": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "project.sources": "b8bd1484d0f514cc"
+  },
+  "seq": 42,
+  "version": 1
+ }
+}

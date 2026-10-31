@@ -1,0 +1,6 @@
+# cargo nextest run --release (AGENTS.md "Build and test"): every test of every test binary in
+# parallel; plain `cargo test` runs the binaries one after another.
+[profile.default]
+# run everything: a failing test must not hide another
+fail-fast = false
+slow-timeout = { period = "60s" }

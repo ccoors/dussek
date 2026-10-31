@@ -1,0 +1,37 @@
+{
+ "part:nyunga:bars": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "db1a4bdb490d3573",
+   "project.bars": "c6aaf64bf652d7d4",
+   "project.sources": "b98e287fc35641b6"
+  },
+  "seq": 9,
+  "version": 2
+ },
+ "project:nyunga:export_bars": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "fit.hammer_speeds": "8a836de31dfbc25b",
+   "fit.keys": "fe68fd5d61b4ef2c",
+   "fit.mallet": "7a1c4e1ce054dd2a",
+   "fit.mallets": "04ca502213bd9a67",
+   "fit.recorded": "69b163cfa009b9e3",
+   "project.export": "39d26da2dc006a60",
+   "project.level_corrections": "1d8fc6ceb1f94c63",
+   "project.menu": "694dda58779de19c",
+   "project.project": "ef7738e5ccf98c02",
+   "project.sources": "b98e287fc35641b6"
+  },
+  "seq": 10,
+  "version": 4
+ },
+ "source:nyunga:modes": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "project.sources": "b98e287fc35641b6"
+  },
+  "seq": 8,
+  "version": 1
+ }
+}

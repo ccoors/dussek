@@ -1,0 +1,62 @@
+# Iowa MIS guitar (nylon strings, anechoic, 2011): one run per string, split per note by
+# analysis/split_runs.py; in first position (each note on the highest string that has it)
+[project]
+# recorded anechoic (Iowa MIS): the Compare page renders it without a room, as it was recorded
+recorded_dry = true
+family = "guitar"
+body = "guitar"
+
+[menu]
+name = "Guitar"
+group = "Guitars"
+
+[strings]
+design = "classical_guitar"
+# fingered: plucked by fingers (or picks), no dampers (a hand), a body of its own (engine mic::Body)
+traits = ["fingered"]
+board_seed = 17
+detune = 1.0
+min_loss_rows = 3
+# its fundamentals below 115 Hz (E2–A♯2, 3 layers each): H was held flat below it, where a
+# guitar's radiation keeps falling below its air mode (E2's second and third partials lie 17–21 dB
+# over its fundamental in the recordings, 7–18 under in the engine: the bass rang on its fundamental)
+edge_rows_low = 3
+
+[uses]
+dampers = "grand_e"
+release = "grand_a"
+
+# the level by loudness (2026-10-27, design log step 173): a phrase in its middle (an arpeggio at
+# velocity 80, chords at 95) lay -3.1 dB re the grands' median (-28.9 LUFS, EBU R128); the
+# calibration sets the median key's ff peak, and held tones sound louder than struck ones at one peak
+[export]
+output_gain_db = 3.0
+
+[[part]]
+id = "guitar"
+
+[[part.source]]
+id = "guitar"
+role = "main"
+root = "iowa-mis-guitar"
+dynamics = { pp = "pp", mf = "mf", ff = "ff" }
+levels = "recorded"
+
+[part.source.map]
+kind = "pattern"
+glob = "notes/guitar.s*/*/*.wav"
+match = "relpath"
+regex = 'notes/guitar\.s(?P<string>\d)/(?P<dynamic>pp|mf|ff)/(?P<midi>\d+)\.wav'
+note = { group = "midi", style = "midi" }
+layers = ["pp", "mf", "ff"]
+prefer = ["string"]
+fields = { string = "int" }
+order = "layer"
+
+# the recordings' credit and terms (proto/license.py writes instruments/<project>/LICENSE.md)
+[license]
+set = "University of Iowa Musical Instrument Samples: Guitar"
+author = "University of Iowa Electronic Music Studios"
+url = "https://theremin.music.uiowa.edu/MISguitar.html"
+terms = "\"Since 1997, these recordings have been freely available on this website and may be downloaded and used for any projects, without restrictions.\" (https://theremin.music.uiowa.edu/MIS.html)"
+source_license = "free-use"

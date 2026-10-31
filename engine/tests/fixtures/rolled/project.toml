@@ -1,0 +1,22 @@
+# a rolled piano for the roll's tests (engine/tests/roll_generate.rs): the user's favorite of the
+# spike's rolls (R2 with "a bit more bass"), design log step 117;
+# its knobs as the first generator built it (pulled back once from warmth -0.3, air -1.1, shade
+# -0.21, -0.19: the treble 0.4 dB brighter than the references' range), pulled back three times more
+# after the references' rooms were cut (design log step 123: their treble darker, the roll's 1.9 dB
+# brighter than the range)
+[project]
+family = "rolled"
+body = "grand"
+
+[menu]
+name = "Rolled test"
+group = "Rolled pianos"
+
+[roll]
+references = ["grand_a", "grand_b", "grand_f", "grand_e", "grand_d", "grand_c", "grand_g", "upright_a", "upright_b", "upright_c"]
+strings = { grand_d = 0.384, grand_c = 0.336, grand_b = 0.279 }
+fine_structure = ["grand_e", "grand_f", "grand_c"]
+warmth = -0.09
+air = -0.35
+shade = [-0.07, -0.06]
+seed = 501

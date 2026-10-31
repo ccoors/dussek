@@ -1,0 +1,192 @@
+{
+ "part:clavichord:attack_noise": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "41f67b1f95b256a6",
+   "project.sources": "a770b4b9b2b8aa4b"
+  },
+  "seq": 112,
+  "version": 2
+ },
+ "part:clavichord:body_decay": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "41f67b1f95b256a6",
+   "project.sources": "a770b4b9b2b8aa4b"
+  },
+  "seq": 111,
+  "version": 1
+ },
+ "part:clavichord:coupling": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "41f67b1f95b256a6",
+   "cache.damper": "5df6e0e2761359d3",
+   "fit.body_modes": "59145b317d2c2d52",
+   "fit.felt_bass_factor": "59145b317d2c2d52",
+   "fit.felt_curve": "59145b317d2c2d52",
+   "fit.felt_f05_at_c4": "59145b317d2c2d52",
+   "fit.felt_log2_slope_per_semitone": "59145b317d2c2d52",
+   "fit.felt_p": "59145b317d2c2d52",
+   "fit.hammer_speeds": "e1e72f68b470384e",
+   "fit.pluck": "2df8b5cb69f1e86f",
+   "fit.polarizations": "59145b317d2c2d52",
+   "fit.radiation": "19e145a682fa529a",
+   "project.sources": "a770b4b9b2b8aa4b",
+   "project.strings": "e9d52564e9d07d5d",
+   "project.uses": "e297d68e7f5ab8b3",
+   "uses.dampers:cache.damper": "fc1ae8411e2bb167"
+  },
+  "seq": 114,
+  "version": 2
+ },
+ "part:clavichord:knock": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "41f67b1f95b256a6",
+   "cache.attack": "87b38b27f539fc26",
+   "cache.body": "302fc987d88a46e5",
+   "cache.damper": "5df6e0e2761359d3",
+   "fit.body_modes": "59145b317d2c2d52",
+   "fit.coupling": "dc62cf7ed2e0d152",
+   "fit.felt_bass_factor": "59145b317d2c2d52",
+   "fit.felt_curve": "59145b317d2c2d52",
+   "fit.felt_f05_at_c4": "59145b317d2c2d52",
+   "fit.felt_log2_slope_per_semitone": "59145b317d2c2d52",
+   "fit.felt_p": "59145b317d2c2d52",
+   "fit.hammer_speeds": "e1e72f68b470384e",
+   "fit.pluck": "2df8b5cb69f1e86f",
+   "fit.polarizations": "59145b317d2c2d52",
+   "fit.radiation": "19e145a682fa529a",
+   "fit.room": "59145b317d2c2d52",
+   "fit.soundboard": "2390015643fc20b0",
+   "project.strings": "e9d52564e9d07d5d",
+   "project.uses": "e297d68e7f5ab8b3",
+   "uses.dampers:cache.damper": "fc1ae8411e2bb167"
+  },
+  "seq": 116,
+  "version": 3
+ },
+ "part:clavichord:pluck": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "41f67b1f95b256a6",
+   "fit.felt_p": "59145b317d2c2d52",
+   "fit.string_scatter_cents": "59145b317d2c2d52",
+   "project.sources": "a770b4b9b2b8aa4b",
+   "project.strings": "e9d52564e9d07d5d"
+  },
+  "seq": 110,
+  "version": 1
+ },
+ "part:clavichord:register": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "41f67b1f95b256a6",
+   "cache.body": "302fc987d88a46e5",
+   "cache.damper": "5df6e0e2761359d3",
+   "fit.body_modes": "59145b317d2c2d52",
+   "fit.coupling": "dc62cf7ed2e0d152",
+   "fit.felt_bass_factor": "59145b317d2c2d52",
+   "fit.felt_curve": "59145b317d2c2d52",
+   "fit.felt_f05_at_c4": "59145b317d2c2d52",
+   "fit.felt_log2_slope_per_semitone": "59145b317d2c2d52",
+   "fit.felt_p": "59145b317d2c2d52",
+   "fit.hammer_speeds": "e1e72f68b470384e",
+   "fit.pluck": "2df8b5cb69f1e86f",
+   "fit.polarizations": "59145b317d2c2d52",
+   "fit.radiation": "19e145a682fa529a",
+   "fit.room": "59145b317d2c2d52",
+   "project.sources": "a770b4b9b2b8aa4b",
+   "project.strings": "e9d52564e9d07d5d",
+   "project.uses": "e297d68e7f5ab8b3",
+   "uses.dampers:cache.damper": "fc1ae8411e2bb167",
+   "uses.levels:cache.analysis": "6e9c960fd025b2e5",
+   "uses.levels:project.sources": "6e9c960fd025b2e5"
+  },
+  "seq": 115,
+  "version": 1
+ },
+ "part:clavichord:soundboard": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "41f67b1f95b256a6",
+   "cache.damper": "5df6e0e2761359d3",
+   "fit.body_modes": "59145b317d2c2d52",
+   "fit.felt_bass_factor": "59145b317d2c2d52",
+   "fit.felt_curve": "59145b317d2c2d52",
+   "fit.felt_f05_at_c4": "59145b317d2c2d52",
+   "fit.felt_log2_slope_per_semitone": "59145b317d2c2d52",
+   "fit.felt_p": "59145b317d2c2d52",
+   "fit.hammer_speeds": "e1e72f68b470384e",
+   "fit.pluck": "2df8b5cb69f1e86f",
+   "fit.polarizations": "59145b317d2c2d52",
+   "project.sources": "a770b4b9b2b8aa4b",
+   "project.strings": "e9d52564e9d07d5d",
+   "project.uses": "e297d68e7f5ab8b3",
+   "uses.dampers:cache.damper": "fc1ae8411e2bb167"
+  },
+  "seq": 113,
+  "version": 1
+ },
+ "project:clavichord:export": {
+  "commit": "f10f901",
+  "inputs": {
+   "cache.*": "25d2bddb2fb76edb",
+   "cache.analysis": "41f67b1f95b256a6",
+   "cache.body": "302fc987d88a46e5",
+   "cache.damper": "5df6e0e2761359d3",
+   "cache.pedal_noise": "5df6e0e2761359d3",
+   "cache.release": "5df6e0e2761359d3",
+   "fit.*": "dd8736a9b9672a49",
+   "fit.body_modes": "59145b317d2c2d52",
+   "fit.coupling": "dc62cf7ed2e0d152",
+   "fit.felt_bass_factor": "59145b317d2c2d52",
+   "fit.felt_curve": "59145b317d2c2d52",
+   "fit.felt_f05_at_c4": "59145b317d2c2d52",
+   "fit.felt_log2_slope_per_semitone": "59145b317d2c2d52",
+   "fit.felt_p": "59145b317d2c2d52",
+   "fit.flat": "59145b317d2c2d52",
+   "fit.gain": "59145b317d2c2d52",
+   "fit.hammer_speeds": "e1e72f68b470384e",
+   "fit.impact": "59145b317d2c2d52",
+   "fit.knock": "f52e505306d44de9",
+   "fit.notes": "59145b317d2c2d52",
+   "fit.pedal": "59145b317d2c2d52",
+   "fit.pluck": "2df8b5cb69f1e86f",
+   "fit.polarizations": "59145b317d2c2d52",
+   "fit.pos": "59145b317d2c2d52",
+   "fit.radiation": "19e145a682fa529a",
+   "fit.room": "59145b317d2c2d52",
+   "fit.soundboard": "2390015643fc20b0",
+   "fit.string_scatter_cents": "59145b317d2c2d52",
+   "project.*": "ecc10d6ac92ecdc3",
+   "project.export": "a09f44379a6e1473",
+   "project.impact": "95cb9b4f84ceff13",
+   "project.level_corrections": "1d8fc6ceb1f94c63",
+   "project.project": "f184a919dc259fbc",
+   "project.sources": "a770b4b9b2b8aa4b",
+   "project.strings": "e9d52564e9d07d5d",
+   "project.uses": "e297d68e7f5ab8b3",
+   "uses.buff:fit.flat": "6e9c960fd025b2e5",
+   "uses.buff:fit.gain": "6e9c960fd025b2e5",
+   "uses.buff:fit.notes": "6e9c960fd025b2e5",
+   "uses.buff:fit.pos": "6e9c960fd025b2e5",
+   "uses.dampers:cache.damper": "fc1ae8411e2bb167",
+   "uses.main:*": "6e9c960fd025b2e5",
+   "uses.main:project.level_corrections": "6e9c960fd025b2e5",
+   "uses.pedal:cache.pedal_noise": "6e9c960fd025b2e5",
+   "uses.release:cache.release": "13cc8e848cb8374b"
+  },
+  "seq": 118,
+  "version": 2
+ },
+ "source:clavichord:analyze": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "project.sources": "a770b4b9b2b8aa4b"
+  },
+  "seq": 109,
+  "version": 1
+ }
+}

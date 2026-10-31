@@ -1,0 +1,116 @@
+[project]
+family = "struck"
+skip = ["release_noise", "dampers", "pedal_noise"]
+body = "upright"
+
+[menu]
+name = "Upright B"
+group = "Upright pianos"
+
+[strings]
+design = "upright"
+board_seed = 5
+detune = 1.0
+id_max_partial = 60
+# Upright Y (14 notes): its low edge at 130 Hz with the default
+edge_rows_low = 8
+# the felt keeps the straight line: Upright Y (14 notes in fifths) has neighboring support felts
+# 10× apart (C2 5.7 N, G2 64 N), and the anchor curve followed the zig-zag
+line_only = true
+# the room by ear (2026-10-24): its own decay between the partials (0.24–0.44 s below 640 Hz, about 1 s
+# at 1.6–6.4 kHz) and its level fitted 10–25 dB down above 1 kHz to its dry recordings' gaps, heard as
+# very dry once its dampers and ring were right; an assumed living room instead (as heard against its
+# room half and fully uncut: best), its level uncut ([room])
+room_t60 = [[250.0, 0.6], [1000.0, 0.5], [4000.0, 0.4], [16000.0, 0.3]]
+
+[uses]
+# Grand E's dampers, heard best (2026-10-24): Upright A's release recordings hold their level for
+# 0.2 s before they fall (a late landing or takes begun before the key's release), read as 16–38 dB/s
+# against Grand E's 90–240; Upright Y's own (Releases) are cut at 0.3 s, their fall unreadable
+dampers = "grand_e"
+release = "grand_a"
+pedal = "grand_a"
+
+# the export voices the piano to one level curve, as a voicer leaves it (design log step 138), as the
+# grands (step 139): each key's ff level corrected to a smooth trend through the keys' levels (rms
+# 1.4 dB off it before); the Condition's Normal zone adds the unevenness back at runtime
+[even_levels]
+window_keys = 9
+
+# the board's lowest octave by ear (2026-10-24; the fits never see it): its board fit's data start at
+# 65 Hz, below which the board's response is held flat (step 147); B♭0's and G1's fundamentals sat
+# 28.8 and 21.1 dB over their recordings re partials 2–4 (mf), now 13.1 and 8.2 (the rows at their
+# −12 dB bound), heard as the right direction. The treble (2026-10-26): within a note, re the band of
+# its fundamental (the first second, the layers' velocities), 2, 4 and 8 kHz sat +8.1, +11.1, +19.8 dB
+# at mf over the recordings (ff +7.3, +7.2, +10.9), more than the grands' before step 143; trimmed
+# from C4 to C5 (keys: from 0 to full) to +5.1, +5.3, +9.3 (ff +4.4, +1.3, +1.9). Heard as "less
+# glassy … definitely an improvement"
+[board]
+trim_db = [[22.5, -12.0], [31.5, -12.0], [45.0, -12.0], [2000.0, -5.0, 60.0, 72.0], [4000.0, -7.0, 60.0, 72.0],
+           [8000.0, -12.0, 60.0, 72.0]]
+# the board's low modes ring longer (2026-10-27, by ear on Grands A and B; the fits never see it):
+# at loss factor 4 % where that rings longer than the fitted overlap, below 450 Hz; the board's own
+# response 0.45–0.6 s below 200 Hz (was ~0.15 s), a grand's board glued into its rim ~0.5 s (Plath)
+# (design log step 184)
+low_eta = 0.04
+
+# the felt by ear (2026-10-24; the fits never see it): the fitted felt (p 2.30) left the attack at
+# 1–4 kHz re 200–500 Hz 5–21 dB dark re the recording at pp and mf (keys C2–C5), its bass at mf 10–17,
+# heard as "too thin overall"; solved against pp, mf and ff from two probes (step 142's method), the
+# stiffness at its bound: C2–C5 within ±2.2 dB, A0–B2 at mf and ff within ±3 (its pp recordings
+# scatter −7 … +37 dB from key to key); heard better than the solve from mf and ff alone (p 2.52,
+# +10.5 dB)
+[felt]
+p = 1.96
+stiffness_db = 12.0
+
+# the ring by ear (2026-10-24; the fits never see it): its held notes lay 4–8 dB under its recordings
+# at 1–2 s from C3 up (step 153), and the grands ring longer than theirs (Grand A's late level 4–7 dB
+# over its recordings in the middle); heard with the Sustain control: 150 % to C5, about 200 % at C7
+[sustain]
+percent = [[72, 150.0], [96, 200.0]]
+
+# the room's level uncut by ear (2026-10-24): fitted with the assumed living room above ([strings]
+# room_t60), 1 kHz −5.82 dB to its dry recordings' gaps; uncut as heard (the thump held as heard, as in
+# step 151)
+[room]
+trim_db = [[1000, 5.82]]
+
+[[part]]
+id = "upright_b"
+
+[[part.source]]
+id = "upright_b"
+role = "main"
+root = "vcsl-keys"
+# vl1 0–65, vl2 66–99, vl3 100–127
+dynamics = { pp = "v1", mf = "v2", ff = "v3" }
+levels = "recorded"
+# Upright Y's "C" bass file sounds B♭0 (its partials lie ~30 Hz apart; the analysis put one
+# layer 2 semitones flat, the others failed)
+relabel = { 24 = 22 }
+
+[part.source.map]
+kind = "sfz"
+files = ["Upright Piano, Y.sfz"]
+filter = [{ opcode = "trigger", default = "attack", in = ["attack"] }, { opcode = "seq_position", default = "1", in = ["1"] }]
+folders = ["Sustains", "NoSus"]
+prefer_substring = "/NoSus/"
+layers = "rank"
+dynamic_from = { regex = '_vl?(\d+)_', format = "v{}" }
+
+# the unison toward the top key (2026-10-27, unison_check.py; the fits never see it): the fitted
+# detune is measured from beats below the top octaves and held above them; the recording's beats
+# (partials 1–3) grow to 4.7 cents at keys 102–107, the engine's stayed at 1.2; their ratio from
+# key 78 up, a line in log: ×6.57 at 108; measured again on that export (three strings beat at
+# their neighbors' gaps, half the spread): ×2.11, held at 12 (design log step 183)
+[unison]
+treble = [[78, 1.0], [108, 12.00]]
+
+# the recordings' credit and terms (proto/license.py writes instruments/<project>/LICENSE.md)
+[license]
+set = "VCSL Keys: Upright \"Y\""
+author = "Versilian Studios"
+url = "https://github.com/sgossner/VCSL"
+terms = "The Versilian Community Sample Library."
+source_license = "CC0"

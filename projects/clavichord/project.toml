@@ -1,0 +1,62 @@
+# Edinburgh's unfretted clavichord, ca. 1740 (St Cecilia's Hall, CC BY 4.0), C2–D6 at A = 415 Hz,
+# one layer, without vibrato and without noise reduction; the file names' first token is the key
+# (`Cs4_…`; the rest, and the set's SFZ, a pitch detector's guesses)
+[project]
+family = "tangent"
+body = "clavichord"
+
+[menu]
+name = "Clavichord"
+group = "Clavichords"
+
+[strings]
+design = "unfretted_clavichord"
+board_seed = 18
+detune = 1.0
+fixed_q = [1.660964047443681]
+# its decay between the partials is noise (body_decay.py reads it as a room of 4–45 s): an
+# assumed room, (band Hz, T60 s): St Cecilia's Hall's museum gallery, its air conditioning
+# between the partials; the few clean estimates (0.6–2 s at 0.6–3 kHz) agree
+room_t60 = [[250.0, 1.2], [1000.0, 1.0], [4000.0, 0.7], [16000.0, 0.4]]
+
+[uses]
+dampers = "grand_e"
+release = "grand_a"
+
+# the level by loudness (2026-10-27, design log step 173): a phrase in its middle (an arpeggio at
+# velocity 80, chords at 95) lay +4.0 dB re the grands' median (-28.9 LUFS, EBU R128); the
+# calibration sets the median key's ff peak, and held tones sound louder than struck ones at one peak
+[export]
+output_gain_db = -4.0
+
+[[part]]
+id = "clavichord"
+
+[[part.source]]
+id = "clavichord"
+role = "main"
+root = "edinburgh-clavichord"
+dynamics = { mf = "1/1" }
+levels = "recorded"
+# C3 and C4 sound an octave above their names (even partials only): left out; B2 holds a second
+# strike 4.8 s in (the file 6.4 s): cut before it
+skip = [48, 60]
+cut_s = { 47 = 1.7 }
+# one take per key, at its own A (`a4`, analyze.analyze)
+extra = { a4 = 415.0 }
+
+[part.source.map]
+kind = "pattern"
+glob = "raw/Unfretted_Clavicord_ca1740s/Unfretted-Clavichord_1740s_noVibrato_NO_NOISE_REDUCTION/pitches/*.wav"
+regex = '(?P<note>[A-G]s?\d)_.*'
+note = { group = "note" }
+dynamic = "1/1"
+order = "path"
+
+# the recordings' credit and terms (proto/license.py writes instruments/<project>/LICENSE.md)
+[license]
+set = "Unfretted Clavichord, ca. 1740"
+author = "University of Edinburgh"
+url = "https://doi.org/10.7488/ds/8090"
+terms = "Edinburgh DataShare."
+source_license = "CC-BY-4.0"

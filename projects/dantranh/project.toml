@@ -1,0 +1,72 @@
+# VCSL's đàn tranh (a 16-string zither on movable bridges): B2–B5 pentatonic at three dynamics
+# (mf, f, ff; every file normalized to −10 dBFS), named an octave low
+[project]
+family = "fingered"
+body = "dantranh"
+
+[menu]
+name = "Dan tranh"
+group = "Zithers"
+
+[strings]
+design = "bridge_zither"
+# equal_tuning: played at equal temperament (keyboard playability): its strings lie −43 … +49 cents
+# off (its movable bridges set by ear); bends: the strings bend under the other hand (pressed
+# behind the movable bridge): the engine's pitch wheel acts
+# fingered: plucked by fingers (or picks), no dampers (a hand), a body of its own (engine mic::Body)
+# picked: plucked with a pick or a nail (the đàn tranh's finger picks): the quill's lowpass
+traits = ["fingered", "picked", "equal_tuning", "bends"]
+board_seed = 21
+detune = 1.0
+min_loss_rows = 3
+edge_rows_low = 3
+# its strings ring between the partials ("rooms" of 5–20 s): VCSL's dry studio, as its harp
+# measures it (0.2–0.5 s)
+room_t60 = "vcsl_dry"
+
+[uses]
+dampers = "grand_e"
+release = "grand_a"
+# the đàn tranh (every file at −10 dBFS) follows VCSL's concert harp, plucked strings recorded
+# with their levels (its model alone rose 47 dB from A0 to C8)
+levels = "harp"
+
+# the level by loudness (2026-10-27, design log step 173): a phrase in its middle (an arpeggio at
+# velocity 80, chords at 95) lay +2.0 dB re the grands' median (-28.9 LUFS, EBU R128); the
+# calibration sets the median key's ff peak, and held tones sound louder than struck ones at one peak
+[export]
+# the level re-matched (2026-10-27, design log step 177): the plugin starts at Player with all keys
+# spread; the phrase's midpoint of Recording and Player lay -0.8 dB re the grands' (step 173's phrase)
+output_gain_db = -1.0
+
+[[part]]
+id = "dantranh"
+
+[[part.source]]
+id = "dantranh"
+role = "main"
+root = "vcsl"
+# mf, f and ff, normalized: as pp, mf and ff (the spectra's changes alone)
+dynamics = { pp = "mf", mf = "f", ff = "ff" }
+levels = "normalized"
+# five of the lower strings sound a semitone above their names (C♯3 at D3 +18 cents, D♯3 E3 −21,
+# F♯3 G3 −30, G♯3 A3 −16, C♯4 D4 −17): relabeled; B3 lies between (+54 cents: the analysis leaves
+# it out)
+relabel = { 49 = 50, 51 = 52, 54 = 55, 56 = 57, 61 = 62 }
+
+[part.source.map]
+kind = "pattern"
+glob = "Chordophones/Zithers/Dan Tranh/Normal/*.wav"
+regex = '(?P<note>[A-Ga-g]#?\d)_(?P<dynamic>mf|f|ff)_(?P<take>\d+)\.wav'
+note = { group = "note", shift = 12 }
+layers = ["mf", "f", "ff"]
+prefer = ["take"]
+order = "note"
+
+# the recordings' credit and terms (proto/license.py writes instruments/<project>/LICENSE.md)
+[license]
+set = "VCSL: Đàn tranh"
+author = "Versilian Studios"
+url = "https://github.com/sgossner/VCSL"
+terms = "The Versilian Community Sample Library."
+source_license = "CC0"

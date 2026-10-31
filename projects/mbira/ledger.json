@@ -1,0 +1,37 @@
+{
+ "part:mbira:bars": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "316950e3f1a74d54",
+   "project.bars": "c6aaf64bf652d7d4",
+   "project.sources": "475b43ac9f43a455"
+  },
+  "seq": 12,
+  "version": 2
+ },
+ "project:mbira:export_bars": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "fit.hammer_speeds": "8a836de31dfbc25b",
+   "fit.keys": "39988b9b3d9e4f4a",
+   "fit.mallet": "7a1c4e1ce054dd2a",
+   "fit.mallets": "04ca502213bd9a67",
+   "fit.recorded": "3b323cc5fa16adea",
+   "project.export": "7516faa3fac6bf5d",
+   "project.level_corrections": "1d8fc6ceb1f94c63",
+   "project.menu": "60666d5557b552ed",
+   "project.project": "ef7738e5ccf98c02",
+   "project.sources": "475b43ac9f43a455"
+  },
+  "seq": 13,
+  "version": 4
+ },
+ "source:mbira:modes": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "project.sources": "475b43ac9f43a455"
+  },
+  "seq": 11,
+  "version": 1
+ }
+}

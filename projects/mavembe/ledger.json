@@ -1,0 +1,37 @@
+{
+ "part:mavembe:bars": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "41dbdd244d7296fd",
+   "project.bars": "c6aaf64bf652d7d4",
+   "project.sources": "1186849f68c470ac"
+  },
+  "seq": 9,
+  "version": 2
+ },
+ "project:mavembe:export_bars": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "fit.hammer_speeds": "8a836de31dfbc25b",
+   "fit.keys": "2bdac376d1d589ff",
+   "fit.mallet": "7a1c4e1ce054dd2a",
+   "fit.mallets": "04ca502213bd9a67",
+   "fit.recorded": "dfd5acf00061c194",
+   "project.export": "8df2df94de64c2c8",
+   "project.level_corrections": "1d8fc6ceb1f94c63",
+   "project.menu": "64ef9ffceaceb5f2",
+   "project.project": "ef7738e5ccf98c02",
+   "project.sources": "1186849f68c470ac"
+  },
+  "seq": 10,
+  "version": 4
+ },
+ "source:mavembe:modes": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "project.sources": "1186849f68c470ac"
+  },
+  "seq": 8,
+  "version": 1
+ }
+}

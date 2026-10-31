@@ -1,0 +1,57 @@
+# Iowa MIS percussion (anechoic, 2013): octave runs split per note by analysis/split_runs.py
+# the crotales (bronze discs, no dampers): one mallet (the page names none), pp and ff
+[project]
+# recorded anechoic (Iowa MIS): the Compare page renders it without a room, as it was recorded
+recorded_dry = true
+family = "bars"
+body = "crotales"
+
+[menu]
+name = "Crotales"
+group = "Percussion"
+
+# the crotales (bronze discs, C6–C8; one mallet, pp and ff): the fundamental the weakest of the
+# strong modes at ff, over it ones from 2.14 (C6) to 1.90 (C8), 3.74 to 3.18 (the strongest),
+# 5.71 to 4.68, 6.6 to 5.8, 8.0 to 6.8, 9.1 to 8.5 and 10.6 to 9.7; the peak at the second
+# mode + 1 (3.04 at C♯7) is the two modes' sum, not a mode
+[bars]
+tracks = [1.0, [[84, 2.137], [87, 2.085], [90, 2.045], [96, 2.035], [99, 2.03], [101, 1.96], [104, 1.91], [108, 1.905]], [[84, 3.73], [88, 3.62], [92, 3.53], [96, 3.49], [99, 3.46], [101, 3.33], [104, 3.2], [108, 3.19]], [[84, 5.7], [87, 5.52], [90, 5.35], [93, 5.32], [96, 5.26], [99, 5.19], [101, 4.96], [104, 4.76], [108, 4.7]], [[84, 6.59], [88, 6.5], [92, 6.37], [95, 6.25], [100, 5.86], [101, 5.82]], [[84, 7.99], [86, 7.94], [88, 7.72], [90, 7.43], [92, 7.49], [95, 7.43], [98, 7.24], [99, 7.15], [101, 6.83], [103, 6.77]], [[84, 9.1], [86, 8.98], [88, 8.83], [90, 8.64], [93, 8.52], [95, 8.51]], [[84, 10.58], [86, 10.5], [88, 10.19], [90, 9.8], [93, 9.73]]]
+tol = [0.03, 0.04, 0.035, 0.035, 0.025, 0.025, 0.02, 0.02]
+scale_cutoff = true
+fast_decays = true
+
+# the crotales ring 3–12 s: the demo folded into their 2 octaves peaked at +1.5 dBFS (mic 3)
+[export]
+motor = false
+# the level by loudness (2026-10-27, design log step 173): a phrase in its middle (an arpeggio at
+# velocity 80, chords at 95) lay -6.0 dB re the grands' median (-28.9 LUFS, EBU R128); the
+# calibration sets the median key's ff peak, and held tones sound louder than struck ones at one peak
+gain_db = 3.0
+
+[[part]]
+id = "crotales"
+
+[[part.source]]
+id = "crotales"
+role = "mallet"
+mallet = "mallet"
+root = "iowa-mis-percussion"
+dynamics = { pp = "pp", ff = "ff" }
+levels = "normalized"
+
+[part.source.map]
+kind = "pattern"
+glob = "notes/crotale/*/*.wav"
+match = "relpath"
+regex = 'notes/crotale/(?P<dynamic>pp|mf|ff)/(?P<midi>\d+)\.wav'
+note = { group = "midi", style = "midi" }
+layers = ["pp", "mf", "ff"]
+order = "layer"
+
+# the recordings' credit and terms (proto/license.py writes instruments/<project>/LICENSE.md)
+[license]
+set = "University of Iowa Musical Instrument Samples: Crotales"
+author = "University of Iowa Electronic Music Studios"
+url = "https://theremin.music.uiowa.edu/MIScrotales.html"
+terms = "\"Since 1997, these recordings have been freely available on this website and may be downloaded and used for any projects, without restrictions.\" (https://theremin.music.uiowa.edu/MIS.html)"
+source_license = "free-use"

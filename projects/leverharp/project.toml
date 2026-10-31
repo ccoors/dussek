@@ -1,0 +1,58 @@
+# Harp B: Versilian Studios' Etherealwinds Harp II CE (a 34-string Iona Celtic lever harp),
+# chromatic C2–A6, 2 layers, 2 round robins
+[project]
+family = "fingered"
+body = "leverharp"
+
+[menu]
+name = "Harp B"
+group = "Harps"
+
+[strings]
+design = "lever_harp"
+# fingered: plucked by fingers (or picks), no dampers (a hand), a body of its own (engine mic::Body)
+traits = ["fingered"]
+board_seed = 16
+detune = 1.0
+min_loss_rows = 3
+
+[uses]
+dampers = "grand_e"
+release = "grand_a"
+
+# the level by loudness (2026-10-27, design log step 173): a phrase in its middle (an arpeggio at
+# velocity 80, chords at 95) lay +2.5 dB re the grands' median (-28.9 LUFS, EBU R128); the
+# calibration sets the median key's ff peak, and held tones sound louder than struck ones at one peak
+[export]
+# the level re-matched (2026-10-27, design log step 177): the plugin starts at Player with all keys
+# spread; the phrase's midpoint of Recording and Player lay +1.5 dB re the grands' (step 173's phrase)
+output_gain_db = -4.0
+
+[[part]]
+id = "leverharp"
+
+[[part.source]]
+id = "leverharp"
+role = "main"
+root = "etherealwinds-harp"
+# v2 (velocity 0–80) and v3 (81–127), 15 dB apart (the SFZ adds 14 and 2 dB)
+dynamics = { mf = "v2", ff = "v3" }
+levels = "recorded"
+
+# the SFZ's regions (default_path Samples\, not in the regions' paths), keys an octave above the
+# file names; round robins by lorand (the first: 0.0); the layers by the file's layer number
+[part.source.map]
+kind = "sfz"
+files = ["Harp_Normal.sfz"]
+filter = [{ opcode = "lorand", default = "0", eq = 0.0 }]
+prefix = "Samples/"
+layers = "rank"
+dynamic_from = { regex = '_vl?(\d+)_', format = "v{}" }
+
+# the recordings' credit and terms (proto/license.py writes instruments/<project>/LICENSE.md)
+[license]
+set = "Etherealwinds Harp II: Community Edition"
+author = "Jordi Francis (etherealwinds), Versilian Studios"
+url = "https://versilian-studios.com/etherealwinds-harp/"
+terms = "For use \"both commercially and non-commercially\" (the library's note); CC BY 4.0 on its page."
+source_license = "CC-BY-4.0"

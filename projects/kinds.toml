@@ -1,0 +1,68 @@
+# The editor wizard's "How is it played?": the answers in the order shown, and the committed
+# instruments a new one of that kind starts from (its donor gives the body, the family's fit
+# settings, its traits and the export; never what the recordings decide). The donor is the
+# closest by the recordings (bars: their overtones; strings: their key range); `fallback` on a
+# tie. `bar_like`: an answer pre-selected when the recordings' overtones are a bar's.
+
+[[kind]]
+id = "grand"
+label = "Grand piano"
+donors = ["grand_a", "grand_f", "grand_c", "grand_b", "grand_g", "grand_d", "grand_e"]
+fallback = "grand_a"
+
+[[kind]]
+id = "upright"
+label = "Upright piano"
+donors = ["upright_a", "upright_c", "upright_b"]
+fallback = "upright_a"
+
+[[kind]]
+id = "harpsichord"
+label = "Harpsichord (keys that pluck)"
+donors = ["harpsichord", "french", "italian"]
+fallback = "harpsichord"
+
+[[kind]]
+id = "clavichord"
+label = "Clavichord"
+donors = ["clavichord"]
+fallback = "clavichord"
+
+[[kind]]
+id = "harp"
+label = "Harp"
+donors = ["harp", "leverharp"]
+fallback = "harp"
+
+[[kind]]
+id = "zither"
+label = "Zither, psaltery, dulcimer (strings over a board)"
+donors = ["psaltery", "dantranh"]
+fallback = "psaltery"
+
+[[kind]]
+id = "neck"
+label = "Guitar, lute (strings over a neck)"
+donors = ["strumstick", "guitar"]
+fallback = "strumstick"
+
+[[kind]]
+id = "mallet"
+label = "Bars or plates struck with a mallet (marimba, xylophone, glockenspiel, vibraphone, crotales)"
+donors = ["marimba", "xylophone", "vibraphone", "bells", "crotales", "balafon"]
+fallback = "bells"
+bar_like = true
+
+[[kind]]
+id = "tubes"
+label = "Bells, chimes, tubes"
+donors = ["chimes", "handchimes"]
+fallback = "chimes"
+bar_like = true
+
+[[kind]]
+id = "tines"
+label = "Kalimba, mbira (plucked tines)"
+donors = ["kalimba", "mbira", "mavembe", "nyunga"]
+fallback = "kalimba"
+bar_like = true

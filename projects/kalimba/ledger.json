@@ -1,0 +1,37 @@
+{
+ "part:kalimba:bars": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "c5a80194dd612417",
+   "project.bars": "c6aaf64bf652d7d4",
+   "project.sources": "0846592653c5194e"
+  },
+  "seq": 34,
+  "version": 2
+ },
+ "project:kalimba:export_bars": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "fit.hammer_speeds": "8a836de31dfbc25b",
+   "fit.keys": "803975dcec2e11e2",
+   "fit.mallet": "7a1c4e1ce054dd2a",
+   "fit.mallets": "04ca502213bd9a67",
+   "fit.recorded": "b4f9b8cf21fa6a55",
+   "project.export": "c8b81bb5a50e4619",
+   "project.level_corrections": "1d8fc6ceb1f94c63",
+   "project.menu": "fa1ff9954c02335d",
+   "project.project": "ef7738e5ccf98c02",
+   "project.sources": "0846592653c5194e"
+  },
+  "seq": 35,
+  "version": 4
+ },
+ "source:kalimba:modes": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "project.sources": "0846592653c5194e"
+  },
+  "seq": 33,
+  "version": 1
+ }
+}

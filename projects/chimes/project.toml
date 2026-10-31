@@ -1,0 +1,85 @@
+# VCSL's tubular bells: three sets of the same 18 tubes (their modes agree within 1 Hz). "Tubular
+# Bells 2" is the clean one (floor −88 dB, decays of 10–44 s): the white keys C4–F5, layers v2 and
+# v4, named at the strike note; "Tubular Bells 3 - Legacy" all 18 tubes chromatic, lossy (ogg), cut
+# at 5–11 s, named three octaves low: a check of the black keys, not fitted; "Tubular Bells 1" is
+# noisy (floor −60 dB), whole tones only. The strike note: half the fourth mode (ref_ratio)
+[project]
+family = "bars"
+body = "chimes"
+
+[menu]
+name = "Tubular bells"
+group = "Percussion"
+
+# the tubular bells (VCSL's chimes, C4–F5; one mallet, two dynamics as mf and ff): a free tube's
+# bending modes, the fourth the reference (analysis/modes.py `ref_ratio`: the strike note is
+# half of it), the others re it: 0.31 and 0.61 below (they ring longest), then 1.48 → 1.45,
+# 2.04 → 1.97, 2.67 → 2.53, 3.37 → 3.13, 4.13 → 3.76, 4.94 → 4.53 from C4 to F5 (a solid bar's
+# (2n+1)² gives 1.49, 2.09, 2.78, 3.57, 4.46, 5.44: the tube's shear and the cap pull them
+# flat). The other peaks (1.39, 1.52, 1.66, 1.76, 2.25: 20–40 dB under) are left out. No damped
+# takes: the damper bar's loss is assumed (`damper_db_s`)
+[bars]
+tracks = [1.0, [[60, 0.312], [77, 0.319]], [[60, 0.61], [77, 0.618]], [[60, 1.479], [77, 1.453]], [[60, 2.038], [77, 1.966]], [[60, 2.672], [77, 2.525]], [[60, 3.371], [77, 3.132]], [[60, 4.132], [64, 4.068], [67, 3.997], [69, 3.952], [72, 3.868], [74, 3.815], [77, 3.757]], [[60, 4.943], [64, 4.852], [66, 4.797], [73, 4.531]]]
+tol = [0.01, 0.03, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.025]
+scale_cutoff = true
+fast_decays = true
+pp_mirror = true
+damper_db_s = 40.0
+lower_free = true
+ref_ratio = 2.0
+splits = true
+
+# the tubular bells: a damper bar on the pedal (a held key lifts it, as the vibraphone's)
+[export]
+# the level by loudness (2026-10-27, design log step 173): a phrase in its middle (an arpeggio at
+# velocity 80, chords at 95) lay -1.5 dB re the grands' median (-28.9 LUFS, EBU R128); the
+# calibration sets the median key's ff peak, and held tones sound louder than struck ones at one peak
+gain_db = 1.5
+damper = "pedal"
+motor = false
+
+[[part]]
+id = "chimes"
+
+[[part.source]]
+id = "chimes"
+role = "mallet"
+mallet = "mallet"
+root = "vcsl"
+dynamics = { mf = "mf", ff = "ff" }
+levels = "normalized"
+extra = { ref_ratio = 2.0 }
+
+[part.source.map]
+kind = "pattern"
+glob = "Idiophones/Struck Idiophones/Tubular Bells 2/TB_hit_*.wav"
+regex = 'TB_hit_(?P<note>[A-G]#?\d)_(?P<dynamic>v\d)_(?P<take>\d+)\.wav'
+note = { group = "note" }
+layers = ["v2", "v4"]
+dynamic_names = { v2 = "mf", v4 = "ff" }
+prefer = ["take"]
+order = "note"
+
+[[part.source]]
+id = "chimes_check"
+role = "check"
+root = "vcsl"
+dynamics = { mf = "1/1" }
+levels = "normalized"
+extra = { ref_ratio = 2.0 }
+
+[part.source.map]
+kind = "pattern"
+glob = "Idiophones/Struck Idiophones/Tubular Bells 3 - Legacy/chimes_*.ogg"
+regex = 'chimes_(?P<note>[A-G]#?\d)\.ogg'
+note = { group = "note", shift = 36 }
+dynamic = "1/1"
+order = "path"
+
+# the recordings' credit and terms (proto/license.py writes instruments/<project>/LICENSE.md)
+[license]
+set = "VCSL: Tubular Bells"
+author = "Versilian Studios"
+url = "https://github.com/sgossner/VCSL"
+terms = "The Versilian Community Sample Library."
+source_license = "CC0"

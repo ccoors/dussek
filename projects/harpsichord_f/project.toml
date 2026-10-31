@@ -1,0 +1,92 @@
+# Harpsichord F: Edinburgh's single-manual English harpsichord by Thomas Barton, 1709 (St Cecilia's
+# Hall, CC BY 4.0), G1 (a short octave) to D6 at A = 415 Hz, two 8′ choirs recorded each alone
+# and together; its right-hand choir, held notes (cut at 6 s). Noise reduction applied by the set's
+# authors ("not an accurate record of the decay", its readme)
+[project]
+family = "plucked"
+body = "harpsichord"
+# no release samples: Harpsichord A's release noise
+skip = ["release_noise"]
+
+[menu]
+name = "Harpsichord F"
+group = "Harpsichords"
+# the strip draws dark naturals and light sharps, as many harpsichords have them
+reversed_keys = true
+
+[strings]
+design = "harpsichord_8"
+board_seed = 23
+detune = 1.0
+# one recorded layer: the knock's q is not identifiable; the harpsichord's knock gains ~10 dB
+# per dynamic step (Penttinen 2006), a step being a doubling of the pluck "speed"
+fixed_q = [1.660964047443681]
+# the noise-reduced decay between the partials is no room: an assumed room, (band Hz, T60 s): St
+# Cecilia's Hall's museum gallery, as the clavichord's
+room_t60 = [[250.0, 1.2], [1000.0, 1.0], [4000.0, 0.7], [16000.0, 0.4]]
+
+[uses]
+dampers = "grand_e"
+buff = "harpsichord_buff"
+release = "harpsichord"
+
+# the level by loudness (design log step 173's measure): a phrase in its middle (an arpeggio at
+# velocity 80, chords at 95) lay +7.4 dB re the grands' median (-28.9 LUFS, EBU R128); the
+# calibration sets the median key's ff peak, and held tones sound louder than struck ones at one peak
+[export]
+output_gain_db = -7.5
+main = "harpsichord_f_right"
+# the second 8′ choir, measured (harpsichord_f_left): on the 8′ II's stop, no 4′
+registers = [{ part = "harpsichord_f_left", octave = 0, name = "8′ II", stop = 2 }]
+
+[[part]]
+id = "harpsichord_f_right"
+
+[[part.source]]
+id = "harpsichord_f_right"
+role = "main"
+root = "edinburgh-barton"
+# one take per key, played normally: the reference (mf)
+dynamics = { mf = "1/1" }
+levels = "recorded"
+# at its own A (`a4`, analyze.analyze)
+extra = { a4 = 415.0 }
+
+[part.source.map]
+kind = "pattern"
+glob = "raw/Harpsichord_Single_Manual_Thomas-Barton-1709/RightString_Long_articulation/*.wav"
+regex = '(?P<note>[A-G]#?\d)_ThomasBartonHarpsichord_1709_long_articulation_.*\.wav'
+note = { group = "note" }
+dynamic = "1/1"
+order = "path"
+
+# the left-hand choir (its files named "right_hand_string" like the other folder's, but other
+# takes): the second register, on the 8′ II's stop
+[[part]]
+id = "harpsichord_f_left"
+
+[[part.source]]
+id = "harpsichord_f_left"
+role = "main"
+root = "edinburgh-barton"
+# one take per key, played normally: the reference (mf)
+dynamics = { mf = "1/1" }
+levels = "recorded"
+# at its own A (`a4`, analyze.analyze)
+extra = { a4 = 415.0 }
+
+[part.source.map]
+kind = "pattern"
+glob = "raw/Harpsichord_Single_Manual_Thomas-Barton-1709/Left_string_long_articulation/*.wav"
+regex = '(?P<note>[A-G]#?\d)_ThomasBartonHarpsichord_1709_long_articulation_.*\.wav'
+note = { group = "note" }
+dynamic = "1/1"
+order = "path"
+
+# the recordings' credit and terms (proto/license.py writes instruments/<project>/LICENSE.md)
+[license]
+set = "Single-Manual Harpsichord, Thomas Barton, 1709"
+author = "University of Edinburgh"
+url = "https://doi.org/10.7488/ds/8088"
+terms = "Edinburgh DataShare."
+source_license = "CC-BY-4.0"

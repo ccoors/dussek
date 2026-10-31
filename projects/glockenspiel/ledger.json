@@ -1,0 +1,37 @@
+{
+ "part:glockenspiel:bars": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "63e877e438fbf2b1",
+   "project.bars": "953946fce9f9a53d",
+   "project.sources": "75ba57c8bbf7cdda"
+  },
+  "seq": 28,
+  "version": 2
+ },
+ "project:glockenspiel:export_bars": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "fit.hammer_speeds": "865597ba492192c3",
+   "fit.keys": "e4d859ec8c96bad8",
+   "fit.mallet": "fde2c10758203146",
+   "fit.mallets": "f3b187ee081eefad",
+   "fit.recorded": "ce72de020d4d5e6a",
+   "project.export": "cc6595e2b982f534",
+   "project.level_corrections": "1d8fc6ceb1f94c63",
+   "project.menu": "7557db73b0418d3f",
+   "project.project": "159ade1c86c00259",
+   "project.sources": "75ba57c8bbf7cdda"
+  },
+  "seq": 29,
+  "version": 4
+ },
+ "source:glockenspiel:modes": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "project.sources": "75ba57c8bbf7cdda"
+  },
+  "seq": 27,
+  "version": 1
+ }
+}

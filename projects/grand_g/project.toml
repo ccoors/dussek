@@ -1,0 +1,117 @@
+# Grand G: Versilian Studios' and Karoryfer's Osiris Piano (a worn grand at half stick,
+# soft pedal down, soft dynamics; CC0), white keys, 2 layers, microphone A (inside the piano)
+[project]
+family = "struck"
+skip = ["release_noise", "dampers", "pedal_noise"]
+body = "grand"
+
+[menu]
+name = "Grand G"
+group = "Grand pianos"
+
+[strings]
+design = "grand"
+board_seed = 12
+detune = 1.0
+id_max_partial = 60
+
+[uses]
+dampers = "grand_e"
+release = "grand_a"
+pedal = "grand_a"
+# its two soft layers (1.5 and 2.5 m/s) say too little about the felt: they let it jump between
+# 0.5 and 128 N from note to note; the Headroom C3 is its maker's next model
+felt = "grand_c"
+
+[export]
+# Osiris's mf is only 4.4 dB below its ff (the other grands' 11–18, median 14.8): at the common ff
+# level every mf came out as loud as their ff, and −10 dB put its mf with theirs. Since the velocity
+# curve (step 124) every piano plays its velocities through its own level table, and the −10 dB left
+# it 10 dB under the other grands at every velocity.
+# the level by loudness (2026-10-27, design log step 173): a phrase in its middle (an arpeggio at
+# velocity 80, chords at 95) lay -8.2 dB re the grands' median (-28.9 LUFS, EBU R128); the
+# calibration sets the median key's ff peak, and held tones sound louder than struck ones at one peak
+output_gain_db = -2.0
+
+[[part]]
+id = "grand_g"
+
+[[part.source]]
+id = "grand_g"
+role = "main"
+root = "osiris-piano"
+# two soft layers (velocity to 63, from 64), as the uprights' two: mf and ff
+dynamics = { mf = "vl1", ff = "vl2" }
+levels = "recorded"
+
+# the mappings of the unfiltered pedal-up samples (`UC-noisy`; `UC` is noise-reduced); the
+# file names count octaves one lower than the keys; F5 is mapped twice (around the last damper)
+[part.source.map]
+kind = "sfz"
+files = ["Programs/modules/mappings-noisy/uc_mica_vl1_map.sfz", "Programs/modules/mappings-noisy/uc_mica_vl2_map.sfz"]
+layers = "file"
+prefix = "Programs/"
+normpath = true
+unique = "sample"
+dynamic_format = "vl{layer}"
+sfz_fields = false
+
+# the report (proto/report.py): its two layers are both soft (1.5 and 2.5 m/s, soft pedal down),
+# not an mf and an ff, so their change says nothing about the grands' envelope
+[report]
+envelope = false
+
+# the export voices the piano to one level curve, as a voicer leaves it (design log step 138): each
+# key's ff level corrected to a smooth trend through the keys' levels; the board's character stays
+# in each key's tone. Heard as "a lot cleaner … mint condition" (2026-10-21); the Condition's
+# Normal zone adds the unevenness back at runtime (the voicing's level scatter, step 139)
+[even_levels]
+window_keys = 9
+
+# the felt from the recording at the speeds the fit reads its layers at (3 and 5 m/s: velocities 103
+# and 124), then by ear (2026-10-23; the fits never see it): the borrowed felt (p 2.3) left the soft
+# layer 5/10 dB dark at 2–4/4–6 kHz and the louder one 4/5 dB bright, and soft playing nearly
+# without highs (2–4 kHz re 200–500 Hz 34–50 dB under Grand C's at velocities 14–40). The recording's
+# louder layer is the darker one in the bass, which no felt follows; p 1.3 +6 dB came nearest
+# (within 2 dB at 1–4 kHz), +3 dB chosen as the default: "a more useful default, an acceptable
+# compromise" for a recording that sounds unnatural itself
+[felt]
+p = 1.3
+stiffness_db = 3.0
+
+# the board's lowest octave by ear (2026-10-23; the fits never see it): its board fit's data start at
+# 64 Hz, below which the board's response is held flat; the bass's fundamentals sat over partials 2–4
+# against the recording: 29–49 Hz 17–36 dB, the octave A0–G♯1 19 dB, A1–G♯2 5 dB. Rows by least
+# squares over the keys bring the two octaves to +3 and 0 dB; heard as "a very clear difference …
+# more realistic"
+[board]
+trim_db = [[31.5, -12.0], [45.0, -12.0]]
+# its fitted response lies 100–300 Hz 38 dB over 1–1.6 kHz (the other grands' −25 … +13), the treble's
+# partials lifted back by the correction key by key; a treble note's onset and the hammer's impact,
+# which the correction never meets, came out through the hump: from G♯5 (key 80) up the attack's
+# low band over the note (key 86: 100–300 Hz −1.8 dB re the total in the first 50 ms, the note band
+# −10.8; the recording −6.3 and −2.7), then a second of rumble through the room (design log step
+# 181). 15 dB of it moved from the radiation into the correction at 40–320 Hz: the partials keep
+# their gains (within 1.5 dB), key 86's attack −7.9 and −1.9 dB, the loudness within 1 dB
+transient_db = [[40.0, -15.0], [80.0, -15.0], [160.0, -15.0], [320.0, -15.0]]
+# the board's low modes ring longer (2026-10-27, by ear on Grands A and B; the fits never see it):
+# at loss factor 4 % where that rings longer than the fitted overlap, below 450 Hz; the board's own
+# response 0.45–0.6 s below 200 Hz (was ~0.15 s), a grand's board glued into its rim ~0.5 s (Plath)
+# (design log step 184)
+low_eta = 0.04
+
+# the unison toward the top key (2026-10-27, unison_check.py; the fits never see it): the fitted
+# detune is measured from beats below the top octaves and held above them; the recording's beats
+# (partials 1–3) grow to 6.2 cents at keys 102–107, the engine's stayed at 1.3; their ratio from
+# key 78 up, a line in log: ×3.61 at 108; measured again on that export (three strings beat at
+# their neighbors' gaps, half the spread): ×2.43 (design log step 183)
+[unison]
+treble = [[78, 1.0], [108, 8.77]]
+
+# the recordings' credit and terms (proto/license.py writes instruments/<project>/LICENSE.md)
+[license]
+set = "Osiris Piano"
+author = "Versilian Studios, Karoryfer"
+url = "https://github.com/sfzinstruments/Osiris_Piano"
+terms = "Its SFZ edition by the SFZ Instruments project."
+source_license = "CC0"

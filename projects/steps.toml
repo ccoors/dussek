@@ -1,0 +1,258 @@
+# The pipeline's steps and each family's chain (proto/build.py). A step runs per source, part or
+# project (scope); run is its command, filled with {project}, {part}, {source}; version is bumped
+# by hand when a change alters its results. reads (seeds: the previous run's values, left out of
+# the fingerprint), owns and amends name what it may read and write: project.<section>, fit.<key>,
+# cache.<name>, and another project's data as uses.<role>:<one of those> or uses.<role>:*.
+# project.level_corrections: the sources' level corrections, left out of project.sources and
+# project.* (only the exports read them).
+# analysis/project.py checks every access while the driver runs a step.
+
+[step.analyze]
+scope = "source"
+run = ["python3", "analysis/analyze.py", "{source}"]
+version = 1
+reads = ["project.sources"]
+owns = ["cache.analysis"]
+
+[step.modes]
+scope = "source"
+run = ["python3", "analysis/modes.py", "{source}"]
+version = 1
+reads = ["project.sources"]
+owns = ["cache.analysis"]
+
+[step.release_noise]
+scope = "part"
+run = ["python3", "analysis/release_noise.py", "{part}"]
+# 3: a set's own release samples without their note's partials (design log step 182)
+version = 3
+reads = ["cache.analysis", "project.noises", "project.release_noise", "project.sources"]
+owns = ["cache.release"]
+
+[step.dampers]
+scope = "part"
+run = ["python3", "analysis/damper_decay.py", "{part}"]
+version = 2
+reads = ["project.sources"]
+owns = ["cache.damper"]
+
+[step.pedal_noise]
+scope = "part"
+run = ["python3", "analysis/pedal_noise.py", "{part}"]
+version = 1
+reads = ["cache.analysis", "project.noises", "project.sources"]
+owns = ["cache.pedal_noise"]
+
+[step.body_decay]
+scope = "part"
+run = ["python3", "analysis/body_decay.py", "{part}"]
+version = 1
+reads = ["cache.analysis", "project.sources"]
+owns = ["cache.body"]
+
+[step.attack_noise]
+scope = "part"
+run = ["python3", "analysis/attack_noise.py", "{part}"]
+# 2: also the attack's peak at 200–700 Hz re the note's (low_peak_db), the knock's level target
+version = 2
+reads = ["cache.analysis", "project.sources"]
+owns = ["cache.attack"]
+
+[step.felt]
+scope = "part"
+run = ["python3", "proto/fit_profile_felt.py", "--profile", "{part}"]
+version = 1
+reads = ["cache.analysis", "fit.body_modes", "fit.polarizations", "project.sources",
+    "project.strings", "project.uses", "uses.felt:cache.analysis", "uses.felt:fit.body_modes",
+    "uses.felt:fit.felt_bass_factor", "uses.felt:fit.felt_curve", "uses.felt:fit.felt_excluded_at_grid_edge",
+    "uses.felt:fit.felt_f05_at_c4", "uses.felt:fit.felt_log2_slope_per_semitone", "uses.felt:fit.felt_p",
+    "uses.felt:project.strings", "uses.levels:cache.analysis", "uses.levels:fit.hammer_speeds",
+    "uses.levels:project.sources"]
+seeds = ["fit.coupling", "fit.radiation", "fit.string_scatter_cents"]
+owns = ["fit.felt_bass_factor", "fit.felt_curve", "fit.felt_excluded_at_grid_edge",
+    "fit.felt_f05_at_c4", "fit.felt_log2_slope_per_semitone", "fit.felt_p", "fit.hammer_speeds",
+    "fit.hammer_speeds_extrapolated", "fit.mean_error_db", "fit.profile", "fit.support"]
+
+[step.pluck]
+scope = "part"
+run = ["python3", "proto/fit_pluck.py", "--profile", "{part}"]
+version = 1
+reads = ["cache.analysis", "fit.felt_p", "fit.string_scatter_cents", "project.sources",
+    "project.strings"]
+seeds = ["fit.body_modes", "fit.coupling", "fit.polarizations"]
+owns = ["fit.hammer_speeds", "fit.pluck", "fit.profile"]
+
+[step.polarizations]
+scope = "part"
+run = ["python3", "proto/fit_polarizations.py", "--profile", "{part}"]
+version = 1
+reads = ["cache.analysis", "cache.damper", "project.sources", "project.strings", "project.uses",
+    "uses.dampers:cache.damper"]
+seeds = ["fit.body_modes"]
+owns = ["fit.polarizations"]
+
+[step.body_modes]
+scope = "part"
+run = ["python3", "proto/fit_body_modes.py", "--profile", "{part}"]
+version = 1
+reads = ["cache.analysis", "cache.damper", "fit.felt_p", "fit.hammer_speeds", "fit.pluck",
+    "fit.polarizations", "fit.string_scatter_cents", "project.sources", "project.strings",
+    "project.uses", "uses.dampers:cache.damper"]
+seeds = ["fit.coupling"]
+owns = ["fit.body_modes"]
+
+[step.soundboard]
+scope = "part"
+run = ["python3", "proto/soundboard.py", "--profile", "{part}"]
+version = 1
+reads = ["cache.analysis", "cache.damper", "fit.body_modes", "fit.felt_bass_factor", "fit.felt_curve",
+    "fit.felt_f05_at_c4", "fit.felt_log2_slope_per_semitone", "fit.felt_p",
+    "fit.hammer_speeds", "fit.pluck", "fit.polarizations", "project.sources", "project.strings",
+    "project.uses", "uses.dampers:cache.damper"]
+seeds = ["fit.coupling", "fit.string_scatter_cents"]
+owns = ["fit.radiation", "fit.soundboard"]
+
+[step.coupling]
+scope = "part"
+run = ["python3", "proto/fit_coupling.py", "--profile", "{part}", "--global"]
+# 2: the hammer pianos' horizontal level per two octaves, fitted to the aftersound's level
+version = 2
+reads = ["cache.analysis", "cache.damper", "fit.body_modes", "fit.felt_bass_factor", "fit.felt_curve",
+    "fit.felt_f05_at_c4", "fit.felt_log2_slope_per_semitone", "fit.felt_p",
+    "fit.hammer_speeds", "fit.pluck", "fit.polarizations", "fit.radiation", "project.sources",
+    "project.strings", "project.uses", "uses.dampers:cache.damper"]
+seeds = ["fit.string_scatter_cents"]
+owns = ["cache.coupling_global", "fit.coupling"]
+
+[step.room]
+# the room's cuts where the strings' onset drives it past the sound between the recorded partials
+# (design log step 123)
+scope = "part"
+run = ["python3", "proto/fit_room.py", "--profile", "{part}"]
+version = 1
+reads = ["cache.analysis", "cache.body", "cache.damper", "fit.body_modes", "fit.coupling",
+    "fit.felt_bass_factor", "fit.felt_curve",
+    "fit.felt_f05_at_c4", "fit.felt_log2_slope_per_semitone", "fit.felt_p", "fit.hammer_speeds", "fit.pluck",
+    "fit.polarizations", "fit.radiation", "fit.soundboard", "project.sources", "project.strings", "project.uses",
+    "uses.dampers:cache.damper"]
+seeds = ["fit.string_scatter_cents"]
+owns = ["cache.room", "fit.room"]
+
+[step.register]
+scope = "part"
+run = ["python3", "proto/register.py", "--profile", "{part}", "--fit"]
+version = 1
+reads = ["cache.analysis", "cache.body", "cache.damper", "fit.body_modes", "fit.coupling",
+    "fit.felt_bass_factor", "fit.felt_curve",
+    "fit.felt_f05_at_c4", "fit.felt_log2_slope_per_semitone", "fit.felt_p", "fit.hammer_speeds", "fit.pluck", "fit.polarizations",
+    "fit.radiation", "fit.room", "project.sources", "project.strings", "project.uses",
+    "uses.dampers:cache.damper", "uses.levels:cache.analysis", "uses.levels:project.sources"]
+seeds = ["fit.impact", "fit.knock", "fit.string_scatter_cents"]
+amends = ["fit.soundboard"]
+
+[step.knock]
+scope = "part"
+run = ["python3", "proto/fit_knock.py", "--profile", "{part}"]
+# 2: the hammer pianos: an overshoot over the recording counts 3×, cutoffs from 500 Hz, q from 1
+# (the knock had been fitted to fill bands it then overshot by up to 10 dB at 1.6 kHz: a click);
+# the level and growth fitted to the treble's attack peak at 200–700 Hz (attack_noise v2), an
+# overshoot there 3× too
+# 3: the hammer pianos: the hammer's impact on the board (fit.impact: the felt force, lowpassed,
+# through the board) instead of a knock; the plucked and tangent instruments' knock as in 1
+version = 3
+reads = ["cache.analysis", "cache.attack", "cache.body", "cache.damper", "fit.body_modes",
+    "fit.coupling", "fit.felt_bass_factor", "fit.felt_curve",
+    "fit.felt_f05_at_c4", "fit.felt_log2_slope_per_semitone", "fit.felt_p", "fit.hammer_speeds", "fit.pluck",
+    "fit.polarizations", "fit.radiation", "fit.room", "fit.soundboard", "project.strings", "project.uses",
+    "uses.dampers:cache.damper"]
+seeds = ["fit.string_scatter_cents"]
+owns = ["fit.impact", "fit.knock"]
+
+[step.fine_structure]
+scope = "part"
+run = ["python3", "proto/fine_structure.py", "--profile", "{part}", "--fit-scatter"]
+version = 1
+reads = ["cache.analysis", "cache.body", "cache.damper", "fit.body_modes", "fit.coupling",
+    "fit.felt_bass_factor", "fit.felt_curve",
+    "fit.felt_f05_at_c4", "fit.felt_log2_slope_per_semitone", "fit.felt_p", "fit.hammer_speeds", "fit.impact", "fit.knock", "fit.polarizations",
+    "fit.radiation", "fit.room", "fit.soundboard", "project.sources", "project.strings", "project.uses",
+    "uses.dampers:cache.damper"]
+owns = ["fit.string_scatter_cents"]
+
+[step.pedal]
+scope = "part"
+run = ["python3", "proto/pedal.py", "--profile", "{part}"]
+version = 1
+reads = ["cache.analysis", "cache.body", "cache.pedal_noise", "fit.*", "fit.body_modes",
+    "fit.coupling", "fit.felt_bass_factor", "fit.felt_curve",
+    "fit.felt_f05_at_c4", "fit.felt_log2_slope_per_semitone", "fit.felt_p", "fit.hammer_speeds", "fit.impact", "fit.knock",
+    "fit.polarizations", "fit.radiation", "fit.room", "fit.soundboard", "fit.string_scatter_cents",
+    "project.strings", "project.uses", "uses.pedal:cache.pedal_noise", "uses.pedal:fit.pedal"]
+owns = ["fit.pedal"]
+memos = ["cache.release_peaks"]
+
+[step.bars]
+scope = "part"
+run = ["python3", "proto/bars.py", "--profile", "{part}"]
+# 2: a take's strike far over its neighbors' is capped (`cap_strike`)
+version = 2
+reads = ["cache.analysis", "project.bars", "project.sources"]
+owns = ["fit.damped", "fit.hammer_speeds", "fit.keys", "fit.mallet", "fit.mallets", "fit.profile",
+    "fit.recorded", "fit.tracks"]
+
+[step.fit_buff]
+scope = "part"
+run = ["python3", "proto/fit_buff.py", "--profile", "{part}"]
+version = 1
+reads = ["project.sources"]
+owns = ["fit.flat", "fit.gain", "fit.keys", "fit.notes", "fit.pos"]
+
+[step.export]
+scope = "project"
+run = ["python3", "proto/export.py", "--project", "{project}"]
+# 2: also writes level.json (the engine's ff level, which a morph reads)
+version = 2
+reads = ["cache.*", "cache.analysis", "cache.body", "cache.damper", "cache.pedal_noise",
+    "cache.release", "fit.*", "fit.body_modes", "fit.coupling", "fit.felt_bass_factor", "fit.felt_curve",
+    "fit.felt_f05_at_c4", "fit.felt_log2_slope_per_semitone", "fit.felt_p",
+    "fit.flat", "fit.gain", "fit.hammer_speeds", "fit.impact", "fit.knock", "fit.notes", "fit.pedal",
+    "fit.pluck", "fit.polarizations", "fit.pos", "fit.radiation", "fit.room", "fit.soundboard",
+    "fit.string_scatter_cents", "project.*", "project.export", "project.impact", "project.level_corrections", "project.project",
+    "project.sources", "project.strings", "project.uses", "uses.buff:fit.flat", "uses.buff:fit.gain",
+    "uses.buff:fit.notes", "uses.buff:fit.pos", "uses.dampers:cache.damper", "uses.main:*",
+    "uses.main:project.level_corrections", "uses.pedal:cache.pedal_noise", "uses.release:cache.release"]
+memos = ["cache.release_peaks"]
+
+[step.export_bars]
+scope = "project"
+run = ["python3", "proto/export_bars.py", "--project", "{project}"]
+# 2: the modes' compensation averages the body's response over ±50 cents (a notch under a mode)
+# 3: reads the sources' level corrections
+# 4: also writes level.json (the engine's ff level, which a morph reads)
+version = 4
+reads = ["fit.hammer_speeds", "fit.keys", "fit.mallet", "fit.mallets", "fit.recorded",
+    "project.export", "project.level_corrections", "project.menu", "project.project", "project.sources"]
+
+[step.roll]
+# a rolled piano: its export made from the references' exports by the engine's generator
+# (design log steps 117–118)
+scope = "project"
+run = ["cargo", "run", "--release", "--quiet", "--manifest-path", "engine/Cargo.toml", "--bin", "roll", "--", "projects/{project}"]
+version = 1
+reads = ["project.roll", "project.menu", "project.project", "project.uses", "uses.*:*", "uses.*:export"]
+
+[chain]
+struck = ["analyze", "release_noise", "dampers", "pedal_noise", "felt", "body_decay", "attack_noise",
+          "soundboard", "coupling", "room", "register", "knock", "fine_structure", "pedal", "export"]
+plucked = ["analyze", "pluck", "body_decay", "attack_noise", "soundboard", "coupling", "register",
+           "knock", "release_noise", "export"]
+tangent = ["analyze", "pluck", "body_decay", "attack_noise", "soundboard", "coupling", "register",
+           "knock", "export"]
+fingered = ["analyze", "pluck", "polarizations", "body_decay", "attack_noise", "soundboard", "coupling",
+            "register", "knock", "export"]
+guitar = ["analyze", "pluck", "polarizations", "body_modes", "polarizations#2", "body_modes#2",
+          "body_decay", "attack_noise", "soundboard", "coupling", "register", "knock", "export"]
+bars = ["modes", "bars", "export_bars"]
+buff = ["fit_buff"]
+derived = ["export"]
+rolled = ["roll"]

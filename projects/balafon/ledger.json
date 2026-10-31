@@ -1,0 +1,53 @@
+{
+ "part:balafon:bars": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "cache.analysis": "16dfc60748c7bfbf",
+   "project.bars": "ea9ae06d4fcc3710",
+   "project.sources": "4c4b2affcf4a7539"
+  },
+  "seq": 51,
+  "version": 2
+ },
+ "project:balafon:export_bars": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "fit.hammer_speeds": "a4fec8c1fbf09fb7",
+   "fit.keys": "0dc8bee78f49e070",
+   "fit.mallet": "d08e10f31c0fb2db",
+   "fit.mallets": "bce907a38b24a94f",
+   "fit.recorded": "b5109bc99cb5911b",
+   "project.export": "69b5b2a499805d73",
+   "project.level_corrections": "fe44a8cccd89edae",
+   "project.menu": "1730fe963a8be2a6",
+   "project.project": "d8712474e18d8347",
+   "project.sources": "4c4b2affcf4a7539"
+  },
+  "seq": 52,
+  "version": 4
+ },
+ "source:balafon_hard:modes": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "project.sources": "321f47348bd8987f"
+  },
+  "seq": 49,
+  "version": 1
+ },
+ "source:balafon_soft:modes": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "project.sources": "8941572672eb7753"
+  },
+  "seq": 50,
+  "version": 1
+ },
+ "source:balafon_trad:modes": {
+  "commit": "f91db11+dirty adopted",
+  "inputs": {
+   "project.sources": "78781a434ebbeccc"
+  },
+  "seq": 48,
+  "version": 1
+ }
+}
