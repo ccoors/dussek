@@ -22,6 +22,7 @@
 #include "MidiMap.hpp"
 #include "Morph.hpp"
 #include "Panel.hpp"
+#include "Paths.hpp"
 #include "Params.hpp"
 #include "PedalMixer.hpp"
 #include "Presets.hpp"
@@ -34,6 +35,7 @@
 #include <chrono>
 #include <functional>
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
 
 START_NAMESPACE_DISTRHO
@@ -1113,7 +1115,10 @@ private:
                 morph.push_back({ e->dir, w[i + 1] });
         const PeFelt& fe = fFelt.felt();
         const bool bent = !fFeltOriginal && std::any_of(std::begin(fe.curve), std::end(fe.curve), [](const PeFeltCurve& c) { return c.n > 0; });
-        const std::string line = midi2wavLine(v.data(), dir, getSampleRate(), &fEdit.curve(), morph, bent ? fFelt.text() : std::string(), fScaleFile);
+        const std::string program = standaloneExecutable(getBinaryFilename(), std::strcmp(getPluginFormatName(), "JACK/Standalone") == 0,
+            std::getenv("PATH"));
+        const std::string line = midi2wavLine(v.data(), dir, getSampleRate(), &fEdit.curve(), morph, bent ? fFelt.text() : std::string(),
+            fScaleFile, program);
         if (!setClipboard("text/plain", line.c_str(), line.size())) {
             d_stderr2("PianoEngine: the clipboard took nothing; the command line: %s", line.c_str());
             return;

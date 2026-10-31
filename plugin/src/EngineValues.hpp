@@ -55,9 +55,10 @@ std::string instrumentDir(const char* resources, const char* id);
 /// (`curve`: the velocity curve, a state; null: straight)
 /// `morph`: each partner's directory and weight (one --morph per weight above 0); `felt`: the Felt tab's
 /// "felt" state (--felt where not empty); `scale`: the "scale_file" state (--scl with the temperament key
-/// where the temperament is its "Scala file")
+/// where the temperament is its "Scala file"); `program`: the standalone's path (standaloneExecutable;
+/// empty: `pianoengine`, found on PATH)
 std::string midi2wavLine(const float* values, const std::string& dir, double rate, const PeVelocityCurve* curve = nullptr,
     const std::vector<std::pair<std::string, float>>& morph = {}, const std::string& felt = std::string(),
-    const std::string& scale = std::string());
+    const std::string& scale = std::string(), const std::string& program = std::string());
 
 } // namespace pe

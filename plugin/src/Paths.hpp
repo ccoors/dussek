@@ -23,4 +23,11 @@ DataDirs dataDirs(const std::function<const char*(const char*)>& env, Platform p
 /// the process's: its environment, this platform
 DataDirs dataDirs();
 
+/// The standalone's executable, for Copy CLI's command line: `self` the running binary
+/// (DPF's getBinaryFilename) and whether it is the standalone; in a plugin, the standalone next to its
+/// bundle (links resolved: `just install` links the bundles to plugin/build/bin), up to four folders
+/// up (VST3's Contents/<arch>, a macOS bundle's Contents/MacOS), then in the folders of `path` (the
+/// PATH variable; null: none). Empty: none found.
+std::string standaloneExecutable(const std::string& self, bool selfIsStandalone, const char* path);
+
 } // namespace pe

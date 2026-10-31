@@ -221,7 +221,8 @@ std::string instrumentDir(const char* resources, const char* id)
 }
 
 std::string midi2wavLine(const float* values, const std::string& dir, double rate, const PeVelocityCurve* curve,
-    const std::vector<std::pair<std::string, float>>& morph, const std::string& felt, const std::string& scale)
+    const std::vector<std::pair<std::string, float>>& morph, const std::string& felt, const std::string& scale,
+    const std::string& program)
 {
     const PeParams p = engineParams(values);
     PeTuning t = engineTuning(values);
@@ -234,7 +235,8 @@ std::string midi2wavLine(const float* values, const std::string& dir, double rat
     }
     char r[32];
     std::snprintf(r, sizeof(r), "%.17g", rate);
-    std::string line = "pianoengine render " + quoted(dir.empty() ? std::string("<instrument>") : dir)
+    std::string line = (program.empty() ? std::string("pianoengine") : quoted(program)) + " render "
+        + quoted(dir.empty() ? std::string("<instrument>") : dir)
         + " in.mid out.wav --rate " + r;
     if (n > 0)
         line += " " + std::string(spec.data(), n);

@@ -1,6 +1,7 @@
 #include "Paths.hpp"
 
 #include <cstdlib>
+#include <filesystem>
 
 namespace pe {
 
@@ -46,6 +47,50 @@ DataDirs dataDirs(const std::function<const char*(const char*)>& env, Platform p
     }
     }
     return d;
+}
+
+std::string standaloneExecutable(const std::string& self, bool selfIsStandalone, const char* path)
+{
+    namespace fs = std::filesystem;
+    if (self.empty())
+        return std::string();
+    if (selfIsStandalone)
+        return self;
+#ifdef _WIN32
+    const char* const names[] = { "pianoengine.exe" };
+    const char sep = ';';
+#else
+    const char* const names[] = { "pianoengine", "pianoengine.app/Contents/MacOS/pianoengine" };
+    const char sep = ':';
+#endif
+    std::error_code ec;
+    const fs::path me = fs::weakly_canonical(fs::path(self), ec);
+    const auto standalone = [&](const fs::path& dir) -> std::string {
+        for (const char* n : names) {
+            const fs::path c = dir / n;
+            std::error_code e;
+            // not the plugin itself (a macOS VST3's or CLAP's binary is named pianoengine too)
+            if (fs::is_regular_file(c, e) && !fs::equivalent(c, me, e))
+                return c.string();
+        }
+        return std::string();
+    };
+    fs::path dir = me.parent_path();
+    for (int up = 0; up < 5 && !dir.empty(); ++up, dir = dir.parent_path()) {
+        if (std::string s = standalone(dir); !s.empty())
+            return s;
+        if (dir == dir.root_path())
+            break;
+    }
+    for (std::string rest = path != nullptr ? path : ""; !rest.empty();) {
+        const size_t end = rest.find(sep);
+        const std::string d = rest.substr(0, end);
+        rest = end == std::string::npos ? std::string() : rest.substr(end + 1);
+        if (!d.empty())
+            if (std::string s = standalone(d); !s.empty())
+                return s;
+    }
+    return std::string();
 }
 
 DataDirs dataDirs()

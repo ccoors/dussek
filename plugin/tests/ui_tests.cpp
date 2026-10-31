@@ -5853,3 +5853,66 @@ TEST(the_standalones_audio_row_shows_only_on_its_own_audio)
         CHECK(computeLayout(kDefaultWidth, kDefaultHeight, t, c).rescanMidi.w == 0);
     CHECK(kBufferSizes[0] == 128 && kBufferSizes[kBufferSizeCount - 1] == 1024);
 }
+
+TEST(copy_cli_finds_the_standalone)
+{
+    // Copy CLI's program: the standalone's own path in the standalone; in a plugin the standalone next
+    // to its bundle (a release's folder, or plugin/build/bin behind `just install`'s links), else on
+    // PATH; empty: none found (the line then says plain `pianoengine`)
+    namespace fs = std::filesystem;
+    const fs::path root = tempDir("pe-standalone-");
+    const auto file = [](const fs::path& p) {
+        fs::create_directories(p.parent_path());
+        std::FILE* f = std::fopen(p.string().c_str(), "w");
+        if (f != nullptr)
+            std::fclose(f);
+    };
+#ifdef _WIN32
+    const char* exe = "pianoengine.exe";
+    const char sep = ';';
+#else
+    const char* exe = "pianoengine";
+    const char sep = ':';
+#endif
+    const fs::path bin = root / "build" / "bin";
+    file(bin / exe);
+    file(bin / "pianoengine.lv2" / "pianoengine_dsp.so");
+    file(bin / "pianoengine.vst3" / "Contents" / "x86_64-linux" / "pianoengine.so");
+    file(bin / "pianoengine.clap");
+    const auto same = [](const std::string& a, const fs::path& b) { std::error_code ec; return !a.empty() && fs::equivalent(a, b, ec); };
+    CHECK(pe::standaloneExecutable((bin / exe).string(), true, nullptr) == (bin / exe).string());
+    CHECK(same(pe::standaloneExecutable((bin / "pianoengine.lv2" / "pianoengine_dsp.so").string(), false, nullptr), bin / exe));
+    CHECK(same(pe::standaloneExecutable((bin / "pianoengine.vst3" / "Contents" / "x86_64-linux" / "pianoengine.so").string(), false, nullptr), bin / exe));
+    CHECK(same(pe::standaloneExecutable((bin / "pianoengine.clap").string(), false, nullptr), bin / exe));
+#ifndef _WIN32
+    // `just install`: ~/.lv2/pianoengine.lv2 a link to the build's bundle
+    fs::create_directories(root / "home" / ".lv2");
+    std::error_code ec;
+    fs::create_directory_symlink(bin / "pianoengine.lv2", root / "home" / ".lv2" / "pianoengine.lv2", ec);
+    if (!ec)
+        CHECK(same(pe::standaloneExecutable((root / "home" / ".lv2" / "pianoengine.lv2" / "pianoengine_dsp.so").string(), false, nullptr), bin / exe));
+#endif
+    // macOS: the VST3's binary is named pianoengine too; the standalone is the .app's
+    const fs::path mac = root / "mac";
+    file(mac / "pianoengine.vst3" / "Contents" / "MacOS" / "pianoengine");
+    file(mac / "pianoengine.app" / "Contents" / "MacOS" / "pianoengine");
+    CHECK(same(pe::standaloneExecutable((mac / "pianoengine.vst3" / "Contents" / "MacOS" / "pianoengine").string(), false, nullptr),
+        mac / "pianoengine.app" / "Contents" / "MacOS" / "pianoengine"));
+    // a package's layout: the plugin in lib/lv2, the program on PATH
+    const fs::path pkg = root / "pkg";
+    file(pkg / "lib" / "lv2" / "pianoengine.lv2" / "pianoengine_dsp.so");
+    file(pkg / "bin" / exe);
+    const std::string path = (root / "nowhere").string() + sep + (pkg / "bin").string();
+    const std::string plugin = (pkg / "lib" / "lv2" / "pianoengine.lv2" / "pianoengine_dsp.so").string();
+    CHECK(same(pe::standaloneExecutable(plugin, false, path.c_str()), pkg / "bin" / exe));
+    CHECK(pe::standaloneExecutable(plugin, false, nullptr).empty());
+    CHECK(pe::standaloneExecutable("", false, nullptr).empty());
+    fs::remove_all(root);
+    // the line starts with it, quoted as the instrument's path is
+    std::vector<float> v(pe::kParamCount);
+    for (uint32_t i = 0; i < pe::kParamCount; ++i)
+        v[i] = pe::paramInfo(i).def;
+    CHECK(midi2wavLine(v.data(), "/i/grand_a", 48000).rfind("pianoengine render /i/grand_a ", 0) == 0);
+    CHECK(midi2wavLine(v.data(), "/i/grand_a", 48000, nullptr, {}, std::string(), std::string(), "/opt/my apps/pianoengine")
+              .rfind("'/opt/my apps/pianoengine' render /i/grand_a ", 0) == 0);
+}

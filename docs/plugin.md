@@ -127,7 +127,10 @@ The header's buttons:
   everything once the output passes +20 dBFS.
 - **⋯** holds the zoom, Copy CLI and Reset.
   - **Copy CLI** puts a `pianoengine render` command line (the standalone's `render`, which is
-    `midi2wav`: either takes it) for the current settings on the clipboard: the
+    `midi2wav`: either takes it) for the current settings on the clipboard. It names the standalone
+    by its full path: its own in the standalone, in a plugin the standalone next to the plugin's
+    bundle (a release's folder; `plugin/build/bin` behind `just install`'s links), else the one on
+    `PATH`, else plain `pianoengine`. Then the
     instrument's directory, the sample rate, `--velocity-curve`, `--param`, `--tuning` with
     every setting that differs from the engine's default, `--latch`, and `--felt` with the Felt tab's
     points (midi2wav builds the felt and a piano's Hammer hardness as the plugin does, the loudness

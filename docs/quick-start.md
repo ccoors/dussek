@@ -60,7 +60,8 @@ keyboard.
 
 The ⋯ menu's **Copy CLI** puts a command line on the clipboard that renders a MIDI file offline
 with the current settings: replace `in.mid` and `out.wav` and run it. The standalone renders it
-(`pianoengine render`, with the standalone's path where it is not on your `PATH`). The plain form:
+(`pianoengine render`; the line names the standalone by its path where the plugin finds it beside
+itself). The plain form:
 
 ```sh
 plugin/build/bin/pianoengine render instruments/grand_a song.mid song.wav
