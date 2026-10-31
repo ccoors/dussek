@@ -4509,7 +4509,7 @@ TEST(catalog_orders_the_menu)
 TEST(catalog_of_the_committed_instruments)
 {
     const Catalog& c = committed();
-    CHECK(c.menu().size() == 38 && c.messages().empty());
+    CHECK(c.menu().size() == 40 && c.messages().empty());
     CHECK(c.find("registers_fixture") != nullptr && c.find("registers_fixture")->hidden);
     CHECK(c.first() != nullptr && c.first()->name == "Grand A");
     const InstrumentEntry* k = c.find("kalimba");

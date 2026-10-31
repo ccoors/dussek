@@ -446,7 +446,7 @@ these sets is embedded in or distributed with the engine.
 - Notes from inspection: every file **normalized** to −5 dBFS (no level per velocity or key); files
   **cut** while still sounding (20 s bass, 10–15 s mid, 4 s treble), so the tail is no noise
   floor estimate; the files start at the strike (no lead-in)
-- Measured (2026-10-31, design log step 204): **mono** in effect (the channels' difference 43–44 dB
+- Measured (2026-10-31, design log step 208): **mono** in effect (the channels' difference 43–44 dB
   under their sum; C♯1 ff −14 dB); the noise above 4 kHz in each file's last second 77–82 dB under
   its peak, alike in every layer; the fundamental's decay measurable over a median 24–28 dB in the
   bass, 53–57 dB in the middle, 64–66 dB from F4 to E6 (Grand B's mf 26/58/80, Grand C's loudest

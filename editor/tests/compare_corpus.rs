@@ -66,7 +66,7 @@ const CEILINGS: &[(&str, usize)] = &[
     // engine's partials 1–3 unmoved, −10.5 / −3.8 / −6.9 cents re equal)
     ("grand_a", 13),
     ("grand_e", 15),
-    // 2026-10-31 (design log step 204): its files normalized (levels not judged) and cut while
+    // 2026-10-31 (design log step 208): its files normalized (levels not judged) and cut while
     // still sounding (94 of 264 lengths stopped): lengths (G♯1 pp, F♯3 ff, C♯6 mf and ff), pitches
     // at the top keys (±26–30 cents); 11 before its bass by ear (+4 dB of the Bass control's shape):
     // C♯1 pp's pitch read −77 cents (its spectrum +14.4 dB rms), G♯1 mf's length ×0.49

@@ -3133,7 +3133,8 @@ in place of the downs (Salamander's cache has none: its path unchanged). `pedal_
 take 6 dB over its kind's median (down_4 +6.9 dB). Choosing the take by the press (its speed) would
 be the engine's; not here.
 
-## 204. Grand H, from a normalized baby grand
+<a id="step-208"></a>
+## 208. Grand H, from a normalized baby grand
 
 The City Piano (Big Cat Instruments, 2014, public domain), a baby grand recorded close: every key,
 four velocity ranges (1–48, 49–96, 97–110, 111–127), a release per key, 44.1 kHz / 16 bit. Downloaded
@@ -3211,7 +3212,8 @@ at +4 dB "is also helping". Grand H now carries that bass: `[board] trim_db` row
 31.5 Hz −0.77, 45 Hz +4.37, 90 Hz +1.97 dB, beside the lowest octave's own) make the Bass control's
 shape × 4 dB within 0.04 dB from 27 to 600 Hz; both act on every key's correction. On the two pieces
 the export at Bass 0 equals v2 at Bass +4 dB within 0.1 dB in every third octave (24 Hz–10 kHz).
-## 204. Grand I, from the OLPC sound library's grand piano
+<a id="step-209"></a>
+## 209. Grand I, from the OLPC sound library's grand piano
 
 The One Laptop per Child project's sound library (2008, "released under a CC BY license", CC BY
 3.0) holds a grand piano recorded by Zenph Studios from a reproducing piano played by computer. Its

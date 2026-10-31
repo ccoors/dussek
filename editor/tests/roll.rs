@@ -294,7 +294,10 @@ fn a_pulled_back_draw_finishes_from_its_preview() {
     }
     let repo = Repo { root: d.path().to_path_buf(), projects: d.path().join("projects"), data: real.data.clone() };
     let mut r = roll::draw(&cands(), &cands().grands, &mut Rng::new(9), "my_roll");
-    r.warmth = 1.0; // far enough to be pulled back (2.5 passed once Upright D widened the ranges)
+    // far enough to be pulled back: −3 with Grands H and I among the references (pulled back once to
+    // −2.25, then clean); what the knob means follows the references' bodies, and at +4 … +6 seed 9
+    // put the bass out of phase at 177 Hz, which no pull-back mends (1.0 passed with Upright D alone)
+    r.warmth = -3.0;
     // the minor knobs at the middle: what they mean follows the references' bodies, and after their
     // refit seed 9's (0.06, −1.54) rang on past the range at any warmth, which no pull-back mends
     r.shade.iter_mut().for_each(|v| *v = 0.0);
@@ -309,3 +312,4 @@ fn a_pulled_back_draw_finishes_from_its_preview() {
     assert!(written.data == built.data, "data.bin differs");
     assert_eq!(std::fs::read_to_string(repo.root.join("instruments/my_roll/LICENSE.md")).unwrap(), license);
 }
+
