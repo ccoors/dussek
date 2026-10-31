@@ -537,7 +537,7 @@ string, Dampers without dampers, Action noise without an action's knock.
 
 | Control | What |
 |---|---|
-| Action knock, Release noise, Pedal noise | dB, −40 = off. On the pianos the Action knock is the hammer's thump through the soundboard, part of the note, from the next note |
+| Action knock, Release noise, Pedal noise | dB, −40 = off. On the pianos the Action knock is the hammer's thump through the soundboard, part of the note, from the next note. The Pedal noise (the thumps and the strings' ring when the dampers lift) is −20 dB by default: as recorded (0 dB) its thumps distract in quiet pieces |
 | Sympathetic resonance | % of the free strings ringing along. On the kalimba, "Ringing tines"; on the balafon, "Gourd buzz" |
 | Audio input | dB, −40 = off (the default), up to +12 dB (below) |
 | Damper fall | % of the normal ~25 ms a damper takes to land when a key is released (below); 0 = instant |

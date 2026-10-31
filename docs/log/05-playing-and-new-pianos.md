@@ -3283,3 +3283,16 @@ for mf"; the borrowed dampers fine.
   pp +0.9/+4.4, mf +2.1/−1.9, ff +8.2/+7.0 dB (C2–C6). The unisons (C4–F5 1.2–1.6 times the
   recording's beat) left as they were: a width of 0.75 did not slow them in `unison_check.py` (n =
   2 per half octave).
+
+<a id="step-210"></a>
+## 210. The Pedal noise at −20 dB by default
+
+Heard in the plugin (the maintainer), on every piano: the pedal's thumps distract in quiet pieces
+(the Ständchen), and the control was turned down about 20 dB each time; the ring the lifted dampers
+start in the low strings is wanted. Step 206 measured every piano's thumps at or under what their
+recordings hold: as recorded is not what a player wants to hear from the bench. The Pedal noise
+control now starts at −20 dB (×0.1); it scales the thumps and the ring together, and at −20 dB the
+ring is still heard starting. The engine keeps its "1 = as fitted" (`midi2wav` plays the noise as
+recorded); the plugin's Copy CLI line carries `pedal=0.1`, so a render sounds as the plugin does.
+Saved sessions keep their own value. A thump apart from the ring would be a second control; not
+now.

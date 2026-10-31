@@ -351,9 +351,9 @@ ParamInfo make(uint32_t i)
         p.description = "Another instrument of the same age: each variant draws other random deviations (which notes are "
                         "out of tune, which hammers are worn). Rebuilds the instrument.";
         break;
-    case kPedalNoise: set("Pedal noise", "pedal_noise", "dB", 0, kOffDb, 12);
+    case kPedalNoise: set("Pedal noise", "pedal_noise", "dB", -20, kOffDb, 12);
         p.description = "The sustain pedal's own noise: its thump going down and up, and the strings' ring when the "
-                        "dampers lift. The left end is off.";
+                        "dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.";
         break;
     }
     return p;

@@ -42,7 +42,7 @@ balafon label motor_depth Motor depth|How far the fundamentals fade while the di
 balafon label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 balafon label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 balafon label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-balafon label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+balafon label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 balafon label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 balafon label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 balafon label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -159,7 +159,7 @@ bells label motor_depth Motor depth|How far the fundamentals fade while the disc
 bells label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 bells label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 bells label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-bells label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+bells label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 bells label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 bells label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 bells label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -276,7 +276,7 @@ chimes label motor_depth Motor depth|How far the fundamentals fade while the dis
 chimes label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 chimes label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 chimes label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-chimes label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+chimes label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 chimes label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 chimes label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 chimes label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -393,7 +393,7 @@ clavichord label motor_depth Motor depth|How far the fundamentals fade while the
 clavichord label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 clavichord label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 clavichord label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-clavichord label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+clavichord label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 clavichord label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 clavichord label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 clavichord label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -510,7 +510,7 @@ crotales label motor_depth Motor depth|How far the fundamentals fade while the d
 crotales label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 crotales label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 crotales label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-crotales label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+crotales label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 crotales label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 crotales label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 crotales label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -627,7 +627,7 @@ dantranh label motor_depth Motor depth|How far the fundamentals fade while the d
 dantranh label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 dantranh label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 dantranh label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-dantranh label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+dantranh label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 dantranh label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 dantranh label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 dantranh label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -744,7 +744,7 @@ flemish label motor_depth Motor depth|How far the fundamentals fade while the di
 flemish label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 flemish label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 flemish label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-flemish label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+flemish label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 flemish label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 flemish label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 flemish label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -861,7 +861,7 @@ french label motor_depth Motor depth|How far the fundamentals fade while the dis
 french label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 french label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 french label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-french label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+french label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 french label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 french label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 french label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -978,7 +978,7 @@ glockenspiel label motor_depth Motor depth|How far the fundamentals fade while t
 glockenspiel label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 glockenspiel label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 glockenspiel label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-glockenspiel label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+glockenspiel label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 glockenspiel label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 glockenspiel label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 glockenspiel label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -1095,7 +1095,7 @@ glockenspiel_b label motor_depth Motor depth|How far the fundamentals fade while
 glockenspiel_b label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 glockenspiel_b label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 glockenspiel_b label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-glockenspiel_b label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+glockenspiel_b label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 glockenspiel_b label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 glockenspiel_b label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 glockenspiel_b label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -1212,7 +1212,7 @@ grand_a label motor_depth Motor depth|How far the fundamentals fade while the di
 grand_a label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 grand_a label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 grand_a label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-grand_a label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+grand_a label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 grand_a label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 grand_a label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 grand_a label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -1329,7 +1329,7 @@ grand_b label motor_depth Motor depth|How far the fundamentals fade while the di
 grand_b label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 grand_b label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 grand_b label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-grand_b label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+grand_b label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 grand_b label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 grand_b label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 grand_b label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -1446,7 +1446,7 @@ grand_c label motor_depth Motor depth|How far the fundamentals fade while the di
 grand_c label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 grand_c label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 grand_c label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-grand_c label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+grand_c label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 grand_c label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 grand_c label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 grand_c label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -1563,7 +1563,7 @@ grand_d label motor_depth Motor depth|How far the fundamentals fade while the di
 grand_d label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 grand_d label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 grand_d label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-grand_d label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+grand_d label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 grand_d label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 grand_d label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 grand_d label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -1680,7 +1680,7 @@ grand_e label motor_depth Motor depth|How far the fundamentals fade while the di
 grand_e label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 grand_e label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 grand_e label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-grand_e label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+grand_e label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 grand_e label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 grand_e label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 grand_e label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -1797,7 +1797,7 @@ grand_f label motor_depth Motor depth|How far the fundamentals fade while the di
 grand_f label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 grand_f label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 grand_f label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-grand_f label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+grand_f label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 grand_f label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 grand_f label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 grand_f label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -1914,7 +1914,7 @@ grand_g label motor_depth Motor depth|How far the fundamentals fade while the di
 grand_g label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 grand_g label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 grand_g label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-grand_g label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+grand_g label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 grand_g label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 grand_g label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 grand_g label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -2031,7 +2031,7 @@ grand_h label motor_depth Motor depth|How far the fundamentals fade while the di
 grand_h label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 grand_h label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 grand_h label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-grand_h label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+grand_h label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 grand_h label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 grand_h label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 grand_h label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -2148,7 +2148,7 @@ grand_i label motor_depth Motor depth|How far the fundamentals fade while the di
 grand_i label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 grand_i label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 grand_i label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-grand_i label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+grand_i label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 grand_i label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 grand_i label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 grand_i label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -2265,7 +2265,7 @@ guitar label motor_depth Motor depth|How far the fundamentals fade while the dis
 guitar label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 guitar label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 guitar label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-guitar label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+guitar label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 guitar label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 guitar label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 guitar label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -2382,7 +2382,7 @@ handchimes label motor_depth Motor depth|How far the fundamentals fade while the
 handchimes label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 handchimes label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 handchimes label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-handchimes label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+handchimes label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 handchimes label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 handchimes label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 handchimes label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -2499,7 +2499,7 @@ harp label motor_depth Motor depth|How far the fundamentals fade while the discs
 harp label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 harp label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 harp label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-harp label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+harp label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 harp label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 harp label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 harp label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -2616,7 +2616,7 @@ harpsichord label motor_depth Motor depth|How far the fundamentals fade while th
 harpsichord label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 harpsichord label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 harpsichord label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-harpsichord label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+harpsichord label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 harpsichord label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 harpsichord label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 harpsichord label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -2733,7 +2733,7 @@ harpsichord_e label motor_depth Motor depth|How far the fundamentals fade while 
 harpsichord_e label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 harpsichord_e label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 harpsichord_e label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-harpsichord_e label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+harpsichord_e label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 harpsichord_e label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 harpsichord_e label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 harpsichord_e label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -2850,7 +2850,7 @@ harpsichord_f label motor_depth Motor depth|How far the fundamentals fade while 
 harpsichord_f label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 harpsichord_f label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 harpsichord_f label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-harpsichord_f label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+harpsichord_f label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 harpsichord_f label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 harpsichord_f label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 harpsichord_f label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -2967,7 +2967,7 @@ italian label motor_depth Motor depth|How far the fundamentals fade while the di
 italian label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 italian label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 italian label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-italian label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+italian label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 italian label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 italian label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 italian label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -3084,7 +3084,7 @@ kalimba label motor_depth Motor depth|How far the fundamentals fade while the di
 kalimba label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 kalimba label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 kalimba label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-kalimba label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+kalimba label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 kalimba label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 kalimba label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 kalimba label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -3201,7 +3201,7 @@ leverharp label motor_depth Motor depth|How far the fundamentals fade while the 
 leverharp label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 leverharp label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 leverharp label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-leverharp label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+leverharp label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 leverharp label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 leverharp label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 leverharp label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -3318,7 +3318,7 @@ marimba label motor_depth Motor depth|How far the fundamentals fade while the di
 marimba label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 marimba label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 marimba label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-marimba label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+marimba label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 marimba label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 marimba label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 marimba label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -3435,7 +3435,7 @@ mavembe label motor_depth Motor depth|How far the fundamentals fade while the di
 mavembe label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 mavembe label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 mavembe label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-mavembe label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+mavembe label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 mavembe label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 mavembe label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 mavembe label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -3552,7 +3552,7 @@ mbira label motor_depth Motor depth|How far the fundamentals fade while the disc
 mbira label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 mbira label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 mbira label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-mbira label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+mbira label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 mbira label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 mbira label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 mbira label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -3709,7 +3709,7 @@ nyunga label motor_depth Motor depth|How far the fundamentals fade while the dis
 nyunga label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 nyunga label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 nyunga label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-nyunga label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+nyunga label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 nyunga label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 nyunga label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 nyunga label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -3826,7 +3826,7 @@ psaltery label motor_depth Motor depth|How far the fundamentals fade while the d
 psaltery label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 psaltery label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 psaltery label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-psaltery label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+psaltery label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 psaltery label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 psaltery label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 psaltery label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -3943,7 +3943,7 @@ strumstick label motor_depth Motor depth|How far the fundamentals fade while the
 strumstick label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 strumstick label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 strumstick label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-strumstick label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+strumstick label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 strumstick label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 strumstick label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 strumstick label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -4060,7 +4060,7 @@ upright_a label motor_depth Motor depth|How far the fundamentals fade while the 
 upright_a label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 upright_a label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 upright_a label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-upright_a label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+upright_a label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 upright_a label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 upright_a label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 upright_a label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -4177,7 +4177,7 @@ upright_b label motor_depth Motor depth|How far the fundamentals fade while the 
 upright_b label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 upright_b label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 upright_b label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-upright_b label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+upright_b label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 upright_b label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 upright_b label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 upright_b label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -4294,7 +4294,7 @@ upright_c label motor_depth Motor depth|How far the fundamentals fade while the 
 upright_c label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 upright_c label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 upright_c label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-upright_c label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+upright_c label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 upright_c label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 upright_c label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 upright_c label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -4411,7 +4411,7 @@ upright_d label motor_depth Motor depth|How far the fundamentals fade while the 
 upright_d label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 upright_d label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 upright_d label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-upright_d label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+upright_d label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 upright_d label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 upright_d label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 upright_d label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -4528,7 +4528,7 @@ vibraphone label motor_depth Motor depth|How far the fundamentals fade while the
 vibraphone label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 vibraphone label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 vibraphone label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-vibraphone label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+vibraphone label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 vibraphone label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 vibraphone label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 vibraphone label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
@@ -4645,7 +4645,7 @@ xylophone label motor_depth Motor depth|How far the fundamentals fade while the 
 xylophone label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
 xylophone label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
 xylophone label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
-xylophone label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. The left end is off.
+xylophone label pedal_noise Pedal noise|The sustain pedal's own noise: its thump going down and up, and the strings' ring when the dampers lift. -20 dB by default, 0 dB as recorded; the left end is off.
 xylophone label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
 xylophone label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
 xylophone label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.

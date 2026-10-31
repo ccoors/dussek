@@ -28,7 +28,7 @@ on eight. The scripts are throwaway. What the user heard on ours, with what was 
   Salamander's, at its sampler's mix and from microphones 12 cm over the strings (the release
   12 dB lower, step 120; both tilted as a player hears them, step 121; the pedal's release a
   landing, step 122). The pedal down could be more subtle still: for now the Pedal noise control
-  sets it (most MIDI sources send the pedal as 0 or 127 alone);
+  sets it, −20 dB by default (step 210; most MIDI sources send the pedal as 0 or 127 alone);
 - the velocity steps uneven: peak level +7–8 dB from velocity 30 to 64, +12–15 dB from 64 to 110;
   "the first chord too weak" (step 124: one curve over the velocity on
   every key, its range the Dynamics control);
