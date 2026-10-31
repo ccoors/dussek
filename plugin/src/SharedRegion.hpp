@@ -1,6 +1,7 @@
 // A named shared-memory region (the one platform-specific piece of the diagnostics view):
-// the DSP creates it, the UI opens it by name. POSIX here (Linux, macOS: names ≤ 31
-// characters, sized once); Windows would add CreateFileMapping behind the same interface.
+// the DSP creates it, the UI opens it by name. POSIX on Linux and macOS (names ≤ 31
+// characters, sized once); a named file mapping on Windows ("Local\pe-…", freed by the
+// system when its last handle closes).
 #pragma once
 #include <cstddef>
 #include <cstdint>
@@ -27,7 +28,8 @@ public:
     /// with ESRCH). Never touches a file without a valid header, with owner 0 (an instance
     /// still starting up), with a live owner (a pid we may not signal counts as alive), or with
     /// another name. Returns the number removed. Not real-time: call from a constructor. Linux
-    /// only (it scans /dev/shm); elsewhere it does nothing and returns 0.
+    /// only (it scans /dev/shm); elsewhere it does nothing and returns 0 (Windows frees a mapping
+    /// with its last handle, so a dead process leaves none).
     ///
     /// Limits, accepted: (1) the pid is judged in OUR pid namespace. An instance in a Flatpak or
     /// container that shares /dev/shm but not the pid namespace sees the pids of other instances as
@@ -46,11 +48,12 @@ public:
     size_t size() const { return fSize; }
 
 private:
-    SharedRegion(void* data, size_t size, std::string unlinkName)
-        : fData(data), fSize(size), fUnlink(std::move(unlinkName)) {}
+    SharedRegion(void* data, size_t size, std::string unlinkName, void* handle = nullptr)
+        : fData(data), fSize(size), fUnlink(std::move(unlinkName)), fHandle(handle) {}
     void* fData;
     size_t fSize;
-    std::string fUnlink; // set for the creator
+    std::string fUnlink; // set for the creator (POSIX)
+    void* fHandle;       // the mapping's handle (Windows)
 };
 
 } // namespace pe

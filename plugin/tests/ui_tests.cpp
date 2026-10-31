@@ -13,6 +13,7 @@
 #include <map>
 #include "Params.hpp"
 #include "Paths.hpp"
+#include "Numbers.hpp"
 #include "PedalMixer.hpp"
 #include "Presets.hpp"
 #include "Format.hpp"
@@ -5677,13 +5678,13 @@ TEST(data_dirs_per_platform)
             return it == m.end() ? nullptr : it->second.c_str();
         };
     };
-    auto d = pe::dataDirs(env({{"HOME", "/home/u"}}), Platform::Linux);
-    CHECK(d.data == "/home/u/.local/share/pianoengine" && d.config == "/home/u/.config/pianoengine");
-    d = pe::dataDirs(env({{"HOME", "/home/u"}, {"XDG_DATA_HOME", "/x/d"}, {"XDG_CONFIG_HOME", "/x/c"}}), Platform::Linux);
+    auto d = pe::dataDirs(env({{"HOME", "/hm/u"}}), Platform::Linux);
+    CHECK(d.data == "/hm/u/.local/share/pianoengine" && d.config == "/hm/u/.config/pianoengine");
+    d = pe::dataDirs(env({{"HOME", "/hm/u"}, {"XDG_DATA_HOME", "/x/d"}, {"XDG_CONFIG_HOME", "/x/c"}}), Platform::Linux);
     CHECK(d.data == "/x/d/pianoengine" && d.config == "/x/c/pianoengine");
     // a relative XDG folder is not one (the XDG spec): the default instead
-    d = pe::dataDirs(env({{"HOME", "/home/u"}, {"XDG_DATA_HOME", "rel"}, {"XDG_CONFIG_HOME", "rel"}}), Platform::Linux);
-    CHECK(d.data == "/home/u/.local/share/pianoengine" && d.config == "/home/u/.config/pianoengine");
+    d = pe::dataDirs(env({{"HOME", "/hm/u"}, {"XDG_DATA_HOME", "rel"}, {"XDG_CONFIG_HOME", "rel"}}), Platform::Linux);
+    CHECK(d.data == "/hm/u/.local/share/pianoengine" && d.config == "/hm/u/.config/pianoengine");
     d = pe::dataDirs(env({}), Platform::Linux);
     CHECK(d.data.empty() && d.config.empty());
     d = pe::dataDirs(env({{"HOME", "/Users/u"}, {"XDG_DATA_HOME", "/x/d"}}), Platform::MacOS);
@@ -5698,5 +5699,30 @@ TEST(data_dirs_per_platform)
         CHECK(Catalog::searchPaths(nullptr).back() == here.data + "/snapshots");
         CHECK(presetDir() == here.data + "/presets");
         CHECK(midiMapPath() == here.config + "/midi-map.txt");
+    }
+}
+
+TEST(parse_float_as_from_chars_without_it)
+{
+    // std::from_chars for floating point is missing from older macOS libc++: pe::parseFloat reads the
+    // same way (a point whatever the locale, a prefix, no leading '+' or space)
+    float x = 0;
+    const char a[] = "1.5x";
+    CHECK(pe::parseFloat(a, a + 4, x) == a + 3 && x == 1.5f);
+    const char b[] = "-2e3";
+    CHECK(pe::parseFloat(b, b + 4, x) == b + 4 && x == -2000.0f);
+    const char c[] = "+1";
+    CHECK(pe::parseFloat(c, c + 2, x) == nullptr);
+    const char d[] = " 1";
+    CHECK(pe::parseFloat(d, d + 2, x) == nullptr);
+    const char e[] = "abc";
+    CHECK(pe::parseFloat(e, e + 3, x) == nullptr);
+    const char f[] = "0.25";
+    CHECK(pe::parseFloat(f, f + 2, x) == f + 2 && x == 0.0f); // only the range given
+    const char* old = std::setlocale(LC_NUMERIC, nullptr);
+    const std::string saved = old != nullptr ? old : "C";
+    if (std::setlocale(LC_NUMERIC, "de_DE.UTF-8") != nullptr || std::setlocale(LC_NUMERIC, "de_DE.utf8") != nullptr) {
+        CHECK(pe::parseFloat(a, a + 4, x) == a + 3 && x == 1.5f);
+        std::setlocale(LC_NUMERIC, saved.c_str());
     }
 }

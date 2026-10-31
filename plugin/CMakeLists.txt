@@ -1,6 +1,8 @@
 # Plugin wrapper: DPF (C++) around the Rust engine (engine/, static library, C ABI).
 #   just plugin   (fetches DPF at its pinned commit, configures plugin/build, builds)
 cmake_minimum_required(VERSION 3.22)
+# macOS: the oldest release the builds run on (libc++'s std::to_chars for floats: 13.3)
+set(CMAKE_OSX_DEPLOYMENT_TARGET "13.3" CACHE STRING "the oldest macOS the builds run on")
 project(pianoengine-plugin LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -18,7 +20,8 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../engine/Cargo.toml)
   set(ENGINE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../engine)
   set(ENGINE_LIB ${ENGINE_DIR}/target/release/${CMAKE_STATIC_LIBRARY_PREFIX}pianoengine${CMAKE_STATIC_LIBRARY_SUFFIX})
   add_custom_target(engine_cargo
-    COMMAND ${CARGO} build --release --lib --manifest-path ${ENGINE_DIR}/Cargo.toml
+    COMMAND ${CMAKE_COMMAND} -E env MACOSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
+            ${CARGO} build --release --lib --manifest-path ${ENGINE_DIR}/Cargo.toml
     BYPRODUCTS ${ENGINE_LIB}
     USES_TERMINAL
     COMMENT "cargo build (engine)")
@@ -47,7 +50,7 @@ target_include_directories(pianoengine PUBLIC src)
 target_link_libraries(pianoengine PUBLIC Threads::Threads ${CMAKE_DL_LIBS} m)
 
 # pure logic shared by the DSP and the UI, and its tests (no window)
-add_library(pe_common STATIC src/Catalog.cpp src/Params.cpp src/EngineValues.cpp src/PedalMixer.cpp src/ui/Format.cpp src/ui/Instruments.cpp src/ui/Layout.cpp src/ui/MicMap.cpp src/ui/Spectro.cpp src/ui/Strip.cpp src/ui/StripInteraction.cpp src/ui/Viz.cpp src/ui/Tooltip.cpp src/ui/UiState.cpp src/SharedRegion.cpp src/ui/TelemetryClient.cpp src/ui/CurveEdit.cpp src/ui/FeltEditor.cpp src/ui/NoteHistory.cpp src/MidiMap.cpp src/MidiRoute.cpp src/Morph.cpp src/FileWatch.cpp src/Presets.cpp src/Paths.cpp)
+add_library(pe_common STATIC src/Catalog.cpp src/Params.cpp src/EngineValues.cpp src/PedalMixer.cpp src/ui/Format.cpp src/ui/Instruments.cpp src/ui/Layout.cpp src/ui/MicMap.cpp src/ui/Spectro.cpp src/ui/Strip.cpp src/ui/StripInteraction.cpp src/ui/Viz.cpp src/ui/Tooltip.cpp src/ui/UiState.cpp src/SharedRegion.cpp src/ui/TelemetryClient.cpp src/ui/CurveEdit.cpp src/ui/FeltEditor.cpp src/ui/NoteHistory.cpp src/MidiMap.cpp src/MidiRoute.cpp src/Morph.cpp src/FileWatch.cpp src/Presets.cpp src/Paths.cpp src/Numbers.cpp)
 target_include_directories(pe_common PUBLIC src src/ui)
 # the shipped full presets (presets/*.pepreset), embedded as text: Presets.cpp parses them (the files
 # name instruments, which the code may not)

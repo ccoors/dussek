@@ -2,7 +2,8 @@
 #include "Layout.hpp"
 #include "Params.hpp"
 #include <algorithm>
-// std::from_chars / to_chars for floating point need libstdc++ 11+ (GCC 11) or a recent libc++ (Xcode 15 / LLVM 17+; macOS note)
+#include "Numbers.hpp"
+// std::to_chars for floating point: libstdc++ 11+, libc++ on macOS 13.3+
 #include <charconv>
 #include <cmath>
 #include <cstdio>
@@ -12,18 +13,16 @@ namespace pe {
 const int kZoomSteps[8] = { 100, 125, 150, 175, 200, 250, 300, 400 };
 
 namespace {
-/// the number after `key` ("lo=" …) in `text`; locale independent (std::from_chars always reads a point), the
+/// the number after `key` ("lo=" …) in `text`; locale independent (pe::parseFloat reads a point), the
 /// old text format stays readable: an optional leading '+', exponent notation. False if there is no number.
 bool readFloat(const char* text, const char* key, float& out)
 {
     const char* p = std::strstr(text, key);
     if (p == nullptr) return false;
     p += std::strlen(key);
-    if (*p == '+') ++p; // sscanf's %f took it, from_chars does not
-    const char* end = p + std::strlen(p);
+    if (*p == '+') ++p; // sscanf's %f took it, parseFloat does not
     float v = 0;
-    const std::from_chars_result r = std::from_chars(p, end, v);
-    if (r.ec != std::errc()) return false;
+    if (parseFloat(p, p + std::strlen(p), v) == nullptr) return false;
     out = v;
     return true;
 }

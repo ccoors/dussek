@@ -1,4 +1,5 @@
 #include "Presets.hpp"
+#include "Numbers.hpp"
 #include "Paths.hpp"
 
 #include "Params.hpp"
@@ -211,8 +212,7 @@ bool parsePreset(const std::string& text, Preset& out)
             body = bodyIndex(v, p.body);
         } else if (k.rfind("param.", 0) == 0) {
             float x = 0;
-            const std::from_chars_result r = std::from_chars(v.data(), v.data() + v.size(), x);
-            if (r.ec == std::errc() && std::isfinite(x))
+            if (pe::parseFloat(v.data(), v.data() + v.size(), x) != nullptr && std::isfinite(x))
                 p.values.push_back({ k.substr(6), x });
         } else if (k.rfind("state.", 0) == 0 && presetState(k.substr(6))) {
             p.states.push_back({ k.substr(6), unescape(v) });

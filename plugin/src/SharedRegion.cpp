@@ -7,11 +7,16 @@
 #include <csignal>
 #include <cstdio>
 #include <cstring>
-#include <fcntl.h>
 #include <random>
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#else
+#include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#endif
 #ifdef __linux__
 #include <dirent.h>
 #endif
@@ -33,11 +38,73 @@ uint32_t SharedRegion::randomToken() noexcept
         } catch (...) {
             static char anchor;
             const auto now = (uint64_t)std::chrono::steady_clock::now().time_since_epoch().count();
-            return std::mt19937 { (uint32_t)(now ^ (now >> 32) ^ ((uint64_t)getpid() << 16) ^ (uint64_t)(uintptr_t)&anchor) };
+#ifdef _WIN32
+            const uint64_t pid = GetCurrentProcessId();
+#else
+            const uint64_t pid = (uint64_t)getpid();
+#endif
+            return std::mt19937 { (uint32_t)(now ^ (now >> 32) ^ (pid << 16) ^ (uint64_t)(uintptr_t)&anchor) };
         }
     }();
     return std::uniform_int_distribution<uint32_t>(1, 0xFFFFFF)(rng);
 }
+
+#ifdef _WIN32
+
+namespace {
+/// "/pe-abcdef" → "Local\pe-abcdef": the session's namespace, as POSIX names are the user's
+std::string mappingName(const std::string& name)
+{
+    return "Local\\" + (name.empty() || name[0] != '/' ? name : name.substr(1));
+}
+}
+
+std::unique_ptr<SharedRegion> SharedRegion::create(const std::string& name, size_t size)
+{
+    HANDLE h = CreateFileMappingA(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, (DWORD)((uint64_t)size >> 32),
+                                  (DWORD)((uint64_t)size & 0xFFFFFFFFu), mappingName(name).c_str());
+    if (h == nullptr)
+        return nullptr;
+    if (GetLastError() == ERROR_ALREADY_EXISTS) { // the name is taken: as O_EXCL
+        CloseHandle(h);
+        return nullptr;
+    }
+    void* p = MapViewOfFile(h, FILE_MAP_ALL_ACCESS, 0, 0, size);
+    if (p == nullptr) {
+        CloseHandle(h);
+        return nullptr;
+    }
+    return std::unique_ptr<SharedRegion>(new SharedRegion(p, size, std::string(), h));
+}
+
+std::unique_ptr<SharedRegion> SharedRegion::open(const std::string& name, size_t size)
+{
+    HANDLE h = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, mappingName(name).c_str());
+    if (h == nullptr)
+        return nullptr;
+    void* p = MapViewOfFile(h, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+    MEMORY_BASIC_INFORMATION mi;
+    if (p == nullptr || VirtualQuery(p, &mi, sizeof mi) == 0 || mi.RegionSize < size) {
+        if (p != nullptr)
+            UnmapViewOfFile(p);
+        CloseHandle(h);
+        return nullptr;
+    }
+    return std::unique_ptr<SharedRegion>(new SharedRegion(p, size, std::string(), h));
+}
+
+int SharedRegion::sweepStale()
+{
+    return 0; // a mapping goes with its last handle
+}
+
+SharedRegion::~SharedRegion()
+{
+    UnmapViewOfFile(fData);
+    CloseHandle((HANDLE)fHandle);
+}
+
+#else
 
 std::unique_ptr<SharedRegion> SharedRegion::create(const std::string& name, size_t size)
 {
@@ -124,5 +191,7 @@ SharedRegion::~SharedRegion()
     if (!fUnlink.empty())
         shm_unlink(fUnlink.c_str());
 }
+
+#endif
 
 } // namespace pe
