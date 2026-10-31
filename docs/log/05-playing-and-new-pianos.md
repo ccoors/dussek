@@ -3366,4 +3366,5 @@ engine, not the project. The design log's earlier steps keep the name they were 
 `proto/tests/test_the_name.py` finds the old one anywhere else. A DAW session saved before this
 step does not find the plugin (its URI changed; pre-release, no alias), and presets, MIDI maps and
 instruments in the old folders are not read until moved. The instruments' data are unchanged (41
-of 41 reproduce); only their `LICENSE.md` reads the new name.
+of 41 reproduce); only their `LICENSE.md` reads the new name. The parameter table stands: no
+reordering was asked for before the release.
