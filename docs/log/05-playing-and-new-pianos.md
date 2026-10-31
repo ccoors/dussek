@@ -3188,3 +3188,20 @@ change from mf to ff: the recording's own change is that narrow (its mf bright, 
 lengths and top-key pitches; 94 lengths stopped by the cut files. Open: at ff the engine is darker
 than the recording above C3 (the middle's 4 kHz −7.5, the treble's 2 and 4 kHz −6.3/−6.6 dB within a
 note), where the felt solve (C2–C5, the attack alone) did not look.
+
+Heard: "a bit thin and a bit like through a low-pass filter". Measured over whole notes (third
+octaves 50 Hz–10 kHz, every second key, each note at the engine's level, Recording position): at ff
+the engine lay 6.8–9.4 dB under the recording at 4–10 kHz (the middle 9–13 dB), within ±3 dB below
+4 kHz at every dynamic; Grand E within −5 … +3 dB there. Above 4 kHz at pp and mf the whole notes'
+deficit is the recording's hiss (its 4.5–6.5 kHz lies at the file-end level from 1.5 s on). The room
+was not it (Grand E's room cuts 2–8 kHz more), nor the felt alone: the exponent and stiffness that
+solve pp, mf and ff at 1–4 kHz leave ff's attack 4–10 dB short at 4–8 kHz. A felt core does it
+(`[felt_core]`): depth 1.15× each key's compression at mf, 60 N to B5, 25 N from C♯6. Then ff at
+4–10 kHz −2.4 … +3.3 dB over whole notes; within a note (tone_check) the middle's 4 kHz −7.5 → +2.3,
+the treble's 2 kHz −6.3 → +3.5 dB; the attack's 2–4 kHz at ff now +3.7 … +9.3 dB over. On the two
+pieces: +2 dB at 4 kHz, +3.4 … +4.8 at 5 kHz, +6 … +9 at 6.3–8 kHz, below 2 kHz within 1 dB.
+
+"Thin" is the recording's: at 62–250 Hz the engine lies 0 … +5 dB over it, but the recording itself
+lies 5–13 dB under Grand E's at 50–125 Hz (the pieces: Grand H 4–11 dB under Grand E at 62–125 Hz).
+At Player Grand H also gains 500 Hz (+4.7 dB re Recording, Grand E −2.7). Adding body past the
+recording is a choice by ear: open.

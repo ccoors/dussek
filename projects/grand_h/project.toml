@@ -73,6 +73,21 @@ window_keys = 9
 p = 1.41
 stiffness_db = -0.8
 
+# the felt's core (2026-10-31, after "a bit like through a low-pass filter"; the fits never see it):
+# the whole notes' third-octave spectrum against the recording, every second key, put ff 6.8–9.4 dB
+# under it at 4–10 kHz (the middle 9–13 dB), pp and mf within ±3 dB below 4 kHz (above, their deficit
+# over whole notes is the recording's hiss: its 4.5–6.5 kHz lies at its file-end level from 1.5 s). The
+# attack (0.02–0.15 s, re 200–500 Hz) agreed: ff at 4–6/6–8 kHz −7.8/−4.2 (C2–B3), −7.1/−10.3 (C4–B5),
+# −7.0/−3.1 (C6–C7). The stiffer felt cannot lift ff alone (p 1.41 solved pp, mf and ff at 1–4 kHz); a
+# core does: its depth 1.15× each key's compression at mf (the hammer's energy on rigid strings at
+# 2.1 m/s), 60 N to B5 and 25 N from C♯6 (8 N moved nothing, 90 N overshot 2–4 kHz by up to 15 dB).
+# After: the attack at ff −1.4 … +0.9 dB at 1–2 kHz, +3.7/+8.6/+9.3 at 2–4 kHz, −2.2 … +2.6 at 4–8 kHz;
+# the whole notes at ff −2.4 … +3.3 dB at 4–10 kHz (the middle −5.3 … +9.4). Not yet heard
+[felt_core]
+notes = [21, 27, 33, 39, 45, 51, 57, 63, 69, 75, 81, 87, 93, 99, 105, 108]
+f05 = [60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 25.0, 25.0, 25.0, 25.0, 25.0]
+depth_mm = [0.44, 0.32, 0.39, 0.56, 0.59, 0.69, 0.72, 0.62, 0.57, 0.6, 0.64, 0.55, 0.39, 0.26, 0.21, 0.2]
+
 # the board's tone (2026-10-31, tone_check.py, design log steps 143 and 147; the fits never see it):
 # within a note, re the band of its fundamental, the treble's upper partials lie under the recording
 # untrimmed (4 kHz mf −1.6, ff −6.0 dB), so no treble row. The lowest octave: the board fit's data
