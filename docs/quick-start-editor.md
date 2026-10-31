@@ -11,8 +11,8 @@ example: the set Harp A was made from.
 ## What you need
 
 - The repository, built: `just build` (the README's [Build from source](../README.md#build-from-source)).
-- Python 3.11 or newer with numpy, scipy, soundfile, matplotlib and mido. The editor runs the
-  pipeline (`proto/build.py`) through it.
+- Python 3.11 or newer with the packages of `requirements.txt` (`pip install -r
+  requirements.txt`). The editor runs the pipeline (`proto/build.py`) through it.
 - The sample set, under `data/`: VCSL, cloned into `data/vcsl/`
   ([getting-data.md](getting-data.md) lists every set and where it goes). A set elsewhere on
   disk works too: the editor links it in.

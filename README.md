@@ -34,9 +34,11 @@ Prebuilt releases come later. Until then, build from source.
 
 ## Build from source
 
-You need Rust (with `cargo-nextest` for the tests), CMake, a C++17 compiler, Python 3 with
-numpy, scipy, soundfile and matplotlib (pytest and pytest-xdist for the tests, mido for
-`just report` and the demos), and [just](https://github.com/casey/just).
+You need Rust (with `cargo-nextest` for the tests), CMake, a C++17 compiler, Python 3.11 or newer
+with the packages of `requirements.txt` (`pip install -r requirements.txt`: numpy, scipy,
+soundfile, matplotlib, mido, and pytest for the tests), and [just](https://github.com/casey/just).
+On Linux the plugin needs the development packages of OpenGL, X11, JACK, ALSA and PulseAudio
+(`.github/workflows/ci.yml` lists Ubuntu's).
 
 ```sh
 git clone --recursive <this repository's URL>    # then, in the clone:

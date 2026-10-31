@@ -1,0 +1,50 @@
+# Every push and pull request: the build, the plugin's UI tests, the prototype's and the editor's
+# suites, and the checks a commit needs. The engine's suite runs in engine-tests.yml (nightly).
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: System packages (DPF's, the editor's audio)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build pkg-config \
+            libgl-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libdbus-1-dev \
+            libjack-jackd2-dev libasound2-dev libpulse-dev
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: just,cargo-nextest
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            engine -> target
+            editor -> target
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Build (engine, plugin, editor)
+        run: just build
+      - name: The plugin's UI tests
+        run: just test-plugin
+      - name: The prototype's suite
+        run: just test-proto
+      - name: The editor's suite
+        run: just test-editor
+      - name: Nothing stale
+        run: just check

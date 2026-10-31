@@ -16,6 +16,8 @@ plays it.
   [docs/building-instruments.md](docs/building-instruments.md) has the details.
 - **The tests without the datasets:** a test whose recordings are not in `data/` returns early,
   so the suites pass in a fresh clone.
+- **CI** runs the build, the plugin's UI tests, the prototype's and the editor's suites and
+  `just check` on every push and pull request; the engine's suite, which takes longer, nightly.
 
 ## Commits
 

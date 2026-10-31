@@ -1,0 +1,8 @@
+# The pipeline's and the tests' Python packages (Python 3.11 or newer): pip install -r requirements.txt
+numpy
+scipy
+soundfile
+matplotlib
+mido
+pytest
+pytest-xdist
