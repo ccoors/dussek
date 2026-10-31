@@ -49,15 +49,16 @@ constexpr int kRelativeStepsPerEntry = 3;
 /// whether the target steps the instrument (Next, Previous, the knob)
 bool stepTarget(uint32_t target);
 
-/// the MIDI map file's form this build writes
+/// the MIDI map file's form this build writes, and the first (a file without its line)
 constexpr uint32_t kMidiMapVersion = 1;
+constexpr uint32_t kFirstMidiMapVersion = 1;
 
 class MidiMap {
 public:
     /// program change selects the instrument (off by default: many MIDI files start with one)
     /// the version that wrote the file (`version N`; without one 1); a newer file is read as far as
     /// it is understood (unknown lines skipped)
-    uint32_t version = kMidiMapVersion;
+    uint32_t version = kFirstMidiMapVersion;
     bool programChange = false;
     /// soft takeover: a knob or fader tied absolute moves a slider only once it reaches the slider's
     /// value (the slider moved otherwise: the mouse, the host, a preset), so the slider never jumps

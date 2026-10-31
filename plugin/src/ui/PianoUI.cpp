@@ -29,6 +29,7 @@
 #include "Presets.hpp"
 #include "Theme.hpp"
 #include "Tooltip.hpp"
+#include "StateVersion.hpp"
 #include "UiState.hpp"
 #include "Widgets.hpp"
 
@@ -142,6 +143,12 @@ protected:
 
     void stateChanged(const char* key, const char* value) override
     {
+        // the host hands the UI the saved values as they were: migrated here as on the DSP side
+        // (the `ui` key is the UI's alone; StateVersion.hpp)
+        const std::string migrated = fRestore.apply(key, value != nullptr ? value : "");
+        if (std::strcmp(key, kStateVersionKey) == 0)
+            return;
+        value = migrated.c_str();
         if (std::strcmp(key, "instrument") == 0) {
             fChoice = choose(*fCatalog, value != nullptr ? value : "");
             instrumentChanged();
@@ -561,6 +568,7 @@ private:
     bool fHotResetCurve = false;
     uint64_t fNotesPaintMs = 0;
     CatalogPtr fCatalog; // the instruments found (Catalog.hpp)
+    StateRestore fRestore; // the restored state's version (StateVersion.hpp)
     Choice fChoice;      // the "instrument" state: the id and its entry (nullptr: missing)
     UiState fState;
     Layout fLayout;

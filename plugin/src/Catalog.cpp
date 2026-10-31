@@ -116,7 +116,9 @@ Catalog Catalog::scan(const std::vector<std::string>& paths)
                     c.fMessages.push_back(message);
                 continue;
             }
-            if (const InstrumentEntry* seen = c.find(id)) {
+            // shadowed by a real folder of this id only: an alias never hides one (Catalog::find)
+            const auto seen = std::find_if(c.fEntries.begin(), c.fEntries.end(), [&](const InstrumentEntry& x) { return x.id == id; });
+            if (seen != c.fEntries.end()) {
                 c.fMessages.push_back("Dussek: " + e.dir + " shadowed by " + seen->dir);
                 continue;
             }

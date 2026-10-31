@@ -7,14 +7,14 @@ namespace pe {
 uint32_t parseStateVersion(const char* value)
 {
     if (value == nullptr || *value == '\0')
-        return kStateVersion;
+        return kFirstStateVersion;
     uint64_t v = 0;
     for (const char* p = value; *p != '\0'; ++p) {
         if (*p < '0' || *p > '9' || v > 1000000)
-            return kStateVersion;
+            return kFirstStateVersion;
         v = v * 10 + (uint64_t)(*p - '0');
     }
-    return v == 0 ? kStateVersion : (uint32_t)v;
+    return v == 0 ? kFirstStateVersion : (uint32_t)v;
 }
 
 std::string migrateState(uint32_t from, const std::string& key, std::string value)
@@ -28,7 +28,7 @@ std::string migrateState(uint32_t from, const std::string& key, std::string valu
 
 bool stateKnown(const std::string& key)
 {
-    for (const char* k : { kStateVersionKey, "ui", "instrument", "velocity_curve", "morph", "felt", "scale_file" })
+    for (const char* k : stateKeys())
         if (key == k)
             return true;
     return false;

@@ -212,8 +212,8 @@ protected:
 
     void initState(uint32_t index, State& s) override
     {
-        // the state's version first: DPF restores in this order (LV2 by index, VST3 and CLAP as
-        // getState wrote them), so the others are migrated from it (StateVersion.hpp)
+        // the state's version first: LV2 restores in this order, VST3 and CLAP in key order (where
+        // `_state_version` sorts first), so the others are migrated from it (StateVersion.hpp)
         if (index == 0) {
             s.key = kStateVersionKey;
             s.defaultValue = String(kStateVersion);

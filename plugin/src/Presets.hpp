@@ -18,9 +18,9 @@ enum class PresetScope : uint32_t { Mics, All };
 
 struct Preset {
     std::string name;
-    /// the state version it was written at (its file's `version`; without one 1): its states are
-    /// migrated from it (StateVersion.hpp)
-    uint32_t version = kStateVersion;
+    /// the state version it was written at (its file's `version`; without one the first): its states
+    /// are migrated from it (StateVersion.hpp)
+    uint32_t version = kFirstStateVersion;
     PresetScope scope = PresetScope::Mics;
     /// the body type a microphone preset belongs to (pe_mic_geometry's index; ignored for All)
     uint32_t body = 0;

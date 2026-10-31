@@ -3387,15 +3387,20 @@ section):
 - **The parameter lock** (`plugin/tests/params.lock`, 78 rows): index, symbol, range, default, unit,
   flags. DPF's VST3 and CLAP wrappers save values by symbol, as LV2 hosts do, and automate by index;
   the diagnostics after the table move when it grows, so none may be automatable (a test pins it).
-- **The state's version**: `state_version` (1), declared first so DPF restores it first; every key
-  through `migrateState`. The version is sticky (no "restore ended" signal; live changes use the
-  same path), so a migration leaves a value already in today's form unchanged.
+- **The state's version**: `_state_version` (1), restored first: declared first for LV2, and first
+  in key order for DPF's VST3 and CLAP wrappers, which keep the state in a `std::map` (the review
+  found `state_version` replayed fifth there); every key through `migrateState`, in the plugin and
+  in its UI. The version is sticky (no "restore ended" signal; live changes use the same path), so
+  a migration leaves a value already in today's form unchanged.
 - **Versions in the player's files**: presets (`version = 1`, the state version of their states)
-  and MIDI maps (`version 1`); without one, version 1; a newer file loads what it understands.
+  and MIDI maps (`version 1`); without one, the first version (not today's); a newer file loads
+  what it understands.
 - **Instrument aliases** (`instruments/aliases.txt`, empty for now): the catalog and the DSP's
-  folder lookup follow them (8 hops, cycles end), a real folder first; nothing found stays missing.
-- **The frozen formats** (`engine/tests/formats/`: 5, Kalimba; 6, Harpsichord B), loaded and played
-  by a test; an export of a format without a frozen copy fails.
+  folder lookup follow them (8 hops, cycles end), a real folder first, also a player's own folder
+  of an alias's old name in a later search path; nothing found stays missing.
+- **The frozen formats** (`engine/tests/formats/`: `5-bars` Kalimba, `5-strings` Grand A, `6-registers`
+  Harpsichord B), loaded and played by a test; an export of a format without a frozen copy fails,
+  and a hammer piano's format needs a frozen hammer piano.
 - **`render`'s lock** (`engine/tests/cli.lock`, 89 items: the arguments, options and `--param` /
   `--tuning` keys).
 

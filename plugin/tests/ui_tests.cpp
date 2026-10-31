@@ -343,12 +343,18 @@ bool readLock(const std::string& path, std::vector<LockRow>& out)
 
 TEST(the_state_carries_its_version)
 {
-    CHECK(pe::kStateVersion == 1);
-    CHECK(std::string(pe::kStateVersionKey) == "state_version");
-    CHECK(pe::parseStateVersion(nullptr) == 1 && pe::parseStateVersion("") == 1 && pe::parseStateVersion("x") == 1);
+    CHECK(pe::kStateVersion == 1 && pe::kFirstStateVersion == 1);
+    // DPF's VST3 and CLAP wrappers keep the state in a std::map: they write and replay it in key
+    // order, so the version's key sorts before every other (LV2 restores in declared order: first)
+    CHECK(std::string(pe::kStateVersionKey) == "_state_version");
+    for (const char* k : pe::stateKeys())
+        CHECK(std::strcmp(pe::kStateVersionKey, k) <= 0);
+    // a value without a version is the first (no state before it was released), not today's
+    CHECK(pe::parseStateVersion(nullptr) == pe::kFirstStateVersion && pe::parseStateVersion("") == pe::kFirstStateVersion
+          && pe::parseStateVersion("x") == pe::kFirstStateVersion);
     CHECK(pe::parseStateVersion("1") == 1 && pe::parseStateVersion("7") == 7); // newer: read as far as understood
     CHECK(pe::migrateState(1, "instrument", "grand_a") == "grand_a");
-    for (const char* k : { "state_version", "ui", "instrument", "velocity_curve", "morph", "felt", "scale_file" })
+    for (const char* k : { "_state_version", "ui", "instrument", "velocity_curve", "morph", "felt", "scale_file" })
         CHECK(pe::stateKnown(k));
     CHECK(!pe::stateKnown("nonsense"));
     // a migration leaves a value already in today's form as it is: a version left over from an
@@ -358,7 +364,7 @@ TEST(the_state_carries_its_version)
             CHECK(pe::migrateState(from, k, "grand_a") == pe::migrateState(pe::kStateVersion, k, "grand_a"));
     // the keys in either order give the same values
     const std::vector<std::pair<std::string, std::string>> keys
-        = { { "felt", "s:21=6" }, { "instrument", "grand_b" }, { "state_version", "1" } };
+        = { { "felt", "s:21=6" }, { "instrument", "grand_b" }, { "_state_version", "1" } };
     std::vector<std::string> forward, backward;
     pe::StateRestore a, b;
     for (const auto& [k, v] : keys)
@@ -368,7 +374,7 @@ TEST(the_state_carries_its_version)
     CHECK(forward == backward && forward[0] == "s:21=6" && forward[1] == "grand_b");
     CHECK(a.version() == 1 && b.version() == 1);
     pe::StateRestore c;
-    c.apply("state_version", "7");
+    c.apply("_state_version", "7");
     CHECK(c.version() == 7 && c.apply("instrument", "grand_a") == "grand_a");
 }
 
@@ -383,7 +389,8 @@ TEST(user_files_carry_a_version)
     const std::string text = pe::formatPreset(p);
     CHECK(text.find("\nversion = 1\n") != std::string::npos);
     pe::Preset q;
-    CHECK(pe::parsePreset("name = Old\nscope = all\nparam.volume = 2\n", q) && q.version == 1);
+    CHECK(pe::parsePreset("name = Old\nscope = all\nparam.volume = 2\n", q) && q.version == pe::kFirstStateVersion);
+    CHECK(pe::Preset {}.version == pe::kFirstStateVersion && MidiMap {}.version == pe::kFirstMidiMapVersion);
     CHECK(pe::parsePreset("# a later release\nversion = 2\nname = New\nscope = all\nfuture = x\nparam.volume = 2\n"
                           "param.not_a_parameter = 5\nstate.instrument = grand_b\n",
               q));
@@ -394,7 +401,7 @@ TEST(user_files_carry_a_version)
     CHECK(m.text().find("\nversion 1\n") != std::string::npos && MidiMap::parse(m.text()).version == 1);
     const MidiMap later = MidiMap::parse("version 2\nknob 1 2 3\nprogram_change on\ncc 2 22 mic_l_x\n");
     CHECK(later.version == 2 && later.programChange && later.find(kMicLX) != nullptr && later.find(kMicLX)->cc == 22);
-    CHECK(MidiMap::parse("cc 2 22 mic_l_x\n").version == 1);
+    CHECK(MidiMap::parse("cc 2 22 mic_l_x\n").version == pe::kFirstMidiMapVersion);
 }
 
 TEST(the_parameter_table_only_grows)
@@ -4680,6 +4687,31 @@ TEST(aliases_resolve_old_instrument_ids)
     const std::string envWas = env ? env : "";
     setEnv("DUSSEK_INSTRUMENTS", t.path("a").c_str());
     CHECK(instrumentDir(nullptr, "a") == c.find("b")->dir && instrumentDir(nullptr, "p").empty());
+    if (env) setEnv("DUSSEK_INSTRUMENTS", envWas.c_str()); else unsetEnv("DUSSEK_INSTRUMENTS");
+}
+
+TEST(an_alias_never_hides_a_real_folder)
+{
+    // the shipped folder (searched first) aliases grand_x to b; the player's own folder grand_x is a
+    // real instrument: it is listed, found and loaded as itself, in this path order and the other
+    TempTree t;
+    t.add("shipped", "b", "harp", R"({"name": "B", "group": "Harps"})");
+    {
+        std::ofstream f(t.path("shipped") + "/aliases.txt");
+        f << "grand_x b\n";
+    }
+    t.add("user", "grand_x", "harp", R"({"name": "Mine", "group": "Harps"})");
+    for (const auto& paths : { std::vector<std::string> { t.path("shipped"), t.path("user") },
+             std::vector<std::string> { t.path("user"), t.path("shipped") } }) {
+        const Catalog c = Catalog::scan(paths);
+        CHECK(c.find("grand_x") != nullptr && c.find("grand_x")->name == "Mine" && c.menu().size() == 2);
+        CHECK(c.messages().empty());
+    }
+    const char* env = std::getenv("DUSSEK_INSTRUMENTS");
+    const std::string envWas = env ? env : "";
+    setEnv("DUSSEK_INSTRUMENTS", t.path("user").c_str());
+    const Catalog c = Catalog::scan({ t.path("user") });
+    CHECK(instrumentDir(nullptr, "grand_x") == c.find("grand_x")->dir);
     if (env) setEnv("DUSSEK_INSTRUMENTS", envWas.c_str()); else unsetEnv("DUSSEK_INSTRUMENTS");
 }
 

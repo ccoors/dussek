@@ -1,5 +1,6 @@
-//! Every released instrument format keeps loading: engine/tests/formats/<format>/ holds an export
-//! of each, frozen as released (never refit or re-exported). Additions to the format stay optional
+//! Every released instrument format keeps loading: engine/tests/formats/<format>-<kind>/ holds an
+//! export of each, frozen as released (never refit or re-exported); a hammer piano among them for
+//! every format the pianos use (their fields are the ones players' own instruments carry). Additions to the format stay optional
 //! fields with defaults; a change that cannot be optional raises `format` and adds its folder here
 //! (docs/compatibility.md).
 
@@ -24,7 +25,8 @@ fn every_released_format_loads_and_plays() {
             continue;
         }
         let name = dir.file_name().unwrap().to_string_lossy().into_owned();
-        assert_eq!(format_of(&dir).map(|f| f.to_string()), Some(name.clone()), "{name}: the folder is named after its format");
+        let f = format_of(&dir).unwrap_or_else(|| panic!("{name}: no format"));
+        assert!(name.starts_with(&format!("{f}-")), "{name}: the folder is named <format>-<kind>, its format {f}");
         let inst = Instrument::load(&dir).unwrap_or_else(|e| panic!("format {name}: {e}"));
         let sr = inst.reference_sr;
         let (lo, hi) = (inst.notes.first().unwrap().note, inst.notes.last().unwrap().note);
@@ -47,13 +49,32 @@ fn every_released_format_loads_and_plays() {
     assert!(seen >= 1, "no frozen formats in {FORMATS}");
 }
 
+/// the frozen copies: (format, is a hammer piano)
+fn frozen() -> Vec<(u64, bool)> {
+    std::fs::read_dir(FORMATS)
+        .expect("engine/tests/formats")
+        .flatten()
+        .filter_map(|e| Some((format_of(&e.path())?, Instrument::load(e.path()).ok()?.is_hammer_piano())))
+        .collect()
+}
+
 #[test]
 fn every_export_has_a_frozen_format() {
-    // an export of a format no frozen copy has: the format is new, freeze one with it
+    // an export of a format no frozen copy has: the format is new, freeze one with it; a hammer
+    // piano's format: a frozen hammer piano of it
     let Ok(entries) = std::fs::read_dir(ROOT) else { return };
+    let have = frozen();
     for e in entries.flatten() {
         let Some(f) = format_of(&e.path()) else { continue };
-        assert!(Path::new(FORMATS).join(f.to_string()).join("instrument.json").exists(), "{}: format {f} has no frozen copy",
-            e.file_name().to_string_lossy());
+        let name = e.file_name().to_string_lossy().into_owned();
+        assert!(have.iter().any(|(g, _)| *g == f), "{name}: format {f} has no frozen copy");
+        // a hidden test fixture (registers_fixture: a piano with registers) is no released instrument
+        let hidden = std::fs::read_to_string(e.path().join("instrument.json"))
+            .ok()
+            .and_then(|t| serde_json::from_str::<serde_json::Value>(&t).ok())
+            .is_some_and(|v| v["menu"]["hidden"] == true);
+        if !hidden && Instrument::load(e.path()).is_ok_and(|i| i.is_hammer_piano()) {
+            assert!(have.contains(&(f, true)), "{name}: a hammer piano of format {f}, none frozen");
+        }
     }
 }
