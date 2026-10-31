@@ -86,7 +86,7 @@ private:
     std::vector<Tie> fTies;
 };
 
-/// $XDG_CONFIG_HOME/pianoengine/midi-map.txt, else ~/.config/pianoengine/midi-map.txt (empty: neither set)
+/// midi-map.txt in the user config folder (pe::dataDirs: ~/.config/pianoengine on Linux; empty: none)
 std::string midiMapPath();
 /// "CC 21", "CC 21 at 0" (a step on the value 0), "CC 21 ±" (a relative knob), "CC 21 flip" (a pad flipping a switch)
 std::string tieLabel(const Tie& t);

@@ -50,7 +50,7 @@ std::vector<const Preset*> shippedFullPresets();
 std::string formatPreset(const Preset& p);
 bool parsePreset(const std::string& text, Preset& out);
 
-/// the user's presets' folder: $XDG_DATA_HOME/pianoengine/presets, else ~/.local/share/pianoengine/presets
+/// the user's presets' folder: the user data folder's presets (pe::dataDirs; empty: none)
 std::string presetDir();
 /// the user's presets in `dir` (unreadable or foreign files skipped), by name
 std::vector<Preset> loadUserPresets(const std::string& dir);

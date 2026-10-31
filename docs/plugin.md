@@ -43,6 +43,12 @@ The plugin lists every instrument directory it finds in these paths:
 
 A name found in an earlier path hides the same name in the later ones.
 
+The user folder (`~/.local/share/pianoengine` above, with the presets beside the instruments)
+is the platform's own: on Linux `$XDG_DATA_HOME/pianoengine`, else `~/.local/share/pianoengine`
+(the MIDI maps in `$XDG_CONFIG_HOME/pianoengine`, else `~/.config/pianoengine`); on macOS
+`~/Library/Application Support/PianoEngine`; on Windows `%APPDATA%\PianoEngine`
+(`plugin/src/Paths.cpp`).
+
 - **Menu entry**: from the file's `"menu"` block. Without one, the instrument is listed under
   "Other" by its directory's name.
 - **Controls shown**: from the engine's report on the file (`engine/src/info.rs`): the controls

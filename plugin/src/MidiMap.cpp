@@ -1,4 +1,5 @@
 #include "MidiMap.hpp"
+#include "Paths.hpp"
 #include "Format.hpp"
 
 #include <algorithm>
@@ -182,13 +183,8 @@ bool MidiMap::update(const std::string& path, const std::function<void(MidiMap&)
 
 std::string midiMapPath()
 {
-    const char* xdg = std::getenv("XDG_CONFIG_HOME");
-    if (xdg != nullptr && xdg[0] == '/')
-        return std::string(xdg) + "/pianoengine/midi-map.txt";
-    const char* home = std::getenv("HOME");
-    if (home != nullptr && home[0] != '\0')
-        return std::string(home) + "/.config/pianoengine/midi-map.txt";
-    return std::string();
+    const std::string config = pe::dataDirs().config;
+    return config.empty() ? config : config + "/midi-map.txt";
 }
 
 std::string tieLabel(const Tie& t)

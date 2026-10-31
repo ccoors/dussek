@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <map>
 #include "Params.hpp"
+#include "Paths.hpp"
 #include "PedalMixer.hpp"
 #include "Presets.hpp"
 #include "Format.hpp"
@@ -5663,4 +5664,39 @@ TEST(a_preset_rows_menu_offers_save_and_deletes_only_the_users)
     CHECK(pe::presetMenu(offered, 1, true).items[3] == "Delete “Mine”: click again to confirm");
     CHECK(pe::presetMenu(offered, -1, false).items.size() == 3);
     CHECK(pe::presetLabel(offered, 1) == "Mine" && pe::presetLabel(offered, -1) == "None");
+}
+
+TEST(data_dirs_per_platform)
+{
+    // the folders for your own files (presets, MIDI maps, instruments you add, snapshots), from an
+    // environment and a platform; Linux's as before
+    using pe::Platform;
+    const auto env = [](std::map<std::string, std::string> m) {
+        return [m](const char* k) -> const char* {
+            auto it = m.find(k);
+            return it == m.end() ? nullptr : it->second.c_str();
+        };
+    };
+    auto d = pe::dataDirs(env({{"HOME", "/home/u"}}), Platform::Linux);
+    CHECK(d.data == "/home/u/.local/share/pianoengine" && d.config == "/home/u/.config/pianoengine");
+    d = pe::dataDirs(env({{"HOME", "/home/u"}, {"XDG_DATA_HOME", "/x/d"}, {"XDG_CONFIG_HOME", "/x/c"}}), Platform::Linux);
+    CHECK(d.data == "/x/d/pianoengine" && d.config == "/x/c/pianoengine");
+    // a relative XDG folder is not one (the XDG spec): the default instead
+    d = pe::dataDirs(env({{"HOME", "/home/u"}, {"XDG_DATA_HOME", "rel"}, {"XDG_CONFIG_HOME", "rel"}}), Platform::Linux);
+    CHECK(d.data == "/home/u/.local/share/pianoengine" && d.config == "/home/u/.config/pianoengine");
+    d = pe::dataDirs(env({}), Platform::Linux);
+    CHECK(d.data.empty() && d.config.empty());
+    d = pe::dataDirs(env({{"HOME", "/Users/u"}, {"XDG_DATA_HOME", "/x/d"}}), Platform::MacOS);
+    CHECK(d.data == "/Users/u/Library/Application Support/PianoEngine" && d.config == d.data);
+    d = pe::dataDirs(env({{"APPDATA", "C:\\Users\\u\\AppData\\Roaming"}, {"HOME", "/c/Users/u"}}), Platform::Windows);
+    CHECK(d.data == "C:\\Users\\u\\AppData\\Roaming/PianoEngine" && d.config == d.data);
+    d = pe::dataDirs(env({{"HOME", "/c/Users/u"}}), Platform::Windows);
+    CHECK(d.data.empty());
+    // the process's own: the readers agree with it
+    const pe::DataDirs here = pe::dataDirs();
+    if (!here.data.empty()) {
+        CHECK(Catalog::searchPaths(nullptr).back() == here.data + "/snapshots");
+        CHECK(presetDir() == here.data + "/presets");
+        CHECK(midiMapPath() == here.config + "/midi-map.txt");
+    }
 }

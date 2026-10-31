@@ -25,8 +25,8 @@ struct InstrumentEntry {
 class Catalog {
 public:
     /// the search paths, in precedence order: $PIANOENGINE_INSTRUMENTS, <resources>/instruments,
-    /// $XDG_DATA_HOME/pianoengine/instruments (or ~/.local/share/…), then its snapshots folder
-    /// (proto/snapshot.py); unset ones left out
+    /// the user data folder's instruments (pe::dataDirs: ~/.local/share/pianoengine/instruments on
+    /// Linux), then its snapshots folder (proto/snapshot.py); unset ones left out
     static std::vector<std::string> searchPaths(const char* resources);
     /// every subdirectory with an instrument.json (that the engine's report accepts) and a data.bin
     /// (present); an id seen in an earlier path shadows later ones; rejected files are left out

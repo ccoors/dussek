@@ -1,4 +1,5 @@
 #include "Presets.hpp"
+#include "Paths.hpp"
 
 #include "Params.hpp"
 #include "pianoengine.h"
@@ -225,11 +226,8 @@ bool parsePreset(const std::string& text, Preset& out)
 
 std::string presetDir()
 {
-    if (const char* xdg = std::getenv("XDG_DATA_HOME"); xdg != nullptr && *xdg)
-        return std::string(xdg) + "/pianoengine/presets";
-    if (const char* home = std::getenv("HOME"); home != nullptr && *home)
-        return std::string(home) + "/.local/share/pianoengine/presets";
-    return std::string();
+    const std::string data = pe::dataDirs().data;
+    return data.empty() ? data : data + "/presets";
 }
 
 std::vector<Preset> loadUserPresets(const std::string& dir)

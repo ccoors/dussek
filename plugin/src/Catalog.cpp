@@ -1,4 +1,5 @@
 #include "Catalog.hpp"
+#include "Paths.hpp"
 
 #include <algorithm>
 #include <cstdio>
@@ -70,12 +71,7 @@ std::vector<std::string> Catalog::searchPaths(const char* resources)
         p.push_back(env);
     if (resources != nullptr)
         p.push_back(std::string(resources) + "/instruments");
-    std::string data;
-    if (const char* xdg = std::getenv("XDG_DATA_HOME"); xdg != nullptr && *xdg)
-        data = std::string(xdg) + "/pianoengine";
-    else if (const char* home = std::getenv("HOME"))
-        data = std::string(home) + "/.local/share/pianoengine";
-    if (!data.empty()) {
+    if (const std::string data = pe::dataDirs().data; !data.empty()) {
         p.push_back(data + "/instruments");
         // instruments from git refs (proto/snapshot.py), for development; missing folders are skipped
         p.push_back(data + "/snapshots");
