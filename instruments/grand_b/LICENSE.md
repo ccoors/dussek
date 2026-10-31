@@ -1,6 +1,6 @@
 # License: Grand B (`grand_b`)
 
-This instrument (the files in this directory) was made with PianoEngine, by Christian Friedrich Coors.
+This instrument (the files in this directory) was made with Dussek, by Christian Friedrich Coors.
 It is licensed under the **Creative Commons Attribution 4.0 International** license (CC BY 4.0, https://creativecommons.org/licenses/by/4.0/).
 
 Music made with this instrument (renders, recordings, performances) is yours: use it freely, without credit.
@@ -12,4 +12,4 @@ It was fitted from these recordings. No audio from them is contained here: they 
 - **VCSL Keys: Grand "S Model B 1895"** by Versilian Studios, https://github.com/sgossner/VCSL: CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/). The Versilian Community Sample Library. (borrowed: dampers from Grand E)
 - **Salamander Grand Piano V3** by Alexander Holm, https://rytmenpinne.wordpress.com/sounds-and-such/salamander-grandpiano/: public domain. "As of 4.3.2022, this is now public domain!" (its author's page; CC BY 3.0 before). (borrowed: release, pedal from Grand A)
 
-Credit it as: Grand B from PianoEngine (CC BY 4.0), fitted from University of Iowa Musical Instrument Samples: Piano; VCSL Keys: Grand "S Model B 1895"; Salamander Grand Piano V3.
+Credit it as: Grand B from Dussek (CC BY 4.0), fitted from University of Iowa Musical Instrument Samples: Piano; VCSL Keys: Grand "S Model B 1895"; Salamander Grand Piano V3.

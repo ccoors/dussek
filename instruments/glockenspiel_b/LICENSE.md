@@ -1,6 +1,6 @@
 # License: Glockenspiel B (`glockenspiel_b`)
 
-This instrument (the files in this directory) was made with PianoEngine, by Christian Friedrich Coors.
+This instrument (the files in this directory) was made with Dussek, by Christian Friedrich Coors.
 It is licensed under the **Creative Commons Attribution 4.0 International** license (CC BY 4.0, https://creativecommons.org/licenses/by/4.0/).
 
 Music made with this instrument (renders, recordings, performances) is yours: use it freely, without credit.
@@ -10,4 +10,4 @@ It was fitted from these recordings. No audio from them is contained here: they 
 
 - **VCSL: Glockenspiel** by Versilian Studios, https://github.com/sgossner/VCSL: CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/). The Versilian Community Sample Library.
 
-Credit it as: Glockenspiel B from PianoEngine (CC BY 4.0), fitted from VCSL: Glockenspiel.
+Credit it as: Glockenspiel B from Dussek (CC BY 4.0), fitted from VCSL: Glockenspiel.

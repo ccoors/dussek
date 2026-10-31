@@ -30,7 +30,7 @@ sys.path.insert(0, os.path.join(HERE, "..", "analysis"))
 import project as P  # noqa: E402
 
 AUTHOR = "Christian Friedrich Coors"
-NAME = "PianoEngine"
+NAME = "Dussek"
 SOURCE_LICENSES = {"CC0", "public-domain", "free-use", "CC-BY-3.0", "CC-BY-4.0", "CC-BY-SA-4.0"}
 LICENSES = {
     "CC BY 4.0": ("Creative Commons Attribution 4.0 International", "https://creativecommons.org/licenses/by/4.0/"),
