@@ -1,5 +1,5 @@
-//! The `level` tool writes an instrument's ff level (`Instrument::ff_level`) and a hammer piano's
-//! level table (`Instrument::level_curve`) to its level.json.
+//! The `level` tool prints an instrument's ff level (`Instrument::ff_level`) and a hammer piano's
+//! level table (`Instrument::level_curve`) as the JSON its instrument.json keeps (`level`).
 //! Needs the exported instruments (skipped without them).
 
 use std::process::Command;
@@ -9,7 +9,7 @@ use dussek::Instrument;
 const A: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_a");
 
 #[test]
-fn the_tool_writes_the_measured_level() {
+fn the_tool_prints_the_measured_level() {
     if !std::path::Path::new(A).exists() {
         return;
     }
@@ -18,10 +18,16 @@ fn the_tool_writes_the_measured_level() {
     for f in ["instrument.json", "data.bin"] {
         std::fs::copy(std::path::Path::new(A).join(f), dir.join(f)).unwrap();
     }
-    let _ = std::fs::remove_file(dir.join("level.json"));
-    let status = Command::new(env!("CARGO_BIN_EXE_level")).arg(&dir).status().unwrap();
-    assert!(status.success());
-    let v: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(dir.join("level.json")).unwrap()).unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_level")).arg(&dir).output().unwrap();
+    assert!(out.status.success());
+    let v: serde_json::Value = serde_json::from_str(&String::from_utf8(out.stdout).unwrap()).unwrap();
+    let files: Vec<_> = std::fs::read_dir(&dir).unwrap().map(|e| e.unwrap().file_name()).collect();
+    assert_eq!(files.len(), 2, "the tool writes nothing: {files:?}");
+    // kept as the export keeps it, read back
+    let path = dir.join("instrument.json");
+    let mut doc: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
+    doc["level"] = v.clone();
+    std::fs::write(&path, doc.to_string()).unwrap();
     assert_eq!(v["keys"], serde_json::json!([48, 60, 72]));
     let inst = Instrument::load(&dir).unwrap();
     let want = inst.ff_level().unwrap();

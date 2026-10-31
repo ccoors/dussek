@@ -10,7 +10,7 @@
   "version": 2
  },
  "project:vibraphone:export_bars": {
-  "commit": "f91db11+dirty adopted",
+  "commit": "5566a91+dirty",
   "inputs": {
    "fit.hammer_speeds": "ccea8f2e456036e1",
    "fit.keys": "02e3b618028c64ab",
@@ -23,8 +23,8 @@
    "project.project": "aeecca70be0694d3",
    "project.sources": "6f068a00dd21e219"
   },
-  "seq": 53,
-  "version": 4
+  "seq": 54,
+  "version": 5
  },
  "source:vibraphone:modes": {
   "commit": "f91db11+dirty adopted",

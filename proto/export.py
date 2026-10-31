@@ -43,6 +43,7 @@ buff stop's pads, σ_buff(k) = flat + gain·sin²(k·π·pos) (fit_buff.py).
 Usage: export.py --project grand_a
 """
 import argparse
+import hashlib
 import json
 from dataclasses import replace
 import os
@@ -69,15 +70,30 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SR = 48000
 
 
+def data_tie(data):
+    """instrument.json's `data`: the data.bin it is written with (its size and SHA-256; the engine
+    refuses another)."""
+    return {"bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}
+
+
+def write_json(outdir, doc):
+    with open(os.path.join(outdir, "instrument.json"), "w") as f:
+        f.write(json.dumps(doc))
+
+
 def write_instrument(outdir, snapdir, doc, blob):
-    """The instrument's files; the ones they replace, when they differ, kept in `snapdir` (the
-    editor's Compare page plays them as Original: the instrument before the last build)."""
-    text = json.dumps(doc)
+    """The instrument's files, `doc` tied to its data (`data`, set here); the ones they replace, when
+    they differ (their measured `level` aside), kept in `snapdir` (the editor's Compare page plays
+    them as Original: the instrument before the last build)."""
     data = b"".join(blob.parts)
+    doc["data"] = data_tie(data)
+    text = json.dumps(doc)
     old_json, old_bin = os.path.join(outdir, "instrument.json"), os.path.join(outdir, "data.bin")
     if os.path.exists(old_json) and os.path.exists(old_bin):
         with open(old_json) as f, open(old_bin, "rb") as g:
-            same = f.read() == text and g.read() == data
+            old = json.load(f)
+            old.pop("level", None)
+            same = old == json.loads(text) and g.read() == data
         if not same:
             os.makedirs(snapdir, exist_ok=True)
             os.replace(old_json, os.path.join(snapdir, "instrument.json"))
@@ -90,11 +106,19 @@ def write_instrument(outdir, snapdir, doc, blob):
 
 
 def measure_level(outdir):
-    """The exported instrument's ff level, as the engine plays it, into its level.json (the engine's
-    `level` tool; a morph reads it instead of measuring the instrument)."""
+    """The exported instrument's level as the engine plays it (the engine's `level` tool: its ff
+    level, which a morph reads instead of measuring the instrument, and a hammer piano's level
+    table); `store_level` keeps it in instrument.json."""
     manifest = os.path.join(HERE, "..", "engine", "Cargo.toml")
-    subprocess.run(["cargo", "run", "--release", "--quiet", "--manifest-path", manifest, "--bin", "level", "--", outdir],
-                   check=True)
+    out = subprocess.run(["cargo", "run", "--release", "--quiet", "--manifest-path", manifest, "--bin", "level", "--", outdir],
+                         check=True, stdout=subprocess.PIPE, text=True).stdout
+    return json.loads(out)
+
+
+def store_level(outdir, doc, level_doc):
+    """instrument.json with its measured level (`level`, the last key)."""
+    doc["level"] = level_doc
+    write_json(outdir, doc)
 
 
 def apply_even_levels(doc, level_doc, table):
@@ -741,27 +765,27 @@ def main():
     try:
         write_instrument(outdir, snapdir, doc, blob)
         print(f"wrote {outdir}: {blob.offset / 1e6:.2f} MB data")
-        measure_level(outdir)
-        with open(os.path.join(outdir, "level.json")) as f:
-            level_doc = json.load(f)
+        level_doc = measure_level(outdir)
         if apply_even_levels(doc, level_doc, even):
             # the corrected instrument.json only (the data is the same): write_instrument would keep
             # the uncorrected one as the previous export
-            with open(os.path.join(outdir, "instrument.json"), "w") as g:
-                g.write(json.dumps(doc))
+            write_json(outdir, doc)
             rows = np.array(EL.corrections(level_doc, doc["velocity"]["speed"], even))
             print(f"even levels: per key {rows.min():+.1f} … {rows.max():+.1f} dB, rms "
                   + " ".join(f"{d} {np.sqrt(np.mean(rows[:, i] ** 2)):.1f}" for i, d in enumerate(EL.DYNAMICS)) + " dB")
-            measure_level(outdir)
+            level_doc = measure_level(outdir)
         if trimmed is not None:
             blob.replace(c_ref, np.array(corr[1]))
             if add_register:
                 blob.replace(c2_ref, np.asarray(C2_trimmed, float))
             with open(os.path.join(outdir, "data.bin"), "wb") as g:
                 g.write(b"".join(blob.parts))
+            doc["data"] = data_tie(b"".join(blob.parts))
+            write_json(outdir, doc)
             print("board trim: " + ", ".join(f"{r[0]:g} Hz {r[1]:+.1f} dB" + (f" (keys {r[2]:g} → {r[3]:g})" if len(r) == 4 else "")
                                              for r in P.section(main, "board")["trim_db"]))
-            measure_level(outdir)
+            level_doc = measure_level(outdir)
+        store_level(outdir, doc, level_doc)
         LIC.write(args.project, outdir)
         if args.variant:
             if os.path.exists(final):

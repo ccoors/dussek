@@ -10,7 +10,7 @@
   "version": 2
  },
  "project:kalimba:export_bars": {
-  "commit": "f91db11+dirty adopted",
+  "commit": "5566a91+dirty",
   "inputs": {
    "fit.hammer_speeds": "8a836de31dfbc25b",
    "fit.keys": "803975dcec2e11e2",
@@ -23,8 +23,8 @@
    "project.project": "ef7738e5ccf98c02",
    "project.sources": "0846592653c5194e"
   },
-  "seq": 35,
-  "version": 4
+  "seq": 36,
+  "version": 5
  },
  "source:kalimba:modes": {
   "commit": "f91db11+dirty adopted",

@@ -10,7 +10,7 @@
   "version": 2
  },
  "project:bells:export_bars": {
-  "commit": "f91db11+dirty adopted",
+  "commit": "5566a91+dirty",
   "inputs": {
    "fit.hammer_speeds": "b3ccb1b9c913a58b",
    "fit.keys": "615e00b001b8e2ec",
@@ -23,8 +23,8 @@
    "project.project": "a5df5d8b6390b78b",
    "project.sources": "1f2ebdd79e55cc8e"
   },
-  "seq": 45,
-  "version": 4
+  "seq": 46,
+  "version": 5
  },
  "source:bells_brass:modes": {
   "commit": "f91db11+dirty adopted",

@@ -146,3 +146,18 @@ def test_a_broken_export_is_refused_with_the_engines_message(repo, tmp_path):
     with pytest.raises(SN.SnapshotError, match="EOF while parsing"):
         SN.snapshot("HEAD", ["broken"], dest, repo, check=lambda d: "EOF while parsing")
     assert os.listdir(dest) == []
+
+
+def test_an_older_refs_level_json_moves_into_instrument_json(repo, tmp_path):
+    # exports before step 214 kept their level in level.json, which the engine no longer reads
+    d = os.path.join(repo, "instruments", "harp")
+    with open(os.path.join(d, "level.json"), "w") as fh:
+        json.dump({"ff_db": -15.5, "keys": [48, 60, 72]}, fh)
+    _git(repo, "-c", "user.name=t", "-c", "user.email=t@t", "add", ".")
+    _git(repo, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "level")
+    _git(repo, "tag", "t/2")
+    dest = str(tmp_path / "snap")
+    SN.snapshot("t/2", ["harp"], dest, repo, check=ok)
+    j = json.load(open(os.path.join(dest, "harp@t-2", "instrument.json")))
+    assert j["level"] == {"ff_db": -15.5, "keys": [48, 60, 72]}
+    assert not os.path.exists(os.path.join(dest, "harp@t-2", "level.json"))

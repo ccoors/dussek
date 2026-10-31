@@ -524,10 +524,21 @@ struct RawRadiationSet {
     room: RawRoom,
 }
 
+/// The data.bin an instrument.json was written with: its size and SHA-256 (hex). Absent in a
+/// hand-made or older file, which then loads unchecked.
+#[derive(Clone, Deserialize)]
+struct RawTie {
+    bytes: usize,
+    sha256: String,
+}
+
 #[derive(Clone, Deserialize)]
 struct RawInstrument {
     format: u32,
     profile: String,
+    /// the data.bin it was written with (`check_tie`)
+    #[serde(default)]
+    data: Option<RawTie>,
     /// the microphone geometry (`mic::Body::from_name`: "upright", "harp", "vibraphone", …; none: a grand)
     #[serde(default)]
     body: Option<String>,
@@ -729,7 +740,7 @@ pub struct Instrument {
     pub velocity_midi: [f64; 3],
     pub velocity_speed: [f64; 3],
     /// a hammer piano's level over its hammer speed per key, as the engine plays it
-    /// (`Instrument::level_curve`, stored in level.json); empty: none (the velocity plays the
+    /// (`Instrument::level_curve`, stored in instrument.json's `level`); empty: none (the velocity plays the
     /// anchors)
     pub dynamics: Dynamics,
     pub contact_max_s: f64,
@@ -805,7 +816,7 @@ fn radiation(d: &Data, r: &RawRadiation) -> Result<Radiation, Error> {
     Ok(Radiation { channels: r.channels, ir: all.chunks_exact(r.len).map(<[f32]>::to_vec).collect() })
 }
 
-/// The keys whose ff level sets a morph's level (`Instrument::ff_level`, level.json).
+/// The keys whose ff level sets a morph's level (`Instrument::ff_level`, instrument.json's `level`).
 pub const LEVEL_KEYS: [u8; 3] = [48, 60, 72];
 
 /// The level table's speeds (`Instrument::level_curve`): the ff anchor's speed × 2^(k/2), octaves
@@ -851,7 +862,7 @@ impl Dynamics {
         self.keys.is_empty()
     }
 
-    /// The table as level.json's `speed_db` holds it (speeds in m/s).
+    /// The table as the stored level's `speed_db` holds it (speeds in m/s).
     pub fn to_json(&self) -> serde_json::Value {
         serde_json::json!({ "keys": self.keys, "speed": self.ln_speed.iter().map(|l| l.exp()).collect::<Vec<_>>(), "db": self.db })
     }
@@ -908,19 +919,26 @@ fn played_table(played: &Dynamics, measured: &Dynamics, edited: Dynamics) -> Dyn
     Dynamics { db, ..edited }
 }
 
-/// The ff level stored with the instrument in `dir` (its level.json, written by the export through
-/// the `level` tool): None when absent, unreadable, or measured on other keys.
+/// The level the export measured, stored in the instrument's instrument.json (`level`: the `level`
+/// tool's output, `Instrument::level_doc`); None when absent or unreadable.
+fn stored(dir: &Path) -> Option<serde_json::Value> {
+    let mut v: serde_json::Value = serde_json::from_str(&fs::read_to_string(dir.join("instrument.json")).ok()?).ok()?;
+    v.get_mut("level").map(serde_json::Value::take)
+}
+
+/// The ff level stored with the instrument in `dir`: None when absent, unreadable, or measured on
+/// other keys.
 pub fn stored_level(dir: &Path) -> Option<f64> {
-    let v: serde_json::Value = serde_json::from_str(&fs::read_to_string(dir.join("level.json")).ok()?).ok()?;
+    let v = stored(dir)?;
     let keys: Vec<u64> = v.get("keys")?.as_array()?.iter().filter_map(|k| k.as_u64()).collect();
     (keys == LEVEL_KEYS.map(u64::from)).then(|| v.get("ff_db")?.as_f64()).flatten().filter(|x| x.is_finite())
 }
 
-/// The level table stored with the instrument in `dir` (level.json's `speed_db`,
+/// The level table stored with the instrument in `dir` (its level's `speed_db`,
 /// `Dynamics::to_json`): empty when absent or unreadable.
 pub fn stored_dynamics(dir: &Path) -> Dynamics {
     let read = || -> Option<Dynamics> {
-        let v: serde_json::Value = serde_json::from_str(&fs::read_to_string(dir.join("level.json")).ok()?).ok()?;
+        let v = stored(dir)?;
         Dynamics::from_json(v.get("speed_db")?)
     };
     read().unwrap_or_default()
@@ -954,8 +972,24 @@ fn decode(dir: &Path) -> Result<Decoded, Error> {
     let full = fs::canonicalize(dir).unwrap_or_else(|_| dir.to_path_buf());
     let name = full.file_name().map_or_else(String::new, |n| n.to_string_lossy().into_owned());
     let json = fs::read(dir.join("instrument.json")).map_err(|e| err(format!("instrument.json: {e}")))?;
+    check_tie(raw.data.as_ref(), &data.0)?;
     let content = fingerprint(&json, &data.0);
     Ok(Decoded { raw, data, name, path: full.display().to_string(), content })
+}
+
+/// data.bin against the size and SHA-256 its instrument.json names: another export's, or a cut one,
+/// is refused (an instrument.json without them takes any)
+fn check_tie(tie: Option<&RawTie>, data: &[u8]) -> Result<(), Error> {
+    use sha2::{Digest, Sha256};
+    let Some(t) = tie else { return Ok(()) };
+    if data.len() != t.bytes {
+        return Err(err(format!("data.bin: {} bytes, instrument.json was written with {}", data.len(), t.bytes)));
+    }
+    let hex: String = Sha256::digest(data).iter().map(|b| format!("{b:02x}")).collect();
+    if !hex.eq_ignore_ascii_case(&t.sha256) {
+        return Err(err("data.bin: not the one instrument.json was written with (its SHA-256 differs)"));
+    }
+    Ok(())
 }
 
 /// instrument.json, parsed and checked (the format, the mallets), without data.bin
@@ -1013,7 +1047,7 @@ pub(crate) struct Facts {
     /// a membrane on the sympathetic control (the balafon's gourds)
     pub membrane_sympathetic: bool,
     pub mallets: Vec<String>,
-    /// level.json holds a level table (`stored_dynamics`)
+    /// the stored level holds a level table (`stored_dynamics`)
     pub level_table: bool,
     /// every register's notes
     pub notes: Vec<NoteFacts>,
@@ -1451,7 +1485,7 @@ impl Instrument {
         Ok(inst)
     }
 
-    /// The instrument's level.json as the engine plays it: its ff level (`ff_level`, which a morph
+    /// The instrument's level as the engine plays it (instrument.json's `level`): its ff level (`ff_level`, which a morph
     /// reads) and, a hammer piano's, its level table (`level_curve`, `speed_db`).
     pub fn level_doc(&self) -> Result<serde_json::Value, Error> {
         let mut doc = serde_json::json!({ "ff_db": self.ff_level()?, "keys": LEVEL_KEYS });

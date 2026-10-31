@@ -191,7 +191,7 @@
   "version": 1
  },
  "project:guitar:export": {
-  "commit": "f91db11+dirty adopted",
+  "commit": "5566a91+dirty",
   "inputs": {
    "cache.*": "e856fab0c5ed58f8",
    "cache.analysis": "2ea8e61a52d6a666",
@@ -239,8 +239,8 @@
    "uses.pedal:cache.pedal_noise": "6e9c960fd025b2e5",
    "uses.release:cache.release": "13cc8e848cb8374b"
   },
-  "seq": 160,
-  "version": 2
+  "seq": 161,
+  "version": 3
  },
  "source:guitar:analyze": {
   "commit": "f91db11+dirty adopted",

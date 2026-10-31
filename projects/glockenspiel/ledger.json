@@ -10,7 +10,7 @@
   "version": 2
  },
  "project:glockenspiel:export_bars": {
-  "commit": "f91db11+dirty adopted",
+  "commit": "5566a91+dirty",
   "inputs": {
    "fit.hammer_speeds": "865597ba492192c3",
    "fit.keys": "e4d859ec8c96bad8",
@@ -23,8 +23,8 @@
    "project.project": "159ade1c86c00259",
    "project.sources": "75ba57c8bbf7cdda"
   },
-  "seq": 29,
-  "version": 4
+  "seq": 30,
+  "version": 5
  },
  "source:glockenspiel:modes": {
   "commit": "f91db11+dirty adopted",

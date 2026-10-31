@@ -143,7 +143,7 @@
   "version": 1
  },
  "project:harp:export": {
-  "commit": "f91db11+dirty adopted",
+  "commit": "5566a91+dirty",
   "inputs": {
    "cache.*": "a73592781eaefd31",
    "cache.analysis": "020434959418388a",
@@ -191,8 +191,8 @@
    "uses.pedal:cache.pedal_noise": "6e9c960fd025b2e5",
    "uses.release:cache.release": "13cc8e848cb8374b"
   },
-  "seq": 132,
-  "version": 2
+  "seq": 134,
+  "version": 3
  },
  "source:harp:analyze": {
   "commit": "f91db11+dirty adopted",

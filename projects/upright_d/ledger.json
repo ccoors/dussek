@@ -255,7 +255,7 @@
   "version": 1
  },
  "project:upright_d:export": {
-  "commit": "aaf1143+dirty",
+  "commit": "5566a91+dirty",
   "inputs": {
    "cache.*": "ea4097a2e30b76f0",
    "cache.analysis": "a3840eb6dec359b2",
@@ -303,8 +303,8 @@
    "uses.pedal:cache.pedal_noise": "6e9c960fd025b2e5",
    "uses.release:cache.release": "13cc8e848cb8374b"
   },
-  "seq": 118,
-  "version": 2
+  "seq": 119,
+  "version": 3
  },
  "source:upright_d:analyze": {
   "commit": "aaf1143+dirty",

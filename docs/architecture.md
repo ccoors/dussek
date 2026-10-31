@@ -30,11 +30,12 @@ An instrument is a directory under `instruments/` (or any search path of the plu
   hammer impact, release, pedal, room), the phantom partials' level, the velocity map, the output
   gain, the body (which geometry places the microphones), the registers (each with the stop that plays
   it: a recorded second 8′ sits on the 8′ II's), the recorded range and
-  the menu entry (`[menu]` in the project: name, group, labels, the strip's key colors).
+  the menu entry (`[menu]` in the project: name, group, labels, the strip's key colors); `level`,
+  the engine's measured ff level, for morphing at matched loudness [116], and a piano's level over
+  its hammer speed on every key, which maps its velocity [124]; `data`, the size and SHA-256 of the
+  `data.bin` it was written with (another, or a cut one, is refused) [214].
 - `data.bin`: the arrays the JSON points into (little-endian), among them the two fitted radiation
   responses (the recording's fine structure), the board's modes and the per-note correction.
-- `level.json`: the engine's measured ff level, for morphing at matched loudness [116]; a piano's
-  level over its hammer speed on every key, which maps its velocity [124].
 - `LICENSE.md`: the instrument's license (CC BY 4.0, or CC BY-SA 4.0 where a ShareAlike set is
   reached through `[uses]`) and the credit of every set it was fitted from (`proto/license.py`).
 
@@ -200,7 +201,7 @@ worker.
 - the vibraphone's motor [41];
 - the membranes' buzz and rattle [60, 70];
 - the velocity curve [110], then on the pianos the Dynamics: each key struck at the speed at which
-  its level table (`level.json`) gives one curve over the velocity, its range the control [124].
+  its level table (`instrument.json`'s `level`) gives one curve over the velocity, its range the control [124].
 
 **Real-time rules**: the audio thread never allocates, blocks or frees (`engine/tests/realtime.rs`
 counts it). The engine sets flush-to-zero itself. Panic fades out over 20 ms and leaves exact
@@ -271,7 +272,7 @@ engine.
 ## How the layers check each other
 
 - Every exported instrument against renders: the engine's report must equal what the renders
-  measure (`engine/tests/no_effect.rs`). `level.json` must match the engine within 0.1 dB, its
+  measure (`engine/tests/no_effect.rs`). The stored level must match the engine within 0.1 dB, its
   level table within 0.2 dB (`engine/tests/level_files.rs`).
 - The plugin's UI per instrument, position and preparation is recorded in
   `plugin/tests/visibility.txt` (`PE_WRITE_UI_TABLE=1` rewrites it; read its diff).

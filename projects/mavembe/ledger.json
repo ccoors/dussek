@@ -10,7 +10,7 @@
   "version": 2
  },
  "project:mavembe:export_bars": {
-  "commit": "f91db11+dirty adopted",
+  "commit": "5566a91+dirty",
   "inputs": {
    "fit.hammer_speeds": "8a836de31dfbc25b",
    "fit.keys": "2bdac376d1d589ff",
@@ -23,8 +23,8 @@
    "project.project": "ef7738e5ccf98c02",
    "project.sources": "1186849f68c470ac"
   },
-  "seq": 10,
-  "version": 4
+  "seq": 11,
+  "version": 5
  },
  "source:mavembe:modes": {
   "commit": "f91db11+dirty adopted",

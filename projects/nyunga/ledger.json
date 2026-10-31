@@ -10,7 +10,7 @@
   "version": 2
  },
  "project:nyunga:export_bars": {
-  "commit": "f91db11+dirty adopted",
+  "commit": "5566a91+dirty",
   "inputs": {
    "fit.hammer_speeds": "8a836de31dfbc25b",
    "fit.keys": "fe68fd5d61b4ef2c",
@@ -23,8 +23,8 @@
    "project.project": "ef7738e5ccf98c02",
    "project.sources": "b98e287fc35641b6"
   },
-  "seq": 10,
-  "version": 4
+  "seq": 11,
+  "version": 5
  },
  "source:nyunga:modes": {
   "commit": "f91db11+dirty adopted",

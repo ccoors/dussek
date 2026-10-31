@@ -23,7 +23,7 @@ but untested).
 | `proto/` | the offline model and its fits (Python); `build.py` runs a project's chain; renders in `proto/out/` (not in git) |
 | `proto/export.py`, `proto/export_bars.py` | write `instruments/<project>/` (strings, bars) |
 | `instruments/` | exported instruments, **committed**; re-export after changing a fit, an export or a menu entry |
-| `engine/` | the real-time engine (Rust 2024); `src/bin/`: `render`, `bench`, `midi2wav`, `level` (an export's `level.json`), `roll` (a rolled piano's export) |
+| `engine/` | the real-time engine (Rust 2024); `src/bin/`: `render`, `bench`, `midi2wav`, `level` (an export's measured level, kept in its `instrument.json`), `roll` (a rolled piano's export) |
 | `plugin/` | DPF wrapper (C++17): `src/Params.*` (the parameter table), `src/PianoPlugin.cpp` (DSP side), `src/ui/` (UI; pure logic in `pe_common`, tested by `tests/ui_tests.cpp`), `presets/` (the shipped presets), `tools/` (`run-standalone.sh`; `lv2render.c`, an offline LV2 host) |
 | `editor/` | the instrument editor (Rust 2024, egui): `src/` the logic (project files, the mapper ported from `analysis/mapping.py`, measurements, the suggestion, `rule.rs` the rule the pages edit, `wizard.rs`, the driver client), `src/ui/` the window (`steps/` the pages the wizard and a source's tabs share) |
 | `albums/demos/` | original demo pieces (CC0), the script that composes them and one that mixes the ensemble piece's stems; renders in `out/` (not in git) |

@@ -143,7 +143,7 @@
   "version": 1
  },
  "project:psaltery:export": {
-  "commit": "f91db11+dirty adopted",
+  "commit": "5566a91+dirty",
   "inputs": {
    "cache.*": "5f2b143fe140807c",
    "cache.analysis": "13e4f7f25ac4ddaa",
@@ -191,8 +191,8 @@
    "uses.pedal:cache.pedal_noise": "6e9c960fd025b2e5",
    "uses.release:cache.release": "13cc8e848cb8374b"
   },
-  "seq": 126,
-  "version": 2
+  "seq": 127,
+  "version": 3
  },
  "source:psaltery:analyze": {
   "commit": "f91db11+dirty adopted",

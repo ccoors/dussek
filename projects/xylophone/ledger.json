@@ -10,7 +10,7 @@
   "version": 2
  },
  "project:xylophone:export_bars": {
-  "commit": "f91db11+dirty adopted",
+  "commit": "5566a91+dirty",
   "inputs": {
    "fit.hammer_speeds": "0a2af2cd1b85740f",
    "fit.keys": "e2e0e75698bd9420",
@@ -23,8 +23,8 @@
    "project.project": "4b6e4f5ee1c1fc20",
    "project.sources": "7dc6534f78c3207f"
   },
-  "seq": 41,
-  "version": 4
+  "seq": 42,
+  "version": 5
  },
  "source:xylophone_hardrubber:modes": {
   "commit": "f91db11+dirty adopted",

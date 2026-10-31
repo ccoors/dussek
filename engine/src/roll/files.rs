@@ -29,8 +29,14 @@ const POLS: [&str; 2] = ["v", "h"];
 impl Export {
     pub fn read(dir: &Path) -> Result<Export, Error> {
         let text = fs::read_to_string(dir.join("instrument.json")).map_err(|e| err(format!("{}: instrument.json: {e}", dir.display())))?;
-        let json = serde_json::from_str(&text).map_err(|e| err(format!("{}: instrument.json: {e}", dir.display())))?;
+        let mut json: Value = serde_json::from_str(&text).map_err(|e| err(format!("{}: instrument.json: {e}", dir.display())))?;
         let data = fs::read(dir.join("data.bin")).map_err(|e| err(format!("{}: data.bin: {e}", dir.display())))?;
+        // the level measured on these files is not an edit's (`write_export` measures its own); the
+        // tie to data.bin is written again with the bytes (`write`)
+        if let Some(o) = json.as_object_mut() {
+            o.remove("level");
+            o.remove("data");
+        }
         Ok(Export { json, data })
     }
 
@@ -40,7 +46,14 @@ impl Export {
     pub fn write(&self, dir: &Path) -> Result<(), Error> {
         let io = |e: std::io::Error| err(format!("{}: {e}", dir.display()));
         fs::create_dir_all(dir).map_err(io)?;
-        let text = serde_json::to_string(&self.json).map_err(|e| err(format!("instrument.json: {e}")))?;
+        // the data.bin these bytes make (instrument.rs `check_tie`)
+        let mut json = self.json.clone();
+        if let Some(o) = json.as_object_mut() {
+            use sha2::{Digest, Sha256};
+            let hex: String = Sha256::digest(&self.data).iter().map(|b| format!("{b:02x}")).collect();
+            o.insert("data".into(), json!({ "bytes": self.data.len(), "sha256": hex }));
+        }
+        let text = serde_json::to_string(&json).map_err(|e| err(format!("instrument.json: {e}")))?;
         // temporary names of this write alone: two writers never share (and truncate) one file
         static COUNT: AtomicUsize = AtomicUsize::new(0);
         let tag = format!("{}-{}", std::process::id(), COUNT.fetch_add(1, Ordering::Relaxed));

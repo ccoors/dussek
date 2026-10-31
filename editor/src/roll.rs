@@ -211,8 +211,8 @@ pub fn adopt_knobs(r: &mut Recipe, knobs: &[f64]) {
     }
 }
 
-/// The export written to `dir` (instrument.json renamed last: never half a file), with its
-/// level.json and LICENSE.md.
+/// The export written to `dir` (instrument.json renamed last: never half a file, its level inside),
+/// with its LICENSE.md.
 pub fn write_preview_at(dir: &Path, e: &Export, license: &str) -> Result<(), String> {
     write_export(dir, e, license).map_err(|e| e.0)
 }

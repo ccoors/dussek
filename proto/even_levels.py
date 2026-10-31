@@ -3,7 +3,7 @@
 Each key's partials pass through the board's response and the seeded body; where they meet a peak
 or a notch the key comes out louder or quieter (Grand A at mf: 2–2.6 dB rms around a smooth trend,
 B7 10 dB under its neighbors). A voicer evens that out at the hammers. Per dynamic, the keys'
-levels as the engine plays them (level.json: each key's own ff level and its row over the hammer
+levels as the engine plays them (instrument.json's `level`: each key's own ff level and its row over the hammer
 speed), a trend through the ff levels that keeps the keyboard's slow shape, and per key the trend
 minus its level, plus a seeded scatter (a hammer's voicing acts on the whole key): added to the
 key's `level_db` correction at every dynamic, a shift of its level (the velocity follows each key's
@@ -45,7 +45,7 @@ def key_levels(level_doc, speeds):
     """Per dynamic the 88 keys' levels (dB): each key's own ff level plus its row of the level table at
     that dynamic's anchor speed (linear in ln speed). `speeds`: the export's velocity speeds, pp mf ff."""
     if "key_ff_db" not in level_doc or "speed_db" not in level_doc:
-        raise ValueError("level.json needs key_ff_db and speed_db (a hammer piano's, from the engine's level tool)")
+        raise ValueError("the level needs key_ff_db and speed_db (a hammer piano's, from the engine's level tool)")
     ff = np.asarray(level_doc["key_ff_db"], float)
     tab = level_doc["speed_db"]
     ln = np.log(np.asarray(tab["speed"], float))

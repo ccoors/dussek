@@ -10,7 +10,7 @@
   "version": 2
  },
  "project:handchimes:export_bars": {
-  "commit": "f91db11+dirty adopted",
+  "commit": "5566a91+dirty",
   "inputs": {
    "fit.hammer_speeds": "865597ba492192c3",
    "fit.keys": "4fef1684c02f3a92",
@@ -23,8 +23,8 @@
    "project.project": "2bcf52a85766d929",
    "project.sources": "2214dc634d404786"
   },
-  "seq": 34,
-  "version": 4
+  "seq": 35,
+  "version": 5
  },
  "source:handchimes:modes": {
   "commit": "f91db11+dirty adopted",

@@ -4,7 +4,7 @@ scratch folder (export.py / export_bars.py --out, from the fits and caches as th
 code and engine) and compared with instruments/<project>. Exit 1 when any differs.
 
 A difference is a sound change waiting for the next export: a cache that outlived the code that
-filled it (Grand A's release peaks, step 200), an engine change measured into level.json without
+filled it (Grand A's release peaks, step 200), an engine change measured into an instrument's level without
 the export that depends on it. Before merging a change to proto/ or engine/, or committing an
 export: `just reproduce` (about 2 min, every core; `just reproduce grand_a` one project).
 
@@ -26,7 +26,7 @@ import project as P  # noqa: E402
 
 import build  # noqa: E402
 
-FILES = ("instrument.json", "level.json", "LICENSE.md")
+FILES = ("instrument.json", "LICENSE.md")
 # below these a difference is rounding (a sum in another order): no sound change
 TOLERANCE = {"dB": 1e-6, "rel": 1e-9}
 

@@ -93,6 +93,12 @@ def _mark(instrument_dir, name, tag, commit):
     j["menu"] = menu
     # the commit too: a moving ref's next snapshot is another board and room for the engine's caches
     j["profile"] = f"{j.get('profile') or name}@{tag}#{commit[:9]}"
+    # an export before step 214 kept its measured level in level.json: the engine reads instrument.json's
+    level = os.path.join(instrument_dir, "level.json")
+    if os.path.exists(level):
+        with open(level) as fh:
+            j.setdefault("level", json.load(fh))
+        os.remove(level)
     with open(path, "w") as fh:
         json.dump(j, fh)
 

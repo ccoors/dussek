@@ -10,7 +10,7 @@
   "version": 2
  },
  "project:marimba:export_bars": {
-  "commit": "f91db11+dirty adopted",
+  "commit": "5566a91+dirty",
   "inputs": {
    "fit.hammer_speeds": "c7e2d4cba0d1e4bd",
    "fit.keys": "25f89acba13575de",
@@ -23,8 +23,8 @@
    "project.project": "b608bb4a37dee05e",
    "project.sources": "086b989d5d7b519f"
   },
-  "seq": 60,
-  "version": 4
+  "seq": 61,
+  "version": 5
  },
  "source:marimba_cord:modes": {
   "commit": "f91db11+dirty adopted",

@@ -80,7 +80,6 @@ fn body_db(cut: bool, mic: dussek::mic::MicPosition) -> Option<f64> {
         let d = std::env::temp_dir().join(format!("pe-room-uncut-{}", std::process::id()));
         std::fs::create_dir_all(&d).ok()?;
         std::fs::copy(src.join("data.bin"), d.join("data.bin")).ok()?;
-        std::fs::copy(src.join("level.json"), d.join("level.json")).ok()?; // the same speeds
         let mut j: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(src.join("instrument.json")).ok()?).ok()?;
         j["radiation"]["room"].as_object_mut()?.remove("eq_db");
         std::fs::write(d.join("instrument.json"), j.to_string()).ok()?;

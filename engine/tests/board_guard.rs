@@ -19,7 +19,10 @@ fn a_board_mode_below_0_hz_is_refused() {
     let v: serde_json::Value = serde_json::from_str(&json).unwrap();
     let off = v["board"]["f"]["o"].as_u64().unwrap() as usize;
     data[off..off + 8].copy_from_slice(&(-1.0f64).to_le_bytes());
-    std::fs::write(dir.join("instrument.json"), &json).unwrap();
+    // a hand edit: instrument.json no longer names this data.bin (its `data` tie), as a hand-made file
+    let mut v = v;
+    v.as_object_mut().unwrap().remove("data");
+    std::fs::write(dir.join("instrument.json"), v.to_string()).unwrap();
     std::fs::write(dir.join("data.bin"), &data).unwrap();
     let r = Instrument::load(&dir);
     std::fs::remove_dir_all(&dir).ok();

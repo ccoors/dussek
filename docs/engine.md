@@ -119,14 +119,15 @@ grands and uprights in any mix, and refuses others. What it blends:
 - the measured responses are mixed;
 - the noises and the room are interpolated.
 
-The morph plays at its instruments' mean level at ff. Each instrument's ff level is measured and
-stored in its `level.json`, which the export writes with the engine's `level` tool. A piano's
-`level.json` also holds its level over the hammer speed on every key (`speed_db`), through which
-its velocity plays (the Dynamics); a morph blends its pianos' tables. `engine/tests/level_files.rs`
-fails when the engine plays one 0.1 dB off (a table 0.2 dB); this writes it again (about 4 s for
-a piano):
+The morph plays at its instruments' mean level at ff. Each instrument's ff level is measured by
+the engine's `level` tool and stored in its `instrument.json` (`level`) by the export. A piano's
+level also holds its level over the hammer speed on every key (`speed_db`), through which its
+velocity plays (the Dynamics); a morph blends its pianos' tables. `engine/tests/level_files.rs`
+fails when the engine plays one 0.1 dB off (a table 0.2 dB); exporting it again (no refit) measures
+it again (the tool alone prints the level, writing nothing):
 
 ```sh
+just export <project>
 cargo run --release --manifest-path engine/Cargo.toml --bin level -- instruments/<dir>
 ```
 

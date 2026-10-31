@@ -19,10 +19,8 @@ import argparse
 import datetime
 import json
 import os
-import shutil
 import subprocess
 import sys
-import tempfile
 
 import numpy as np  # noqa: E402
 
@@ -158,7 +156,7 @@ LEVEL_TOOL = os.path.join(REPO, "engine", "target", "release", "level")
 def levels_of(level_doc, speeds):
     """{"ff": [[key, dB re the piano's median], …]}: each key's ff level, which sets its level at every
     velocity (the engine plays a velocity at the speed where the key sounds a set level under its
-    own ff), from a level.json with each key's ff level; {} without one."""
+    own ff), from a level with each key's ff level (the `level` tool's); {} without one."""
     try:
         ff = EL.key_levels(level_doc, speeds)["ff"]
     except ValueError:
@@ -167,18 +165,10 @@ def levels_of(level_doc, speeds):
 
 
 def levels(instrument_dir):
-    """Every key's level (levels_of) as the engine plays the instrument: its level tool on a copy
-    (instrument.json copied, the rest linked; ~2.5 s), so the export's own level.json stays as it is."""
-    with tempfile.TemporaryDirectory() as tmp:
-        for f in os.listdir(instrument_dir):
-            src = os.path.join(instrument_dir, f)
-            if f == "instrument.json":
-                shutil.copy(src, tmp)
-            elif os.path.isfile(src) and f != "level.json":
-                os.symlink(src, os.path.join(tmp, f))
-        subprocess.run([LEVEL_TOOL, tmp], check=True, capture_output=True)
-        with open(os.path.join(tmp, "level.json")) as fh:
-            doc = json.load(fh)
+    """Every key's level (levels_of) as the engine plays the instrument: its level tool (~2.5 s), which
+    prints the level and writes nothing."""
+    out = subprocess.run([LEVEL_TOOL, instrument_dir], check=True, capture_output=True, text=True).stdout
+    doc = json.loads(out)
     return levels_of(doc, _json(instrument_dir)["velocity"]["speed"])
 
 

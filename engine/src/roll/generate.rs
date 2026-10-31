@@ -358,14 +358,17 @@ pub fn license(recipe: &Recipe, instruments: &Path) -> String {
     )
 }
 
-/// level.json (its ff level, which a morph reads, and its level table, which maps its velocity) and
-/// LICENSE.md, then the export (instrument.json last: a plugin watching the folder reads the new
-/// files together).
+/// LICENSE.md, then the export with its level in instrument.json (its ff level, which a morph reads,
+/// and its level table, which maps its velocity; instrument.json last: a plugin watching the folder
+/// reads the new files together).
 pub fn write_export(dir: &Path, e: &Export, license: &str) -> Result<(), Error> {
     let doc = e.instrument()?.level_doc()?;
     let io = |x: std::io::Error| err(format!("{}: {x}", dir.display()));
     std::fs::create_dir_all(dir).map_err(io)?;
-    std::fs::write(dir.join("level.json"), serde_json::to_string_pretty(&doc).unwrap()).map_err(io)?;
     std::fs::write(dir.join("LICENSE.md"), license).map_err(io)?;
+    let mut e = e.clone();
+    if let Some(o) = e.json.as_object_mut() {
+        o.insert("level".into(), doc);
+    }
     e.write(dir)
 }

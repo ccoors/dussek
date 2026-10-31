@@ -10,7 +10,7 @@
   "version": 2
  },
  "project:chimes:export_bars": {
-  "commit": "f91db11+dirty adopted",
+  "commit": "5566a91+dirty",
   "inputs": {
    "fit.hammer_speeds": "8173590c5e2e5816",
    "fit.keys": "da3aadf344817386",
@@ -23,8 +23,8 @@
    "project.project": "b78761b65123d355",
    "project.sources": "66b197ab05d2d781"
   },
-  "seq": 45,
-  "version": 4
+  "seq": 46,
+  "version": 5
  },
  "source:chimes:modes": {
   "commit": "f91db11+dirty adopted",

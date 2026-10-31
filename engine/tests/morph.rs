@@ -125,9 +125,7 @@ fn level_corrections_blend_with_none() {
     let Ok(a) = Instrument::load(A) else { return };
     let none = std::env::temp_dir().join(format!("pe-morph-none-{}", std::process::id()));
     std::fs::create_dir_all(&none).unwrap();
-    for f in ["data.bin", "level.json"] {
-        std::fs::copy(std::path::Path::new(UPRIGHT).join(f), none.join(f)).unwrap();
-    }
+    std::fs::copy(std::path::Path::new(UPRIGHT).join("data.bin"), none.join("data.bin")).unwrap();
     let mut doc: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(std::path::Path::new(UPRIGHT).join("instrument.json")).unwrap()).unwrap();
     for n in doc["notes"].as_array_mut().unwrap() {
@@ -260,8 +258,8 @@ fn each_morph_has_its_own_cache_entry() {
     assert_eq!(cache.builds(), 2);
 }
 
-/// copies of instruments `dirs` in the test's temporary directory `name`, each with or without its
-/// level.json (written from `Instrument::ff_level`)
+/// copies of instruments `dirs` in the test's temporary directory `name`, each with or without a
+/// stored level (instrument.json's `level`, its ff level from `Instrument::ff_level`)
 fn copies(name: &str, dirs: &[&str], with_level: bool) -> Vec<std::path::PathBuf> {
     dirs.iter()
         .map(|d| {
@@ -271,10 +269,14 @@ fn copies(name: &str, dirs: &[&str], with_level: bool) -> Vec<std::path::PathBuf
             for f in ["instrument.json", "data.bin"] {
                 std::fs::copy(src.join(f), dst.join(f)).unwrap();
             }
-            let _ = std::fs::remove_file(dst.join("level.json"));
+            let path = dst.join("instrument.json");
+            let mut doc: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
+            doc.as_object_mut().unwrap().remove("level");
+            std::fs::write(&path, doc.to_string()).unwrap();
             if with_level {
                 let db = Instrument::load(&dst).unwrap().ff_level().unwrap();
-                std::fs::write(dst.join("level.json"), format!("{{\"ff_db\": {db}, \"keys\": [48, 60, 72]}}")).unwrap();
+                doc["level"] = serde_json::json!({ "ff_db": db, "keys": [48, 60, 72] });
+                std::fs::write(&path, doc.to_string()).unwrap();
             }
             dst
         })

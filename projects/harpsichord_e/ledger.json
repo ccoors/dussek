@@ -260,7 +260,7 @@
   "version": 1
  },
  "project:harpsichord_e:export": {
-  "commit": "f91db11+dirty adopted",
+  "commit": "5566a91+dirty",
   "inputs": {
    "cache.*": "caf2bfbf38e87f82",
    "cache.analysis": "a4e4fd3aabbc2a30",
@@ -308,8 +308,8 @@
    "uses.pedal:cache.pedal_noise": "6e9c960fd025b2e5",
    "uses.release:cache.release": "2692a820bd906ff8"
   },
-  "seq": 34,
-  "version": 2
+  "seq": 35,
+  "version": 3
  },
  "source:harpsichord_e_lower:analyze": {
   "commit": "f91db11+dirty adopted",

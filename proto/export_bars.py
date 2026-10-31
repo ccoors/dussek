@@ -56,7 +56,7 @@ import release
 import resonance
 import soundboard as SB
 from board import Board, DENSITY
-from export import Blob, DAMPER_LOG2, SR, calibration_gain_db, measure_level, write_instrument
+from export import Blob, DAMPER_LOG2, SR, calibration_gain_db, measure_level, store_level, write_instrument
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 BOARD_SEED = 17
@@ -355,7 +355,7 @@ def main():
     snapdir = os.path.join(outdir, ".previous") if args.out else os.path.join(P.project_dir(args.project), "cache", "previous-export")
     write_instrument(outdir, snapdir, doc, blob)
     print(f"wrote {outdir}: {blob.offset / 1e6:.2f} MB data, output gain {gain:+.2f} dB")
-    measure_level(outdir)
+    store_level(outdir, doc, measure_level(outdir))
     LIC.write(args.project, outdir)
 
 

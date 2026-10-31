@@ -10,7 +10,7 @@
   "version": 2
  },
  "project:mbira:export_bars": {
-  "commit": "f91db11+dirty adopted",
+  "commit": "5566a91+dirty",
   "inputs": {
    "fit.hammer_speeds": "8a836de31dfbc25b",
    "fit.keys": "39988b9b3d9e4f4a",
@@ -23,8 +23,8 @@
    "project.project": "ef7738e5ccf98c02",
    "project.sources": "475b43ac9f43a455"
   },
-  "seq": 13,
-  "version": 4
+  "seq": 14,
+  "version": 5
  },
  "source:mbira:modes": {
   "commit": "f91db11+dirty adopted",

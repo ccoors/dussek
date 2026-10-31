@@ -10,7 +10,7 @@
   "version": 2
  },
  "project:crotales:export_bars": {
-  "commit": "f91db11+dirty adopted",
+  "commit": "5566a91+dirty",
   "inputs": {
    "fit.hammer_speeds": "8f36832a410e1dcb",
    "fit.keys": "52169b27af8116c7",
@@ -23,8 +23,8 @@
    "project.project": "1d1accf4b5d27fa5",
    "project.sources": "60625cb0e37a156f"
   },
-  "seq": 36,
-  "version": 4
+  "seq": 37,
+  "version": 5
  },
  "source:crotales:modes": {
   "commit": "f91db11+dirty adopted",

@@ -10,7 +10,7 @@
   "version": 2
  },
  "project:balafon:export_bars": {
-  "commit": "f91db11+dirty adopted",
+  "commit": "5566a91+dirty",
   "inputs": {
    "fit.hammer_speeds": "a4fec8c1fbf09fb7",
    "fit.keys": "0dc8bee78f49e070",
@@ -23,8 +23,8 @@
    "project.project": "d8712474e18d8347",
    "project.sources": "4c4b2affcf4a7539"
   },
-  "seq": 52,
-  "version": 4
+  "seq": 53,
+  "version": 5
  },
  "source:balafon_hard:modes": {
   "commit": "f91db11+dirty adopted",

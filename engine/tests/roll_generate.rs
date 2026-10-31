@@ -219,7 +219,7 @@ fn a_failed_write_leaves_no_instrument() {
     let Some(p) = fixture().references.first().map(|n| instruments().join(n)).filter(|d| d.join("data.bin").exists()) else { return };
     let e = Export::read(&p).unwrap();
     let dir = tmp("order");
-    std::fs::create_dir_all(dir.join("level.json")).unwrap();
+    std::fs::create_dir_all(dir.join("LICENSE.md")).unwrap(); // a file before instrument.json fails
     assert!(write_export(&dir, &e, "license").is_err());
     assert!(!dir.join("instrument.json").exists());
     let _ = std::fs::remove_dir_all(&dir);
@@ -314,7 +314,7 @@ fn the_binary_writes_the_export() {
         .status()
         .unwrap();
     assert!(st.success());
-    for f in ["instrument.json", "data.bin", "level.json", "LICENSE.md"] {
+    for f in ["instrument.json", "data.bin", "LICENSE.md"] {
         assert!(out.join(f).exists(), "{f}");
     }
     let _ = std::fs::remove_dir_all(&out);

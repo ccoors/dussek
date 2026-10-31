@@ -16,9 +16,7 @@ fn without_impact(name: &str) -> Option<PathBuf> {
     let src = dir(name);
     let d = PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join(format!("no-impact-{name}"));
     std::fs::create_dir_all(&d).ok()?;
-    for f in ["data.bin", "level.json"] {
-        std::fs::copy(src.join(f), d.join(f)).ok()?;
-    }
+    std::fs::copy(src.join("data.bin"), d.join("data.bin")).ok()?; // the level: instrument.json's
     let mut j: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(src.join("instrument.json")).ok()?).ok()?;
     j.as_object_mut()?.remove("impact")?;
     std::fs::write(d.join("instrument.json"), j.to_string()).ok()?;
@@ -30,9 +28,7 @@ fn with_trim(name: &str, tag: &str, trim: impl Fn(u8) -> f64) -> Option<PathBuf>
     let src = dir(name);
     let d = PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join(format!("impact-trim-{tag}-{name}"));
     std::fs::create_dir_all(&d).ok()?;
-    for f in ["data.bin", "level.json"] {
-        std::fs::copy(src.join(f), d.join(f)).ok()?;
-    }
+    std::fs::copy(src.join("data.bin"), d.join("data.bin")).ok()?; // the level: instrument.json's
     let mut j: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(src.join("instrument.json")).ok()?).ok()?;
     for n in j["notes"].as_array_mut()? {
         let key = n["note"].as_u64()? as u8;

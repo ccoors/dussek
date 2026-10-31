@@ -255,7 +255,9 @@ fn finish_writes_the_export_of_a_current_preview() {
     assert_eq!(e.json["menu"]["name"], "My roll");
     assert_eq!(e.json["menu"]["group"], "Rolled pianos");
     assert!(std::fs::read_to_string(out.join("LICENSE.md")).unwrap().starts_with("# License: My roll (rolled)"));
-    assert!(out.join("level.json").exists());
+    assert!(e.json.get("level").is_none(), "an edit's export measures its own level");
+    let written: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(out.join("instrument.json")).unwrap()).unwrap();
+    assert!(written["level"]["ff_db"].is_number() && written["data"]["sha256"].is_string());
     assert!(!out.join("recipe.toml").exists());
     assert!(!repo.root.join("instruments/rolled_preview").exists());
 }

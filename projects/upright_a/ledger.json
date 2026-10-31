@@ -234,7 +234,7 @@
   "version": 1
  },
  "project:upright_a:export": {
-  "commit": "f91db11+dirty adopted",
+  "commit": "5566a91+dirty",
   "inputs": {
    "cache.*": "12ed1d702d312112",
    "cache.analysis": "2c681c79d1fb5480",
@@ -282,8 +282,8 @@
    "uses.pedal:cache.pedal_noise": "e2ce817022e093fb",
    "uses.release:cache.release": "13cc8e848cb8374b"
   },
-  "seq": 197,
-  "version": 2
+  "seq": 198,
+  "version": 3
  },
  "source:upright_a:analyze": {
   "commit": "f91db11+dirty adopted",

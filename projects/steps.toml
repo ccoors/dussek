@@ -211,7 +211,8 @@ owns = ["fit.flat", "fit.gain", "fit.keys", "fit.notes", "fit.pos"]
 scope = "project"
 run = ["python3", "proto/export.py", "--project", "{project}"]
 # 2: also writes level.json (the engine's ff level, which a morph reads)
-version = 2
+# 3: the level inside instrument.json (`level`), which names its data.bin (`data`: size, SHA-256)
+version = 3
 reads = ["cache.*", "cache.analysis", "cache.body", "cache.damper", "cache.pedal_noise",
     "cache.release", "fit.*", "fit.body_modes", "fit.coupling", "fit.felt_bass_factor", "fit.felt_curve",
     "fit.felt_f05_at_c4", "fit.felt_log2_slope_per_semitone", "fit.felt_p",
@@ -229,7 +230,8 @@ run = ["python3", "proto/export_bars.py", "--project", "{project}"]
 # 2: the modes' compensation averages the body's response over ±50 cents (a notch under a mode)
 # 3: reads the sources' level corrections
 # 4: also writes level.json (the engine's ff level, which a morph reads)
-version = 4
+# 5: the level inside instrument.json (`level`), which names its data.bin (`data`: size, SHA-256)
+version = 5
 reads = ["fit.hammer_speeds", "fit.keys", "fit.mallet", "fit.mallets", "fit.recorded",
     "project.export", "project.level_corrections", "project.menu", "project.project", "project.sources"]
 

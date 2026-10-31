@@ -130,7 +130,7 @@
   "version": 1
  },
  "project:clavichord:export": {
-  "commit": "f10f901",
+  "commit": "5566a91+dirty",
   "inputs": {
    "cache.*": "25d2bddb2fb76edb",
    "cache.analysis": "41f67b1f95b256a6",
@@ -178,8 +178,8 @@
    "uses.pedal:cache.pedal_noise": "6e9c960fd025b2e5",
    "uses.release:cache.release": "13cc8e848cb8374b"
   },
-  "seq": 118,
-  "version": 2
+  "seq": 119,
+  "version": 3
  },
  "source:clavichord:analyze": {
   "commit": "f91db11+dirty adopted",

@@ -15,5 +15,6 @@ midly = "0.5.3"
 realfft = "3.5.0"
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = { version = "1.0.151", features = ["float_roundtrip"] }
+sha2 = "0.10"
 tiny-skia = { version = "0.11", default-features = false, features = ["std", "simd"] }
 toml_edit = "0.25.17"

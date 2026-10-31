@@ -107,7 +107,7 @@ fn the_ff_stays_at_the_recording_s_speed() {
 
 #[test]
 fn an_instrument_without_a_level_table_keeps_its_anchors() {
-    // the harpsichord: plucked, no table in its level.json
+    // the harpsichord: plucked, no table in its stored level
     let Some(e) = common::engine(&dir("harpsichord"), SR, Tuning::default()) else { return };
     let inst = common::load(&dir("harpsichord")).unwrap();
     assert!(inst.dynamics.is_empty());

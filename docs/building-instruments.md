@@ -310,7 +310,7 @@ change against.
   `instruments/` and the previous export stay as they are. The route for trying a trait's setting
   by ear before it goes into the project file. Only the strings' export (`export.py`) takes it.
 - **Even levels.** A project's `[even_levels]` voices the piano to one level curve along the
-  keyboard: the export measures every key's level as the engine plays it (`level.json`'s
+  keyboard: the export measures every key's level as the engine plays it (its stored level's
   `key_ff_db`), takes a trend through the keys' ff levels (a running median over `window_keys` keys,
   default 9, then ¼ ½ ¼; the keyboard's slow shape kept), and adds each key's way to the trend to
   its level correction at every dynamic, plus a seeded scatter (`scatter_db`, `seed`); then it

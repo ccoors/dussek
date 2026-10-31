@@ -1,7 +1,7 @@
-//! Every exported instrument's level.json holds the ff level the engine plays it at
-//! (`Instrument::ff_level`, which a morph reads instead of measuring) and a hammer piano's level
-//! over its hammer speed (`Instrument::level_curve`, which maps its velocity): a change to the
-//! engine that moves either fails here until its level.json is written again.
+//! Every exported instrument's stored level (instrument.json's `level`) holds the ff level the
+//! engine plays it at (`Instrument::ff_level`, which a morph reads instead of measuring) and a
+//! hammer piano's level over its hammer speed (`Instrument::level_curve`, which maps its
+//! velocity): a change to the engine that moves either fails here until it is exported again.
 
 mod common;
 use std::path::{Path, PathBuf};
@@ -14,7 +14,7 @@ const ROOT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments");
 /// what is wrong with `dir`'s stored level (None: it matches within 0.1 dB)
 fn mismatch(dir: &Path) -> Option<String> {
     let name = dir.file_name().unwrap().to_string_lossy().into_owned();
-    let refresh = format!("cargo run --release --manifest-path engine/Cargo.toml --bin level -- instruments/{name}");
+    let refresh = format!("just export {name}");
     let inst = match Instrument::load(dir) {
         Ok(i) => i,
         Err(e) => return Some(format!("{name}: {e}")),
@@ -33,7 +33,7 @@ fn mismatch(dir: &Path) -> Option<String> {
         return Some(format!("{name}: the stored level table is not the one the engine plays: run {refresh}"));
     }
     match stored_level(dir) {
-        None => Some(format!("{name}: no level.json (plays {plays:.2} dB): run {refresh}")),
+        None => Some(format!("{name}: no stored level (plays {plays:.2} dB): run {refresh}")),
         Some(db) if (db - plays).abs() > 0.1 => Some(format!("{name}: stored {db:.2} dB, plays {plays:.2} dB: run {refresh}")),
         Some(_) => None,
     }
@@ -60,6 +60,9 @@ fn an_altered_level_fails_the_check() {
         std::fs::copy(a.join(f), dir.join(f)).unwrap();
     }
     let db = Instrument::load(&dir).unwrap().ff_level().unwrap() + 1.0;
-    std::fs::write(dir.join("level.json"), format!("{{\"ff_db\": {db}, \"keys\": [48, 60, 72]}}")).unwrap();
+    let path = dir.join("instrument.json");
+    let mut doc: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
+    doc["level"]["ff_db"] = serde_json::json!(db);
+    std::fs::write(&path, doc.to_string()).unwrap();
     assert!(mismatch(&dir).is_some_and(|m| m.contains("stored")));
 }
