@@ -3211,3 +3211,53 @@ at +4 dB "is also helping". Grand H now carries that bass: `[board] trim_db` row
 31.5 Hz −0.77, 45 Hz +4.37, 90 Hz +1.97 dB, beside the lowest octave's own) make the Bass control's
 shape × 4 dB within 0.04 dB from 27 to 600 Hz; both act on every key's correction. On the two pieces
 the export at Bass 0 equals v2 at Bass +4 dB within 0.1 dB in every third octave (24 Hz–10 kHz).
+## 204. Grand I, from the OLPC sound library's grand piano
+
+The One Laptop per Child project's sound library (2008, "released under a CC BY license", CC BY
+3.0) holds a grand piano recorded by Zenph Studios from a reproducing piano played by computer. Its
+host is gone; the Wayback Machine keeps its 44.1 kHz folder (1212 FLAC files, 125 MB). Checked:
+every file decodes (`flac -t`), all 44.1 kHz / 16 bit mono (the size), 0.8–23.5 s. Every third key
+from A0 (30 keys); up to E♭6 each key struck at about 16 strengths, each three times: held to the
+floor (15–23 s in the bass, 10–15 s in the middle), released at about 7 s, and staccato (released
+0.2–0.4 s after the strike, a fall of 20–30 dB in 0.15 s, 40–50 dB over the floor in the middle);
+from F♯6 up 12–16 held notes and at most four staccato ones. The names give the MIDI velocity
+played, which differs from key to key; four files repeat another's audio (unmapped). Levels as
+recorded (v1 → v127 about +35 dB at the peak, one floor at about
+−92 dBFS under a gate), tuned about 6 cents over A = 440 Hz, A7 +26 and C8 about +50 cents (the
+analysis finds no partials on C8). The keys' levels step 3–5 dB from one sampled key to the next.
+
+`grand_i` (Grand I) is made as the editor's wizard makes a grand: Grand A's project file (the
+closest key range), its sources the set's, the release and pedal noise Salamander's (through Grand
+A) and the dampers Grand E's; its own synthetic board (seed 31). Per key the held take nearest MIDI
+14, 60 and 124, the velocities the export plays pp, mf and ff at (`dynamic_names` over a dynamic
+group that holds the key and the velocity: 90 layers of one file each). The editor's Decay and
+Brightness take checks compare a take with its layer's other keys and find none here; the late-rise
+check flags 1 of 90.
+
+The fit against the other grands' (their last builds): the soundboard's rms residual 9.2 dB with the
+per-note correction (others 9.6–12.7), the coupling fit's EDC error 10.9 dB (6.8–8.8), worst from A4
+to C6 (11–20 dB per key; at F♯5 the recording's fundamental falls about 6 dB/s, the prototype's
+about 15). The room fit only cuts: the recording's gaps at 250 Hz–1 kHz lie 24–39 dB over the
+engine's late (others up to +22). Even levels on its own trend (`window_keys = 9`; Grand A's target
+had lifted its top octave by up to 15 dB): −5.3 … +4.0 dB per key, rms 1.7 dB; its own top octave
+falls 10–18 dB re its middle, inside the grands' −3 … −24 dB at C8.
+
+Then as steps 141–147 did for the grands:
+
+- The lowest fundamentals (`tone_check.py`): the board's data start at 66 Hz, the fundamentals sat
+  over partials 2–4 against the recording by +23.4 dB in A0–G♯1 (the recording's D♯1 fundamental
+  51 dB under its partials 2–4) and +7.7 in A1–G♯2. `[board] trim_db` rows by least squares (31.5,
+  45 Hz −12 dB, 63 Hz −8.5): +10.4 and −1.8 dB. The bass's bands re its fundamental, −12 … −19 dB
+  under the recording's before, now −7 … +3 dB at 125 Hz–2 kHz at pp and mf (63 Hz −12).
+- The felt: Grand A's core by ear left out (with it the bass at ff +6.7/+8.1 dB at 2/4 kHz over
+  the recording, without +3.6/+4.3); the pair solved from two probes at pp, mf and ff, 1–4 kHz
+  over the three registers: p 1.83, +1.8 dB (rms 5.0 → 3.9 dB from Grand A's 2.09, +3.4 dB).
+- The loudness: the middle phrase 2.3 dB under the grands' median at the midpoint of Recording and
+  Player; `output_gain_db` +2.0 puts it 0.25 dB under.
+
+Left as they are, numbers for the ear: within a note the middle's 250 Hz band +10 … +12 dB and its
+8 kHz band +13 … +16 dB over the recording at mf and ff, the treble's 1 kHz +6 … +8 dB (the
+hammer's thump 8 dB lower moved neither); the unisons beat 1.3–1.6 times the recording's from C4 to
+F5 and 0.7–0.9 times from F♯5 to C♯7, 0.75 at the top (Grand A's ×12 kept, the bound). The 7 s and
+staccato takes, unused, hold this piano's own dampers and release noise; measuring them needs the
+release found inside a note (the damper step reads release recordings that start at the release).

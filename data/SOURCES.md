@@ -459,6 +459,39 @@ these sets is embedded in or distributed with the engine.
   levels from Grand B's recordings (`[uses] levels`), the dampers Grand E's, the release and pedal
   noise Grand A's
 
+## OLPC sound library: Zenph Studios' grand piano multisamples
+
+- Location: `olpc-grand/`, 1212 FLAC files (125 MB): `pno<key>v<velocity><leg|sta>.flac` and one
+  `pno096v115leg-click.flac` (unused). The original host (freepats.zenvoid.org's
+  `olpc-sounds/yamahaGrandPiano44/`) is gone; the files are in the Wayback Machine's copy of it, its
+  snapshot of 2016-09-10, under
+  https://web.archive.org/web/20160910064755if_/http://freepats.zenvoid.org/olpc-sounds/yamahaGrandPiano44/<file>
+  (the file names in `olpc-grand-files.txt`). The whole OLPC library, version 2.7,
+  is at https://archive.org/details/olpc-sound-samples-v2.7z (4.6 GB, 7z; whether it holds this
+  set was not checked)
+- Instrument: "The Zenph Studios Yamaha Disklavier Pro Piano Multisamples for OLPC": a reproducing
+  grand piano played by computer, recorded for the One Laptop per Child project's sound library by
+  Zenph Studios (Raleigh, North Carolina), 2008
+- License: **CC BY 3.0**: the library's announcement (https://creativecommons.org/2008/03/27/85-gb-of-cc-licensed-samples-for-the-olpc/,
+  "released under a CC BY license", linking CC BY 3.0) and the archive.org item's license; the OLPC
+  wiki's page for the library (wiki.laptop.org/go/Sound_samples, offline) listed this set as CC BY. Export
+  credited in `instruments/grand_i/LICENSE.md`
+- Content: every third key from A0 (30 keys), mono, 44.1 kHz / 16 bit, every file intact (`flac -t`).
+  Up to E♭6 each key at 16 strengths, each three times: a held note (to the floor: 15–23 s in the
+  bass, 10–15 s in the middle), a note released at about 7 s and a staccato note released after
+  0.2–0.4 s (the held and the 7 s take of a strength peak within 0.8 dB of each other); from F♯6 up
+  12–16 held notes and at most four staccato ones. The names give the MIDI velocity played, which differs
+  from key to key. Four files repeat another's audio (the same MD5): `pno021v36leg` is `v34leg`,
+  `pno048v4leg` `v2leg`, `pno078v7leg` `v5leg`, and `pno021v8leg` is C1's `pno024v6leg` (its pitch
+  C1's); none of them is mapped
+- Notes from inspection: levels as recorded (v1 to v127 about +35 dB at the peak; every file at
+  one noise floor, about −92 dBFS, a gate to near silence under it); mono and 16 bit, hence the
+  size; tuned about 6 cents over A = 440 Hz, A7 +26 and C8 about +50 cents (the analysis finds no
+  partials on C8, nor on A7 at pp). The keys' levels step 3–5 dB
+  from one sampled key to the next (F♯3, C4 and C5 low), the same at every velocity
+- Project `grand_i` (Grand I): per key the held note nearest MIDI 14, 60 and 124 as pp, mf, ff; the
+  7 s and staccato takes unused so far (the dampers' fall after a release is in them)
+
 ## K18 Upright Piano (tried, not used)
 
 - Source: https://archive.org/details/K18UprightPiano (940 MB), by Rudi Fiasco, **CC BY 4.0**

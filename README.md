@@ -1,7 +1,7 @@
 # PianoEngine
 
 A physically modeled piano for Linux, as an LV2 plugin and a JACK standalone (CLAP and VST3 are
-built too, but untested). It plays eight grands, four uprights, six harpsichords, a clavichord,
+built too, but untested). It plays nine grands, four uprights, six harpsichords, a clavichord,
 harps, guitars, zithers and percussion. None of them plays back a recording: the engine simulates
 the hammer (or plectrum, or mallet), stiff strings with coupled unisons, the soundboard, the dampers
 and the pedals, in real time. Each instrument's parameters were measured from freely licensed
@@ -15,7 +15,7 @@ sympathetic resonance, low latency) and has a character of its own.
 
 | Menu group | Instruments |
 |---|---|
-| Grand pianos | Grand A, B, C, D, E, F, G, H |
+| Grand pianos | Grand A, B, C, D, E, F, G, H, I |
 | Upright pianos | Upright A, B, C, D |
 | Harpsichords | Harpsichord A, B (8′, 4′, a second 8′ and the lute stop), C, D, E, F |
 | Clavichords | Clavichord (with Bebung) |
@@ -83,6 +83,7 @@ The recordings the instruments were measured from:
 | Grand F | VCSL grand "K" | CC0 |
 | Grand G | the Osiris Piano: worn, recorded softly with the soft pedal down | CC0 |
 | Grand H | the City Piano (Big Cat Instruments), a baby grand: normalized (its levels from Grand B's recordings) | public domain |
+| Grand I | the OLPC sound library's grand piano multisamples (Zenph Studios): a reproducing piano played by computer | CC BY 3.0 |
 | Upright A, B | VCSL uprights "Knight" and "Y" | CC0 |
 | Upright C | KeyPleezer's LivingRoom Upright | CC BY-SA 4.0 (the export too) |
 | Upright D | an upright in a living room, the maintainer's own recordings (not published) | CC BY 4.0 |
