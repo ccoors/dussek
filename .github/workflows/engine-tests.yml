@@ -1,4 +1,4 @@
-# The engine's suite: about 5 min on every core of a desktop, longer on a runner. Nightly, and by hand
+# The engine's suite: about 6 min on every core of a desktop, 40 min on a runner. Nightly, and by hand
 # from the Actions tab.
 name: Engine tests
 
@@ -10,7 +10,7 @@ on:
 jobs:
   engine:
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 90  # 40 min on a 4-core runner (2026-10-31)
     steps:
       - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
