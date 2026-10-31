@@ -104,7 +104,7 @@ static bool readOnlyFoldersRefuse()
 // The committed instruments' catalog entries, by their old menu index: the tests written before
 // the catalog keep their vocabulary (profileByDir, profileBars, paramActive(param, profile, …)),
 // every function below reads the entry of instruments/<dir> (its report and its menu block).
-static const char* const kProfiles[] = { "grand_a", "grand_b", "grand_f", "grand_e", "grand_d", "grand_c", "grand_g",
+static const char* const kProfiles[] = { "grand_a", "grand_b", "grand_f", "grand_e", "grand_d", "grand_c", "grand_g", "grand_h",
     "upright_a", "upright_b", "upright_c", "harpsichord", "flemish", "french", "italian", "harpsichord_e", "harpsichord_f", "clavichord", "harp", "leverharp",
     "vibraphone", "marimba", "xylophone", "bells", "crotales", "chimes", "handchimes", "kalimba", "mbira", "mavembe", "nyunga", "balafon", "guitar",
     "strumstick", "psaltery", "dantranh" };
@@ -345,7 +345,7 @@ TEST(custom_mic_parameters)
 TEST(instruments_in_menu_order)
 {
     // the catalog's menu: the known groups in order, by name inside each
-    const char* const want[] = { "Grand A", "Grand B", "Grand C", "Grand D", "Grand E", "Grand F", "Grand G", "Upright A",
+    const char* const want[] = { "Grand A", "Grand B", "Grand C", "Grand D", "Grand E", "Grand F", "Grand G", "Grand H", "Upright A",
         "Upright B", "Upright C", "Upright D", "Harpsichord A", "Harpsichord B", "Harpsichord C", "Harpsichord D", "Harpsichord E",
         "Harpsichord F", "Clavichord", "Harp A",
         "Harp B", "Guitar", "Strumstick", "Balafon", "Bells", "Crotales", "Glockenspiel A", "Glockenspiel B", "Hand chimes", "Marimba", "Tubular bells",
@@ -957,7 +957,7 @@ TEST(instrument_menu_groups_every_instrument_once_by_type)
     for (const InstrumentEntry* e : committed().menu())
         for (size_t i = 0; i < g.size(); ++i)
             if (e->group == g[i]) ++count[i];
-    CHECK((count == std::vector<size_t> { 7, 4, 6, 1, 2, 2, 10, 4, 2 }));
+    CHECK((count == std::vector<size_t> { 8, 4, 6, 1, 2, 2, 10, 4, 2 }));
     CHECK(groupOf(kCla) == 3 && groupOf(kGui) == 5 && groupOf(kStr) == 5 && groupOf(kPsa) == 8 && groupOf(kDan) == 8);
     CHECK(groupOf(kBal) == 6 && groupOf(kChi) == 6 && groupOf(kHch) == 6 && groupOf(kKal) == 7 && groupOf(kVib) == 6
         && groupOf(kMar) == 6 && groupOf(kXyl) == 6 && groupOf(kBel) == 6 && groupOf(kCro) == 6);
