@@ -84,7 +84,7 @@ The recordings the instruments were measured from:
 | Grand G | the Osiris Piano: worn, recorded softly with the soft pedal down | CC0 |
 | Upright A, B | VCSL uprights "Knight" and "Y" | CC0 |
 | Upright C | KeyPleezer's LivingRoom Upright | CC BY-SA 4.0 (the export too) |
-| Upright D | an upright in a living room, the maintainer's own recordings (not published) | CC BY 4.0 (a placeholder: the maintainer's decision) |
+| Upright D | an upright in a living room, the maintainer's own recordings (not published) | CC BY 4.0 |
 | Harpsichord A | VCSL harpsichord "Unk" | CC0 |
 | Harpsichord B | VCSL Flemish harpsichord: 8′ and 4′, a derived 8′ II and lute | CC0 |
 | Harpsichord C, D | VCSL French and Italian harpsichords | CC0 |

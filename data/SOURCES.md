@@ -274,7 +274,7 @@ these sets is embedded in or distributed with the engine.
   (`docs/recording-a-piano.md`); not downloadable: the maintainer's own recordings, not published
 - Instrument: an upright piano in a living room, last tuned years ago
 - Author: Christian Friedrich Coors (recorded 2026-10-31)
-- License: the maintainer's decision (the project's `[license]` holds a placeholder, CC BY 4.0)
+- License: CC BY 4.0 (the maintainer's)
 - Recording: a handheld recorder's XY pair at 90°, 64 cm in front of the piano, a little left,
   1.2 m high; 48 kHz / 24 bit; the gain set once
 - Content: one file per pass: pp, mf, ff (A0–C8, every third key, two takes or more, rung out),
@@ -296,10 +296,12 @@ these sets is embedded in or distributed with the engine.
   - Tuning: A4 −6 cents; the bass flat to −30 at A0, the treble within −11 … −1 to A7 (F♯7 +16,
     C8 +42 cents)
   - The two takes of a key lie 3.7, 1.9 and 0.9 dB apart (median; pp, mf, ff)
-  - The pedal pass: 16 events, 17–50 dB over the floor, the loudest 6–15 dB under the median mf
-    note's peak; the C1–C8 pass with the pedal down splits into its 8 notes (both unused so far)
+  - The pedal pass: 16 events, 17–50 dB over the floor; four pedal-downs and three pedal-ups
+    (`split_session.py --pedal`), the pedal's noise and ring (step 205); the C1–C8 pass with the
+    pedal down splits into its 8 notes (unused so far)
   - Releases: the dampers' first fall 111 dB/s (median, 100 Hz–1.5 kHz; Grand E's 111), A0–E6;
-    the release noise 18–27 dB under the mf note's peak
+    the release noise not clean (the damped strings' remainder, an edge at each take's start):
+    Salamander's borrowed (design log step 205)
 - Profile `upright_d` (Upright D): the SFZ the splitter writes, seq_position 1 (the more even take)
 
 ## Ivy Audio Piano in 162 (SFZ)

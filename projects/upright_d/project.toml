@@ -1,8 +1,8 @@
 # upright_d: made from upright_a's project file (the closest key range, the usual one; its by-ear values measured again on this set where noted)
 [project]
 family = "struck"
-# the pedal noise is Salamander's (pedal_noise.py reads its files alone); the set's own pedal pass is kept for later
-skip = ["pedal_noise"]
+# the release noise borrowed (below, [uses]); the pedal's its own
+skip = ["release_noise"]
 body = "upright"
 
 [menu]
@@ -21,8 +21,14 @@ id_max_partial = 60
 room_t60 = [[250.0, 0.65], [500.0, 0.34], [800.0, 0.26], [2000.0, 0.35], [4000.0, 0.36], [8000.0, 0.30], [12800.0, 0.26]]
 
 [uses]
-# its own release noise and dampers (its releases pass, A0–E6); the pedal's noise and ring Salamander's
-pedal = "grand_a"
+# the release noise Salamander's, as the other pianos' (2026-10-31, heard "way too loud and clicky"):
+# its own release takes, the note's partials taken out, left the damped strings' remainder 20–30 dB
+# over the floor for 0.15 s and no distinct thump: 15–35 dB under the mf note's peak (median −29;
+# Salamander's −32 … −49, median −42), its bands at 6.4–12.8 kHz −13 … −16 dB re its strongest
+# (Salamander's −68 … −85), the first impact read at the file's edge on most keys (4–17 ms in, the
+# damper's fall at 50 ms). A fade-in and a 0.7 s window took the highs 15 dB down, not the level.
+# Its own dampers stay (the releases' first fall, 111 dB/s)
+release = "grand_a"
 
 # the export voices the piano to one level curve, as a voicer leaves it (design log step 138), as the
 # grands (step 139) and the other uprights (step 168); the Condition's Normal zone adds the unevenness
@@ -54,6 +60,13 @@ low_eta = 0.04
 p = 1.82
 stiffness_db = 5.3
 
+# the felt's core (2026-10-31): Upright C's, heard by the maintainer to improve this piano in the plugin
+# (its Felt tab); 3 N at 0.5 mm past the core's depth to D♯2, none from C3
+[felt_core]
+notes = [21, 39, 48]
+f05 = [3.0, 3.0, 0.0]
+depth_mm = [0.8, 0.55, 0.45]
+
 # the ring by ear as the other uprights' (step 154): 150 % to C5, 200 % at C7 (the user heard every
 # upright's fitted ring as short; Upright D's not heard yet)
 [sustain]
@@ -77,9 +90,11 @@ root = "own-upright"
 # the breaks (D3, E6, F6) at the dynamic their level is nearest
 dynamics = { pp = "pp", mf = "mf", ff = "ff" }
 levels = "recorded"
-# its releases pass (mf, A0–E6): the release noise and the dampers
-release = { kind = "sfz", file = "own-upright.sfz" }
+# its releases pass (mf, A0–E6): the dampers
 dampers = { kind = "sfz", file = "own-upright.sfz" }
+# its pedal pass, split by the strings' ring after each event (split_session.py --pedal): four
+# pedal-downs, three pedal-ups (nine events left out: unclear, or the next too soon)
+pedal = { kind = "files", down = ["pedal/down_1.wav", "pedal/down_2.wav", "pedal/down_3.wav", "pedal/down_4.wav"], up = ["pedal/up_1.wav", "pedal/up_2.wav", "pedal/up_3.wav"] }
 
 [part.source.map]
 kind = "sfz"
@@ -88,8 +103,8 @@ filter = [{ opcode = "trigger", default = "attack", in = ["attack"] }, { opcode 
 layers = "rank"
 dynamic_from = { regex = '_(pp|mf|ff)_', format = "{}" }
 
-# the recordings' credit (proto/license.py writes instruments/<project>/LICENSE.md); the source
-# license is a placeholder until the maintainer decides it
+# the recordings' credit (proto/license.py writes instruments/<project>/LICENSE.md); CC BY 4.0, the
+# maintainer's choice (2026-10-31)
 [license]
 set = "An upright piano, recorded in a living room (2026-10-31)"
 author = "Christian Friedrich Coors"

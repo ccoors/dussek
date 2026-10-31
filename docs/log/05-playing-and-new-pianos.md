@@ -3005,5 +3005,49 @@ every exported hammer piano); its range lets a draw at warmth 2.5 pass, and the 
 at 1.0.
 
 Open, for the ear: the felt and the trims above, the ring, its own release noise (some 20 dB over the
-borrowed one), the bass's attack (a felt core as Upright C's?), and the recordings' license (a
-placeholder: CC BY 4.0).
+borrowed one), the bass's attack (a felt core as Upright C's?). The recordings are CC BY 4.0 (the
+maintainer's choice).
+
+<a id="step-205"></a>
+## 205. Upright D heard: the release noise borrowed, its own pedal, a felt core
+
+Heard (the maintainer, 2026-10-31): "pretty good"; the pedal "way too intense, it really makes the
+strings sound on their own quite intensely"; the key release noise "way too loud and clicky"; Upright
+C's felt core, set in the plugin's Felt tab, improved it.
+
+**The release noise.** Its own release takes, the note's partials taken out, held the damped strings'
+remainder 20–30 dB over the floor for 0.15 s and no distinct thump: 15–35 dB under the mf note's peak
+(median −29; Salamander's, which the other pianos borrow, −32 … −49 after step 120's −12 dB, median
+−42), its bands at 6.4–12.8 kHz −13 … −16 dB re its strongest (Salamander's −68 … −85), the first
+impact read 4–17 ms into the take on most keys: the take's edge, the damper's fall at 50 ms. A fade-in
+and a 0.7 s window took the highs 15 dB down, not the level. Not clean: Upright D borrows Salamander's,
+as the other pianos do; its own dampers stay.
+
+**Its own pedal.** `pedal_noise.py` read Salamander's four files by name; a source's `pedal = { kind
+= "files", down = […], up = […] }` now names a set's own (levels as recorded, re the median mf note's
+peak), Salamander's path unchanged (its cache rewritten byte for byte). `split_session.py --pedal` cuts
+a pedal pass at its events and tells a pedal-down from a pedal-up by the strings' ring (56–280 Hz,
+0.5–1.5 s after re 1 s before: +3 dB a down, −3 dB an up; a down wants 3 s to the next event): four
+downs, three ups of its 16 events. The pedal's ring (the same band over 0.5–3 s after a pedal-down,
+no notes, re the median mf note's peak):
+
+| | the thump | the ring |
+|---|---|---|
+| Upright D's recordings (four downs) | −22, −13, −10, −5 dB | −54, −47, −41, −37 dB |
+| Upright A's recordings (VCSL, four) | −24 … −18 | −58 … −56 |
+| Upright D, Salamander's pedal fitted through its board | −16.7 | −27.7 |
+| Upright D, its own | −17.3 | −39.0 |
+| Upright A, C (Salamander's) | −18.0, −14.9 | −25.0, −29.0 |
+
+The fit sets the ring to the downs' mean energy (−40.0 dB, the hardest press the loudest): the kick
+12 dB lower (amp 0.00042 → 0.00010), centered on key 40 (spread 6.5; Salamander's shape is fitted on
+Grand A), its line error 5.9 dB. The other pianos borrowing Salamander's pedal ring 25–30 dB over
+Upright A's recordings by this measure; left for the ear.
+
+**The felt core:** Upright C's (3 N to D♯2, none from C3; depths 0.8, 0.55, 0.45 mm). The attack at
+1–2 / 2–4 kHz re 200–500 Hz on A0–B2, engine − recording: mf −7.9 / +0.2 → −0.9 / +0.2 dB, ff −4.2 /
+−9.3 → +3.2 / −2.9, pp −5.0 / −0.3 → −3.8 / −0.4; C2–C5 as before (within ±2.7 dB).
+
+The chain refit with the new sources moved nothing measured: the treble and the middle as in step
+204, the lowest fundamentals +0.2 dB, the phrase's loudness −27.8 LUFS (the grands' −28.2).
+
