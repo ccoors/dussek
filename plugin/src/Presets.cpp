@@ -13,11 +13,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <dirent.h>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
-#include <sys/stat.h>
 
 namespace pe {
 
@@ -233,12 +231,11 @@ std::string presetDir()
 
 std::vector<Preset> loadUserPresets(const std::string& dir)
 {
+    namespace fs = std::filesystem;
     std::vector<Preset> out;
-    DIR* d = dir.empty() ? nullptr : opendir(dir.c_str());
-    if (d == nullptr)
-        return out;
-    while (const dirent* e = readdir(d)) {
-        const std::string n = e->d_name;
+    std::error_code ec;
+    for (fs::directory_iterator it(dir.empty() ? fs::path() : fs::path(dir), ec), end; !dir.empty() && !ec && it != end; it.increment(ec)) {
+        const std::string n = it->path().filename().string();
         if (n.size() < 9 || n.compare(n.size() - 9, 9, ".pepreset") != 0)
             continue;
         std::ifstream f(dir + "/" + n);
@@ -250,7 +247,6 @@ std::vector<Preset> loadUserPresets(const std::string& dir)
             out.push_back(std::move(p));
         }
     }
-    closedir(d);
     std::sort(out.begin(), out.end(), [](const Preset& a, const Preset& b) { return a.name < b.name; });
     return out;
 }

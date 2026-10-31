@@ -1,33 +1,39 @@
 #include "FileWatch.hpp"
 
 #include <algorithm>
-#include <dirent.h>
-#include <sys/stat.h>
+#include <chrono>
+#include <filesystem>
 
 namespace pe {
 
 FileStamp statStamp(const std::string& path)
 {
-    struct stat st {};
-    if (stat(path.c_str(), &st) != 0)
+    namespace fs = std::filesystem;
+    std::error_code ec;
+    const fs::file_status st = fs::status(path, ec);
+    if (ec || !fs::exists(st))
         return {};
-    return { (int64_t)st.st_mtim.tv_sec * 1000000000 + st.st_mtim.tv_nsec, (int64_t)st.st_size };
+    const fs::file_time_type t = fs::last_write_time(path, ec);
+    if (ec)
+        return {};
+    // the size of a regular file (a folder has none to compare)
+    const uintmax_t size = fs::is_regular_file(st) ? fs::file_size(path, ec) : 0;
+    if (ec)
+        return {};
+    return { (int64_t)std::chrono::duration_cast<std::chrono::nanoseconds>(t.time_since_epoch()).count(), (int64_t)size };
 }
 
 std::vector<std::string> listDirs(const std::string& path)
 {
+    namespace fs = std::filesystem;
     std::vector<std::string> out;
-    if (DIR* d = opendir(path.c_str())) {
-        while (const dirent* e = readdir(d)) {
-            const std::string name = e->d_name;
-            struct stat st {};
-            // a folder counts once its instrument.json is there (the editor renames it in last: a
-            // rescan before it would leave the folder out of the menu until the next change)
-            if (name != "." && name != ".." && stat((path + "/" + name).c_str(), &st) == 0 && S_ISDIR(st.st_mode)
-                && stat((path + "/" + name + "/instrument.json").c_str(), &st) == 0)
-                out.push_back(name);
-        }
-        closedir(d);
+    std::error_code ec;
+    for (fs::directory_iterator it(path, ec), end; !ec && it != end; it.increment(ec)) {
+        // a folder counts once its instrument.json is there (the editor renames it in last: a
+        // rescan before it would leave the folder out of the menu until the next change)
+        std::error_code e2;
+        if (fs::is_directory(it->path(), e2) && fs::exists(it->path() / "instrument.json", e2))
+            out.push_back(it->path().filename().string());
     }
     std::sort(out.begin(), out.end());
     return out;

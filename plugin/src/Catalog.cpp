@@ -2,14 +2,13 @@
 #include "Paths.hpp"
 
 #include <algorithm>
+#include <filesystem>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <dirent.h>
 #include <map>
 #include <memory>
 #include <mutex>
-#include <sys/stat.h>
 
 namespace pe {
 
@@ -17,25 +16,22 @@ namespace {
 
 bool isFile(const std::string& path)
 {
-    struct stat st;
-    return stat(path.c_str(), &st) == 0 && S_ISREG(st.st_mode);
+    std::error_code ec;
+    return std::filesystem::is_regular_file(path, ec);
 }
 
 /// the subdirectories' names of `path`, sorted (none when it is no directory)
 std::vector<std::string> subdirectories(const std::string& path)
 {
+    namespace fs = std::filesystem;
     std::vector<std::string> out;
-    DIR* d = opendir(path.c_str());
-    if (d == nullptr)
-        return out;
-    while (const dirent* e = readdir(d)) {
-        if (e->d_name[0] == '.')
-            continue;
-        struct stat st;
-        if (stat((path + "/" + e->d_name).c_str(), &st) == 0 && S_ISDIR(st.st_mode))
-            out.push_back(e->d_name);
+    std::error_code ec;
+    for (fs::directory_iterator it(path, ec), end; !ec && it != end; it.increment(ec)) {
+        const std::string name = it->path().filename().string();
+        std::error_code e2;
+        if (!name.empty() && name[0] != '.' && fs::is_directory(it->path(), e2))
+            out.push_back(name);
     }
-    closedir(d);
     std::sort(out.begin(), out.end());
     return out;
 }
