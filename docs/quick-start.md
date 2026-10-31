@@ -11,17 +11,17 @@ README's [Build from source](../README.md#build-from-source) lists what you need
 ```sh
 git clone --recursive <this repository's URL>    # then, in the clone:
 just plugin        # the engine and the plugin, into plugin/build/bin
-just install       # links the plugin into ~/.lv2 (and ~/.clap, ~/.vst3), the instruments into ~/.local/share/pianoengine
+just install       # links the plugin into ~/.lv2 (and ~/.clap, ~/.vst3), the instruments into ~/.local/share/dussek
 ```
 
 `just install` makes links, so a later `just plugin` updates the installed plugin.
 
-- **In an LV2 host** (Ardour, Carla, Jalv, …): rescan the plugins and add "PianoEngine" to an
+- **In an LV2 host** (Ardour, Carla, Jalv, …): rescan the plugins and add "Dussek" to an
   instrument track. The host needs LV2's worker feature (these three have it).
 - **As a JACK standalone**: `just standalone` starts it under PipeWire (`pw-jack`), links its
   outputs to the default output and gives it an ALSA MIDI port. Connect your keyboard to its MIDI
   input in a patchbay (qpwgraph, Helvum, Carla). Under a plain JACK server:
-  `plugin/build/bin/pianoengine`.
+  `plugin/build/bin/dussek`.
 
 ## Pick an instrument
 
@@ -60,11 +60,11 @@ keyboard.
 
 The ⋯ menu's **Copy CLI** puts a command line on the clipboard that renders a MIDI file offline
 with the current settings: replace `in.mid` and `out.wav` and run it. The standalone renders it
-(`pianoengine render`; the line names the standalone by its path where the plugin finds it beside
+(`dussek render`; the line names the standalone by its path where the plugin finds it beside
 itself). The plain form:
 
 ```sh
-plugin/build/bin/pianoengine render instruments/grand_a song.mid song.wav
+plugin/build/bin/dussek render instruments/grand_a song.mid song.wav
 ```
 
 Music you make with the instruments is yours, free to use without credit.

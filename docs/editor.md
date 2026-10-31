@@ -10,7 +10,7 @@ It needs the Python environment of [building-instruments.md](building-instrument
 runs the chains through `build.py`.
 
 ```sh
-just run-editor        # or: just editor, then editor/target/release/pianoengine-editor
+just run-editor        # or: just editor, then editor/target/release/dussek-editor
 ```
 
 The projects are listed on the left, under **New instrument…** and **New rolled piano…**. An open
@@ -288,7 +288,7 @@ change settles (for a slider, when it is let go).
   as "Rolled piano (preview)" and reloads it within a second: play it in the standalone, at every
   microphone position.
 - A roll takes about 7 s. The first one also measures the references, about 15 s more. They are
-  kept in `~/.cache/pianoengine/roll` (`$PIANOENGINE_CACHE/roll` when it is set) until the
+  kept in `~/.cache/dussek/roll` (`$DUSSEK_CACHE/roll` when it is set) until the
   program or an export changes.
 - Only the newest roll writes the preview. Cancel, or choosing another project, removes it.
 

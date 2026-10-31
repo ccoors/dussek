@@ -93,7 +93,7 @@ prototype's renders to about −70 dB.
 
 ## The engine
 
-`engine/` is Rust (edition 2024): a library with a C ABI (`plugin/src/pianoengine.h`) and the
+`engine/` is Rust (edition 2024): a library with a C ABI (`plugin/src/dussek.h`) and the
 tools `render`, `bench`, `midi2wav`, `level` and `roll`.
 
 **Loading** has two stages, decode and build. The physics compiler (`physics.rs`) derives from
@@ -225,7 +225,7 @@ are built but untested.
 
 - **Parameters**: `Params.hpp` is the interface (indices, symbols, ranges, descriptions). One
   mapping from parameters to the engine's values (`EngineValues`) serves the DSP, the UI and
-  Copy CLI's `pianoengine render` line [53] (the standalone's `render`: midi2wav's code in the
+  Copy CLI's `dussek render` line [53] (the standalone's `render`: midi2wav's code in the
   engine library, `engine/src/midi2wav/`, through `pe_cli`).
 - **Instruments**: the catalog (`Catalog.*`) lists every instrument directory in the search
   paths. The choice is the `instrument` state, saved by name [77], or by its path for a folder
@@ -239,7 +239,7 @@ are built but untested.
   damper and last strike (the Analysis and Visualization panels).
 - **State**: `instrument`, `velocity_curve`, `morph` (the partners), `felt` (the player's bends),
   `scale_file` (the Scala file's path), and `ui` (the tab, the zoom, the bottom panel).
-  MIDI learn's ties live outside the session in `~/.config/pianoengine/midi-map.txt` [111].
+  MIDI learn's ties live outside the session in `~/.config/dussek/midi-map.txt` [111].
 - **UI** (`src/ui/`, NanoVG): the layout, formatting and capabilities are pure logic in
   `pe_common`, tested by `plugin/tests/ui_tests.cpp`. The header carries the instrument, the
   stops, the motor, the sustain latch, Volume, Panic and the menu (zoom, Copy CLI, Reset). The

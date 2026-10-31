@@ -271,7 +271,7 @@ change against.
 - **Fresh ears.** A sound decided one day is confirmed the next before it merges: long A/B days
   dull the ear, and Grand A's felt core, right on the day, was heard as overdone a day later.
 - **Snapshots.** `just snapshot <ref> [names]` writes `instruments/<name>/` at a git ref (`main`, a
-  tag such as `voicing-1`, a commit) into `~/.local/share/pianoengine/snapshots/<name>@<ref>` (`/`
+  tag such as `voicing-1`, a commit) into `~/.local/share/dussek/snapshots/<name>@<ref>` (`/`
   in a ref becomes `-`); the plugin lists them in the menu group "Snapshots", named "Grand A @
   voicing-1", their profile marked with the ref and its commit too (the engine caches the board's
   and the room's responses by profile: a refreshed `main` is another board for it). A snapshot is the old data played by today's engine: right for voicing

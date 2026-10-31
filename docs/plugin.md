@@ -7,7 +7,7 @@ LV2 and the standalone are the targets; CLAP and VST3 are built but untested.
 
 ```sh
 just plugin        # DPF (a git submodule, plugin/dpf) at its pinned commit; cmake into plugin/build (builds the engine too)
-just install       # links: ~/.lv2, ~/.clap, ~/.vst3; instruments/ into ~/.local/share/pianoengine
+just install       # links: ~/.lv2, ~/.clap, ~/.vst3; instruments/ into ~/.local/share/dussek
 just uninstall     # removes those links
 just standalone    # the JACK standalone under PipeWire
 ```
@@ -18,14 +18,14 @@ just standalone    # the JACK standalone under PipeWire
 through `pw-jack`:
 
 - Its outputs are linked to the default sink's front left and right.
-- An ALSA MIDI port named "PianoEngine MIDI" (`a2jmidi_bridge`, from a2jmidid) is linked to its
-  MIDI input, for programs that play to ALSA MIDI devices: `aplaymidi -p "PianoEngine MIDI:0"
+- An ALSA MIDI port named "Dussek MIDI" (`a2jmidi_bridge`, from a2jmidid) is linked to its
+  MIDI input, for programs that play to ALSA MIDI devices: `aplaymidi -p "Dussek MIDI:0"
   file.mid`.
 - It finds the standalone's ports by its process, since PipeWire lets two clients share the name
-  "PianoEngine". It ends the bridge when the standalone closes.
+  "Dussek". It ends the bridge when the standalone closes.
 - Keyboards are not linked: connect them in a patchbay.
 
-Without the script: `pw-jack plugin/build/bin/pianoengine`.
+Without the script: `pw-jack plugin/build/bin/dussek`.
 
 Without a JACK server the standalone plays on its own audio (DPF's fallback: CoreAudio on macOS,
 WASAPI on Windows, PulseAudio or ALSA on Linux) to the default output. It opens every MIDI input
@@ -42,19 +42,19 @@ curve's edits do not reach the sound.
 
 The plugin lists every instrument directory it finds in these paths:
 
-1. `$PIANOENGINE_INSTRUMENTS`;
+1. `$DUSSEK_INSTRUMENTS`;
 2. the bundle's resources;
-3. `~/.local/share/pianoengine/instruments` (`just install` links `instruments/` there;
+3. `~/.local/share/dussek/instruments` (`just install` links `instruments/` there;
    `$XDG_DATA_HOME` replaces `~/.local/share`);
-4. `~/.local/share/pianoengine/snapshots`: instruments from a git ref (`just snapshot <ref>`), in
+4. `~/.local/share/dussek/snapshots`: instruments from a git ref (`just snapshot <ref>`), in
    the menu's "Snapshots" group.
 
 A name found in an earlier path hides the same name in the later ones.
 
-The user folder (`~/.local/share/pianoengine` above, with the presets beside the instruments)
-is the platform's own: on Linux `$XDG_DATA_HOME/pianoengine`, else `~/.local/share/pianoengine`
-(the MIDI maps in `$XDG_CONFIG_HOME/pianoengine`, else `~/.config/pianoengine`); on macOS
-`~/Library/Application Support/PianoEngine`; on Windows `%APPDATA%\PianoEngine`
+The user folder (`~/.local/share/dussek` above, with the presets beside the instruments)
+is the platform's own: on Linux `$XDG_DATA_HOME/dussek`, else `~/.local/share/dussek`
+(the MIDI maps in `$XDG_CONFIG_HOME/dussek`, else `~/.config/dussek`); on macOS
+`~/Library/Application Support/Dussek`; on Windows `%APPDATA%\Dussek`
 (`plugin/src/Paths.cpp`).
 
 - **Menu entry**: from the file's `"menu"` block. Without one, the instrument is listed under
@@ -62,7 +62,7 @@ is the platform's own: on Linux `$XDG_DATA_HOME/pianoengine`, else `~/.local/sha
 - **Controls shown**: from the engine's report on the file (`engine/src/info.rs`): the controls
   without effect, the preparations that act, the stops, the mallets.
 - **Adding one**: a new instrument of a kind the engine has (any body in `mic.rs`) needs no
-  rebuild. Copy its directory into one of the paths; `$PIANOENGINE_INSTRUMENTS` keeps it out of
+  rebuild. Copy its directory into one of the paths; `$DUSSEK_INSTRUMENTS` keeps it out of
   the repository, which the user data directory links to.
 - **Kept anywhere**: the instrument menu's last entry, "Open instrument folder…", opens a file
   browser: choosing a folder's `instrument.json` plays that folder, listed under "Opened" while
@@ -126,11 +126,11 @@ The header's buttons:
   sound ever run away (a fault), the engine silences it by itself: the voice that blows up, or
   everything once the output passes +20 dBFS.
 - **⋯** holds the zoom, Copy CLI and Reset.
-  - **Copy CLI** puts a `pianoengine render` command line (the standalone's `render`, which is
+  - **Copy CLI** puts a `dussek render` command line (the standalone's `render`, which is
     `midi2wav`: either takes it) for the current settings on the clipboard. It names the standalone
     by its full path: its own in the standalone, in a plugin the standalone next to the plugin's
     bundle (a release's folder; `plugin/build/bin` behind `just install`'s links), else the one on
-    `PATH`, else plain `pianoengine`. Then the
+    `PATH`, else plain `dussek`. Then the
     instrument's directory, the sample rate, `--velocity-curve`, `--param`, `--tuning` with
     every setting that differs from the engine's default, `--latch`, and `--felt` with the Felt tab's
     points (midi2wav builds the felt and a piano's Hammer hardness as the plugin does, the loudness
@@ -287,9 +287,9 @@ under a name for every instrument of this kind, typed in the box (Enter); your o
 Delete (a second click within 3 s confirms). The box names the preset the microphones still match
 (your own before a shipped one), else the position (Custom once a microphone moves).
 
-Your presets, both kinds, are files in `~/.local/share/pianoengine/presets/` (`$XDG_DATA_HOME`
-replaces `~/.local/share`), one `.pepreset` file per preset: every host and the standalone see the
-same list. A host's own preset menu (Ardour's) keeps working beside them.
+Your presets, both kinds, are files in `~/.local/share/dussek/presets/` (`$XDG_DATA_HOME`
+replaces `~/.local/share`), one `.dussek-preset` file per preset: every host and the standalone see
+the same list. A host's own preset menu (Ardour's) keeps working beside them.
 
 **Positions** (under the drawing; the plugin starts at Player, `midi2wav` and the fits at
 Recording):
@@ -660,7 +660,7 @@ The MIDI tab lists:
 - "Soft takeover", above.
 
 The ties live in one file for every instance and session:
-`$XDG_CONFIG_HOME/pianoengine/midi-map.txt` (`~/.config/pianoengine/midi-map.txt`). They describe
+`$XDG_CONFIG_HOME/dussek/midi-map.txt` (`~/.config/dussek/midi-map.txt`). They describe
 the controller, not a sound, so Reset, presets and saved sessions leave them alone. They also
 work while no instrument plays, so a knob can step away from one that does not load. Hosts that
 take a plugin's own parameter changes (the JACK standalone, Carla) save the values MIDI set;

@@ -37,7 +37,7 @@ The `justfile` holds the commands (`just` lists them, `just --show <recipe>` pri
 ```sh
 just test            # all four suites in turn, each to its end: ~2.5 min plus the builds, exit
                      # status non-zero if any failed (each suite's output in
-                     # $TMPDIR/pianoengine-test-logs/<checkout>)
+                     # $TMPDIR/dussek-test-logs/<checkout>)
 just test-engine     # engine: cargo nextest, every core (~2 min; a filter after it narrows)
 just test-plugin     # plugin: builds it (DPF, a git submodule, fetched at its pinned commit), then ui_tests
                      # (last line "N tests, 0 failed checks", exit 0)
@@ -73,13 +73,13 @@ The engine's tests use the committed instruments; a test without its data return
   mtimes skip the rebuild and an A/B check runs the wrong binary. Never stash while a cargo run
   is going in the background.
 - The UI's drawing has no unit tests. To look at it without a display:
-  `Xvfb :97 -screen 0 1600x1000x24 &`, run `plugin/build/bin/pianoengine` with `DISPLAY=:97`,
+  `Xvfb :97 -screen 0 1600x1000x24 &`, run `plugin/build/bin/dussek` with `DISPLAY=:97`,
   drive it with `xdotool`, capture with `import -window root`. Under PipeWire the standalone
   runs with `just standalone` (`plugin/tools/run-standalone.sh`: `pw-jack`, the outputs linked to the
   default sink, an ALSA MIDI port). The editor the same way
-  (`editor/target/release/pianoengine-editor`), with `WAYLAND_DISPLAY` unset (winit prefers
+  (`editor/target/release/dussek-editor`), with `WAYLAND_DISPLAY` unset (winit prefers
   Wayland), `DBUS_SESSION_BUS_ADDRESS=unix:path=/nonexistent` (else the folder picker opens on the
-  desktop through its portal) and `xdotool search --name "PianoEngine editor" windowfocus`
+  desktop through its portal) and `xdotool search --name "Dussek editor" windowfocus`
   before typing.
 
 ## How things fit together

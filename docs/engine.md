@@ -12,13 +12,13 @@ engine/target/release/bench instruments/grand_a 64       # the load per 64-frame
 just midi2wav instruments/grand_f song.mid song.wav          # a MIDI file into a WAV
 ```
 
-The plugin's "Copy CLI" (in its header menu) puts a `pianoengine render` line for its current
+The plugin's "Copy CLI" (in its header menu) puts a `dussek render` line for its current
 settings on the clipboard.
 
 ## midi2wav
 
 `midi2wav` plays a Standard MIDI file through the engine. The standalone does the same as
-`pianoengine render` with the same arguments (`pianoengine render --help`): one code
+`dussek render` with the same arguments (`dussek render --help`): one code
 (`engine/src/midi2wav/`, through the C interface's `pe_cli`), the same file byte for byte, so a
 release needs no separate tool. `midi2wav -h` lists its options,
 `midi2wav --help` describes each and every key of `--param` and `--tuning`. Every value is checked
@@ -159,6 +159,6 @@ A morph takes about 0.25 s to build; a plain load takes 0.13 s.
 | `RENDER_PREROLL`, `RENDER_BLOCK` | `render` | silence before t = 0, frames per block (tests) |
 | `BENCH_MIC`, `BENCH_STRIKE`, `BENCH_REPEAT`, `BENCH_TOP`, `BENCH_TELEMETRY` | `bench` | the microphone position, the strike cost per key, repeats, the slowest buffers, a diagnostics run |
 | `BENCH_ONLY`, `BENCH_SECONDS`, `BENCH_DRAG` | `bench` | the scenarios whose name holds the text, each cut to S seconds (a profiler's run), the microphones dragged as the plugin does it |
-| `PIANOENGINE_INSTRUMENTS` | the plugin | an extra instrument search path, searched first |
-| `PIANOENGINE_CACHE` | `roll`, the editor's rolls | where the reference measurements are kept |
-| `PIANOENGINE_NO_DIRECTIVITY` | the engine | the board's directivity off (checks) |
+| `DUSSEK_INSTRUMENTS` | the plugin | an extra instrument search path, searched first |
+| `DUSSEK_CACHE` | `roll`, the editor's rolls | where the reference measurements are kept |
+| `DUSSEK_NO_DIRECTIVITY` | the engine | the board's directivity off (checks) |

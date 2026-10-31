@@ -3342,3 +3342,28 @@ link, and what the loaded instrument is, mostly its `LICENSE.md`. It is the last
 order, a URL broken, a list item indented), every committed export's `LICENSE.md` read and wrapped,
 the tab's lines inside the content area at the minimum, default and a wide window and a tiny one,
 the license scrolling in a small window, and the plain lines for a missing file or instrument.
+
+<a id="step-213"></a>
+## 213. The name: Dussek
+
+The project's working name, PianoEngine, gives way to its own before the first release fixes the
+identifiers: Dussek, after Jan Ladislav Dussek (1760–1812), the pianist who had the piano's keyboard
+extended to five and a half octaves. Renamed:
+
+| What | Before | Now |
+|---|---|---|
+| the plugin's name / maker | PianoEngine / PianoEngine | Dussek / Christian Friedrich Coors (homepage: the project's link) |
+| LV2 URI, CLAP ID, VST3 IDs | `urn:pianoengine:piano`, `local.pianoengine.piano`, `PnEn`/`PnoA` | `https://ccoors.de/plugins/dussek`, `de.ccoors.dussek`, `Ccrs`/`Dsek` |
+| binaries and bundles | `pianoengine`, `pianoengine.lv2` …, `pianoengine-editor` | `dussek`, `dussek.lv2` …, `dussek-editor` |
+| the engine crate, the C header | `pianoengine`, `pianoengine.h` | `dussek`, `dussek.h` |
+| user folders | `~/.local/share/pianoengine`, `~/.config/pianoengine`, `PianoEngine` (macOS, Windows) | `dussek`, `dussek`, `Dussek` |
+| environment variables | `PIANOENGINE_INSTRUMENTS`, `_CACHE`, `_NO_DIRECTIVITY` | `DUSSEK_…` |
+| presets | `.pepreset` | `.dussek-preset` |
+| the instruments' credit | "made with PianoEngine", "Grand A from PianoEngine" | "made with Dussek", "Grand A from Dussek" |
+
+The short `pe` of the code (the C interface, the namespace, the test switches) stays: it names the
+engine, not the project. The design log's earlier steps keep the name they were written under;
+`proto/tests/test_the_name.py` finds the old one anywhere else. A DAW session saved before this
+step does not find the plugin (its URI changed; pre-release, no alias), and presets, MIDI maps and
+instruments in the old folders are not read until moved. The instruments' data are unchanged (41
+of 41 reproduce); only their `LICENSE.md` reads the new name.

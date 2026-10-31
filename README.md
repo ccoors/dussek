@@ -1,4 +1,4 @@
-# PianoEngine
+# Dussek
 
 A physically modeled piano for Linux, as an LV2 plugin and a JACK standalone (CLAP and VST3 are
 built too, but untested). It plays nine grands, four uprights, six harpsichords, a clavichord,
@@ -7,7 +7,8 @@ the hammer (or plectrum, or mallet), stiff strings with coupled unisons, the sou
 and the pedals, in real time. Each instrument's parameters were measured from freely licensed
 recordings of a real one, so the instruments ship as numbers, without any audio. The aim is an
 instrument that plays well (a continuous response to velocity, fast repetition, half pedaling,
-sympathetic resonance, low latency) and has a character of its own.
+sympathetic resonance, low latency) and has a character of its own. It is named after Jan Ladislav
+Dussek (1760–1812), the pianist who had the piano's keyboard extended to five and a half octaves.
 
 <!-- a screenshot: docs/img/plugin-grand.png, the plugin on a grand, taken by a script -->
 

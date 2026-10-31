@@ -9,7 +9,7 @@ plays it.
 - **Run all four suites:** `just test` (the engine, the plugin's UI logic, the prototype, the
   editor; a few minutes, every core). Run all four even for a change in one layer: the layers
   test each other's data. `just test` exits non-zero if any suite failed; each suite's output is
-  in `${TMPDIR:-/tmp}/pianoengine-test-logs/<checkout>/`.
+  in `${TMPDIR:-/tmp}/dussek-test-logs/<checkout>/`.
 - **A change to `proto/`, `engine/`, `projects/` or `instruments/`:** also `just check` (no step
   is stale of any instrument built in your checkout from its recordings) and, before an export
   goes in, `just reproduce` (the committed exports are what an export makes today).

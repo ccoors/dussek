@@ -121,7 +121,6 @@ Nothing in progress; the next item comes from below.
     output ports in the plugin (the board's responses cost about 8× at 16 channels).
   - Other physically modeled instruments, e.g. the organ, from freely licensed organ samples
     (GrandOrgue, Hauptwerk sets).
-  - A name for the project; the plugin is called PianoEngine for now.
 
 Decided against, for now: a live standalone player of our own (`just standalone` runs the JACK
 standalone as an app instead); a repetition limit for uprights; a second harpsichord manual with
