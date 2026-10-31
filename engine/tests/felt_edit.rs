@@ -166,7 +166,7 @@ fn extremes_stay_finite() {
     // every hammer piano, every limit at once with the hardness at its end, then the other way:
     // every 4th key and the top one at velocity 127, the strike variation at its widest
     let root = format!("{}/../instruments", env!("CARGO_MANIFEST_DIR"));
-    let mut pianos: Vec<String> = std::fs::read_dir(&root).map_or(Vec::new(), |d| d.filter_map(|e| e.ok()).map(|e| e.path().display().to_string()).collect());
+    let mut pianos: Vec<String> = std::fs::read_dir(&root).map_or(Vec::new(), |d| d.filter_map(|e| e.ok()).filter(|e| e.path().is_dir()).map(|e| e.path().display().to_string()).collect());
     pianos.retain(|d| common::load(d).is_some_and(|i| i.is_hammer_piano()));
     pianos.sort();
     let hard = {

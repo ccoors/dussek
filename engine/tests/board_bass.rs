@@ -176,6 +176,7 @@ fn extremes_stay_finite_and_die_away() {
     let Ok(rd) = std::fs::read_dir(&root) else { return };
     let mut pianos: Vec<String> = rd
         .filter_map(|e| e.ok())
+        .filter(|e| e.path().is_dir()) // the instruments, not aliases.txt
         .map(|e| e.file_name().to_string_lossy().into_owned())
         .filter(|n| common::load(&dir(n)).is_some_and(|i| i.is_hammer_piano()))
         .collect();
