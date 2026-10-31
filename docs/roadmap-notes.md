@@ -351,6 +351,44 @@ Every fit is a step (`projects/steps.toml`). Its declared reads, seeds, outputs 
 are the contract a Rust port must honor, and its outputs can be compared with the Python step's
 on the same inputs (the ledger's fingerprints).
 
+<a id="prepared-piano"></a>
+## The prepared piano
+
+A reference: Kurt James Werner's prepared-piano samples (*Samples and Such*, CCRMA, Stanford, 2011;
+CC BY 3.0; 282 MB, not in `data/` yet): a grand prepared for Cage's *Sonatas and Interludes*, 43 of
+its 45 prepared notes (D1, D2, D3, G3–F7), one take each at one unknown dynamic, 25 also with the
+pedal down; 24 bit, 44.1 kHz; no unprepared reference and no labels of what sits where (the table
+is in the score). Measured on 2026-10-31 against Grand A and Grand D's renders of the same keys:
+
+- **Near-unprepared** (15 keys, most above F5): harmonic within ±10 cents, decays like a grand's:
+  the set's own reference.
+- **Light masses** (8 keys): the fundamental 100–170 cents lower. The engine's bolt (a point mass,
+  first order) holds the first two partials: D4 at mass 0.3, position 0.34 renders −116/−98 cents
+  against the recording's −127/−78, t20 0.50 against 0.54 s; from the third partial up the curves
+  part.
+- **Heavy masses** (11 keys): the fundamental 700–900 cents lower, the second partial 260–430, from
+  the fourth on back near the series; only the exact point-mass solution (the roots of
+  cot(xp) + cot(x(1−p)) = R·x, mass ratio R 0.4–2.2) fits, the first-order bolt explains 1–55 % of
+  the peaks' energy. Most keys keep one string of the unison unloaded at its pitch.
+- **Treble screws** (7 keys): the free string at its pitch and a low component at 0.22–0.30 f0
+  (R 4.5–20).
+- **Rubber** (9 keys): t20 0.14–0.42 s against a grand's 0.74–2.28 (70–130 dB/s against 10–17), the
+  pitch hardly moved: loss without mass.
+- **Buzz and metal**: 4–12 kHz 10–30 dB over the grand at 0.1 s, the 5 ms envelope chattering 2–4×
+  (nuts); one key's attack a metal clank (spectral centroid 3.7 kHz against 0.5).
+
+What the engine lacks for it: a heavy mass (the exact solution), a preparation on some strings of a
+unison, loss apart from mass (rubber), a rattle driven by the string's motion, an object's own ring.
+
+A proposal: preparations per key in a preset and a project (the key, the object, which strings,
+the position, the mass ratio, extra loss, buzz), compiled per key so a change rebuilds one note;
+Plucked, Muted and Harmonic stay global, Bolt and Paper become per-key entries ("all keys" a
+shortcut); in the UI, a key clicked on the player strip takes its object; a shipped "Prepared"
+preset from our own fits, not the score's text. The set gives each key's fit (mass ratio, position,
+loaded strings, loss, buzz) and a check (the first six modes within 25 cents, t20 within 30 %, the
+high band within 3 dB); the rattle's color, the clank and the inches-to-fraction step stay by ear.
+Its license needs `CC-BY-3.0` among `proto/license.py`'s source licenses and a credit line.
+
 <a id="instruments"></a>
 ## The instruments' open points
 

@@ -73,6 +73,8 @@ Nothing in progress; the next item comes from below.
   - Felt between the strings.
   - A mallet.
   - Plucking single strings with a pick.
+  [Notes](docs/roadmap-notes.md#prepared-piano): a recorded reference measured, what the
+  engine's preparations match and what they lack, a proposal.
 - **The instruments' open points.** What each instrument still lacks against its recordings
   (the harp's pedals, the guitar's strings ringing along, the bars' split modes, …), and the
   pianos' measured body modes. [Notes](docs/roadmap-notes.md#instruments)
