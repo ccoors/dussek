@@ -50,13 +50,56 @@
 
 #include <cerrno>
 #include <csignal>
+#ifndef _WIN32
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#endif
 
 using namespace pe;
+
+/// a new empty folder in the system's temporary folder, `prefix` and a random token its name
+static std::string tempDir(const char* prefix)
+{
+    for (int tries = 0; tries < 100; ++tries) {
+        const std::filesystem::path p = std::filesystem::temp_directory_path()
+            / (std::string(prefix) + std::to_string(SharedRegion::randomToken()));
+        std::error_code ec;
+        if (std::filesystem::create_directory(p, ec))
+            return p.generic_string();
+    }
+    return std::string();
+}
+
+/// setenv and unsetenv (POSIX; Windows' _putenv_s, where an empty value removes the variable)
+static void setEnv(const char* name, const char* value)
+{
+#ifdef _WIN32
+    _putenv_s(name, value);
+#else
+    setenv(name, value, 1);
+#endif
+}
+static void unsetEnv(const char* name)
+{
+#ifdef _WIN32
+    _putenv_s(name, "");
+#else
+    unsetenv(name);
+#endif
+}
+
+/// whether a folder made read-only refuses new files to this process (not to root; not on Windows)
+static bool readOnlyFoldersRefuse()
+{
+#ifdef _WIN32
+    return false;
+#else
+    return geteuid() != 0;
+#endif
+}
 
 // The committed instruments' catalog entries, by their old menu index: the tests written before
 // the catalog keep their vocabulary (profileByDir, profileBars, paramActive(param, profile, …)),
@@ -72,35 +115,48 @@ constexpr uint32_t kProfileCount = sizeof(kProfiles) / sizeof(*kProfiles);
 static std::set<std::string> trackedInstruments()
 {
     std::set<std::string> out;
-    const std::string cmd = std::string("git -C '") + PE_INSTRUMENTS_DIR + "' ls-files -- '*/instrument.json'";
+    // double quotes: the shell's and cmd.exe's (_popen on Windows)
+    const std::string cmd = std::string("git -C \"") + PE_INSTRUMENTS_DIR + "\" ls-files -- \"*/instrument.json\"";
+#ifdef _WIN32
+    if (FILE* f = _popen(cmd.c_str(), "r")) {
+#else
     if (FILE* f = popen(cmd.c_str(), "r")) {
+#endif
         char line[1024];
         while (std::fgets(line, sizeof(line), f) != nullptr) {
             std::string l(line);
             if (const size_t slash = l.find('/'); slash != std::string::npos)
                 out.insert(l.substr(0, slash));
         }
+#ifdef _WIN32
+        _pclose(f);
+#else
         pclose(f);
+#endif
     }
     return out;
 }
 
 /// the committed instruments: those of instruments/ that git tracks (scanned through a folder of
-/// links to them, removed at exit)
+/// links to them, or copies where links cannot be made: Windows without its developer mode;
+/// removed at exit)
 static const Catalog& committed()
 {
     static const Catalog c = [] {
-        char tmpl[] = "/tmp/pe-committed-XXXXXX";
-        static const std::string links = mkdtemp(tmpl);
+        static const std::string links = tempDir("pe-committed-");
         const std::set<std::string> tracked = trackedInstruments();
         for (const std::string& name : pe::listDirs(PE_INSTRUMENTS_DIR))
-            if (tracked.count(name) != 0)
-                (void)symlink((std::string(PE_INSTRUMENTS_DIR) + "/" + name).c_str(), (links + "/" + name).c_str());
+            if (tracked.count(name) != 0) {
+                const std::filesystem::path from = std::filesystem::path(PE_INSTRUMENTS_DIR) / name, to = std::filesystem::path(links) / name;
+                std::error_code ec;
+                std::filesystem::create_directory_symlink(from, to, ec);
+                if (ec)
+                    std::filesystem::copy(from, to, std::filesystem::copy_options::recursive, ec);
+            }
         Catalog scanned = Catalog::scan({ links });
         std::atexit([] {
-            for (const std::string& name : pe::listDirs(links))
-                std::remove((links + "/" + name).c_str());
-            rmdir(links.c_str());
+            std::error_code ec;
+            std::filesystem::remove_all(links, ec); // the links, not what they point at
         });
         return scanned;
     }();
@@ -1256,10 +1312,13 @@ TEST(open_rejects_a_region_smaller_than_asked)
     const std::string name = SharedRegion::nameForToken(SharedRegion::randomToken());
     auto a = SharedRegion::create(name, 4096);
     CHECK(a != nullptr);
-    CHECK(SharedRegion::open(name, 8192) == nullptr);
+    // far past the size: macOS and Windows report a region's size rounded up to their pages
+    CHECK(SharedRegion::open(name, 1 << 20) == nullptr);
     CHECK(SharedRegion::open(name, 4096) != nullptr);
 }
 
+// the sweep of stale regions is Linux's (it reads /dev/shm): its tests too
+#ifdef __linux__
 namespace {
 bool shmExists(const std::string& name) // name as "/pe-xxxxxx"
 {
@@ -1378,6 +1437,7 @@ TEST(sweep_ignores_an_out_of_range_owner_pid)
         CHECK(shmExists(o.name));
     }
 }
+#endif
 
 TEST(diagnostic_parameters_extend_the_table)
 {
@@ -4364,12 +4424,12 @@ TEST(the_ui_matches_the_recorded_table)
 // instruments/<from>, its menu block replaced
 struct TempTree {
     std::string root;
-    TempTree()
+    TempTree() : root(tempDir("pe-catalog-")) {}
+    ~TempTree()
     {
-        char t[] = "/tmp/pe-catalog-XXXXXX";
-        root = mkdtemp(t);
+        std::error_code ec;
+        std::filesystem::remove_all(root, ec);
     }
-    ~TempTree() { std::system(("rm -rf '" + root + "'").c_str()); }
     std::string path(const char* sub) const { return root + "/" + sub; }
     /// the copy's "menu" is `menu` (empty: none); an empty data.bin unless dataBin is false
     void add(const char* sub, const char* id, const char* from, const std::string& menu, bool dataBin = true) const
@@ -4394,7 +4454,7 @@ struct TempTree {
         }
         if (!menu.empty()) json.insert(1, "\"menu\": " + menu + ", ");
         const std::string dir = path(sub) + "/" + id;
-        std::system(("mkdir -p '" + dir + "'").c_str());
+        std::filesystem::create_directories(dir);
         if (FILE* f = std::fopen((dir + "/instrument.json").c_str(), "wb")) {
             std::fwrite(json.data(), 1, json.size(), f);
             std::fclose(f);
@@ -4471,7 +4531,8 @@ TEST(a_dropped_in_instrument_plays)
     TempTree t;
     // the harp, renamed, with its own menu entry; its data.bin copied (pe_create reads it)
     t.add("user", "myharp", "harp", R"({"name": "My harp", "group": "Harps"})");
-    std::system(("cp '" + std::string(PE_INSTRUMENTS_DIR) + "/harp/data.bin' '" + t.path("user") + "/myharp/data.bin'").c_str());
+    std::filesystem::copy_file(std::string(PE_INSTRUMENTS_DIR) + "/harp/data.bin", t.path("user") + "/myharp/data.bin",
+                               std::filesystem::copy_options::overwrite_existing);
     const Catalog c = Catalog::scan({ PE_INSTRUMENTS_DIR, t.path("user") });
     const InstrumentEntry* e = c.find("myharp");
     CHECK(e != nullptr && e->name == "My harp" && e->group == "Harps");
@@ -4515,13 +4576,18 @@ TEST(the_dsp_finds_an_id_where_the_catalog_does)
     t.add("bundle/instruments", "harp", "harp", R"({"name": "Harp A", "group": "Harps"})");
     t.add("env", "bad", "harp", R"({"name": 3, "group": "Harps"})"); // rejected by the engine's report
     t.add("bundle/instruments", "bad", "harp", R"({"name": "Fine", "group": "Harps"})");
-    // a snapshot (proto/snapshot.py) in the data directory's snapshots folder, its own group
-    t.add("xdg/pianoengine/snapshots", "harp@t-1", "harp", R"({"name": "Harp A @ t-1", "group": "Snapshots"})");
+    // the platform's user folder (pe::dataDirs), from the variable it reads, inside the tree
+    const char* var = pe::hostPlatform() == pe::Platform::Linux ? "XDG_DATA_HOME" : pe::hostPlatform() == pe::Platform::MacOS ? "HOME" : "APPDATA";
     const char* env = std::getenv("PIANOENGINE_INSTRUMENTS");
-    const char* xdg = std::getenv("XDG_DATA_HOME");
+    const char* xdg = std::getenv(var);
     const std::string envWas = env ? env : "", xdgWas = xdg ? xdg : "";
-    setenv("PIANOENGINE_INSTRUMENTS", t.path("env").c_str(), 1);
-    setenv("XDG_DATA_HOME", t.path("xdg").c_str(), 1);
+    setEnv("PIANOENGINE_INSTRUMENTS", t.path("env").c_str());
+    setEnv(var, t.path("xdg").c_str());
+    const std::string data = pe::dataDirs().data;
+    CHECK(data.rfind(t.path("xdg"), 0) == 0);
+    // a snapshot (proto/snapshot.py) in the data directory's snapshots folder, its own group
+    const std::string snapshots = "xdg" + data.substr(t.path("xdg").size()) + "/snapshots";
+    t.add(snapshots.c_str(), "harp@t-1", "harp", R"({"name": "Harp A @ t-1", "group": "Snapshots"})");
     const std::string bundle = t.path("bundle");
     const Catalog c = Catalog::scan(Catalog::searchPaths(bundle.c_str()));
     CHECK(c.find("harp") != nullptr && instrumentDir(bundle.c_str(), "harp") == c.find("harp")->dir);
@@ -4529,9 +4595,9 @@ TEST(the_dsp_finds_an_id_where_the_catalog_does)
     CHECK(instrumentDir(bundle.c_str(), "../instruments/harp").empty() && instrumentDir(bundle.c_str(), "..").empty());
     CHECK(instrumentDir(bundle.c_str(), "").empty() && instrumentDir(bundle.c_str(), "nonesuch").empty());
     CHECK(c.find("harp@t-1") != nullptr && c.find("harp@t-1")->group == "Snapshots");
-    CHECK(Catalog::searchPaths(bundle.c_str()).back() == t.path("xdg") + "/pianoengine/snapshots");
-    if (env) setenv("PIANOENGINE_INSTRUMENTS", envWas.c_str(), 1); else unsetenv("PIANOENGINE_INSTRUMENTS");
-    if (xdg) setenv("XDG_DATA_HOME", xdgWas.c_str(), 1); else unsetenv("XDG_DATA_HOME");
+    CHECK(Catalog::searchPaths(bundle.c_str()).back() == data + "/snapshots");
+    if (env) setEnv("PIANOENGINE_INSTRUMENTS", envWas.c_str()); else unsetEnv("PIANOENGINE_INSTRUMENTS");
+    if (xdg) setEnv(var, xdgWas.c_str()); else unsetEnv(var);
 }
 
 // ---- the worker → audio thread engine handover (PianoPlugin), with stand-ins for engines
@@ -4679,23 +4745,27 @@ TEST(midi_map_reads_bad_files_safely)
                                      "cc 1 64 lid\ncc 1 30 lid\ncc 1 30 mic_l_x\nprogram_change maybe\ncc 1 31\n");
     CHECK(g.ties().size() == 1 && g.find(kMicLX) != nullptr && g.find(kMicLX)->cc == 30 && g.find(kLid) == nullptr
         && !g.programChange); // the later of two lines on one CC wins
-    char dir[] = "/tmp/pe_midimap_XXXXXX";
-    CHECK(mkdtemp(dir) != nullptr);
-    const std::string path = std::string(dir) + "/a/b/midi-map.txt"; // missing directories are created
+    const std::string dir = tempDir("pe_midimap_");
+    CHECK(!dir.empty());
+    const std::string path = dir + "/a/b/midi-map.txt"; // missing directories are created
     MidiMap m;
     m.tie(kLid, 0, 21);
     CHECK(m.save(path) && MidiMap::load(path).find(kLid) != nullptr);
-    CHECK(MidiMap::load(std::string(dir) + "/missing.txt").ties().empty());
-    chmod(dir, 0500);
-    if (geteuid() != 0) // root writes anyway
-        CHECK(!m.save(std::string(dir) + "/c/midi-map.txt")); // unwritable: false, no crash
-    chmod(dir, 0700);
-    const char* old = std::getenv("XDG_CONFIG_HOME");
+    CHECK(MidiMap::load(dir + "/missing.txt").ties().empty());
+    if (readOnlyFoldersRefuse()) {
+        std::filesystem::permissions(dir, std::filesystem::perms::owner_read | std::filesystem::perms::owner_exec);
+        CHECK(!m.save(dir + "/c/midi-map.txt")); // unwritable: false, no crash
+        std::filesystem::permissions(dir, std::filesystem::perms::owner_all);
+    }
+    // the platform's config folder (pe::dataDirs), here from the variable it reads
+    const char* var = pe::hostPlatform() == pe::Platform::Linux ? "XDG_CONFIG_HOME" : pe::hostPlatform() == pe::Platform::MacOS ? "HOME" : "APPDATA";
+    const char* old = std::getenv(var);
     const std::string saved = old != nullptr ? old : "";
-    setenv("XDG_CONFIG_HOME", dir, 1);
-    CHECK(midiMapPath() == std::string(dir) + "/pianoengine/midi-map.txt");
-    if (old != nullptr) setenv("XDG_CONFIG_HOME", saved.c_str(), 1); else unsetenv("XDG_CONFIG_HOME");
-    std::filesystem::remove_all(dir); // no directories left behind in /tmp
+    setEnv(var, dir.c_str());
+    CHECK(!pe::dataDirs().config.empty() && midiMapPath() == pe::dataDirs().config + "/midi-map.txt");
+    CHECK(midiMapPath().rfind(dir, 0) == 0);
+    if (old != nullptr) setEnv(var, saved.c_str()); else unsetEnv(var);
+    std::filesystem::remove_all(dir); // no directories left behind in the temporary folder
 }
 
 TEST(router_leaves_untied_ccs_and_program_change_alone)
@@ -4954,9 +5024,9 @@ TEST(the_value_mirror_reaches_a_ui_that_opens_later)
 
 TEST(midi_map_update_keeps_other_ties_and_fails_cleanly)
 {
-    char dir[] = "/tmp/pe_midimap_XXXXXX";
-    CHECK(mkdtemp(dir) != nullptr);
-    const std::string path = std::string(dir) + "/midi-map.txt";
+    const std::string dir = tempDir("pe_midimap_");
+    CHECK(!dir.empty());
+    const std::string path = dir + "/midi-map.txt";
     MidiMap mine; // loaded before another instance wrote its tie
     MidiMap other;
     other.tie(kLid, 0, 21);
@@ -4966,12 +5036,12 @@ TEST(midi_map_update_keeps_other_ties_and_fails_cleanly)
     const MidiMap disk = MidiMap::load(path);
     CHECK(disk.find(kLid) != nullptr && disk.find(kRoom) != nullptr);
     // a file that cannot be written: the map stays as it was (no tie the DSP never hears of)
-    std::filesystem::permissions(dir, std::filesystem::perms::owner_read | std::filesystem::perms::owner_exec);
-    if (geteuid() != 0) {
-        CHECK(!mine.update(std::string(dir) + "/sub/midi-map.txt", [](MidiMap& m) { m.tie(kStop8, 0, 30); }));
+    if (readOnlyFoldersRefuse()) {
+        std::filesystem::permissions(dir, std::filesystem::perms::owner_read | std::filesystem::perms::owner_exec);
+        CHECK(!mine.update(dir + "/sub/midi-map.txt", [](MidiMap& m) { m.tie(kStop8, 0, 30); }));
         CHECK(mine.find(kStop8) == nullptr && mine.ties().size() == 2);
+        std::filesystem::permissions(dir, std::filesystem::perms::owner_all);
     }
-    std::filesystem::permissions(dir, std::filesystem::perms::owner_all);
     std::filesystem::remove_all(dir);
 }
 
@@ -5337,10 +5407,9 @@ TEST(a_folder_counts_once_its_instrument_json_is_there)
 {
     // the editor makes the preview's folder first and renames instrument.json in last: a rescan
     // before that would leave the folder out of the menu for good
-    char tmpl[] = "/tmp/pe-listdirs-XXXXXX";
-    const std::string root = mkdtemp(tmpl);
+    const std::string root = tempDir("pe-listdirs-");
     const std::string dir = root + "/rolled_preview";
-    mkdir(dir.c_str(), 0755);
+    std::filesystem::create_directory(dir);
     CHECK(pe::listDirs(root).empty());
     if (FILE* f = std::fopen((dir + "/data.bin").c_str(), "w"))
         std::fclose(f);
@@ -5348,10 +5417,7 @@ TEST(a_folder_counts_once_its_instrument_json_is_there)
     if (FILE* f = std::fopen((dir + "/instrument.json").c_str(), "w"))
         std::fclose(f);
     CHECK(pe::listDirs(root) == std::vector<std::string> { "rolled_preview" });
-    std::remove((dir + "/instrument.json").c_str());
-    std::remove((dir + "/data.bin").c_str());
-    rmdir(dir.c_str());
-    rmdir(root.c_str());
+    std::filesystem::remove_all(root);
 }
 
 TEST(condition_zones_map_the_slider_to_the_wear)
@@ -5603,9 +5669,9 @@ TEST(a_preset_reads_back_from_its_file)
 
 TEST(user_presets_save_load_and_delete)
 {
-    char tmpl[] = "/tmp/pe-presets-XXXXXX";
-    CHECK(mkdtemp(tmpl) != nullptr);
-    const std::string dir = std::string(tmpl) + "/pianoengine/presets"; // made with its parents
+    const std::string tmpl = tempDir("pe-presets-");
+    CHECK(!tmpl.empty());
+    const std::string dir = tmpl + "/pianoengine/presets"; // made with its parents
     float v[pe::kParamCount] = {};
     for (uint32_t i = 0; i < pe::kParamCount; ++i)
         v[i] = pe::paramInfo(i).def;
@@ -5717,6 +5783,12 @@ TEST(parse_float_as_from_chars_without_it)
     CHECK(pe::parseFloat(d, d + 2, x) == nullptr);
     const char e[] = "abc";
     CHECK(pe::parseFloat(e, e + 3, x) == nullptr);
+    const char g[] = "1.5abc"; // libc++ took the letters of a hex float into the number
+    CHECK(pe::parseFloat(g, g + 6, x) == g + 3 && x == 1.5f);
+    const char h[] = "2e";      // an exponent without digits: the number before it
+    CHECK(pe::parseFloat(h, h + 2, x) == h + 1 && x == 2.0f);
+    const char i[] = "-.";
+    CHECK(pe::parseFloat(i, i + 2, x) == nullptr);
     const char f[] = "0.25";
     CHECK(pe::parseFloat(f, f + 2, x) == f + 2 && x == 0.0f); // only the range given
     const char* old = std::setlocale(LC_NUMERIC, nullptr);
