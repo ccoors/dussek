@@ -1,7 +1,7 @@
 # PianoEngine
 
 A physically modeled piano for Linux, as an LV2 plugin and a JACK standalone (CLAP and VST3 are
-built too, but untested). It plays seven grands, three uprights, six harpsichords, a clavichord,
+built too, but untested). It plays seven grands, four uprights, six harpsichords, a clavichord,
 harps, guitars, zithers and percussion. None of them plays back a recording: the engine simulates
 the hammer (or plectrum, or mallet), stiff strings with coupled unisons, the soundboard, the dampers
 and the pedals, in real time. Each instrument's parameters were measured from freely licensed
@@ -16,7 +16,7 @@ sympathetic resonance, low latency) and has a character of its own.
 | Menu group | Instruments |
 |---|---|
 | Grand pianos | Grand A, B, C, D, E, F, G |
-| Upright pianos | Upright A, B, C |
+| Upright pianos | Upright A, B, C, D |
 | Harpsichords | Harpsichord A, B (8′, 4′, a second 8′ and the lute stop), C, D, E, F |
 | Clavichords | Clavichord (with Bebung) |
 | Harps | Harp A (a concert harp), Harp B (a lever harp) |
@@ -84,6 +84,7 @@ The recordings the instruments were measured from:
 | Grand G | the Osiris Piano: worn, recorded softly with the soft pedal down | CC0 |
 | Upright A, B | VCSL uprights "Knight" and "Y" | CC0 |
 | Upright C | KeyPleezer's LivingRoom Upright | CC BY-SA 4.0 (the export too) |
+| Upright D | an upright in a living room, the maintainer's own recordings (not published) | CC BY 4.0 (a placeholder: the maintainer's decision) |
 | Harpsichord A | VCSL harpsichord "Unk" | CC0 |
 | Harpsichord B | VCSL Flemish harpsichord: 8′ and 4′, a derived 8′ II and lute | CC0 |
 | Harpsichord C, D | VCSL French and Italian harpsichords | CC0 |

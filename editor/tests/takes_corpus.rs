@@ -44,6 +44,7 @@ const CEILINGS: &[(&str, f32)] = &[
     ("upright_a", 0.0),
     ("leverharp", 0.0),
     ("upright_c", 0.0),
+    ("upright_d", 2.0),
     ("marimba_cord", 0.6),
     ("marimba_rubber", 3.3),
     ("marimba_yarn", 1.7),

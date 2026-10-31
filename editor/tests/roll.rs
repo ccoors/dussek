@@ -8,7 +8,7 @@ use pianoengine::roll::recipe::Recipe;
 
 fn cands() -> Candidates {
     Candidates {
-        references: ["grand_a", "grand_b", "grand_f", "grand_e", "grand_d", "grand_c", "grand_g", "upright_a", "upright_b", "upright_c"].map(String::from).to_vec(),
+        references: ["grand_a", "grand_b", "grand_f", "grand_e", "grand_d", "grand_c", "grand_g", "upright_a", "upright_b", "upright_c", "upright_d"].map(String::from).to_vec(),
         grands: ["grand_a", "grand_b", "grand_f", "grand_e", "grand_d", "grand_c", "grand_g"].map(String::from).to_vec(),
     }
 }
@@ -294,7 +294,7 @@ fn a_pulled_back_draw_finishes_from_its_preview() {
     }
     let repo = Repo { root: d.path().to_path_buf(), projects: d.path().join("projects"), data: real.data.clone() };
     let mut r = roll::draw(&cands(), &cands().grands, &mut Rng::new(9), "my_roll");
-    r.warmth = 2.5; // far enough to be pulled back
+    r.warmth = 1.0; // far enough to be pulled back (2.5 passed once Upright D widened the ranges)
     // the minor knobs at the middle: what they mean follows the references' bodies, and after their
     // refit seed 9's (0.06, −1.54) rang on past the range at any warmth, which no pull-back mends
     r.shade.iter_mut().for_each(|v| *v = 0.0);

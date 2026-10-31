@@ -268,6 +268,40 @@ these sets is embedded in or distributed with the engine.
   as recorded (f 2–10 dB above p). File names count octaves one lower: map by `pitch_keycenter`
 - Profile `upright_c` (Upright C): the pedal-up regions (`datasets.sfz_files`), p/f as mf/ff
 
+## The maintainer's upright (own recordings, not published)
+
+- Location: `own-upright/`, split from the session's files by `analysis/split_session.py`
+  (`docs/recording-a-piano.md`); not downloadable: the maintainer's own recordings, not published
+- Instrument: an upright piano in a living room, last tuned years ago
+- Author: Christian Friedrich Coors (recorded 2026-10-31)
+- License: the maintainer's decision (the project's `[license]` holds a placeholder, CC BY 4.0)
+- Recording: a handheld recorder's XY pair at 90°, 64 cm in front of the piano, a little left,
+  1.2 m high; 48 kHz / 24 bit; the gain set once
+- Content: one file per pass: pp, mf, ff (A0–C8, every third key, two takes or more, rung out),
+  the keys around the breaks (D3, the last wound string; E6 and F6, where the dampers end) at
+  various velocities, releases (mf, held a few seconds), C1–C8 with the pedal down, the pedal alone
+- Notes from inspection (design log step 204):
+  - Split: the three passes 188 strikes, 180 takes kept (two per key and dynamic), and from the
+    breaks pass D3 (pp, mf, ff), E6 (mf, ff) and F6 (ff); left out: two mis-strikes stopped and
+    replayed (F♯1 pp and mf), a wrong note (F2 for D♯2, pp), two keys touched rather than struck
+    (C3 pp, D♯6 ff), a C8 pp cut by the file's end, two ff takes clipped (A5, A6: one of each
+    pair; A5's other clips too, 9 samples, kept as its key's only take); the breaks pass's three
+    loudest D3 lie between or past the dynamics. Its "D2" sounds D3 (146 Hz, the odd partials
+    53–60 dB down)
+  - The treble's softest takes hold too few partials over the noise for the analysis: D♯7, F♯7,
+    A7 and C8 at pp, A7 and C8 at mf
+  - The noise floor −79 dBFS (5 ms, 30 Hz up), −80 dB at 31.5 Hz to −91 dB at 2–4 kHz per
+    octave band, no hum line over 5 dB; the notes' first 0.5 s 27–36 dB over it at pp (the
+    treble least), 47–50 at mf, 55–59 at ff
+  - Tuning: A4 −6 cents; the bass flat to −30 at A0, the treble within −11 … −1 to A7 (F♯7 +16,
+    C8 +42 cents)
+  - The two takes of a key lie 3.7, 1.9 and 0.9 dB apart (median; pp, mf, ff)
+  - The pedal pass: 16 events, 17–50 dB over the floor, the loudest 6–15 dB under the median mf
+    note's peak; the C1–C8 pass with the pedal down splits into its 8 notes (both unused so far)
+  - Releases: the dampers' first fall 111 dB/s (median, 100 Hz–1.5 kHz; Grand E's 111), A0–E6;
+    the release noise 18–27 dB under the mf note's peak
+- Profile `upright_d` (Upright D): the SFZ the splitter writes, seq_position 1 (the more even take)
+
 ## Ivy Audio Piano in 162 (SFZ)
 
 - Location: `piano-in-162/` (the SFZ edition from https://www.ivyaudio.com, 4.7 GB: the

@@ -42,6 +42,10 @@ const CEILINGS: &[(&str, usize)] = &[
     ("leverharp", 6),
     // 2 before its room was cut 15–27 dB above 1 kHz (design log step 123): three early decays
     ("upright_c", 4),
+    // its own session (step 204): A0's early decay ×0.1–0.2 at every dynamic, F♯2 pp's and C3's lengths
+    // ×0.1–0.4, the rest at the length's edges (its renders a median ×1.74 its recordings' length:
+    // the uprights' ring by ear, 150–200 %)
+    ("upright_d", 17),
     ("marimba", 5),
     ("mavembe", 3),
     ("mbira", 4),

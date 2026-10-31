@@ -18,6 +18,7 @@ and links it in as `data/<name>`.
 | [Headroom Piano](https://github.com/sfzinstruments/BengtNilsson.HeadroomPiano) (Bengt Nilsson) | CC BY 4.0 | 284 MB | `git clone` into `data/headroom-piano/` | `grand_c` (Grand C, credited) |
 | [Osiris Piano](https://github.com/sfzinstruments/Osiris_Piano) (Versilian Studios, Karoryfer) | CC0 | 908 MB | `git clone` into `data/osiris-piano/` | `grand_g` (Grand G) |
 | [LivingRoom Upright, Micro SFZ](https://downloads.keypleezer.com/dl-free-version-micro-sfz/v100/livingroom-upright-piano-micro-sfz.zip) (KeyPleezer) | audio CC BY-SA 4.0 | 91 MB | `data/livingroom-upright/` | `upright_c` (Upright C; its export is CC BY-SA 4.0 too) |
+| The maintainer's own upright, recorded 2026-10-31 | the maintainer's (not published) | 2 GB | split by `analysis/split_session.py` into `data/own-upright/` (`docs/recording-a-piano.md`) | `upright_d` (Upright D); not downloadable |
 
 ## Harpsichords, clavichord, harps and plucked strings
 

@@ -2921,3 +2921,89 @@ The port, all behind the same code on Linux (its UI tests unchanged, 266):
   stale-region sweep and its tests stay Linux's.
 - An instrument opened from a folder accepts Windows' absolute paths ("C:\…", "D:/…").
 - On Windows the plugin links the system libraries Rust's standard library needs.
+
+<a id="step-204"></a>
+## 204. Upright D, from the maintainer's own session
+
+The maintainer recorded his own upright on 2026-10-31 after the session sheet
+(`docs/recording-a-piano.md`): a handheld recorder's XY pair 64 cm in front, 48 kHz / 24 bit, one
+file per pass (pp, mf, ff over every third key, rung out; the keys at the breaks; releases; C1–C8
+with the pedal down; the pedal alone). The piano was last tuned years ago.
+
+**The splitter** the sheet promised, `analysis/split_session.py`, cuts a pass at its strikes and
+labels them in the sheet's order. A strike is a broadband rise (15 dB over the 0.3 s before) with a
+harmonic series rising with it: each key's comb over the spectrum after the rise re the one before,
+less the comb between the partials (a bass note's dense spectrum matched a treble key, its odd
+partials an octave). Its sample is the steepest rise of a 2 ms level near it: the smoothed rise
+peaked up to 0.17 s after the hammer, a key's thump before it, and the first split's files began
+after their attacks and ended in the next one's. Labels: the in-order assignment with the largest
+total score. Left out, each with its reason: a take falling 15 dB under its key's and neighbors'
+median decay for a second within the first half of it (a mis-strike stopped and replayed; the
+treble's prompt fall and a take stopped near its end are no cut: a fall alone, or how long a take
+stays over the noise, flagged half the treble), one ending early while still 15 dB over the floor,
+a wrong note (a neighbor within two semitones 6 dB stronger), a key touched (20 dB under its
+loudest take, or a rise within 2 s of a strike and 20 dB under it), a clipped take where its key has
+another. The kept takes are ranked by how near their level lies to the neighbors' (the sheet's "more
+even one"), and one SFZ file over all passes is the set's map (`seq_position` 1 the first rank, so
+`skip_files` falls back to the next). The releases pass gives each take from its damper's fall; the
+keys around the breaks, at various velocities, take the dynamic whose level the sheet's passes put
+nearest (within 4 dB). Its tests on synthetic sessions: `proto/tests/test_split_session.py`.
+
+**What the passes hold.** pp, mf and ff: 188 strikes, 180 takes kept, two per key and dynamic. Left
+out: F♯1's first pp and mf (stopped at 3.4 s and replayed), an F2 for D♯2 (pp), C3 pp and D♯6 ff
+touched, a C8 pp cut by the file's end, and the ff takes of A5 and A6 that clip (A5's other clips
+too, 9 samples, kept as its key's only take). The breaks pass labeled "D2" sounds D3 (146 Hz, its odd
+partials 53–60 dB down: the last wound string on the treble bridge); it adds D3 at pp, mf and ff, E6
+at mf and ff, F6 at ff. The releases: 23 takes A0–E6 (the keys above have no damper). The noise
+floor lies at −79 dBFS (30 Hz up), −80 dB per octave band at 31.5 Hz to −91 at 2–4 kHz, no hum; a
+note's first 0.5 s 27–36 dB over it at pp (the treble least), 47–50 at mf, 55–59 at ff. D♯7–C8 at pp
+and A7, C8 at mf hold too few partials over it for the analysis. The two takes of a key lie 3.7, 1.9
+and 0.9 dB apart (median; pp, mf, ff). The tuning: A4 −6 cents, the bass flat to −30 at A0, the treble
+−11 … −1 to A7 (F♯7 +16, C8 +42), 7.7 cents rms around a smooth curve (Upright A 4.1, B 7.6, C 3.5);
+the unisons beat 1.2–2.0 cents per half octave from C4 up, 10 at A7.
+
+**Its own measurements.** The first set this repository has with release recordings at a player's
+distance and all three dynamics:
+
+- the dampers (`damper_decay.py` on the releases' SFZ regions): 197 partials, 111 dB/s median at
+  100 Hz–1.5 kHz (Grand E's, which every other piano borrows: 111), the bass's weaker (A0–C1 15–60);
+- the release noise: 18–27 dB under the mf note's peak (Salamander's, which the others borrow, lies
+  at −40 … −48 after its −12 dB of step 120). `release_noise.py` measured a set of several dynamics
+  against its loudest take; it now takes the mf one, as the releases are struck (a one-layer set
+  unchanged);
+- the room between the partials: 0.65 s at 250 Hz, 0.26–0.36 s from 800 Hz to 12.8 kHz, a living
+  room's; below 250 Hz 2.9–5.6 s (strings ringing in the gaps), held at 250 Hz (`room_t60`).
+
+The pedal's noise and ring stay Salamander's (`pedal_noise.py` reads its files alone); the pedal
+pass (16 events, the loudest 6–15 dB under the mf note's peak) is kept for later. A `[license]`
+without a `url` (recordings not published) is credited without one.
+
+**The fit** (made as the wizard makes it, from Upright A's file, the closest key range): the
+coupling's error 9.7 → 6.4 dB (the pianos' 5.9–8.8), the register's level error 4.4 / 4.6 dB rms (mf
+/ ff). Then what the other uprights got (steps 142, 143, 147, 168, 183), measured, not yet heard:
+
+- the felt: the fitted one (p 2.30) left the attack at 1–4 kHz re 200–500 Hz on C2–C5 12–17 dB dark
+  at pp, 3–4 at mf, right at ff; solved from two probes against all three dynamics: p 1.82, +5.3 dB,
+  within ±2.8 dB at each. A0–B2 stays dark at 1–2 kHz (−4 … −8 dB) and at ff 2–4 kHz (−9);
+- the lowest fundamentals: the board fit's data start at 92 Hz, and A0–G♯1's sat +19.1 dB over
+  partials 2–4 re the recordings (C1 +35 … +47); rows at 22.5 and 31.5 Hz −12 dB, 45 Hz −6: +2.3;
+- the treble's 2 and 4 kHz (C5 up) +11.8 / +10.1 dB over the recordings at mf, +14.8 / +10.2 at ff;
+  rows from C4 to C5, 2 kHz −8 and 4 kHz −6: +6.1 / +3.1 and +8.6 / +4.7 (the same measure today:
+  Upright A +8.4 / +2.7 at mf, B +11.7 / +2.5, C +1.0 / +3.5);
+- the unisons: the recording's beats over the engine's from key 78 up, ×1.81 at 108 (`[unison]
+  treble`); measured again ×1.22;
+- even levels (window 9): 0.27 dB rms around the trend (A 0.35, B 0.46, C 0.18);
+- the ring by ear as the other uprights' (150 % to C5, 200 % at C7), not heard on this one.
+
+Its phrase (step 173's: an arpeggio at 80, chords at 95) at the midpoint of Recording and Player lies
+−27.4 LUFS, the grands' median −28.2: no gain. The bass attack (`just report --uprights`) leaves the
+uprights' envelope on 3, 2, 1 and 0 keys at 1–2, 2–4, 4–6 and 6–8 kHz (A 7/1/6/0, B 1/0/1/0, C
+11/1/5/0). The editor's Compare flags 17 of its 96 pairs (Upright A 13, B and C 4): A0's early decay
+×0.1–0.2 at every dynamic, F♯2 pp's and C3's lengths ×0.1–0.4; its renders ring a median ×1.74 its
+recordings' length (the ring by ear). Upright D joins the rolls' references (the editor's candidates:
+every exported hammer piano); its range lets a draw at warmth 2.5 pass, and the pull-back's test draws
+at 1.0.
+
+Open, for the ear: the felt and the trims above, the ring, its own release noise (some 20 dB over the
+borrowed one), the bass's attack (a felt core as Upright C's?), and the recordings' license (a
+placeholder: CC BY 4.0).
