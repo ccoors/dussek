@@ -1,0 +1,82 @@
+# macOS and Windows: the plugin builds, its UI tests pass, the standalone renders. Only where the
+# plugin, the engine or this file changed (on main, a pull request, or by hand from the Actions tab).
+name: Platforms
+
+on:
+  push:
+    branches: [main]
+    paths: ["plugin/**", "engine/**", "justfile", ".github/workflows/platforms.yml"]
+  pull_request:
+    paths: ["plugin/**", "engine/**", "justfile", ".github/workflows/platforms.yml"]
+  workflow_dispatch:
+
+concurrency:
+  group: platforms-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: just
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: engine -> target
+      - name: Build the plugin (and the engine)
+        run: just plugin
+      - name: The plugin's UI tests
+        run: plugin/build/ui_tests
+      - name: The standalone renders
+        run: |
+          bin=plugin/build/bin/pianoengine
+          [ -e "$bin" ] || [ -e "$bin.exe" ] || bin=plugin/build/bin/pianoengine.app/Contents/MacOS/pianoengine
+          "$bin" render instruments/grand_a albums/demos/midi/03-glass-rain.mid render.wav --tail 1 2>&1 | tee render.txt
+          test -s render.wav
+          grep -q "rendered in" render.txt   # its report reaches a pipe (Windows: a window program)
+
+  windows:
+    runs-on: windows-2025
+    defaults:
+      run:
+        shell: msys2 {0}
+    env:
+      CMAKE_GENERATOR: Ninja
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: msys2/setup-msys2@v2
+        with:
+          # UCRT64, MSYS2's own Rust built against the same C runtime (MINGW64 is deprecated)
+          msystem: UCRT64
+          path-type: inherit
+          install: >-
+            mingw-w64-ucrt-x86_64-toolchain
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-pkgconf
+            mingw-w64-ucrt-x86_64-rust
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: just
+      - name: The toolchain
+        run: |
+          which cargo rustc gcc
+          rustc -vV
+      - name: Build the plugin (and the engine)
+        run: just plugin
+      - name: The plugin's UI tests
+        run: plugin/build/ui_tests
+      - name: The standalone renders
+        run: |
+          bin=plugin/build/bin/pianoengine
+          [ -e "$bin" ] || [ -e "$bin.exe" ] || bin=plugin/build/bin/pianoengine.app/Contents/MacOS/pianoengine
+          "$bin" render instruments/grand_a albums/demos/midi/03-glass-rain.mid render.wav --tail 1 2>&1 | tee render.txt
+          test -s render.wav
+          grep -q "rendered in" render.txt   # its report reaches a pipe (Windows: a window program)

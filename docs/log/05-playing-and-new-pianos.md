@@ -2897,6 +2897,11 @@ The repository's CI (GitHub Actions) builds on every push and pull request:
 - **macOS** (arm64, macOS 13.3 and up) and **Windows** (MinGW-w64, for DPF's WASAPI fallback in the
   standalone): the plugin and its UI tests.
 
+While the repository is private its Actions minutes count (macOS 10×, Windows 2×; a day of pushes to
+branches used half a month's): CI runs on `main` and pull requests only, macOS and Windows
+(`platforms.yml`) only where the plugin or the engine changed, the engine's suite by hand; Windows
+builds in MSYS2's UCRT64 with MSYS2's own Rust (MINGW64 is deprecated).
+
 A fresh clone holds no datasets and no caches but the lent ones (step 201). 44 prototype tests read
 a project's analysis cache or a set directly; a test that dies on a missing file under `data/`, or
 on a cache of a project whose recordings are not here either, is now skipped and names what it

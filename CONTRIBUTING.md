@@ -17,8 +17,10 @@ plays it.
 - **The tests without the datasets:** a test whose recordings are not in `data/`, or whose
   project caches are not built, returns early or is skipped and names what it needs, so the suites
   pass in a fresh clone.
-- **CI** runs the build, the plugin's UI tests, the prototype's and the editor's suites and
-  `just check` on every push and pull request; the engine's suite, which takes longer, nightly.
+- **CI** runs on pull requests and on `main`: on Linux the build, the plugin's UI tests, the
+  prototype's and the editor's suites and `just check`; on macOS and Windows the plugin's build and
+  UI tests where the plugin or the engine changed. The engine's suite, which takes longer, runs by
+  hand (and locally: `just test-engine`).
 
 ## Commits
 
