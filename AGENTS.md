@@ -129,8 +129,12 @@ The engine's tests use the committed instruments; a test without its data return
   then a fix; a sound change is listened to before it is merged.
 - Where the real instrument's mechanism plays badly from a keyboard, prefer the keyboard
   player's mapping (the vibraphone: a held key lifts its damper bar, step 48).
-- No backward compatibility is needed for saved sessions or parameter indices (private,
-  pre-release): reorder freely.
+- What a player saves stays loadable (`docs/compatibility.md`): a new parameter goes at the end of
+  `Params.hpp`'s table and into `plugin/tests/params.lock`; a state key renamed or reshaped raises
+  `kStateVersion` with a migration; a renamed instrument gets a line in `instruments/aliases.txt`;
+  `instrument.json` grows by optional fields (a change that cannot be optional raises `format` and
+  freezes a copy in `engine/tests/formats/`); `render`'s options are added, not renamed. During 0.x
+  a break is a deliberate edit of the lock in a commit that says why.
 - LV2 and the JACK standalone are the targets; VST3/CLAP are not tested.
 
 ## Style

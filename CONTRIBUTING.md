@@ -32,6 +32,11 @@ plays it.
 - The style of comments and docs: short, present tense, American spelling, units with a space
   (`12 dB`, `48 kHz`). [AGENTS.md](AGENTS.md) has the rest of the conventions.
 
+## What players save
+
+Sessions, presets, MIDI maps, instruments and scripts keep working across releases:
+[docs/compatibility.md](docs/compatibility.md) says what is locked and how a locked thing changes.
+
 ## Sound changes
 
 A change that changes how an instrument sounds needs listening before it goes in. The ear

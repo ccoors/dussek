@@ -125,6 +125,7 @@ change goes in.
 - [docs/getting-data.md](docs/getting-data.md): where each dataset comes from and where it goes.
 - [docs/recording-a-piano.md](docs/recording-a-piano.md): a session sheet for sampling a piano.
 - [docs/architecture.md](docs/architecture.md): how the system works, layer by layer.
+- [docs/compatibility.md](docs/compatibility.md): what stays loadable across releases, and how.
 - [docs/lab/](docs/lab/): the engine's ideas as six small experiments.
 - [docs/lessons.md](docs/lessons.md): what the project learned about building and judging a
   modeled instrument.

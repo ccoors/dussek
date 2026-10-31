@@ -3368,3 +3368,35 @@ step does not find the plugin (its URI changed; pre-release, no alias), and pres
 instruments in the old folders are not read until moved. The instruments' data are unchanged (41
 of 41 reproduce); only their `LICENSE.md` reads the new name. The parameter table stands: no
 reordering was asked for before the release.
+
+<a id="step-214"></a>
+## 214. What a player saves stays loadable
+
+Before the first release fixes what players will save, each kind gets a record and a test that
+fails when it is broken (`docs/compatibility.md`, from the going-public design's compatibility
+section):
+
+- **One instrument file, tied to its data.** `level.json` held the engine's measurements of an
+  export (the ff level a morph reads, a hammer piano's level table over the velocity): it changes
+  the sound, yet a copy without it played differently without a word, and the files' fingerprint
+  left it out. It is now `instrument.json`'s last key, `level` (the `level` tool prints it, the
+  export stores it; refreshing it is a re-export). `instrument.json` names its `data.bin` (`data`:
+  size and SHA-256): another export's, or a cut one, is refused; a file without the tie loads as
+  before. All 41 re-exported without a refit: no `data.bin` changed, Grand A's ff level within
+  0.01 dB. Snapshots of older refs carry their `level.json` over.
+- **The parameter lock** (`plugin/tests/params.lock`, 78 rows): index, symbol, range, default, unit,
+  flags. DPF's VST3 and CLAP wrappers save values by symbol, as LV2 hosts do, and automate by index;
+  the diagnostics after the table move when it grows, so none may be automatable (a test pins it).
+- **The state's version**: `state_version` (1), declared first so DPF restores it first; every key
+  through `migrateState`. The version is sticky (no "restore ended" signal; live changes use the
+  same path), so a migration leaves a value already in today's form unchanged.
+- **Versions in the player's files**: presets (`version = 1`, the state version of their states)
+  and MIDI maps (`version 1`); without one, version 1; a newer file loads what it understands.
+- **Instrument aliases** (`instruments/aliases.txt`, empty for now): the catalog and the DSP's
+  folder lookup follow them (8 hops, cycles end), a real folder first; nothing found stays missing.
+- **The frozen formats** (`engine/tests/formats/`: 5, Kalimba; 6, Harpsichord B), loaded and played
+  by a test; an export of a format without a frozen copy fails.
+- **`render`'s lock** (`engine/tests/cli.lock`, 89 items: the arguments, options and `--param` /
+  `--tuning` keys).
+
+AGENTS.md's "no backward compatibility" rule gives way to these.
