@@ -14,8 +14,9 @@ plays it.
   is stale of any instrument built in your checkout from its recordings) and, before an export
   goes in, `just reproduce` (the committed exports are what an export makes today).
   [docs/building-instruments.md](docs/building-instruments.md) has the details.
-- **The tests without the datasets:** a test whose recordings are not in `data/` returns early,
-  so the suites pass in a fresh clone.
+- **The tests without the datasets:** a test whose recordings are not in `data/`, or whose
+  project caches are not built, returns early or is skipped and names what it needs, so the suites
+  pass in a fresh clone.
 - **CI** runs the build, the plugin's UI tests, the prototype's and the editor's suites and
   `just check` on every push and pull request; the engine's suite, which takes longer, nightly.
 
