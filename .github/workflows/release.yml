@@ -1,0 +1,69 @@
+# A release: a tag v<version> builds each platform, makes its installer, installs it on the runner
+# and checks it, then publishes the release. By hand from the Actions tab (a version given): the
+# same without publishing, the installers among the run's artifacts to try first.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+    branches: ["releases"]   # TEMPORARY, while this workflow is built on its branch: removed before the merge
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "The version to build (as in plugin/CMakeLists.txt); nothing is published"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-2025
+    defaults:
+      run:
+        shell: msys2 {0}
+    env:
+      CMAKE_GENERATOR: Ninja
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          path-type: inherit
+          install: >-
+            mingw-w64-ucrt-x86_64-toolchain
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-pkgconf
+            mingw-w64-ucrt-x86_64-rust
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: just
+      - name: Build the plugin (and the engine)
+        run: just plugin
+      - name: The plugin's UI tests
+        run: plugin/build/ui_tests
+      - name: The portable folder
+        run: echo "PORTABLE=$(plugin/tools/package.sh windows | tail -n 1)" >> "$GITHUB_ENV"
+      - name: Inno Setup
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) { choco install innosetup -y --no-progress }
+      - name: The installer
+        env:
+          MSYS2_ARG_CONV_EXCL: "*"   # ISCC's /D options are not paths
+        run: |
+          version=${PORTABLE#dist/dussek-}
+          version=${version%-windows}
+          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" /Q "/DVersion=$version" "/DSource=$(cygpath -w "$PORTABLE")" packaging/windows/dussek.iss
+          echo "SETUP=dist/dussek-$version-windows-setup.exe" >> "$GITHUB_ENV"
+      - name: Installed, listed, uninstalled
+        run: packaging/windows/check-install.sh "$SETUP" "$PORTABLE"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dussek-windows-setup
+          path: ${{ env.SETUP }}
+          archive: false
+          retention-days: 7
