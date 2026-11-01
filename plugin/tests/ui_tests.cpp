@@ -6235,6 +6235,22 @@ TEST(the_standalones_audio_row_shows_only_on_its_own_audio)
     CHECK(kBufferSizes[0] == 128 && kBufferSizes[kBufferSizeCount - 1] == 1024);
 }
 
+TEST(settings_line_is_copy_cli_for_named_controls)
+{
+    // the website's clips name plugin controls by symbol: the line is Copy CLI's for the defaults
+    // with those set (what the plugin plays), an unknown symbol an error naming it
+    std::vector<float> v(pe::kParamCount);
+    for (uint32_t i = 0; i < pe::kParamCount; ++i)
+        v[i] = pe::paramInfo(i).def;
+    std::string error;
+    CHECK(pe::settingsLine("/i/grand_a", {}, error) == midi2wavLine(v.data(), "/i/grand_a", 48000) && error.empty());
+    const std::string line = pe::settingsLine("/i/grand_a", { { "audio_input", 0.0f }, { "sustain_latch", 1.0f } }, error);
+    CHECK(error.empty() && line.find("input=1") != std::string::npos && line.find("--latch") != std::string::npos);
+    const std::string worn = pe::settingsLine("/i/grand_a", { { "condition", 35.0f } }, error);
+    CHECK(error.empty() && worn != pe::settingsLine("/i/grand_a", {}, error));
+    CHECK(pe::settingsLine("/i/grand_a", { { "nonesuch", 1.0f } }, error).empty() && error.find("nonesuch") != std::string::npos);
+}
+
 TEST(copy_cli_finds_the_standalone)
 {
     // Copy CLI's program: the standalone's own path in the standalone; in a plugin the standalone next

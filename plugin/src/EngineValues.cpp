@@ -266,4 +266,23 @@ std::string midi2wavLine(const float* values, const std::string& dir, double rat
     return line;
 }
 
+std::string settingsLine(const std::string& dir, const std::vector<std::pair<std::string, float>>& settings, std::string& error)
+{
+    error.clear();
+    std::vector<float> v(kParamCount);
+    for (uint32_t i = 0; i < kParamCount; ++i)
+        v[i] = paramInfo(i).def;
+    for (const auto& [symbol, value] : settings) {
+        uint32_t i = 0;
+        while (i < kParamCount && symbol != paramInfo(i).symbol)
+            ++i;
+        if (i == kParamCount) {
+            error = "no control named " + symbol;
+            return std::string();
+        }
+        v[i] = value;
+    }
+    return midi2wavLine(v.data(), dir, 48000);
+}
+
 } // namespace pe

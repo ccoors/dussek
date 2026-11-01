@@ -98,6 +98,10 @@ endif()
 target_link_libraries(dussek PUBLIC pe_common)
 
 enable_testing()
+# the Copy CLI line for named controls, for site/render.py (not shipped: outside bin/)
+add_executable(settings_line tools/settings_line.cpp)
+target_link_libraries(settings_line PRIVATE pe_common)
+
 add_executable(ui_tests tests/ui_tests.cpp)
 target_include_directories(ui_tests PRIVATE tests)
 target_link_libraries(ui_tests PRIVATE pe_common)
