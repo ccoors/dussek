@@ -295,8 +295,9 @@ where
     if c.maxwarm < c.warmup {
         return fail(clap::error::ErrorKind::ValueValidation, "--maxwarm is shorter than --warmup");
     }
+    // missing, or not a WAV: a usage error, before the render
     if let Some(path) = &c.input
-        && let Err(e) = std::fs::metadata(path)
+        && let Err(e) = hound::WavReader::open(path)
     {
         return fail(clap::error::ErrorKind::ValueValidation, &format!("--input `{path}`: {e}"));
     }
@@ -451,7 +452,6 @@ fn instrument_dir(dir: &str, what: &str) -> Result<()> {
     Ok(())
 }
 
-/// the folder a file goes into exists (checked before the render, not after it)
 /// A WAV file as the audio input: its channels summed, resampled to `sr`.
 fn read_input(path: &str, sr: f64) -> Result<Vec<f32>> {
     let mut r = hound::WavReader::open(path).map_err(|e| format!("--input `{path}`: {e}"))?;
@@ -470,6 +470,7 @@ fn read_input(path: &str, sr: f64) -> Result<Vec<f32>> {
     Ok(if (spec.sample_rate as f64 - sr).abs() < 0.5 { mono } else { crate::resample::resample(&mono, spec.sample_rate as f64, sr) })
 }
 
+/// the folder a file goes into exists (checked before the render, not after it)
 fn writable(path: &str, what: &str) -> Result<()> {
     match std::path::Path::new(path).parent().filter(|p| !p.as_os_str().is_empty()) {
         Some(folder) if !folder.is_dir() => Err(format!("{what} `{path}`: the folder `{}` does not exist", folder.display()).into()),

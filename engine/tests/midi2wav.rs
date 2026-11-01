@@ -423,3 +423,23 @@ fn missing_input_names_the_file() {
     assert_eq!(out.status.code(), Some(2));
     assert!(String::from_utf8_lossy(&out.stderr).contains("/nonexistent/in.wav"));
 }
+
+#[test]
+fn a_non_wav_input_is_a_usage_error() {
+    // a file that is there but no WAV: refused before the render, as a missing one is
+    if !std::path::Path::new(DIR).exists() {
+        eprintln!("skipped: no instrument");
+        return;
+    }
+    let dir = std::path::PathBuf::from(env!("CARGO_TARGET_TMPDIR"));
+    let mid = dir.join("input_not_wav.mid");
+    midi(&mid);
+    let text = dir.join("not_a.wav");
+    std::fs::write(&text, "not a sound").unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_midi2wav"))
+        .args([DIR, mid.to_str().unwrap(), dir.join("x.wav").to_str().unwrap(), "--input", text.to_str().unwrap()])
+        .output()
+        .unwrap();
+    assert_eq!(out.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&out.stderr).contains("not_a.wav"));
+}
