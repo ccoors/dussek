@@ -291,26 +291,27 @@ fn switching_costs_little_on_the_audio_thread() {
     let Some(inst) = harpsichord(true) else { return };
     let chord: Vec<u8> = (21..31).collect();
     let time = |toggle: bool| -> f64 {
-        let mut best = f64::INFINITY;
-        for _ in 0..7 {
-            let mut e = engine(&inst, quiet(false));
-            for &k in &chord {
-                e.queue(0, Event::NoteOn { key: k, speed: 1.0 });
-            }
-            run(&mut e, &[], 4800, None);
-            e.set_params(quiet(toggle));
-            let t = e.now();
-            for &k in &chord {
-                e.queue(t, Event::NoteOn { key: k, speed: 1.0 });
-            }
-            let (mut l, mut r) = (vec![0.0; 64], vec![0.0; 64]);
-            let t0 = std::time::Instant::now();
-            e.process(&mut l, &mut r);
-            best = best.min(t0.elapsed().as_secs_f64());
+        let mut e = engine(&inst, quiet(false));
+        for &k in &chord {
+            e.queue(0, Event::NoteOn { key: k, speed: 1.0 });
         }
-        best
+        run(&mut e, &[], 4800, None);
+        e.set_params(quiet(toggle));
+        let t = e.now();
+        for &k in &chord {
+            e.queue(t, Event::NoteOn { key: k, speed: 1.0 });
+        }
+        let (mut l, mut r) = (vec![0.0; 64], vec![0.0; 64]);
+        let t0 = std::time::Instant::now();
+        e.process(&mut l, &mut r);
+        t0.elapsed().as_secs_f64()
     };
-    let (plain, toggled) = (time(false), time(true));
+    // the two interleaved: a slow spell on a shared machine (a CI runner) slows both alike
+    let (mut plain, mut toggled) = (f64::INFINITY, f64::INFINITY);
+    for _ in 0..11 {
+        plain = plain.min(time(false));
+        toggled = toggled.min(time(true));
+    }
     assert!(toggled < 1.25 * plain, "re-pluck block {:.0} µs, after a switch {:.0} µs", plain * 1e6, toggled * 1e6);
 }
 

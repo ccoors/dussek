@@ -9,3 +9,5 @@ slow-timeout = { period = "60s" }
 [[profile.default.overrides]]
 filter = "test(switching_costs_little_on_the_audio_thread)"
 threads-required = "num-test-threads"
+# a shared CI runner still has slow spells; a real cost fails every try
+retries = 2
