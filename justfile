@@ -96,6 +96,12 @@ standalone *args:
 run-editor:
     cargo run --release --manifest-path editor/Cargo.toml
 
+# The website's screenshots (site/out/screenshots) and the README's (docs/screenshot.png), on a virtual display
+[group('run')]
+screenshots: plugin
+    site/screenshots.sh site/out/screenshots
+    cp site/out/screenshots/grand-visualization.png docs/screenshot.png
+
 # Instruments from a git ref into the plugin's Snapshots group (names default to all; --remove deletes them)
 [group('run')]
 snapshot ref *args: engine

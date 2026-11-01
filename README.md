@@ -14,8 +14,6 @@ resonance, low latency) and has a character of its own. It is named after Jan La
 
 ![The plugin with Grand A: a chord ringing with the sustain pedal held, the Visualization panel showing the strings as the engine moves them](docs/screenshot.png)
 
-<!-- a screenshot: docs/img/plugin-grand.png, the plugin on a grand, taken by a script -->
-
 ## The instruments
 
 | Menu group | Instruments |
