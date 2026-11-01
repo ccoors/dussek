@@ -17,6 +17,14 @@ design = "grand"
 board_seed = 8
 detune = 1.0
 id_max_partial = 60
+# the room's decay (2026-11-01): its gaps hold no consistent decay (the IQR over a factor 2 in every
+# band: the strings ring in them), and the fallback, each band's lower quartile, read 1.4–2.2 s from
+# 1.6 kHz up, held to 20 kHz: the room alone made the top octave 2.5 s after a strike, 25–45 dB over
+# the other grands' rooms at 16 kHz, heard as a hiss with the Room (the maintainer, as Grand I's). Its
+# quartiles up to 1.27 kHz (0.38–0.74 s, a room's), held above (a room rings no longer up high: Grands
+# A, C, D 0.7–0.8 s at 6.4 kHz)
+room_t60 = [[126.0, 0.74], [200.0, 0.62], [252.0, 0.60], [317.0, 0.56], [400.0, 0.38], [504.0, 0.38],
+            [635.0, 0.38], [800.0, 0.46], [1008.0, 0.47], [1270.0, 0.61]]
 
 [uses]
 release = "grand_a"
