@@ -22,8 +22,8 @@ just install       # links the plugin into ~/.lv2 (and ~/.clap, ~/.vst3), the in
   instrument track. The host needs LV2's worker feature (these three have it).
 - **As a JACK standalone**: `just standalone` starts it under PipeWire (`pw-jack`), links its
   outputs to the default output and gives it an ALSA MIDI port. Connect your keyboard to its MIDI
-  input in a patchbay (qpwgraph, Helvum, Carla). Under a plain JACK server:
-  `plugin/build/bin/dussek`.
+  input in a patchbay (qpwgraph, Helvum, Carla). Started on its own (`plugin/build/bin/dussek`, under
+  PipeWire or a JACK server), it links its outputs to the default output itself.
 
 ## Pick an instrument
 

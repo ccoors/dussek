@@ -8,6 +8,7 @@
 #include "NoteHistory.hpp"
 #include "EngineHandoff.hpp"
 #include "EngineValues.hpp"
+#include "Autoconnect.hpp"
 #include "FeltWatch.hpp"
 #include "FileWatch.hpp"
 #include <cstddef>
@@ -6476,3 +6477,21 @@ TEST(the_about_tab_lays_out_its_lines_in_the_content)
     for (Tab t : { kTabSound, kTabMidi, kTabFelt })
         CHECK(computeLayout(kDefaultWidth, kDefaultHeight, t, c).aboutLines.empty() && computeLayout(kDefaultWidth, kDefaultHeight, t, c).aboutCopy.w == 0);
 }
+
+TEST(the_standalone_links_its_outputs_to_the_first_playback_device)
+{
+    using Plan = std::vector<std::pair<std::string, std::string>>;
+    const std::vector<std::string> outs { "Dussek:audio_out_1", "Dussek:audio_out_2" };
+    // PipeWire: the default sink's ports first, another device after it
+    CHECK((pe::autoconnectPlan(outs, { "Headphones:playback_FL", "Headphones:playback_FR", "Speakers:playback_FL", "Speakers:playback_FR" })
+        == Plan { { outs[0], "Headphones:playback_FL" }, { outs[1], "Headphones:playback_FR" } }));
+    // JACK's system ports
+    CHECK((pe::autoconnectPlan(outs, { "system:playback_1", "system:playback_2" })
+        == Plan { { outs[0], "system:playback_1" }, { outs[1], "system:playback_2" } }));
+    // a mono device takes both, not the next device's left
+    CHECK((pe::autoconnectPlan(outs, { "Speaker:playback_MONO", "Other:playback_FL" })
+        == Plan { { outs[0], "Speaker:playback_MONO" }, { outs[1], "Speaker:playback_MONO" } }));
+    CHECK(pe::autoconnectPlan(outs, {}).empty());
+    CHECK(pe::autoconnectWanted(nullptr) && pe::autoconnectWanted("1") && !pe::autoconnectWanted("0"));
+}
+

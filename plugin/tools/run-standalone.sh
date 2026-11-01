@@ -37,7 +37,8 @@ pids=()
 cleanup() { [ ${#pids[@]} -gt 0 ] && kill "${pids[@]}" 2>/dev/null; }
 trap cleanup EXIT INT TERM
 
-pw-jack "$app" &
+# it links its outputs here (the default sink by name): the standalone's own linking off
+DUSSEK_AUTOCONNECT=0 pw-jack "$app" &
 app_pid=$!
 pids+=("$app_pid")
 out1=$(port_of "$app_pid" audio_out_1) && out2=$(port_of "$app_pid" audio_out_2) && events=$(port_of "$app_pid" events-in) \
