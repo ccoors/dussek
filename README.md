@@ -45,7 +45,11 @@ From the [releases](https://github.com/ccoors/dussek/releases), each with:
   Privacy & Security ("Open Anyway").
 - **Linux** (x86-64, glibc 2.35 or newer): unpack `dussek-<version>-linux.tar.gz` and run
   `./install.sh` (for you, under your home folder) or `sudo ./install.sh --system` (for every
-  user); `./uninstall.sh` removes it.
+  user); `./uninstall.sh` (or `sudo ./uninstall.sh --system`) removes it.
+
+If you tried a test build before, remove the bundles you copied by hand first (`dussek.lv2`,
+`dussek.clap`, `dussek.vst3` in `%APPDATA%\LV2` or `~/Library/Audio/Plug-Ins`): hosts prefer those
+to the installed ones, and they read the instruments copied with them.
 
 Each installer puts the instruments in one place that the standalone and every plugin format
 read. Where a host offers LV2 or CLAP, prefer them to the VST3 ([docs/plugin.md](docs/plugin.md)).
