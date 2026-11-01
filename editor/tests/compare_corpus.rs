@@ -47,6 +47,9 @@ const CEILINGS: &[(&str, usize)] = &[
     // the uprights' ring by ear, 150–200 %); 17 before its refit on the second session (step 222):
     // D3 pp's early decay, D♯5 and C8 ff's spectrum over the line (+12.1 dB)
     ("upright_d", 20),
+    // its own session (step 223): six levels ±13–16 dB (single tongues against the smoothed level
+    // curve), C5 and E5 pp's lengths ×0.1 (their recordings ring on in the other tongues), F3 ff's spectrum
+    ("tongue_drum", 9),
     ("marimba", 5),
     ("mavembe", 3),
     ("mbira", 4),

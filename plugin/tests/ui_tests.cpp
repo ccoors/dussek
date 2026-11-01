@@ -548,7 +548,7 @@ TEST(instruments_in_menu_order)
     const char* const want[] = { "Grand A", "Grand B", "Grand C", "Grand D", "Grand E", "Grand F", "Grand G", "Grand H", "Grand I", "Upright A",
         "Upright B", "Upright C", "Upright D", "Harpsichord A", "Harpsichord B", "Harpsichord C", "Harpsichord D", "Harpsichord E",
         "Harpsichord F", "Clavichord", "Harp A",
-        "Harp B", "Guitar", "Strumstick", "Balafon", "Bells", "Crotales", "Glockenspiel A", "Glockenspiel B", "Hand chimes", "Marimba", "Tubular bells",
+        "Harp B", "Guitar", "Strumstick", "Balafon", "Bells", "Crotales", "Glockenspiel A", "Glockenspiel B", "Hand chimes", "Marimba", "Tongue drum", "Tubular bells",
         "Vibraphone", "Xylophone", "Kalimba", "Mbira A", "Mbira B", "Nyunga nyunga", "Dan tranh", "Psaltery" };
     const std::vector<const InstrumentEntry*> m = committed().menu();
     CHECK(m.size() == sizeof(want) / sizeof(*want));
@@ -1157,7 +1157,7 @@ TEST(instrument_menu_groups_every_instrument_once_by_type)
     for (const InstrumentEntry* e : committed().menu())
         for (size_t i = 0; i < g.size(); ++i)
             if (e->group == g[i]) ++count[i];
-    CHECK((count == std::vector<size_t> { 9, 4, 6, 1, 2, 2, 10, 4, 2 }));
+    CHECK((count == std::vector<size_t> { 9, 4, 6, 1, 2, 2, 11, 4, 2 }));
     CHECK(groupOf(kCla) == 3 && groupOf(kGui) == 5 && groupOf(kStr) == 5 && groupOf(kPsa) == 8 && groupOf(kDan) == 8);
     CHECK(groupOf(kBal) == 6 && groupOf(kChi) == 6 && groupOf(kHch) == 6 && groupOf(kKal) == 7 && groupOf(kVib) == 6
         && groupOf(kMar) == 6 && groupOf(kXyl) == 6 && groupOf(kBel) == 6 && groupOf(kCro) == 6);
@@ -4784,7 +4784,7 @@ TEST(catalog_orders_the_menu)
 TEST(catalog_of_the_committed_instruments)
 {
     const Catalog& c = committed();
-    CHECK(c.menu().size() == 40 && c.messages().empty());
+    CHECK(c.menu().size() == 41 && c.messages().empty());
     CHECK(c.find("registers_fixture") != nullptr && c.find("registers_fixture")->hidden);
     CHECK(c.first() != nullptr && c.first()->name == "Grand A");
     const InstrumentEntry* k = c.find("kalimba");

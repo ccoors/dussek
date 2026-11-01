@@ -3687,15 +3687,16 @@ menu 27 Percussion|Glockenspiel A|glockenspiel
 menu 28 Percussion|Glockenspiel B|glockenspiel_b
 menu 29 Percussion|Hand chimes|handchimes
 menu 30 Percussion|Marimba|marimba
-menu 31 Percussion|Tubular bells|chimes
-menu 32 Percussion|Vibraphone|vibraphone
-menu 33 Percussion|Xylophone|xylophone
-menu 34 Thumb pianos|Kalimba|kalimba
-menu 35 Thumb pianos|Mbira A|mbira
-menu 36 Thumb pianos|Mbira B|mavembe
-menu 37 Thumb pianos|Nyunga nyunga|nyunga
-menu 38 Zithers|Dan tranh|dantranh
-menu 39 Zithers|Psaltery|psaltery
+menu 31 Percussion|Tongue drum|tongue_drum
+menu 32 Percussion|Tubular bells|chimes
+menu 33 Percussion|Vibraphone|vibraphone
+menu 34 Percussion|Xylophone|xylophone
+menu 35 Thumb pianos|Kalimba|kalimba
+menu 36 Thumb pianos|Mbira A|mbira
+menu 37 Thumb pianos|Mbira B|mavembe
+menu 38 Thumb pianos|Nyunga nyunga|nyunga
+menu 39 Zithers|Dan tranh|dantranh
+menu 40 Zithers|Psaltery|psaltery
 nyunga body 12
 nyunga label audio_input Audio input|Sound from the plugin's audio input reaches the strings: with the pedal down they ring along with it, as when singing into a grand; with it up only the strings without dampers do. The input itself is not played back. 0 dB drives the strings about as hard as their own sound at the same level. The left end is off. Beware of acoustic feedback with a microphone near the speakers.
 nyunga label bebung Bebung|The clavichord's vibrato: a held key's pitch rises with the pressure on its tangent, by this much at full pressure. Played with the mod wheel, or with aftertouch (channel or per key; the highest counts). The clavichord
@@ -4050,6 +4051,124 @@ strumstick visible mic=5 prep=2 sustain_latch volume hammer_hardness sustain mic
 strumstick visible mic=5 prep=3 sustain_latch volume hammer_hardness sustain mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch pillow spread_keys distance_level room concert_pitch temperament temperament_key knock sympathetic audio_input damper_fall condition wear_variant wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation harmonic
 strumstick visible mic=5 prep=4 sustain_latch volume hammer_hardness sustain mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch pillow spread_keys distance_level room concert_pitch temperament temperament_key knock sympathetic audio_input damper_fall condition wear_variant wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation bolt_mass bolt_position
 strumstick visible mic=5 prep=5 sustain_latch volume hammer_hardness sustain mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch pillow spread_keys distance_level room concert_pitch temperament temperament_key knock sympathetic audio_input damper_fall condition wear_variant wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation paper_buzz
+tongue_drum body 17
+tongue_drum label audio_input Audio input|Sound from the plugin's audio input reaches the strings: with the pedal down they ring along with it, as when singing into a grand; with it up only the strings without dampers do. The input itself is not played back. 0 dB drives the strings about as hard as their own sound at the same level. The left end is off. Beware of acoustic feedback with a microphone near the speakers.
+tongue_drum label bebung Bebung|The clavichord's vibrato: a held key's pitch rises with the pressure on its tangent, by this much at full pressure. Played with the mod wheel, or with aftertouch (channel or per key; the highest counts). The clavichord
+tongue_drum label bend_range Bend range|How far the pitch wheel bends the sounding notes, up or down: the left hand pressing the string behind its bridge. The dan tranh
+tongue_drum label board_bass Bass|The strings' bass, as an equalizer on them: more or less of their sound below about 180 Hz, louder with it; the hammer's thud through the soundboard stays as it is. 0 is the instrument's own. Rebuilds the instrument.
+tongue_drum label bolt_mass Bolt mass|A bolt or screw on every string: it bends the pitch and makes the overtones inharmonic.
+tongue_drum label bolt_position Bolt position|Where along the strings the bolt sits: the partials with a node there are not affected.
+tongue_drum label buff Buff|Pads on the strings for the next notes: shorter and darker (the harpsichords)
+tongue_drum label concert_pitch Concert pitch|The pitch of A4. The strings are retuned: the instrument is rebuilt in the background and the sounding notes glide to the new tuning.
+tongue_drum label condition Condition|The instrument's condition, in zones: Mint (0 %, as exported), Normal (to 10 %, the default: the keys a little uneven in loudness), Worn (to 35 %), Broken (to 100 %): harder hammers, worn dampers, a noisier action, drifting tuning and unisons, old strings and soundboard. The Condition tab shifts each aspect from here.
+tongue_drum label damper_buzz Damper buzz|A damper that buzzes for a moment as it lands on the strings. 100 % is the most it should be.
+tongue_drum label damper_fall Damper fall|How long a damper takes to land on the strings when a key is released, 100 % = about 25 ms at a normal release (faster for a fast release, slower for a slow one when the keyboard sends the release velocity). 0 = instant. A quick re-strike catches a damper in mid-fall.
+tongue_drum label distance_level Distance level|Total: the level stays the same as you move away (far positions change little, the room dominates). Direct sound: the direct sound stays the same and the room grows with the distance; for an external reverb, set Room to Off.
+tongue_drum label dynamics Dynamics|How much softer the softest key is than the hardest (the range from velocity 1 to 127): the loudest notes stay as recorded, less brings the soft ones up (struck harder, so also brighter), more takes them down. 45 dB as a recorded piano's sample set plays its layers. Pianos only.
+tongue_drum label hammer_grooves Hammer grooves|Grooves the strings have worn into the hammer felt: a short, gritty noise at each strike, stronger when playing harder. 100 % is the most it should be.
+tongue_drum label hammer_hardness Mallet hardness|How hard what strikes or plucks the string is (the hammer's felt, a mallet, a quill, a finger), from the next note: up brighter, down softer and rounder. 0 dB as recorded. On the pianos every key keeps its loudness: the felt is measured again in the background (a few seconds).
+tongue_drum label harmonic Harmonic|The node a finger touches while the string is struck: 2 sounds the octave, 3 the twelfth, 4 the double octave, and so on.
+tongue_drum label knock Action knock|The mechanism's noise at each note (a piano's key and hammer thump, a jack's knock), against the recording. The left end is off.
+tongue_drum label lid Lid|How far the lid is open: 100 % is the full stick (grand) or the open top lid (upright), about 50 % a half stick, 0 % closed, which muffles the sound outside the case. Needs a microphone position (the recording stands for the open lid).
+tongue_drum label lid_off Lid removed|The lid taken off: nothing reflects the sound above the strings and nothing muffles it, as for a studio's microphones or an even sound in a small room; the Lid setting does nothing then. Needs a microphone position (the recording stands for the open lid).
+tongue_drum label lute Lute|The lute row: the 8' II strings plucked near the nut, nasal, for the next notes (Harpsichord B)
+tongue_drum label mic_distance Mic distance|0 = the position's default. Far positions (Audience) are mostly room: the distance changes little there.
+tongue_drum label mic_l_pattern Left mic pattern|0 omni, 50 cardioid, 75 hypercardioid, 100 figure-8. A pattern hears what it points at; omni ignores the aim.
+tongue_drum label mic_l_pitch Left mic tilt|Up or down from level, in degrees (positive: up). Omni ignores the aim.
+tongue_drum label mic_l_x Left mic x|x across the piano (bass -, treble +), y along it (keyboard -, tail +), z up from the soundboard. Dragging a microphone in the drawing sets these.
+tongue_drum label mic_l_y Left mic y|Left microphone, y: along the piano (keyboard -, tail +).
+tongue_drum label mic_l_yaw Left mic aim|Direction in the floor plane: 0 into the piano from the player's seat, positive towards the treble side.
+tongue_drum label mic_l_z Left mic z|Left microphone, z: the height above the soundboard.
+tongue_drum label mic_position Mic position|Where the two microphones stand: Recording (the recording's own sound), Player (at the keyboard, the default), Audience (in front, at a distance), Close 1 and Close 2 (near the instrument, where the names say) or Custom (both placed freely). Click a marker in the drawing to choose one.
+tongue_drum label mic_r_pattern Right mic pattern|As for the left microphone.
+tongue_drum label mic_r_pitch Right mic tilt|As for the left microphone.
+tongue_drum label mic_r_x Right mic x|Right microphone, x: across the piano (bass -, treble +). Dragging a microphone in the drawing sets x, y and z.
+tongue_drum label mic_r_y Right mic y|Right microphone, y: along the piano (keyboard -, tail +).
+tongue_drum label mic_r_yaw Right mic aim|As for the left microphone.
+tongue_drum label mic_r_z Right mic z|Right microphone, z: the height above the soundboard.
+tongue_drum label mic_spacing Mic spacing|How far apart the two microphones stand, across the line of sight: 0 is mono, more widens the stereo image. Dragging the pair in the drawing sets it.
+tongue_drum label mic_wall Wall distance|Upright only: how far behind the board the wall stands.
+tongue_drum label morph_x Morph X|Across the Morph tab's pad: with Morph Y, the point whose distance to each corner sets that instrument's share of the morph.
+tongue_drum label morph_y Morph Y|Up the Morph tab's pad: with Morph X, the point whose distance to each corner sets that instrument's share of the morph. The top corner is the instrument chosen.
+tongue_drum label motor Motor|The vibraphone's motor: discs in the resonators turn and the fundamentals swell and fade together (the vibraphone)
+tongue_drum label motor_depth Motor depth|How far the fundamentals fade while the discs close the resonators: 100 % is about 12 dB (the vibraphone)
+tongue_drum label motor_speed Motor speed|Pulses per second of the motor's tremolo (the vibraphone)
+tongue_drum label mute Mute|How hard the hand rests on the strings while a key is down: 100 % is a dead thud. The highest notes have no dampers to rest on and are not muted.
+tongue_drum label paper_buzz Paper buzz|Paper or a loose part on the strings: how much it buzzes with every note.
+tongue_drum label pedal_noise Pedal noise|The sustain pedal's thump going down and up. -20 dB by default, 0 dB as recorded; the left end is off.
+tongue_drum label pedal_ring Pedal ring|The strings set ringing as the sustain pedal lifts their dampers. -10 dB by default, 0 dB as fitted; the left end is off.
+tongue_drum label phantom Phantom partials|More of the extra partials old, stiff strings make in loud bass notes (in full to C2, fading out by C3), beyond the instrument's own: a metallic, growling edge. 100 % is the most it should be.
+tongue_drum label pillow Pillow|A pillow or blanket against the soundboard: the body sound gets duller, quieter and shorter.
+tongue_drum label pluck_brightness Pluck brightness|How hard the finger or nail is: 100 % is a fingertip, more is a nail or a pick.
+tongue_drum label pluck_position Pluck position|Where along the string it is plucked: near the end it is bright and thin, in the middle hollow.
+tongue_drum label preparation Preparation|How the strings are prepared, the whole piano at once: plucked with a finger inside the piano, muted by a hand or felt, played as harmonics, with a bolt on the strings, or with buzzing paper.
+tongue_drum label rattle Rattle|A loose part on the soundboard that rattles on loud low notes. 100 % is the most it should be.
+tongue_drum label release Release noise|The noise when a key is let go (a damper landing, a jack falling back), against the recording. The left end is off.
+tongue_drum label restrike Live re-strike|A note struck again while it still rings: the hammer meets the strings, the mallet the bar, where they are in their swing, so each repeat comes out a little different, harder where they swing towards it. Off: every strike as into still strings or a still bar. From the next note.
+tongue_drum label room Room|The recording room's reverberation against the instrument's own sound. The left end is off: the dry instrument, for an external reverb.
+tongue_drum label spread_keys Spread all keys|Bars, harps, guitars and zithers: all 88 keys spread along the instrument in front of the microphones (on, the default), or only its own range, with the keys beyond it sounding from its ends (off, as the real instrument)
+tongue_drum label stop_4 Stop 4'|Register on or off, for the next notes (instruments with registers: Harpsichords B, E and F)
+tongue_drum label stop_8 Stop 8'|Register on or off, for the next notes (instruments with registers: Harpsichords B, E and F)
+tongue_drum label stop_8b 8' II|The second 8' choir, for the next notes (Harpsichord B, derived; Harpsichords E and F, recorded); off while the lute plucks its strings
+tongue_drum label stretch Stretch|Tuner's stretch on top of the recording's own tuning, computed from the strings' inharmonicity: bass flatter, treble sharper. 0 = as recorded, 1 adds a full tuner's stretch, -1 takes one off (pure octaves), more exaggerates it.
+tongue_drum label sustain Sustain|How long the notes ring: 100 % as recorded, 200 % twice as long, 50 % half. Every partial decays that much slower or faster, its pitch and the attack kept. Not the sustain pedal. Rebuilds the instrument.
+tongue_drum label sustain_latch Sustain latch|The sustain pedal held down while on (with MIDI CC64 and the on-screen pedal: the deepest counts): for MIDI files without pedal on the vibraphone and the harps, whose notes otherwise stop at the key's release
+tongue_drum label sympathetic Ringing tongues|How strongly the other tongues ring along with the played one: 100 % as recorded, 0 off, more exaggerates it.
+tongue_drum label temperament Temperament|Equal (every key alike) or a historical temperament: keys near the temperament key sound purer, far ones more colorful. As recorded: each recorded key at its own pitch, as the instrument was tuned in the recordings. Scala file: a scale from a .scl file, any number of notes (a .kbm key map of the same name beside it lays it on the keys). A stays at the concert pitch.
+tongue_drum label temperament_key Temperament key|The key a historical temperament or a Scala file's scale is centered on (its "C"). No effect with Equal temperament, As recorded or a Scala file with its own key map.
+tongue_drum label unison_width Unison width|How far the strings of one note are detuned against each other: 100 % as recorded, 0 all alike (a steady tone), more a wider beating. Rebuilds the instrument.
+tongue_drum label variation Strike variation|How much each strike differs from the last, as a real hammer never meets the strings quite the same way twice: the strike point, the moment and the felt per string. 100 % as measured on recorded takes, 0 every strike alike. From the next note.
+tongue_drum label volume Volume|The output level, after everything else. The left end is off.
+tongue_drum label wear_action Action noise|Shifts the overall Condition for this aspect (-100 % newer, +100 % older): a noisier action: louder knocks and releases.
+tongue_drum label wear_dampers Dampers|Shifts the overall Condition for this aspect (-100 % newer, +100 % older): worn damper felt: notes ring on after the key is let go.
+tongue_drum label wear_false_beats False beats|Shifts the overall Condition for this aspect (-100 % newer, +100 % older): single strings beat by themselves, as uneven old strings do. Rebuilds the instrument.
+tongue_drum label wear_hammers Hammers|Shifts the overall Condition for this aspect (-100 % newer, +100 % older): the felt compressed and harder: brighter, harsher strikes.
+tongue_drum label wear_soundboard Soundboard|Shifts the overall Condition for this aspect (-100 % newer, +100 % older): a tired soundboard: notes die away faster. Rebuilds the instrument.
+tongue_drum label wear_strings Strings|Shifts the overall Condition for this aspect (-100 % newer, +100 % older): old strings: overtones slightly off and dying faster. Rebuilds the instrument.
+tongue_drum label wear_tuning Tuning|Shifts the overall Condition for this aspect (-100 % newer, +100 % older): the notes drift off pitch. Rebuilds the instrument.
+tongue_drum label wear_unisons Unisons|Shifts the overall Condition for this aspect (-100 % newer, +100 % older): the strings of a note drift apart: stronger beating. Rebuilds the instrument.
+tongue_drum label wear_variant Variant|Another instrument of the same age: each variant draws other random deviations (which notes are out of tune, which hammers are worn). Rebuilds the instrument.
+tongue_drum label wear_voicing Voicing|Shifts the overall Condition for this aspect (-100 % newer, +100 % older): hammers worn unevenly: neighboring notes differ in loudness and color.
+tongue_drum mallets 
+tongue_drum preps 3 4 5
+tongue_drum recorded 52 76
+tongue_drum soft 0
+tongue_drum visible mic=0 prep=0 volume hammer_hardness sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation
+tongue_drum visible mic=0 prep=1 volume hammer_hardness sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation
+tongue_drum visible mic=0 prep=2 volume hammer_hardness sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation
+tongue_drum visible mic=0 prep=3 volume hammer_hardness sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation harmonic
+tongue_drum visible mic=0 prep=4 volume hammer_hardness sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation bolt_mass bolt_position
+tongue_drum visible mic=0 prep=5 volume hammer_hardness sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation paper_buzz
+tongue_drum visible mic=1 prep=0 volume hammer_hardness sustain restrike mic_position mic_distance mic_spacing pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation
+tongue_drum visible mic=1 prep=1 volume hammer_hardness sustain restrike mic_position mic_distance mic_spacing pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation
+tongue_drum visible mic=1 prep=2 volume hammer_hardness sustain restrike mic_position mic_distance mic_spacing pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation
+tongue_drum visible mic=1 prep=3 volume hammer_hardness sustain restrike mic_position mic_distance mic_spacing pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation harmonic
+tongue_drum visible mic=1 prep=4 volume hammer_hardness sustain restrike mic_position mic_distance mic_spacing pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation bolt_mass bolt_position
+tongue_drum visible mic=1 prep=5 volume hammer_hardness sustain restrike mic_position mic_distance mic_spacing pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation paper_buzz
+tongue_drum visible mic=2 prep=0 volume hammer_hardness sustain restrike mic_position mic_distance mic_spacing pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation
+tongue_drum visible mic=2 prep=1 volume hammer_hardness sustain restrike mic_position mic_distance mic_spacing pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation
+tongue_drum visible mic=2 prep=2 volume hammer_hardness sustain restrike mic_position mic_distance mic_spacing pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation
+tongue_drum visible mic=2 prep=3 volume hammer_hardness sustain restrike mic_position mic_distance mic_spacing pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation harmonic
+tongue_drum visible mic=2 prep=4 volume hammer_hardness sustain restrike mic_position mic_distance mic_spacing pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation bolt_mass bolt_position
+tongue_drum visible mic=2 prep=5 volume hammer_hardness sustain restrike mic_position mic_distance mic_spacing pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation paper_buzz
+tongue_drum visible mic=3 prep=0 volume hammer_hardness sustain restrike mic_position mic_distance mic_spacing pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation
+tongue_drum visible mic=3 prep=1 volume hammer_hardness sustain restrike mic_position mic_distance mic_spacing pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation
+tongue_drum visible mic=3 prep=2 volume hammer_hardness sustain restrike mic_position mic_distance mic_spacing pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation
+tongue_drum visible mic=3 prep=3 volume hammer_hardness sustain restrike mic_position mic_distance mic_spacing pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation harmonic
+tongue_drum visible mic=3 prep=4 volume hammer_hardness sustain restrike mic_position mic_distance mic_spacing pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation bolt_mass bolt_position
+tongue_drum visible mic=3 prep=5 volume hammer_hardness sustain restrike mic_position mic_distance mic_spacing pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation paper_buzz
+tongue_drum visible mic=4 prep=0 volume hammer_hardness sustain restrike mic_position mic_distance mic_spacing pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation
+tongue_drum visible mic=4 prep=1 volume hammer_hardness sustain restrike mic_position mic_distance mic_spacing pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation
+tongue_drum visible mic=4 prep=2 volume hammer_hardness sustain restrike mic_position mic_distance mic_spacing pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation
+tongue_drum visible mic=4 prep=3 volume hammer_hardness sustain restrike mic_position mic_distance mic_spacing pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation harmonic
+tongue_drum visible mic=4 prep=4 volume hammer_hardness sustain restrike mic_position mic_distance mic_spacing pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation bolt_mass bolt_position
+tongue_drum visible mic=4 prep=5 volume hammer_hardness sustain restrike mic_position mic_distance mic_spacing pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation paper_buzz
+tongue_drum visible mic=5 prep=0 volume hammer_hardness sustain restrike mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation
+tongue_drum visible mic=5 prep=1 volume hammer_hardness sustain restrike mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation
+tongue_drum visible mic=5 prep=2 volume hammer_hardness sustain restrike mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation
+tongue_drum visible mic=5 prep=3 volume hammer_hardness sustain restrike mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation harmonic
+tongue_drum visible mic=5 prep=4 volume hammer_hardness sustain restrike mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation bolt_mass bolt_position
+tongue_drum visible mic=5 prep=5 volume hammer_hardness sustain restrike mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch pillow spread_keys distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation paper_buzz
 upright_a body 1
 upright_a label audio_input Audio input|Sound from the plugin's audio input reaches the strings: with the pedal down they ring along with it, as when singing into a grand; with it up only the strings without dampers do. The input itself is not played back. 0 dB drives the strings about as hard as their own sound at the same level. The left end is off. Beware of acoustic feedback with a microphone near the speakers.
 upright_a label bebung Bebung|The clavichord's vibrato: a held key's pitch rises with the pressure on its tangent, by this much at full pressure. Played with the mod wheel, or with aftertouch (channel or per key; the highest counts). The clavichord

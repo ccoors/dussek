@@ -1,0 +1,66 @@
+# Tongue drum: the maintainer's steel tongue drum (data/own-steel-tongue-drum, CC BY 4.0), 35.5 cm,
+# 15 tongues in C major E3–E5, each at pp, mf and ff with its own rubber mallet, rung out (10–36 s);
+# on the floor, the recorder 18 cm above its center. Split by split_session.py --tongues (design log
+# step 222); its kalimba-like tongues (steel, clamped at one end) ring along when another is struck
+[project]
+family = "bars"
+body = "tonguedrum"
+
+[menu]
+name = "Tongue drum"
+group = "Percussion"
+labels.sympathetic = { name = "Ringing tongues", description = "How strongly the other tongues ring along with the played one: 100 % as recorded, 0 off, more exaggerates it." }
+
+# steel tongues, no dampers (they ring out), each nearly a pure tone: its own upper modes 25–45 dB
+# under the fundamental. The tracks derived from the takes (tracks = "auto") were the other tongues
+# (1.19 at A4: C5; 3.0 at E3: B4); those ring along within half a second (`halo`, as the kalimba's
+# tines). Two lines stand at one frequency on every tongue, the shell's own modes rung by each
+# strike: 757–759 Hz on E3–E5 (−15 … −40 dB re the fundamental at mf, 20–30 dB/s) and 684 Hz on
+# E3–A3 (−25 … −37 dB). A fixed frequency is a track whose ratio falls with the key (in log ratio
+# linear between its anchors: 758 Hz / f1)
+[bars]
+tracks = [1.0, [[52, 4.591], [76, 1.147]], [[52, 4.146], [57, 3.101]]]
+tol = [0.03, 0.015, 0.015]
+scale_cutoff = true
+fast_decays = true
+halo = true
+
+[export]
+motor = false
+# the level by loudness (design log step 173's measure): a phrase in its range (an arpeggio E3–E5 at
+# velocity 80, chords at 95) lay +15.6 dB re the grands' median (−29.2 LUFS, EBU R128; peak +0.7
+# dBFS): its tongues ring 10–36 s and pile up
+gain_db = -15.5
+# the rubber mallet's contact: the recordings reach half the strike's peak in 0.5–2.5 ms, 0.08–0.21 of
+# it in the first 0.2 ms (mf, E3, C4, G4, E5); the modes stepped there (0.24–0.33). From zero over
+# 1 ms: 0.14–0.18, half at 1.0–2.6 ms (over 2 ms: 0.11–0.13, half at 1.7–3.4)
+onset_s = 0.001
+
+[[part]]
+id = "tongue_drum"
+
+[[part.source]]
+id = "tongue_drum"
+role = "mallet"
+mallet = "mallet"
+root = "own-steel-tongue-drum"
+# the session's passes, split by split_session.py --tongues: two takes or more per tongue and dynamic
+# (seq_position 1 the more even)
+dynamics = { pp = "pp", mf = "mf", ff = "ff" }
+levels = "recorded"
+extra = { halo = true }
+
+[part.source.map]
+kind = "sfz"
+files = ["own-steel-tongue-drum.sfz"]
+filter = [{ opcode = "trigger", default = "attack", in = ["attack"] }, { opcode = "seq_position", default = "1", in = ["1"] }]
+layers = "rank"
+dynamic_from = { regex = '_(pp|mf|ff)_', format = "{}" }
+
+# the recordings' credit (proto/license.py writes instruments/<project>/LICENSE.md); CC BY 4.0, the
+# maintainer's choice
+[license]
+set = "A steel tongue drum (2026-11-01)"
+author = "Christian Friedrich Coors"
+terms = "The maintainer's own recordings, not published."
+source_license = "CC-BY-4.0"

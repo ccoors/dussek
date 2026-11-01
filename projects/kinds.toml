@@ -48,8 +48,8 @@ fallback = "strumstick"
 
 [[kind]]
 id = "mallet"
-label = "Bars or plates struck with a mallet (marimba, xylophone, glockenspiel, vibraphone, crotales)"
-donors = ["marimba", "xylophone", "vibraphone", "bells", "crotales", "balafon"]
+label = "Bars or plates struck with a mallet (marimba, xylophone, glockenspiel, vibraphone, crotales, tongue drum)"
+donors = ["marimba", "xylophone", "vibraphone", "bells", "crotales", "balafon", "tongue_drum"]
 fallback = "bells"
 bar_like = true
 

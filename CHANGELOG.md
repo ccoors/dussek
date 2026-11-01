@@ -5,6 +5,11 @@ break is allowed but listed under "Breaking" (`docs/compatibility.md`).
 
 ## Unreleased
 
+### New
+
+- A tongue drum (Percussion): a steel tongue drum's 15 tongues E3–E5, from new recordings at three
+  dynamics; the other tongues ring along ("Ringing tongues").
+
 ### Changed
 
 - Upright D: its own key release noise, from new recordings of its keys released without a

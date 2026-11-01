@@ -25,7 +25,7 @@ resonance, low latency) and has a character of its own. It is named after Jan La
 | Harps | Harp A (a concert harp), Harp B (a lever harp) |
 | Guitars | Guitar, Strumstick |
 | Zithers | Psaltery, Dan tranh (with the pitch wheel's bend) |
-| Percussion | Vibraphone, Marimba, Xylophone, Balafon, Bells, Tubular bells, Crotales, Glockenspiel A, B, Hand chimes |
+| Percussion | Vibraphone, Marimba, Xylophone, Balafon, Bells, Tubular bells, Crotales, Glockenspiel A, B, Hand chimes, Tongue drum |
 | Thumb pianos | Kalimba, Mbira A, B, Nyunga nyunga |
 
 The editor makes more: new instruments from a sample set, pianos morphed between two others, and
@@ -126,6 +126,7 @@ The recordings the instruments were measured from:
 | Vibraphone, Marimba, Xylophone, Bells, Crotales | University of Iowa MIS percussion | any project, without restrictions |
 | Tubular bells, Hand chimes, Kalimba, Mbira A, Mbira B, Nyunga nyunga, Balafon, Glockenspiel B | VCSL | CC0 |
 | Glockenspiel A | Ethan Winer's SoundFonts | any use, no attribution required |
+| Tongue drum | a steel tongue drum, the maintainer's own recordings (not published) | CC BY 4.0 |
 
 The recordings are used for analysis only: no third-party audio is in the repository or the
 engine.

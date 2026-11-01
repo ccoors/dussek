@@ -203,7 +203,7 @@ typedef struct PeMicGeometry {
     double pitch[2];
 } PeMicGeometry;
 /* stateless, any thread: the drawing and the pair where the engine puts it.
- * body 0 grand, 1 upright, 2 harp, 3 lever harp, 4 vibraphone, 5 marimba, 6 xylophone, 7 bells, 8 crotales, 9 guitar, 10 chimes, 11 hand chimes, 12 kalimba, 13 balafon, 14 psaltery, 15 đàn tranh, 16 strumstick; position as PeTuning.mic_position; spacing and distance as in
+ * body 0 grand, 1 upright, 2 harp, 3 lever harp, 4 vibraphone, 5 marimba, 6 xylophone, 7 bells, 8 crotales, 9 guitar, 10 chimes, 11 hand chimes, 12 kalimba, 13 balafon, 14 psaltery, 15 đàn tranh, 16 strumstick, 17 tongue drum; position as PeTuning.mic_position; spacing and distance as in
  * PeTuning. false: body or position out of range (out untouched) */
 bool pe_mic_geometry(uint32_t body, uint32_t position, double spacing, double distance,
                      double lid, const PeMicSetup* custom, PeMicGeometry* out);   /* custom: used when position == 5, may be null; lid: 0 closed … 1 open, above 1 taken off */

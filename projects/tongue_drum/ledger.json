@@ -1,0 +1,37 @@
+{
+ "part:tongue_drum:bars": {
+  "commit": "e8d32d3",
+  "inputs": {
+   "cache.analysis": "acf096edaabe86c2",
+   "project.bars": "e2481b0702244b9e",
+   "project.sources": "608dd93ff0f59fd5"
+  },
+  "seq": 5,
+  "version": 2
+ },
+ "project:tongue_drum:export_bars": {
+  "commit": "e8d32d3",
+  "inputs": {
+   "fit.hammer_speeds": "0b4895b8db450355",
+   "fit.keys": "33bfd83edf2329a8",
+   "fit.mallet": "ffa9a056af953505",
+   "fit.mallets": "c5f0454ffb82780e",
+   "fit.recorded": "3b64101c9cda9456",
+   "project.export": "a562b813b15c76d7",
+   "project.level_corrections": "1d8fc6ceb1f94c63",
+   "project.menu": "726b5cd0ac48d505",
+   "project.project": "06217cb17ec47051",
+   "project.sources": "608dd93ff0f59fd5"
+  },
+  "seq": 9,
+  "version": 5
+ },
+ "source:tongue_drum:modes": {
+  "commit": "e8d32d3",
+  "inputs": {
+   "project.sources": "608dd93ff0f59fd5"
+  },
+  "seq": 4,
+  "version": 1
+ }
+}

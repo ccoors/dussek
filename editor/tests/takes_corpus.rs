@@ -45,6 +45,8 @@ const CEILINGS: &[(&str, f32)] = &[
     ("leverharp", 0.0),
     ("upright_c", 0.0),
     ("upright_d", 2.0),
+    // its own session (step 223): one rise in 45 takes (a tongue ringing along swells after the strike)
+    ("tongue_drum", 3.0),
     ("marimba_cord", 0.6),
     ("marimba_rubber", 3.3),
     ("marimba_yarn", 1.7),

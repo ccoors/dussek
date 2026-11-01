@@ -516,6 +516,23 @@ pub const BALAFON: BarFrame = BarFrame {
     clearance: 0.05,
 };
 
+/// A steel tongue drum E3–E5 (15 tongues in C major): a closed steel shell 0.355 m across and
+/// 0.15 m high lying on the floor, the tongues cut into its top, played kneeling or seated on the
+/// floor; the shell's air under the tongues. Assumed but for its size.
+pub const TONGUE_DRUM: BarFrame = BarFrame {
+    height: 0.15,
+    bar_x: (-0.12, 0.12),
+    notes: (52.0, 76.0),
+    natural_y: -0.01,
+    accidental: (0.03, 0.0),
+    half_depth: 0.18,
+    half_width: 0.18,
+    tubes: (0.12, 0.12),
+    ear: (-0.35, 0.85),
+    close_spacing_max: 0.3,
+    clearance: 0.03,
+};
+
 /// A natural's index from C(−1) on, fractional for the accidentals (between their
 /// naturals); and whether the key is an accidental.
 fn bar_key(note: f64) -> (f64, bool) {
@@ -769,7 +786,7 @@ const U_LID: usize = 2;
 /// `Body::frame`.
 macro_rules! bar_bodies {
     () => {
-        Body::Vibraphone | Body::Marimba | Body::Xylophone | Body::Bells | Body::Crotales | Body::Chimes | Body::HandChimes | Body::Kalimba | Body::Balafon
+        Body::Vibraphone | Body::Marimba | Body::Xylophone | Body::Bells | Body::Crotales | Body::Chimes | Body::HandChimes | Body::Kalimba | Body::Balafon | Body::TongueDrum
     };
 }
 
@@ -812,12 +829,15 @@ pub enum Body {
     DanTranh,
     /// a strumstick: held on the lap as the guitar, a smaller body (`GuitarDims::STRUMSTICK`)
     Strumstick,
+    /// a steel tongue drum: tongues cut into a round shell on the floor (`TONGUE_DRUM`)
+    TongueDrum,
 }
 
 /// The bodies by the C interface's number (`dussek.h` pe_mic_geometry): 0 grand, 1 upright,
 /// 2 harp, 3 lever harp, 4 vibraphone, 5 marimba, 6 xylophone, 7 bells, 8 crotales, 9 guitar,
-/// 10 chimes, 11 hand chimes, 12 kalimba, 13 balafon, 14 psaltery, 15 đàn tranh, 16 strumstick.
-pub const BODIES: [Body; 17] = [
+/// 10 chimes, 11 hand chimes, 12 kalimba, 13 balafon, 14 psaltery, 15 đàn tranh, 16 strumstick,
+/// 17 tongue drum.
+pub const BODIES: [Body; 18] = [
     Body::Grand,
     Body::Upright,
     Body::Harp,
@@ -835,6 +855,7 @@ pub const BODIES: [Body; 17] = [
     Body::Psaltery,
     Body::DanTranh,
     Body::Strumstick,
+    Body::TongueDrum,
 ];
 
 impl Body {
@@ -864,6 +885,7 @@ impl Body {
             Some("psaltery") => Body::Psaltery,
             Some("dantranh") => Body::DanTranh,
             Some("strumstick") => Body::Strumstick,
+            Some("tonguedrum") => Body::TongueDrum,
             _ => Body::Grand,
         }
     }
@@ -904,6 +926,7 @@ impl Body {
             Body::HandChimes => HANDCHIMES,
             Body::Kalimba => KALIMBA,
             Body::Balafon => BALAFON,
+            Body::TongueDrum => TONGUE_DRUM,
             _ => VIBRAPHONE,
         }
     }
@@ -1741,6 +1764,33 @@ impl Body {
                             [-xw - 0.035, -0.08], [-xw + 0.005, -0.08], [-xw + 0.005, 0.005], [-xw - 0.035, 0.005],
                             nan,
                             [xw - 0.005, -0.08], [xw + 0.035, -0.08], [xw + 0.035, 0.005], [xw - 0.005, 0.005],
+                        ],
+                    };
+                }
+                if self == Body::TongueDrum {
+                    // on the floor, no stand: from above the round shell and the tongues' row; from
+                    // the front the low shell, its top a little domed
+                    let nan = [f64::NAN; 2];
+                    let fr = self.frame();
+                    let (r, ht, bx) = (fr.half_width, fr.height, fr.bar_x);
+                    let ring: Vec<[f64; 2]> = (0..16)
+                        .map(|i| {
+                            let a = i as f64 * std::f64::consts::PI / 8.0;
+                            [r * a.cos(), r * a.sin()]
+                        })
+                        .collect();
+                    return Drawing {
+                        case_top: ring,
+                        keys_top: [bx.0 - 0.02, -0.04, bx.1 + 0.02, 0.06],
+                        case_front: [-r, -ht, r, 0.0],
+                        keys_front: [f64::NAN; 4],
+                        lid_front: [nan, nan],
+                        floor_z: -ht,
+                        wall_y: None,
+                        markers,
+                        front_axis: 0,
+                        outline_front: vec![
+                            [-r, -ht], [r, -ht], [r, -0.03], [0.6 * r, 0.0], [-0.6 * r, 0.0], [-r, -0.03],
                         ],
                     };
                 }
@@ -2848,13 +2898,15 @@ mod tests {
 
     #[test]
     fn bars_run_bass_left_naturals_in_front() {
-        for b in [Body::Vibraphone, Body::Marimba, Body::Xylophone, Body::Bells, Body::Crotales, Body::Chimes, Body::HandChimes, Body::Kalimba, Body::Balafon] {
+        for b in [Body::Vibraphone, Body::Marimba, Body::Xylophone, Body::Bells, Body::Crotales, Body::Chimes, Body::HandChimes, Body::Kalimba, Body::Balafon, Body::TongueDrum] {
             let fr = b.frame();
             let (lo, hi) = (fr.notes.0, fr.notes.1);
             let (first, last) = (b.bridge_point(lo), b.bridge_point(hi));
             assert_eq!((first.0, last.0), fr.bar_x);
-            // the first accidental behind, the natural after it in front (F♯ and G, C♯ and D)
-            let (acc, nat) = (lo + 1.0, lo + 2.0);
+            // the first accidental behind, the natural after it in front (F♯ and G, C♯ and D; the
+            // tongue drum's E3 has F3 next)
+            let acc = (1..12).map(|i| lo + i as f64).find(|&n| bar_key(n).1).unwrap();
+            let nat = acc + 1.0;
             assert!(b.bridge_point(acc).1 > 0.0 && b.bridge_point(nat).1 < 0.0, "{b:?}");
             assert!(b.bridge_point(acc).0 < b.bridge_point(nat).0);
             // keys beyond the range: just past the frame's ends, in order
@@ -2872,7 +2924,7 @@ mod tests {
 
     #[test]
     fn bar_zones_spread_over_the_frame_one_per_key() {
-        for b in [Body::Vibraphone, Body::Marimba, Body::Xylophone, Body::Bells, Body::Crotales, Body::Chimes, Body::HandChimes, Body::Kalimba, Body::Balafon] {
+        for b in [Body::Vibraphone, Body::Marimba, Body::Xylophone, Body::Bells, Body::Crotales, Body::Chimes, Body::HandChimes, Body::Kalimba, Body::Balafon, Body::TongueDrum] {
             let (lo, hi) = b.frame().notes;
             assert_eq!(b.own_range(), Some((lo, hi)), "{b:?}");
             let n = ZONE_NOTES.len();
@@ -2933,7 +2985,7 @@ mod tests {
 
     #[test]
     fn bar_pairs_stay_outside_the_frame() {
-        for b in [Body::Vibraphone, Body::Marimba, Body::Xylophone, Body::Bells, Body::Crotales, Body::Chimes, Body::HandChimes, Body::Kalimba, Body::Balafon] {
+        for b in [Body::Vibraphone, Body::Marimba, Body::Xylophone, Body::Bells, Body::Crotales, Body::Chimes, Body::HandChimes, Body::Kalimba, Body::Balafon, Body::TongueDrum] {
             bar_pairs_outside(b);
         }
     }
@@ -3485,6 +3537,23 @@ mod tests {
         assert!(pts.iter().any(|p| p[0] < -KALIMBA.half_width) && pts.iter().any(|p| p[0] > KALIMBA.half_width));
         // the bars' stand reaches the floor
         assert!(Body::Marimba.drawing(0.0, 1.0).outline_front.iter().any(|p| p[1] == -Body::Marimba.frame().height));
+    }
+
+    #[test]
+    fn the_tongue_drum_lies_on_the_floor() {
+        // a round shell from above, its foot on the floor, its tongues in it; the player kneels over it
+        let b = Body::from_name(Some("tonguedrum"));
+        assert_eq!(b, Body::TongueDrum);
+        let d = b.drawing(0.0, 1.0);
+        let r = TONGUE_DRUM.half_width;
+        assert!(d.case_top.iter().all(|p| ((p[0] * p[0] + p[1] * p[1]).sqrt() - r).abs() < 1e-9) && d.case_top.len() >= 12);
+        assert!(d.floor_z == -TONGUE_DRUM.height && d.outline_front.iter().any(|p| p[1] == -TONGUE_DRUM.height));
+        for n in [52.0, 64.0, 76.0] {
+            let (x, y) = b.bridge_point(n);
+            assert!((x * x + y * y).sqrt() < r, "{n}: ({x}, {y})");
+        }
+        let p = b.mics(MicPosition::Player, 0.18, 0.0, 1.0).unwrap();
+        assert!(p.iter().all(|m| m[2] > 0.5 && m[1] < 0.0), "{p:?}");
     }
 
     #[test]

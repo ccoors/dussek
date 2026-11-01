@@ -13,8 +13,9 @@ use std::sync::atomic::AtomicUsize;
 /// below it
 const RECORDED_HITS: usize = 7;
 /// bars sets pre-selecting a fellow bar answer, 2026-10-14: 2 (the kalimba, the hand chimes);
-/// 2026-10-29: 3 (the hand chimes; Mbira B and the nyunga nyunga read as the mallets')
-const RECORDED_FELLOWS: usize = 3;
+/// 2026-10-29: 3 (the hand chimes; Mbira B and the nyunga nyunga read as the mallets'); 2026-11-01: 4
+/// (the tongue drum reads as the tubes': its tongues nearly pure, as a tube's strike note)
+const RECORDED_FELLOWS: usize = 4;
 
 #[test]
 fn the_guess_on_the_donors_own_sets() {

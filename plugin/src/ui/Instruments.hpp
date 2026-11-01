@@ -12,7 +12,7 @@ namespace pe {
 /// the microphone geometry's body (pe_mic_geometry's number: engine/src/mic.rs BODIES)
 enum class BodyKind : uint32_t { Grand = 0, Upright = 1, Harp = 2, LeverHarp = 3, Vibraphone = 4, Marimba = 5, Xylophone = 6, Bells = 7, Crotales = 8,
     Guitar = 9, Chimes = 10, HandChimes = 11, Kalimba = 12, Balafon = 13,
-    Psaltery = 14, DanTranh = 15, Strumstick = 16 };
+    Psaltery = 14, DanTranh = 15, Strumstick = 16, TongueDrum = 17 };
 /// what the UI shows for a missing instrument: no stops, no mallets, no preparations, a grand's body
 const InstrumentEntry& noInstrument();
 BodyKind entryBody(const InstrumentEntry& e);

@@ -1183,7 +1183,7 @@ pub struct PeMicGeometry {
 }
 
 /// The bodies by the C interface's number (`mic::BODIES`).
-const BODIES: [Body; 17] = crate::mic::BODIES;
+const BODIES: [Body; 18] = crate::mic::BODIES;
 
 /// The body for the C interface's number (`BODIES`; out of range: the grand).
 fn body_of(body: u32) -> Body {
@@ -1191,9 +1191,9 @@ fn body_of(body: u32) -> Body {
 }
 
 /// Each body's name by the C interface's number, as an instrument.json names it (`Body::from_name`).
-const BODY_NAMES: [&std::ffi::CStr; 17] = [
+const BODY_NAMES: [&std::ffi::CStr; 18] = [
     c"grand", c"upright", c"harp", c"leverharp", c"vibraphone", c"marimba", c"xylophone", c"bells", c"crotales",
-    c"guitar", c"chimes", c"handchimes", c"kalimba", c"balafon", c"psaltery", c"dantranh", c"strumstick",
+    c"guitar", c"chimes", c"handchimes", c"kalimba", c"balafon", c"psaltery", c"dantranh", c"strumstick", c"tonguedrum",
 ];
 
 /// A body's name (the presets' files name a microphone preset's body by it); null out of range.

@@ -3591,3 +3591,35 @@ velocity 64 (was −36 … −43), about 10 dB louder, and brighter. For the ear
 The refit (the source changed; the A5 redo): A5's gain −1.0 dB, the board's and the coupling's fits
 moved a little (the horizontal coupling at C4 1.40 → 2.41, a fit known to wander), the license now
 the maintainer's recordings alone.
+
+<a id="step-223"></a>
+## 223. The tongue drum
+
+The maintainer's steel tongue drum (step 222's set) as an instrument, "Tongue drum" in Percussion,
+built by hand from the kalimba's settings (no new step: the bars chain):
+
+- **Its modes.** The bars fit's derived tracks (`tracks = "auto"`) were the other tongues: 1.19 at A4
+  (C5's), 2.0 and 3.0 (the octave's and the twelfth's tongues, E3 × 3 = B4). Each tongue is nearly a
+  pure tone, its own upper modes 25–45 dB under the fundamental. Two lines stand at one frequency on
+  every tongue: 757–759 Hz on E3–E5 (−15 … −40 dB re the fundamental at mf, 20–30 dB/s) and 684 Hz
+  on E3–A3 (−25 … −37 dB), the shell's own modes rung by each strike. A fixed frequency is a track
+  whose ratio falls with the key (linear in log ratio between its anchors), so the tracks are pinned:
+  1, 758 Hz / f1, 684 Hz / f1. The other tongues ring along as the kalimba's tines (`halo`), within
+  half a second.
+- **Its mallet**, fitted from the three dynamics: speeds 0.60 / 1 / 3.99 (pp, mf, ff), the lowpass at
+  406 Hz at mf rising 2.4 octaves per doubling (8.6 dB rms with the derived tracks, 6.9 pinned).
+- **Its strike.** The recordings reach half the strike's peak in 0.5–2.5 ms and 0.08–0.21 of it in
+  the first 0.2 ms (mf, E3, C4, G4, E5); the modes stepped (0.24–0.33). From zero over 1 ms
+  (`onset_s`): 0.14–0.18, half at 1.0–2.6 ms; over 2 ms 0.11–0.13 and 1.7–3.4 ms.
+- **Its body.** The bars' microphone geometry is a frame at hip height; the drum lies on the floor:
+  `Body::TongueDrum` (`TONGUE_DRUM`: a round shell 0.355 m across, 0.15 m high, the shell's air
+  under the tongues, the player kneeling over it), the C interface's body 17, `tonguedrum`.
+- **Its loudness.** Step 173's phrase in its range (an arpeggio E3–E5 at velocity 80, chords at 95)
+  lay +15.6 dB re the grands' median (−29.2 LUFS; peak +0.7 dBFS): its tongues ring 10–36 s and pile
+  up. `gain_db = −15.5`: −28.8 LUFS.
+
+Against its recordings (the editor's comparison, 45 pairs): level +1.2 / +2.1 / +4.2 dB (mf / ff /
+pp), pitch 0 cents, early decay ×0.87, length ×1.00; 9 flagged: six levels ±13–16 dB (single
+tongues against the smoothed level curve: the upper octave's tongues lie 10–30 dB under the lower's
+at one dynamic, unevenly), two pp lengths (C5, E5 ×0.1: their recordings ring on in the other
+tongues), one spectrum (F3 ff). For the ear.
