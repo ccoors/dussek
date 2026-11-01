@@ -59,11 +59,22 @@ start() { # <instrument folder>: the standalone with only it, settings of its ow
     sleep 2 # the instrument loads
 }
 shot() { DISPLAY=$display import -window "$win" "$out/$1.png"; echo "$out/$1.png"; }
+# until a region (x y w h at 1x) is drawn in the selection's blue: the felt read off the UI's thread
+im=$(command -v magick || echo convert) # ImageMagick 7, or 6 (CI's Ubuntu)
+blue() {
+    for _ in $(seq 150); do
+        d=$(DISPLAY=$display import -window "$win" png:- | $im - -crop "$(($3 * scale))x$(($4 * scale))+$(($1 * scale))+$(($2 * scale))" \
+            -format '%[fx:mean.b-mean.r]' info:)
+        awk -v d="$d" 'BEGIN { exit !(d > 0.15) }' && return
+        sleep 0.2
+    done
+    echo "screenshots.sh: still waiting at $*" >&2; exit 1
+}
 
 export DISPLAY=$display
 start grand_a
 tab sound; shot grand-sound
-tab felt; shot grand-felt
+tab felt; blue 472 90 56 14; shot grand-felt # the Stiffness chip, selected
 tab mics; shot grand-mics
 tab sound
 click 310 27        # Sustain latch: the pedal held
