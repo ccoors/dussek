@@ -5,6 +5,7 @@
 # instrument behind; the standalone lists the instruments; the uninstaller removes the program and
 # keeps the player's own files.
 set -eu
+export MSYS2_ARG_CONV_EXCL="*"   # /VERYSILENT and the like are options, not paths to convert
 setup=${1:?usage: check-install.sh <setup.exe> <portable folder>}
 dist=${2:?usage: check-install.sh <setup.exe> <portable folder>}
 # MSYS2 keeps some variables in their Windows spelling (ProgramData); Windows' getenv ignores case
