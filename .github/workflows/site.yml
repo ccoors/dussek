@@ -1,0 +1,74 @@
+# The website (site/README.md): on a published release and by hand from the Actions tab, every clip
+# rendered, the screenshots taken, the pages built and deployed to GitHub Pages. Nothing rendered
+# is kept in git; a run that fails leaves the site as it was.
+name: Website
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+  push:
+    branches: ["website"]   # TEMPORARY: the build checked once on its branch, removed before the merge
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash   # -eo pipefail
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - name: System packages (DPF's, the renders', the screenshots')
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build pkg-config \
+            libgl-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libdbus-1-dev \
+            libjack-jackd2-dev libasound2-dev libpulse-dev \
+            jackd2 xvfb xdotool imagemagick ffmpeg libgl1-mesa-dri
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: just
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+      - run: pip install mido -r site/requirements.txt
+      - name: Build the engine and the plugin
+        run: just engine plugin
+      - name: The clips and the ensemble video
+        run: python3 site/render.py --video
+      - name: The screenshots
+        run: site/screenshots.sh site/out/screenshots
+      - name: The pages
+        run: python3 site/build.py
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site/public
+
+  deploy:
+    needs: build
+    if: github.event_name != 'push'   # TEMPORARY with the trigger above
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write      # the deployment
+      id-token: write   # its proof of origin
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
