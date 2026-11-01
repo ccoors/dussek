@@ -3446,6 +3446,13 @@ tested platform and macOS (Apple silicon) and Windows as built by CI and unteste
 test builds until the first release, and gives the clone's address; the workflows' comments drop
 the private repository's minutes.
 
+The repository went public on 2026-11-01. With it: a first-time contributor's pull request waits
+for approval before its workflows run, the workflows' token is read-only, a ruleset keeps `main`
+from force pushes and deletion (both refused on a private repository of a free account), and CI
+runs the engine's suite on `main` and every pull request, beside the Linux job (about 40 min). The old
+private repository stays, read-only, as the archive of the history before the first publish, its
+README pointing here. Next: releases (ROADMAP).
+
 <a id="step-218"></a>
 ## 218. The plugins tested on Linux and Windows
 

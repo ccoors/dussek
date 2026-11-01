@@ -10,6 +10,11 @@ Nothing in progress; the next item comes from below.
 
 ## Next
 
+- **Releases.** Tagged releases with each platform's build, made by CI (until then, the CI's test
+  builds). Installers, so that nothing needs copying by hand: a Windows installer (the standalone,
+  the plugin formats as choices, an uninstaller), a macOS package, an archive with an install
+  script on Linux; the instruments installed once, in a system-wide folder the plugin also
+  searches.
 - **Traits, the rest.** The plan (design 2026-10-21-traits-plan): a piano as smooth curves with
   its few breaks plus traits (knobs), its unevenness as statistics with a seed, the tuner's and
   voicer's choices on top. Done: the rail (step 136), the even levels (138–139), the felt as runtime
@@ -24,7 +29,7 @@ Nothing in progress; the next item comes from below.
 - **Morphing beyond the pianos.** The other groups (harpsichords, plucked strings, percussion),
   then across families. [Notes](docs/roadmap-notes.md#morphing)
 - **Presets, the rest.** Microphone presets per body type and full presets, shipped and saved
-  (step 175), the first two shipped full presets, also in hosts' preset menus (step 179). Left: shipped
+  (step 175), the first two shipped full presets, also in LV2 hosts' preset menus (step 179). Left: shipped
   mic setups for the other bodies; snapshots and a morph between two settings.
   [Notes](docs/roadmap-notes.md#presets)
 - **Each instrument checked by ear.** The take checks' flags heard instrument by instrument, the
