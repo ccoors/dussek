@@ -10,6 +10,8 @@ python3 site/render.py           # every clip into site/out/audio/*.ogg and site
 python3 site/render.py --only grand,pedals
 python3 site/render.py --video   # also the ensemble piece's video (site/out/video)
 just screenshots                 # the standalone on a virtual display (Xvfb, xdotool); also docs/screenshot.png
+chromium --headless --window-size=1280,640 --screenshot=docs/social-preview.png "file://$PWD/site/social.html"
+                                 # the repository's social preview (GitHub: Settings → Social preview)
 ```
 
 - `clips.toml`: every clip, by section (the menu groups' demos, the original pieces, the real

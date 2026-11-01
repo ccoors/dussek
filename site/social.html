@@ -1,0 +1,36 @@
+<!doctype html>
+<!-- The repository's social preview (1280 × 640): the website's hero at a card's size.
+     site/README.md has the line that renders it to docs/social-preview.png. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dussek social preview</title>
+<style>
+@font-face { font-family: "Inter"; src: url("fonts/inter.woff2") format("woff2"); font-weight: 100 900; }
+@font-face { font-family: "Dussek Serif"; src: url("fonts/dussek-serif.woff2") format("woff2"); font-weight: 200 900; }
+:root { --bg: #0b0e15; --ink: #ffffff; --muted: #b4bccb; --accent: #f6e15a; --orange: #ff9d42; --deep-orange: #6b3008; --field-ink: #0b0e15; }
+html, body { margin: 0; width: 1280px; height: 640px; overflow: hidden; }
+body { position: relative; background: var(--orange); font-family: "Inter", sans-serif; }
+body::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 300px; background: var(--bg); }
+.bar { position: absolute; left: 64px; right: 64px; top: 48px; display: flex; align-items: center; color: var(--ink); }
+.wordmark { display: flex; align-items: center; gap: 16px; font: 800 52px/1 "Inter"; letter-spacing: -0.03em; }
+.wordmark img { width: 64px; height: 64px; }
+.formats { margin-left: auto; font: 600 26px/1 "Inter"; color: var(--muted); letter-spacing: 0.01em; }
+.title { position: absolute; left: 0; right: 0; top: 300px; transform: translateY(-50%); display: grid; text-align: center;
+  font: 800 148px/0.86 "Inter"; text-transform: uppercase; letter-spacing: -0.04em; }
+.title span { grid-area: 1 / 1; }
+.top { color: var(--accent); clip-path: inset(0 0 50% 0); }
+.bottom { color: var(--deep-orange); clip-path: inset(50% 0 0 0); }
+.lead { position: absolute; left: 64px; right: 64px; bottom: 52px; text-align: center; color: var(--field-ink);
+  font: 400 34px/1.3 "Dussek Serif"; }
+</style>
+</head>
+<body>
+<div class="bar">
+  <div class="wordmark"><img src="../packaging/icon/dussek.svg" alt="">Dussek</div>
+  <div class="formats">LV2 · CLAP · VST3 · Standalone</div>
+</div>
+<div class="title"><span class="top">Struck,<br>not sampled</span><span class="bottom">Struck,<br>not sampled</span></div>
+<p class="lead">A free piano, harpsichord, harp and percussion instrument:<br>every note simulated as you play it, none of it recorded.</p>
+</body>
+</html>
