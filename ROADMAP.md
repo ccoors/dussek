@@ -10,11 +10,9 @@ Nothing in progress; the next item comes from below.
 
 ## Next
 
-- **Releases.** Tagged releases with each platform's build, made by CI (until then, the CI's test
-  builds). Installers, so that nothing needs copying by hand: a Windows installer (the standalone,
-  the plugin formats as choices, an uninstaller), a macOS package, an archive with an install
-  script on Linux; the instruments installed once, in a system-wide folder the plugin also
-  searches.
+- **The website.** GitHub Pages: a demo per menu group playable on the page, the ensemble piece's
+  video, the original piano pieces, a few real performances, short clips of the features,
+  screenshots, the instruments' credits; rendered by a script, so a sound change renews them.
 - **Traits, the rest.** The plan (design 2026-10-21-traits-plan): a piano as smooth curves with
   its few breaks plus traits (knobs), its unevenness as statistics with a seed, the tuner's and
   voicer's choices on top. Done: the rail (step 136), the even levels (138–139), the felt as runtime

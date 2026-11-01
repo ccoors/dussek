@@ -3483,3 +3483,33 @@ every change (a felt takes seconds). The worker now waits for the host's first `
 instance created and left inactive holds +5 MB after 4 s, was +115 MB (an offline probe, lilv);
 activated, a note renders as before. `plugin/tools/lv2render.c` connects the plugin's audio
 inputs (step 94) to silence: it took the first two audio ports for its outputs and crashed.
+
+<a id="step-220"></a>
+## 220. Releases with installers
+
+A tag `v<version>` makes `.github/workflows/release.yml` publish a release with an installer per
+platform, so nothing needs copying by hand (the maintainer: "manually installing all the files is
+a bit fiddly"):
+
+- **Windows**: a setup program (Inno Setup, `packaging/windows/dussek.iss`): the standalone in the
+  Start menu and each plugin format as choices, an uninstaller, a fixed id so an update installs over
+  the version before.
+- **macOS**: a package (`packaging/macos/build-pkg.sh`): the app in Applications (`Dussek.app`,
+  made around DPF's plain executable by `make-app.sh`), the plugins in `/Library/Audio/Plug-Ins`,
+  each bundle signed ad hoc (the LV2's libraries one by one: an LV2 bundle is a plain folder) and
+  not relocatable.
+- **Linux**: the archive with `install.sh` (for you, or `--system`) and `uninstall.sh`, a desktop
+  entry and the icon (`packaging/icon`); built on Ubuntu 22.04 (glibc 2.35), its direct
+  dependencies limited to what every desktop has.
+
+The instruments are installed once, in a folder for every user that the plugin now reads before
+the user folder (`pe::systemDataDirs`: `%PROGRAMDATA%\Dussek`, `/Library/Application Support/Dussek`,
+`$XDG_DATA_DIRS` or `/usr/local/share` and `/usr/share`): an old copy from a test build in the user
+folder does not hide them. Each installer empties its own instruments first (an instrument dropped
+since does not linger) and never touches the player's presets, MIDI maps or own instruments; the
+Linux script lists what it installed, as it shares the user folder with them. `dussek list` prints
+what the standalone finds; the plugin's Copy CLI also looks for the standalone where the installers
+put it (`Program Files\Dussek`, `/Applications`). On each runner the installer is installed, updated over a stale
+instrument, listed and (Windows, Linux) uninstalled before anything is published. The release
+text is the version's section of `CHANGELOG.md` and a fixed footer (`packaging/release-notes.sh`);
+a tag that is not the code's version, or has no section, publishes nothing.

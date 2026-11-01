@@ -6,7 +6,6 @@ name: Release
 on:
   push:
     tags: ["v*"]
-    branches: ["releases"]   # TEMPORARY, while this workflow is built on its branch: removed before the merge
   workflow_dispatch:
     inputs:
       version:

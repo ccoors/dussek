@@ -37,6 +37,16 @@ plays it.
 Sessions, presets, MIDI maps, instruments and scripts keep working across releases:
 [docs/compatibility.md](docs/compatibility.md) says what is locked and how a locked thing changes.
 
+## Releases
+
+A release is a tag: the version in `plugin/CMakeLists.txt` raised, its section in
+[CHANGELOG.md](CHANGELOG.md) (what a player gets; before 1.0 a break goes under "Breaking"), both
+merged, then `git tag -a v<version>` pushed. `.github/workflows/release.yml` builds each platform,
+installs its installer on the runner and checks it, and publishes the release with the
+changelog's section; a tag that is not the code's version, or has no section, publishes nothing.
+Run by hand from the Actions tab with a version, it builds the installers to try without
+publishing.
+
 ## Sound changes
 
 A change that changes how an instrument sounds needs listening before it goes in. The ear

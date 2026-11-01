@@ -5,8 +5,10 @@ From nothing to playing a grand, and the few controls that change the sound most
 
 ## Install
 
-Linux is the platform today. Prebuilt releases come later; until then, build from source (the
-README's [Build from source](../README.md#build-from-source) lists what you need):
+The [releases](https://github.com/ccoors/dussek/releases) have an installer per platform (the
+README's [Download and install](../README.md#download-and-install) says which file and what the
+unsigned installers ask). From source (the README's [Build from source](../README.md#build-from-source)
+lists what you need):
 
 ```sh
 git clone --recursive <this repository's URL>    # then, in the clone:
