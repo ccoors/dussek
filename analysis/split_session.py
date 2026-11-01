@@ -26,7 +26,8 @@ A take is left out (its file under discarded/, its reason in the JSON):
   ends while it still sounds (`cut_short`); a long take stopped near its end is no cut;
 - soft: GHOST_DB under its key's loudest take (a key touched, not struck);
 - wrong: a wrong note;
-- clipped: a sample at full scale, where its key has another take at its dynamic;
+- clipped: a sample at full scale or a flat top near it (`clipped`), where its key has another take
+  at its dynamic;
 - spare: past the first MAX_TAKES of its key and dynamic.
 The kept takes of a key and dynamic are ranked by how near their level (over LEVEL_S) lies to the
 mean of the neighboring keys' (the sheet: "the more even one kept"); the SFZ gives the first rank
@@ -45,11 +46,34 @@ The keys around the breaks (the sheet's second table), played at various velocit
 auto` gives each take the dynamic whose level at its key the sheet's passes already split into
 <out> put nearest (`assign_dynamics`), and leaves one out that lies between them.
 
+The silent releases (`--silent`): keys pressed without their note and released, the key's return
+and the damper landing on still strings alone (`split_silent`): no pitch to label them by, so in
+the order of `--keys`, one key per event; an event within SAME_KEY_S of the one before is that key
+again (a second take); a note struck by mistake (a series as a strike's), an event the file's end
+cuts (the recorder's stop) and every event before `--from` are left out. Written to
+release_silent/<key>_<take>.wav, at most SILENT_S long, outside the SFZ (`release_noise.py` reads
+them).
+
+A tongue drum (`--tongues`): a strike is labeled by its fundamental alone over its first
+TONGUE_CHECK_S (the tongues' upper modes are no series, the drum's other tongues ring in sympathy
+within half a second, the one a fifth above among them), and a rise GHOST_DB under the strike
+before while that still rings TAIL_DB over the floor is the ring's (a touch), no strike.
+
+A pass recorded at another gain (`--gain-db`, the recorder's level turned down for loud takes):
+its takes measured and written that much louder, at the session's gain (as float where that
+passes full scale); a clipped take is judged on the samples as recorded.
+
+A second pedal pass continues the numbering of the files already in pedal/ (split again, a pass
+keeps its numbers: its JSON's `first`); the left-out events' files carry the pass's name.
+
 Usage:
   split_session.py <pass.wav> <out> --dynamic pp [--keys 21:108:3]
   split_session.py <releases.wav> <out> --dynamic mf --releases [--damped-to 88]
   split_session.py <breaks.wav> <out> --dynamic auto --keys 50,88,89   (after the sheet's passes)
   split_session.py <sustain_pedal.wav> <out> --pedal
+  split_session.py <key_releases.wav> <out> --silent --from 30 [--keys 21:108:3]
+  split_session.py <redos.wav> <out> --dynamic auto --keys 81,93,108 --gain-db 4.3
+  split_session.py <mf.wav> <out> --dynamic mf --tongues --keys 60,72,62,74,…   (the drum's order)
   split_session.py --sfz <out> [--name set.sfz]     (the SFZ over every pass split into <out>)
 """
 import argparse
@@ -98,6 +122,8 @@ FLOOR_PCT = 5
 MAX_TAKES = 4
 LEVEL_S = (0.0, 0.5)
 CLIP = 0.999               # a sample within 0.01 dB of full scale
+FLAT_DB = 1.0              # … or a flat top within this of it: the recorder's own ceiling (0.993)
+FLAT_RUN = 3
 WRITE_PRE_S = 0.05
 RELEASE_FALL_DB = 10.0
 RELEASE_FALL_S = 0.3
@@ -110,6 +136,9 @@ PEDAL_BEFORE_S = (-1.0, -0.1)
 PEDAL_AFTER_S = (0.5, 1.5)
 PEDAL_TAIL_S = 3.0
 AUTO_TOL_DB = 4.0
+TONGUE_CHECK_S = (0.03, 0.2)
+SAME_KEY_S = 3.0
+SILENT_S = 2.0
 NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
 
@@ -143,12 +172,14 @@ def _spectrum_db(seg, sr, nfft):
     return 10 * np.log10(np.abs(np.fft.rfft(seg * win, nfft)) ** 2 / np.sum(win ** 2) + 1e-30)
 
 
-def rise_scores(m, sr, at, end=None):
+def rise_scores(m, sr, at, end=None, tongues=False):
     """Per key 21–108: the comb score of the spectrum's rise at sample `at` (mono `m`): over its
     first N_PARTIALS partials (the cents and B grids), the mean of each partial's peak over the
     local floor after the rise, at most its rise over the spectrum before it, less the same between
-    the partials (dB)."""
-    a, b = at + int(CHECK_S[0] * sr), at + int(CHECK_S[1] * sr)
+    the partials (dB). `tongues`: the fundamental alone over TONGUE_CHECK_S, nothing between."""
+    check = TONGUE_CHECK_S if tongues else CHECK_S
+    n_partials, mid_weight = (1, 0.0) if tongues else (N_PARTIALS, MID_WEIGHT)
+    a, b = at + int(check[0] * sr), at + int(check[1] * sr)
     if end is not None:
         b = min(b, end)
     if b - a < int(0.1 * sr):
@@ -159,10 +190,12 @@ def rise_scores(m, sr, at, end=None):
     pa, pb = max(at + int(PRE_S[0] * sr), 0), max(at + int(PRE_S[1] * sr), 0)
     before = _spectrum_db(m[pa:pb], sr, nfft) if pb - pa > int(0.05 * sr) else np.full_like(after, -300.0)
     step = 8
-    w = max(int(FLOOR_HZ / bin_hz / step), 3)
+    # the floor's band as many resolution cells wide as over CHECK_S (a short window's peaks are wider)
+    floor_hz = FLOOR_HZ * (CHECK_S[1] - CHECK_S[0]) / (check[1] - check[0])
+    w = max(int(floor_hz / bin_hz / step), 3)
     floor = np.interp(np.arange(len(after)), np.arange(0, len(after), step), percentile_filter(after[::step], 50, size=w))
     lvl = np.clip(np.minimum(after - floor, after - before), 0, None)
-    n = np.arange(1, N_PARTIALS + 1)
+    n = np.arange(1, n_partials + 1)
     out = {}
     for k in range(KEYS_MIN, KEYS_MAX + 1):
         f0 = A.midi_to_hz(k)
@@ -180,7 +213,7 @@ def rise_scores(m, sr, at, end=None):
                 mid = lv[np.rint(F[ok] * (n[ok] + 0.5) / n[ok] / bin_hz).astype(int).clip(0, len(lv) - 1)]
                 # the treble: a series without its fundamental is another key's (an octave below
                 # takes every other partial of the one struck)
-                sc = (s.mean() if k < 72 else 0.5 * (s.mean() + s[0])) - MID_WEIGHT * mid.mean()
+                sc = (s.mean() if k < 72 else 0.5 * (s.mean() + s[0])) - mid_weight * mid.mean()
                 best = max(best, float(sc))
         out[k] = best
     return out
@@ -229,7 +262,7 @@ def refine(fine, sr, at, after=0):
     return (a + int(np.argmax(r)) - 1) * f
 
 
-def strikes(x, sr):
+def strikes(x, sr, tongues=False):
     """The strikes and the noises of a pass: dicts with the sample, the rise, the key scores."""
     m = x.mean(axis=1)
     e = level_db(x, sr)
@@ -241,15 +274,22 @@ def strikes(x, sr):
     ats = [refine(fine, sr, i * h, rs[n - 1][0] * h + int(REFINE_AFTER_S * sr) if n else 0) for n, (i, _) in enumerate(rs)]
     for n, ((i, r), at) in enumerate(zip(rs, ats)):
         nxt = ats[n + 1] - int(0.02 * sr) if n + 1 < len(rs) else None
-        sc = rise_scores(m, sr, at, nxt)
+        sc = rise_scores(m, sr, at, nxt, tongues)
         found.append({"at": at, "rise_db": r, "scores": sc, "note": max(sc.values()) >= NOTE_SCORE})
     return e, found
 
 
-def split_pass(x, sr, keys, release=False, mixed=False):
+def at_gain(x, gain_db):
+    """The samples gain_db louder."""
+    return x * 10 ** (gain_db / 20) if gain_db else x
+
+
+def split_pass(x, sr, keys, release=False, mixed=False, tongues=False, gain_db=0.0):
     """The pass's takes: a dict per strike (key, take, start/end samples, the reasons it is left out).
-    `mixed`: the keys struck at various velocities (no soft or spare takes)."""
-    e, found = strikes(x, sr)
+    `mixed`: the keys struck at various velocities (no soft or spare takes); `tongues`: a tongue
+    drum's; `gain_db`: measured that much louder (a clipped take still judged as recorded)."""
+    recorded, x = x, at_gain(x, gain_db)
+    e, found = strikes(x, sr, tongues)
     h = int(FRAME_S * sr)
     floor = float(np.percentile(e, FLOOR_PCT))
     m = x.mean(axis=1)
@@ -258,8 +298,10 @@ def split_pass(x, sr, keys, release=False, mixed=False):
     for s in found:
         # a rise within ECHO_S of a strike and GHOST_DB under it is the ringing note's (a damper
         # touching, a hand on the case), no strike
-        if s["note"] and hits and s["at"] - hits[-1]["at"] < ECHO_S * sr and lv(s["at"]) < lv(hits[-1]["at"]) - GHOST_DB:
-            s["note"] = False
+        if s["note"] and hits and lv(s["at"]) < lv(hits[-1]["at"]) - GHOST_DB:
+            ringing = tongues and e[max(s["at"] // h - int(0.3 / FRAME_S), 0):max(s["at"] // h - 2, 1)].mean() > floor + TAIL_DB
+            if s["at"] - hits[-1]["at"] < ECHO_S * sr or ringing:
+                s["note"] = False
         if s["note"]:
             hits.append(s)
     noises = [s["at"] for s in found if not s["note"]]
@@ -281,14 +323,14 @@ def split_pass(x, sr, keys, release=False, mixed=False):
                 end = q - pre
                 break
         # the scores again over the take alone (a strike right before the next)
-        sc = s["scores"] if nxt - s["at"] > CHECK_S[1] * sr else rise_scores(m, sr, s["at"], nxt)
+        sc = s["scores"] if nxt - s["at"] > CHECK_S[1] * sr else rise_scores(m, sr, s["at"], nxt, tongues)
         why = []
         near = {q: sc[q] for q in range(k - NEIGHBOR, k + NEIGHBOR + 1) if q in sc}
         own = max(near, key=near.get)
         if own != k and near[own] - sc[k] >= WRONG_DB:
             why.append(f"wrong: sounds {key_name(own)}")
         seg = x[max(s["at"] - pre, 0):end]           # as written (the strike may lie a little early)
-        if np.abs(seg).max() >= CLIP:
+        if clipped(recorded[max(s["at"] - pre, 0):end]):
             why.append("clipped")
         a, b = s["at"] + int(LEVEL_S[0] * sr), s["at"] + int(LEVEL_S[1] * sr)
         t = {"key": k, "name": key_name(k), "start": s["at"], "end": end, "rise_db": s["rise_db"],
@@ -302,6 +344,21 @@ def split_pass(x, sr, keys, release=False, mixed=False):
         takes.append(t)
     number(takes, floor, cut=not release, mixed=mixed)
     return takes, floor
+
+
+def clipped(seg):
+    """A sample at full scale (CLIP), or in a channel FLAT_RUN equal samples in a row at its peak
+    within FLAT_DB of full scale (a ceiling of the recorder's own: the converter's last code)."""
+    a = np.abs(seg if seg.ndim == 2 else seg[:, None])
+    if a.max() >= CLIP:
+        return True
+    for c in a.T:
+        top = c.max()
+        if top >= 10 ** (-FLAT_DB / 20):
+            run = np.convolve((c == top).astype(int), np.ones(FLAT_RUN, int), mode="valid")
+            if (run == FLAT_RUN).any():
+                return True
+    return False
 
 
 def curve(e):
@@ -404,7 +461,7 @@ def sheet_levels(out):
     ref = {}
     for path in glob.glob(os.path.join(out, "*.split.json")):
         doc = json.load(open(path))
-        if doc.get("releases") or doc.get("pedal") or doc["dynamic"] == "auto":
+        if doc.get("releases") or doc.get("pedal") or doc.get("silent") or doc["dynamic"] == "auto":
             continue
         for t in doc["takes"]:
             if not t["why"]:
@@ -462,7 +519,8 @@ def write_takes(x, sr, takes, out, dynamic, release=False, stem=""):
             a = t["start"] - pre
         os.makedirs(os.path.join(out, folder), exist_ok=True)
         t["file"] = os.path.join(folder, base)
-        sf.write(os.path.join(out, t["file"]), x[max(a, 0):t["end"]], sr, subtype="PCM_24")
+        seg = x[max(a, 0):t["end"]]
+        sf.write(os.path.join(out, t["file"]), seg, sr, subtype="FLOAT" if np.abs(seg).max() >= 1.0 else "PCM_24")
 
 
 def split_pedal(x, sr):
@@ -505,11 +563,77 @@ def split_pedal(x, sr):
     return events
 
 
-def write_pedal(x, sr, events, out):
+def pedal_first(out, own):
+    """The numbers a pedal pass's kept files start after, per kind: the ones it had (`own`, its JSON
+    from before), else the highest in pedal/ (the passes split before it)."""
+    if own is not None:
+        return own.get("first", {})
+    first = {}
+    for path in glob.glob(os.path.join(out, "pedal", "*.wav")):
+        got = re.fullmatch(r"(down|up)_(\d+)\.wav", os.path.basename(path))
+        if got:
+            first[got[1]] = max(first.get(got[1], 0), int(got[2]))
+    return first
+
+
+def write_pedal(x, sr, events, out, stem, first):
+    """The events' files: the kept ones numbered after `first`, the left-out ones under discarded/
+    with the pass's name."""
     pre = int(WRITE_PRE_S * sr)
     for n, t in enumerate(events, 1):
         folder = "pedal" if not t["why"] else os.path.join("discarded", "pedal")
-        base = f"{t['kind']}_{t['take']}.wav" if not t["why"] else f"{t['kind']}_event{n}.wav"
+        base = f"{t['kind']}_{t['take'] + first.get(t['kind'], 0)}.wav" if not t["why"] else f"{t['kind']}_{stem}_event{n}.wav"
+        os.makedirs(os.path.join(out, folder), exist_ok=True)
+        t["file"] = os.path.join(folder, base)
+        sf.write(os.path.join(out, t["file"]), x[max(t["start"] - pre, 0):t["end"]], sr, subtype="PCM_24")
+
+
+def split_silent(x, sr, keys, start_s=0.0):
+    """A pass of silent releases: a take per event from `start_s` on, labeled in the order of `keys`
+    (an event within SAME_KEY_S of the one before is its key's next take); a note (struck by mistake)
+    and an event the file's end cuts within SILENT_S, still TAIL_DB over the floor, left out. The
+    events must match the keys."""
+    e, found = strikes(x, sr)
+    h = int(FRAME_S * sr)
+    floor = float(np.percentile(e, FLOOR_PCT))
+    m = x.mean(axis=1)
+    found = [s for s in found if s["at"] >= start_s * sr]
+    takes = []
+    for n, s in enumerate(found):
+        nxt = found[n + 1]["at"] - int(WRITE_PRE_S * sr) if n + 1 < len(found) else len(x)
+        end = min(nxt, s["at"] + int(SILENT_S * sr))
+        seg = x[s["at"]:end]
+        t = {"start": s["at"], "end": end, "rise_db": s["rise_db"], "peak_dbfs": float(A.db(np.abs(seg).max())),
+             "level_db": float(10 * np.log10(np.mean(m[s["at"]:end] ** 2) + 1e-20)), "why": []}
+        if s["note"]:
+            k = max(s["scores"], key=s["scores"].get)
+            t["why"].append(f"a note: sounds {key_name(k)} (struck by mistake)")
+        elif end == len(x) and end - s["at"] < SILENT_S * sr and e[max(end // h - int(CUT_LAST_S / FRAME_S), 0):max(end // h - 2, 1)].mean() > floor + TAIL_DB:
+            t["why"].append(f"cut by the file's end {(end - s['at']) / sr:.1f} s after it")
+        takes.append(t)
+    groups = []
+    for t in takes:
+        if t["why"]:
+            continue
+        if groups and t["start"] - groups[-1][-1]["start"] < SAME_KEY_S * sr:
+            groups[-1].append(t)
+        else:
+            groups.append([t])
+    if len(groups) != len(keys):
+        at = ", ".join(f"{g[0]['start'] / sr:.2f}" for g in groups)
+        raise ValueError(f"{len(groups)} events for {len(keys)} keys (events at {at} s; --from skips the ones before the pass)")
+    for k, g in zip(keys, groups):
+        for n, t in enumerate(g, 1):
+            t.update({"key": k, "name": key_name(k), "take": n})
+    return takes
+
+
+def write_silent(x, sr, takes, out):
+    """The silent releases' files: release_silent/<key>_<take>.wav, the left-out ones under discarded/."""
+    pre = int(WRITE_PRE_S * sr)
+    for n, t in enumerate(takes, 1):
+        folder = "release_silent" if not t["why"] else os.path.join("discarded", "release_silent")
+        base = f"{t['name']}_{t['take']}.wav" if not t["why"] else f"event{n}.wav"
         os.makedirs(os.path.join(out, folder), exist_ok=True)
         t["file"] = os.path.join(folder, base)
         sf.write(os.path.join(out, t["file"]), x[max(t["start"] - pre, 0):t["end"]], sr, subtype="PCM_24")
@@ -529,19 +653,20 @@ VELOCITY = {"pp": (1, 50), "p": (1, 50), "mf": (51, 100), "f": (101, 127), "ff":
 def write_sfz(out, name):
     """The SFZ over every pass split into `out` (their JSON files): an attack region per kept take
     (its dynamic's velocity range), a release region per release take; per key and dynamic
-    seq_position 1, 2, … by the takes' ranks (a sheet pass's before an `auto` one's)."""
+    seq_position 1, 2, … by the takes' ranks (a clipped take after every clean one, a sheet pass's
+    before an `auto` one's)."""
     lines = ["// written by analysis/split_session.py: the takes kept, seq_position 1 the most even", ""]
     groups = {}
     for path in sorted(glob.glob(os.path.join(out, "*.split.json"))):
         doc = json.load(open(path))
-        if doc.get("pedal"):
+        if doc.get("pedal") or doc.get("silent"):
             continue
         for t in doc["takes"]:
             if t["why"] or "rank" not in t:
                 continue
             kind = "release" if doc.get("releases") else "attack"
             dyn = t.get("dynamic", doc["dynamic"])
-            groups.setdefault((kind, t["key"], dyn), []).append((doc["dynamic"] == "auto", t["rank"], t["file"]))
+            groups.setdefault((kind, t["key"], dyn), []).append((t.get("note", "").startswith("clipped"), doc["dynamic"] == "auto", t["rank"], t["file"]))
     count = {"attack": 0, "release": 0}
     for kind in ("attack", "release"):
         rows = sorted((k, d, g) for (q, k, d), g in groups.items() if q == kind)
@@ -550,7 +675,7 @@ def write_sfz(out, name):
         lines += [f"<group> trigger={kind}"]
         for k, d, g in rows:
             lo, hi = VELOCITY[d]
-            for seq, (_, _, f) in enumerate(sorted(g), 1):
+            for seq, (*_, f) in enumerate(sorted(g), 1):
                 lines.append(f"<region> sample={f} pitch_keycenter={k} lokey={k} hikey={k} lovel={lo} hivel={hi} seq_position={seq}")
                 count[kind] += 1
         lines.append("")
@@ -568,6 +693,10 @@ def main():
     ap.add_argument("--releases", action="store_true")
     ap.add_argument("--damped-to", type=int, help="releases: the highest key with a damper")
     ap.add_argument("--pedal", action="store_true", help="a pedal pass: its events as pedal-down and pedal-up takes")
+    ap.add_argument("--silent", action="store_true", help="silent releases: keys released without their note")
+    ap.add_argument("--from", dest="start_s", type=float, default=0.0, help="silent releases: the pass's start (s)")
+    ap.add_argument("--tongues", action="store_true", help="a tongue drum's pass")
+    ap.add_argument("--gain-db", type=float, default=0.0, help="the pass recorded this much under the session's gain")
     ap.add_argument("--sfz", action="store_true", help="write the SFZ over the passes split into out")
     ap.add_argument("--name", default="session.sfz")
     args = ap.parse_args()
@@ -576,26 +705,37 @@ def main():
         print(f"wrote {os.path.join(args.out, args.name)}: {n_att} attack regions, {n_rel} release regions")
         return
     x, sr = sf.read(args.wav, always_2d=True)
+    stem = re.sub(r"\.wav$", "", os.path.basename(args.wav))
+    if args.silent:
+        takes = split_silent(x, sr, args.keys, args.start_s)
+        write_silent(x, sr, takes, args.out)
+        with open(os.path.join(args.out, f"{stem}.split.json"), "w") as fh:
+            json.dump({"pass": os.path.basename(args.wav), "silent": True, "dynamic": "silent", "sr": sr,
+                       "from_s": args.start_s, "takes": takes}, fh, indent=1)
+        for t in takes:
+            print(f"  {t['start'] / sr:8.2f} s {t.get('name', '-'):>4s} take {t.get('take', '-')} peak {t['peak_dbfs']:6.1f} {t['file']} {'; '.join(t['why'])}")
+        return
     if args.pedal:
         events = split_pedal(x, sr)
-        write_pedal(x, sr, events, args.out)
-        stem = re.sub(r"\.wav$", "", os.path.basename(args.wav))
+        own = os.path.join(args.out, f"{stem}.split.json")
+        first = pedal_first(args.out, json.load(open(own)) if os.path.exists(own) else None)
+        write_pedal(x, sr, events, args.out, stem, first)
         with open(os.path.join(args.out, f"{stem}.split.json"), "w") as fh:
-            json.dump({"pass": os.path.basename(args.wav), "pedal": True, "dynamic": "pedal", "sr": sr, "takes": events}, fh, indent=1)
+            json.dump({"pass": os.path.basename(args.wav), "pedal": True, "dynamic": "pedal", "sr": sr, "first": first, "takes": events}, fh, indent=1)
         for t in events:
             print(f"  {t['start'] / sr:8.2f} s {t['kind']:>7s} ring {t['ring_change_db']:+5.1f} dB peak {t['peak_dbfs']:6.1f} {t['file']} {'; '.join(t['why'])}")
         return
-    takes, floor = split_pass(x, sr, args.keys, args.releases, args.dynamic == "auto")
+    takes, floor = split_pass(x, sr, args.keys, args.releases, args.dynamic == "auto", args.tongues, args.gain_db)
+    x = at_gain(x, args.gain_db)
     if args.releases and args.damped_to:
         for t in takes:
             if t["key"] > args.damped_to:
                 t["why"].append(f"undamped: above {key_name(args.damped_to)}")
-    stem = re.sub(r"\.wav$", "", os.path.basename(args.wav))
     if args.dynamic == "auto":
         assign_dynamics(takes, sheet_levels(args.out))
     write_takes(x, sr, takes, args.out, args.dynamic, args.releases, stem)
     doc = {"pass": os.path.basename(args.wav), "dynamic": args.dynamic, "releases": args.releases, "sr": sr,
-           "floor_db": floor, "takes": [{k: v for k, v in t.items() if k != "curve"} for t in takes]}
+           "floor_db": floor, **({"gain_db": args.gain_db} if args.gain_db else {}), **({"tongues": True} if args.tongues else {}), "takes": [{k: v for k, v in t.items() if k != "curve"} for t in takes]}
     with open(os.path.join(args.out, f"{stem}.split.json"), "w") as fh:
         json.dump(doc, fh, indent=1)
     kept = [t for t in takes if not t["why"]]
