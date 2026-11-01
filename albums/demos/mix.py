@@ -6,8 +6,8 @@ gain and place in the stereo field, then one gain that puts the mix's peak at -1
     python3 albums/demos/mix.py --mix-only      # the mix again from the rendered stems
     python3 albums/demos/mix.py --video         # also each stem's video, stacked into one
 
-Writes albums/demos/out/05-tin-roof-parade/<stem>.wav and albums/demos/out/05-tin-roof-parade.wav;
-with --video also <stem>.mp4 and albums/demos/out/05-tin-roof-parade.mp4: the stems' Visualization
+Writes albums/demos/out/05-ensemble-demo-1/<stem>.wav and albums/demos/out/05-ensemble-demo-1.wav;
+with --video also <stem>.mp4 and albums/demos/out/05-ensemble-demo-1.mp4: the stems' Visualization
 panels in a grid, the piano large at the top left, the other instruments as tiles down the right
 and along the bottom, the title in the corner."""
 import argparse
@@ -22,7 +22,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 MIDI2WAV = os.path.join(ROOT, "engine", "target", "release", "midi2wav")
 
-NAME = "05-tin-roof-parade"
+NAME = "05-ensemble-demo-1"
 RATE = 48000
 PEAK_DB = -1.0
 # every stem at the player's position, the bars spread over the 88 keys' frame as the piano's strings
@@ -46,7 +46,7 @@ TILES = [("piano", "Piano", 0, 0, 3, 3),
          ("bells", "Bells", 3, 0, 1, 1), ("chimes", "Tubular bells", 3, 1, 1, 1),
          ("kalimba", "Kalimba", 3, 2, 1, 1), ("vibraphone", "Vibraphone", 0, 3, 1, 1),
          ("harp", "Harp", 1, 3, 1, 1), ("marimba", "Marimba", 2, 3, 1, 1)]
-TITLE = ("Tin Roof Parade", 3, 3)
+TITLE = ("Ensemble Demo 1", 3, 3)
 BACKGROUND = "0x0A0A16"   # the panels' own
 # the stems' videos are encoded again in the stack: near lossless here
 STEM_FFMPEG = "-c:v libx264 -preset fast -crf 10 -pix_fmt yuv420p -an"

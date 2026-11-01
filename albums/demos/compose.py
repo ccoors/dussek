@@ -723,7 +723,7 @@ def parade():
     in pedal, piano melody and harp arpeggios; a quiet piano interlude on the soft pedal in half
     pedal, a build, everyone together with bells and tubular bells, the riff alone at the end.
     One part per instrument, each kept in its instrument's recorded range."""
-    parts = {stem: Piece("Tin Roof Parade", 112, seed=10 + i) for i, (stem, _, _) in enumerate(PARADE_PARTS)}
+    parts = {stem: Piece("Ensemble Demo 1", 112, seed=10 + i) for i, (stem, _, _) in enumerate(PARADE_PARTS)}
     tempo = parts["piano"].tempo
     for part in parts.values():
         part.tempo = tempo
@@ -939,7 +939,7 @@ def str_pitch(p):
 
 
 PIECES = [("01-back-porch-boogie", boogie), ("02-streetlights", ballad),
-          ("03-glass-rain", minimal), ("04-ferry-montuno", montuno), ("05-tin-roof-parade", parade)]
+          ("03-glass-rain", minimal), ("04-ferry-montuno", montuno), ("05-ensemble-demo-1", parade)]
 
 
 def main():
