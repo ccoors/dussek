@@ -82,3 +82,47 @@ def test_silent_releases_are_leveled_against_the_notes_at_one_gain(tmp_path):
     # the floor after the thump is no part of the noise's spectrum
     x, _ = sf.read(tmp_path / "release_silent" / "A0_1.wav")
     assert len(RN.trimmed(x, sr)) < 0.35 * sr
+
+
+def test_a_silent_releases_bands_are_its_own_not_the_rooms():
+    # a thud (noise low-passed at 400 Hz, 0.3 s) 30 dB over a white floor: over the floor only up to
+    # ~1 kHz; above, the floor's hiss is no part of it: its bands fall on as they fell where measured
+    from scipy.signal import butter, sosfilt
+    sr = 48000
+    rng = np.random.default_rng(3)
+    n = int(0.3 * sr)
+    thud = sosfilt(butter(4, 400, "lowpass", fs=sr, output="sos"), rng.standard_normal(n)) * np.exp(-np.arange(n) / (0.06 * sr))
+    thud *= 10 ** (-45 / 20) / np.abs(thud).max()
+    x = np.r_[thud, np.zeros(int(1.7 * sr))] + 10 ** (-85 / 20) * rng.standard_normal(n + int(1.7 * sr))
+    band = np.asarray(RN.silent_bands(x, sr, RN.silent_slope([x], sr)))
+    hi = (RN.BANDS >= 4000) & (RN.BANDS <= 12800)
+    assert band.max() == 0.0
+    assert band[hi].max() < -45.0, band[hi]
+    # a take that rings 1.5 s, three times the floor's window: the room's bands alike in both
+    n = int(2.0 * sr)
+    long = sosfilt(butter(4, 400, "lowpass", fs=sr, output="sos"), rng.standard_normal(n)) * np.exp(-np.arange(n) / (0.4 * sr))
+    long *= 10 ** (-45 / 20) / np.abs(long).max()
+    y = np.r_[long, np.zeros(int(1.0 * sr))] + 10 ** (-85 / 20) * rng.standard_normal(n + int(1.0 * sr))
+    assert np.asarray(RN.silent_bands(y, sr, RN.silent_slope([y], sr)))[hi].max() < -45.0
+    # where it stands over the floor, as measured
+    lo = (RN.BANDS >= 100) & (RN.BANDS <= 300)
+    assert band[lo].max() > -6.0
+
+
+def test_the_sets_fall_above_the_room_is_its_well_measured_takes_median():
+    # takes over the room from 250 Hz to 600 Hz and up give their fall; one in the room's noise
+    # gives none; the set's: their median
+    sr = 48000
+    rng = np.random.default_rng(5)
+    from scipy.signal import butter, sosfilt
+
+    def take(cut, level_db):
+        n = int(0.4 * sr)
+        x = sosfilt(butter(2, cut, "lowpass", fs=sr, output="sos"), rng.standard_normal(n)) * np.exp(-np.arange(n) / (0.08 * sr))
+        x *= 10 ** (level_db / 20) / np.abs(x).max()
+        return np.r_[x, np.zeros(int(1.6 * sr))] + 10 ** (-85 / 20) * rng.standard_normal(n + int(1.6 * sr))
+    room = 10 ** (-85 / 20) * rng.standard_normal(2 * sr)
+    takes = [take(150, -30), take(150, -30), take(150, -30), room]
+    slope = RN.silent_slope(takes, sr)
+    assert -13.0 < slope < -8.0, slope        # a 2nd-order lowpass at 150 Hz: −9 from 250 Hz, −12 far above
+    assert RN.silent_slope([room], sr) == RN.SILENT_MAX_SLOPE

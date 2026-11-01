@@ -26,9 +26,10 @@ pedal_level_db = -4.5
 
 # the release noise at its recordings' level re the notes (2026-11-01): played 1–7 dB over it (median
 # 4.5; velocities 64 and 110 against mf and ff, keys C1–C6), the export's reference over the engine's
-# played peak as for the pedal's thumps
+# played peak as for the pedal's thumps (−4.5 dB); then 10 dB down by ear ("we should lower it by
+# 10 dB", the maintainer, 2026-11-01): −14.5
 [release_noise]
-level_db = -4.5
+level_db = -14.5
 
 # the export voices the piano to one level curve, as a voicer leaves it (design log step 138), as the
 # grands (step 139) and the other uprights (step 168); the Condition's Normal zone adds the unevenness

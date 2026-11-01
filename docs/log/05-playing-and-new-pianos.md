@@ -3623,3 +3623,27 @@ pp), pitch 0 cents, early decay ×0.87, length ×1.00; 9 flagged: six levels ±1
 tongues against the smoothed level curve: the upper octave's tongues lie 10–30 dB under the lower's
 at one dynamic, unevenly), two pp lengths (C5, E5 ×0.1: their recordings ring on in the other
 tongues), one spectrum (F3 ff). For the ear.
+
+<a id="step-224"></a>
+## 224. Upright D's release noise heard
+
+Heard (the maintainer, 2026-11-01): the new release noise wants 10 dB less, and sounds "quite
+clicky". `[release_noise] level_db` −4.5 → −14.5 dB.
+
+**The clicks were the room.** The silent releases' thump stands only 25–35 dB over the room, and
+over it only up to about 1 kHz: over the take's 0.3–1 s, +15 dB at 160 Hz, +7 at 250–400 Hz, +2 at
+635 Hz, 0 from 1 kHz up (in its first 30 ms +20 dB at 160–250 Hz, +7 at 635 Hz, +1 at 1.6 kHz, 0
+above); a 10 ms trace of 2–12 kHz lies at the room's −81 dBFS throughout. The bands had read flat
+at −28 … −32 dB re the strongest from 1.6 to 16 kHz (Salamander's falls to −92): the room's hiss,
+which the engine played under the impacts' envelope as clicks. `silent_bands` now takes the room's
+band powers (the take's last 0.5 s) from the take's, a band 3 dB over the room counts, and above the
+highest that does the bands fall on at the set's fall: the median of the takes over the room from
+250 Hz to 600 Hz and up, −10.4 dB per octave (14 takes, quartiles −13.4 and −7.8; single takes −5 …
+−15 and some measured to 200 Hz only, so not each take's own). A first cut compared band powers of
+segments of different lengths (a band's bins grow with the length: +3 dB for a 1 s take against the
+0.5 s room) and left C4, C5 and C6 flat.
+
+The bands at 6.4–12.8 kHz: −69 dB re the strongest (median over the keys; at most −56; Salamander's
+−76; before −30). As played (velocity 64, keys C1–C6, the noise alone): its share above 2 kHz
+−44.8 dB (−51.6 … −37.6; before −18.9; Salamander's −52.5), its level −32 … −42 dB re the note's peak
+(Salamander's −36 … −43).

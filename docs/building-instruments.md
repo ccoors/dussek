@@ -143,8 +143,8 @@ What `project.toml` holds:
   recording's (Salamander's rattle with Upright A's landing, step 122).
 - **`[release_noise] level_db`**: a level for the release noise the `release_noise` step writes,
   re the sample author's mix (Salamander's: −12 dB, design log step 120; the harpsichords' −4.5 …
-  −14 dB put each at −38 dB re the note, step 182; Upright D's −4.5 dB, its recordings' level as
-  played, step 222). Only that step and the exports read it.
+  −14 dB put each at −38 dB re the note, step 182; Upright D's −14.5 dB, its recordings' level as
+  played less 10 dB by ear, steps 222 and 224). Only that step and the exports read it.
 - **`[take_checks]`** (`decay`, `rise`, `brightness`): the Check page's thresholds, only those
   moved from the defaults. Only the editor reads it.
 - **`[project] recorded_dry = true`** on a set recorded anechoic (the Iowa percussion and

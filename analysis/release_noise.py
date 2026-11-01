@@ -21,7 +21,11 @@ release region of each recorded note, its level re the note as the sampler plays
 (`vcsl_keys`). A session's silent releases (`release = { kind = "silent" }`, keys released without
 their note, split by split_session.py --silent): no note's partials to take out, the level re the
 key's note at each recorded dynamic, as recorded at one gain (`silent_keys`): one noise whatever the
-strike.
+strike. Their thump stands only 25–35 dB over the room, over it up to ~1 kHz: the bands are the
+take's less the room's (its last SILENT_FLOOR_S), and above the last band SILENT_CLEAR_DB over the
+room they fall on at the set's fall (`silent_slope`: the median over the takes over the room from
+SLOPE_FROM_HZ to SLOPE_TO_HZ and up; Upright D's −10.4 dB per octave, single takes −5 … −15)
+(`silent_bands`; the room's hiss had made the bands flat to 16 kHz, heard as clicks).
 Writes the part's release cache (release.json).
 
 Usage: release_noise.py <part>
@@ -44,6 +48,10 @@ SFZ_VOLUME_DB = -37.0
 VELTRACK_REL, VELTRACK_NOTE = 0.82, 0.73
 LAYER_VEL = {"pp": (1, 14), "mf": (8, 60), "ff": (16, 124)}
 SILENT_OVER_DB = 10.0
+SILENT_FLOOR_S = 0.5
+SILENT_CLEAR_DB = 3.0
+SILENT_MAX_SLOPE = -6.0             # dB per octave at most, falling (and the fall where none is measured)
+SLOPE_FROM_HZ, SLOPE_TO_HZ = 250.0, 600.0
 
 
 def sfz_gain_db(vel, track):
@@ -164,23 +172,71 @@ def trimmed(x, sr):
     return x[: loud[-1] + 1] if len(loud) else x
 
 
+def _psd_bands(x, sr):
+    """Band powers per unit length (Hann), comparable between segments of any length (a band holds
+    as many bins as the segment is long: divided by it)."""
+    w = np.hanning(len(x))
+    P = np.abs(np.fft.rfft(x * w)) ** 2 / (np.sum(w ** 2) * len(x))
+    f = np.fft.rfftfreq(len(x), 1 / sr)
+    return np.array([P[(f >= fc * 2 ** (-1 / 6)) & (f < fc * 2 ** (1 / 6))].sum() for fc in BANDS])
+
+
+def _over_room(x, sr):
+    """A take's band levels less the room's (dB) and which stand SILENT_CLEAR_DB over it."""
+    ev, fl = _psd_bands(trimmed(x, sr), sr), _psd_bands(x[-int(SILENT_FLOOR_S * sr):], sr)
+    return 10 * np.log10(np.maximum(ev - fl, 1e-30)), ev >= fl * 10 ** (SILENT_CLEAR_DB / 10)
+
+
+def silent_slope(takes, sr):
+    """The set's fall above the room (dB per octave): the median of its takes' line fits from
+    SLOPE_FROM_HZ over the bands over the room, of the takes over it to SLOPE_TO_HZ and up (three
+    bands at least); SILENT_MAX_SLOPE where none is, and at most that."""
+    fits = []
+    for x in takes:
+        db, ok = _over_room(x, sr)
+        sel = ok & (BANDS >= SLOPE_FROM_HZ)
+        if sel.sum() >= 3 and ok.any() and BANDS[np.nonzero(ok)[0][-1]] >= SLOPE_TO_HZ:
+            fits.append(np.polyfit(np.log2(BANDS[sel]), db[sel], 1)[0])
+    return min(float(np.median(fits)), SILENT_MAX_SLOPE) if fits else SILENT_MAX_SLOPE
+
+
+def silent_bands(x, sr, slope=SILENT_MAX_SLOPE):
+    """A silent release's band spectrum (dB re its strongest) without the room's: the trimmed take's
+    band powers less the file's last SILENT_FLOOR_S; a band SILENT_CLEAR_DB over the room counts,
+    above the highest that does the bands fall on at `slope` (the set's, `silent_slope`), below the
+    lowest at SILENT_MAX_SLOPE."""
+    db, ok = _over_room(x, sr)
+    if not ok.any():
+        return bands(trimmed(x, sr), sr)
+    oct_ = np.log2(BANDS)
+    out = np.where(ok, db, np.nan)
+    top, low = np.nonzero(ok)[0][-1], np.nonzero(ok)[0][0]
+    above = np.arange(len(BANDS)) > top
+    out[above] = db[top] + slope * (oct_[above] - oct_[top])
+    below = np.arange(len(BANDS)) < low
+    out[below] = db[low] + SILENT_MAX_SLOPE * (oct_[low] - oct_[below])
+    gaps = np.isnan(out)
+    out[gaps] = np.interp(oct_[gaps], oct_[~gaps], out[~gaps])
+    return out - out.max()
+
+
 def silent_keys(root, folder, note_peaks):
     """Silent releases: <folder>/<key>_<take>.wav (take 1 per key; keys between take the nearest),
-    each trimmed (`trimmed`); its level re the note as recorded at one gain, per dynamic: the
+    each trimmed (`trimmed`), its bands without the room's (`silent_bands`); its level re the note as recorded at one gain, per dynamic: the
     release's peak less the key's note's (`note_peaks`, {dynamic: {key: peak dBFS}}; the nearest
     key's)."""
     rec = {}
-    for path in glob.glob(os.path.join(root, folder, "*_1.wav")):
+    for path in sorted(glob.glob(os.path.join(root, folder, "*_1.wav"))):
         name = os.path.basename(path)[: -len("_1.wav")]
         x, sr = sf.read(path, always_2d=True)
-        mono = trimmed(x.sum(axis=1), sr)
-        rec[A.parse_note(name)] = (mono, sr, float(A.db(np.abs(x).max())))
+        rec[A.parse_note(name)] = (x.sum(axis=1), sr, float(A.db(np.abs(x).max())))
+    slope = silent_slope([m for m, _, _ in rec.values()], next(iter(rec.values()))[1])
     out = []
     for note in range(21, 109):
         src = min(rec, key=lambda n: abs(n - note))
         mono, sr, rel_db = rec[src]
         near = lambda peaks: peaks[min(peaks, key=lambda n: abs(n - src))]  # noqa: E731
-        out.append({"note": note, "impacts": impacts(mono, sr), "band_db": bands(mono, sr).tolist(),
+        out.append({"note": note, "impacts": impacts(trimmed(mono, sr), sr), "band_db": silent_bands(mono, sr, slope).tolist(),
                     "peak_dbfs": rel_db, "ratio_db": {d: rel_db - near(p) for d, p in note_peaks.items()}})
     return out
 
