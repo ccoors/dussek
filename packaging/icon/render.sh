@@ -1,6 +1,7 @@
 #!/bin/sh
-# dussek.svg → the PNGs (Linux's desktop entry, the README), dussek.ico (Windows), dussek.icns
-# (macOS). Needs rsvg-convert, ImageMagick and png2icns (libicns); the results are committed.
+# dussek.svg (a keyboard on three plates, 512 px; from a generator script in the maintainer's
+# notes) → the PNGs (Linux's desktop entry, the README), dussek.ico (Windows), dussek.icns (macOS).
+# Needs rsvg-convert, ImageMagick and png2icns (libicns); the results are committed.
 set -eu
 cd "$(dirname "$0")"
 for s in 16 32 48 128 256 512; do
