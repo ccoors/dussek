@@ -14,6 +14,8 @@ fn the_tool_prints_the_measured_level() {
         return;
     }
     let dir = std::path::PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join("level_a");
+    // empty first: the folder outlives a run (an older tool's level.json once stayed in it)
+    let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
     for f in ["instrument.json", "data.bin"] {
         std::fs::copy(std::path::Path::new(A).join(f), dir.join(f)).unwrap();
