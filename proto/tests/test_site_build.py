@@ -203,3 +203,14 @@ def test_credits_escape_raw_html():
     out = load_build().md("A <script>alert(1)</script> and <https://example.org/x>.")
     assert "<script>" not in out and "&lt;script&gt;" in out
     assert '<a href="https://example.org/x">' in out
+
+
+def test_the_serif_carries_its_new_name_only():
+    # the OFL's Reserved Font Name: a modified Source Serif names itself otherwise everywhere, its
+    # named instances' PostScript names too (the copyright notice, ID 0, keeps the original's)
+    ttLib = pytest.importorskip("fontTools.ttLib")
+    pytest.importorskip("brotli")
+    for f in glob.glob(f"{P.REPO}/site/fonts/dussek-serif*.woff2"):
+        names = ttLib.TTFont(f)["name"].names
+        left = [(r.nameID, r.toUnicode()) for r in names if r.nameID != 0 and "Source" in r.toUnicode()]
+        assert not left, f"{os.path.basename(f)}: {left[:3]}"
