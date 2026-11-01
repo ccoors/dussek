@@ -35,7 +35,7 @@ rolled pianos that no recording holds (a "Rolled pianos" group).
 
 Prebuilt releases come later. Until then, build from source, or take a test build from a recent
 run of the CI workflows (the Actions tab, signed in to GitHub; kept 3 days): each platform's holds
-the standalone, the plugins, the instruments and a `TRY-IT.txt` saying where they go.
+the standalone, the plugins, the instruments and a `README.txt` saying where they go.
 
 ## Build from source
 

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Dussek
+GenericName=Piano
+Comment=A physically modeled piano, harpsichords, harps and percussion
+Exec=dussek
+Icon=dussek
+Terminal=false
+Categories=AudioVideo;Audio;Midi;
+Keywords=piano;synthesizer;harpsichord;music;

@@ -43,8 +43,8 @@ jobs:
       - name: Package
         if: github.event_name != 'pull_request'
         run: |
-          plugin/tools/package.sh macos
-          tar -C dist -czf dist/dussek-macos.tar.gz dussek-macos   # tar keeps the executables' mode
+          out=$(plugin/tools/package.sh macos | tail -n 1)
+          tar -C dist -czf dist/dussek-macos.tar.gz "$(basename "$out")"   # tar keeps the executables' mode
       - uses: actions/upload-artifact@v7
         if: github.event_name != 'pull_request'
         with:
@@ -105,7 +105,9 @@ jobs:
       # a build to try on another machine (Actions tab: the run's artifacts; kept 3 days)
       - name: Package
         if: github.event_name != 'pull_request'
-        run: plugin/tools/package.sh windows
+        run: |
+          out=$(plugin/tools/package.sh windows | tail -n 1)
+          mv "$out" dist/dussek-windows
       - uses: actions/upload-artifact@v7
         if: github.event_name != 'pull_request'
         with:

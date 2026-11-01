@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Dussek's icon: a grand seen from above, keyboard at the bottom; packaging/icon/render.sh -->
+  <rect x="8" y="8" width="240" height="240" rx="48" fill="#22303c"/>
+  <path d="M70 196 L70 62 Q70 34 100 34 Q132 34 142 66 Q152 98 178 110 Q190 116 190 138 L190 196 Z"
+        fill="#f1e9d8"/>
+  <rect x="62" y="194" width="136" height="32" rx="5" fill="#f1e9d8"/>
+  <g fill="#22303c">
+    <rect x="62" y="194" width="136" height="5"/>
+    <rect x="77" y="199" width="7" height="15" rx="1"/>
+    <rect x="93" y="199" width="7" height="15" rx="1"/>
+    <rect x="121" y="199" width="7" height="15" rx="1"/>
+    <rect x="137" y="199" width="7" height="15" rx="1"/>
+    <rect x="153" y="199" width="7" height="15" rx="1"/>
+    <rect x="181" y="199" width="7" height="15" rx="1"/>
+  </g>
+</svg>

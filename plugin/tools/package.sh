@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
-# The builds and the instruments in one folder to try on another machine (CI's artifacts):
-#   plugin/tools/package.sh <platform>   ->  dist/dussek-<platform>/
+# The builds and the instruments in one folder (the release's portable archive; the installers
+# are made from it):
+#   plugin/tools/package.sh <platform>   ->  dist/dussek-<version>-<platform>/ (its path printed last)
 # The standalone, the LV2, CLAP and VST3 bundles as built, the instruments' committed files, the
-# licenses and TRY-IT.txt. Run from the repository's root after `just plugin`.
+# license and README.txt; on Linux also install.sh, uninstall.sh, the desktop entry and the icon.
+# Run from the repository's root after `just plugin`.
 set -euo pipefail
 platform=${1:?usage: package.sh linux|macos|windows}
+version=$(sed -n 's/^project(dussek-plugin VERSION \([0-9.]*\).*/\1/p' plugin/CMakeLists.txt)
+[ -n "$version" ] || { echo "package.sh: no version in plugin/CMakeLists.txt" >&2; exit 1; }
 bin=plugin/build/bin
-out=dist/dussek-$platform
+out=dist/dussek-$version-$platform
 rm -rf "$out"
 mkdir -p "$out/instruments"
 for f in dussek dussek.exe dussek.app dussek.lv2 dussek.clap dussek.vst3; do
@@ -19,37 +23,46 @@ git ls-files -z instruments | while IFS= read -r -d '' f; do
 done
 cp LICENSE "$out/LICENSE.txt"
 commit=$(git describe --always --dirty 2>/dev/null || echo unknown)
+tested="The standalone, LV2, CLAP and VST3 are tested on Linux and Windows; the macOS build is untested
+(reports welcome). Where a host offers LV2 or CLAP, prefer them: the VST3 has limits (no presets in
+the host's menu, no diagnostics panels in some hosts)."
 case $platform in
     linux)
-        plugins="~/.lv2, ~/.clap, ~/.vst3"
-        data="~/.local/share/dussek"
-        run="./dussek (the standalone needs JACK, or PipeWire's JACK: pw-jack ./dussek)"
-        note="Built on Ubuntu 24.04: a Linux with glibc 2.39 or newer." ;;
+        cp packaging/linux/install.sh packaging/linux/uninstall.sh packaging/linux/dussek.desktop "$out/"
+        cp packaging/icon/dussek.png "$out/dussek.png"
+        glibc=$(ldd --version 2>/dev/null | sed -n '1s/.* \([0-9][0-9.]*\)$/\1/p')
+        glibc=${glibc:-unknown}
+        how="Install: ./install.sh (for you: ~/.lv2, ~/.clap, ~/.vst3, ~/.local/bin, the instruments in
+~/.local/share/dussek), or sudo ./install.sh --system (for every user, under /usr/local; CLAP in /usr/lib/clap).
+Run it again to update; ./uninstall.sh removes it (your presets and own instruments stay).
+The standalone plays through JACK when a JACK server runs (PipeWire's too), else through the
+system's audio.
+Built with glibc $glibc: a Linux with glibc $glibc or newer." ;;
     macos)
-        plugins="~/Library/Audio/Plug-Ins/LV2, …/CLAP, …/VST3"
-        data="~/Library/Application Support/Dussek"
-        run="dussek.app. It is not signed: the first time, right-click it and choose Open, or run
-  xattr -dr com.apple.quarantine dussek.app dussek.lv2 dussek.clap dussek.vst3"
-        note="Built for Apple silicon (arm64), macOS 13.3 or newer; not for Intel Macs." ;;
+        how="Install: the release's dussek-$version-macos.pkg does all of this. By hand: copy the folder
+\"instruments\" into ~/Library/Application Support/Dussek, dussek.app into Applications, the
+bundles into ~/Library/Audio/Plug-Ins/LV2, …/CLAP, …/VST3. Not signed: the first time,
+right-click the app and choose Open, or run
+  xattr -dr com.apple.quarantine dussek.app dussek.lv2 dussek.clap dussek.vst3
+Built for Apple silicon (arm64), macOS 13.3 or newer; not for Intel Macs." ;;
     windows)
-        plugins="C:\\Program Files\\Common Files\\VST3 (dussek.vst3), C:\\Program Files\\Common Files\\CLAP (dussek.clap), %APPDATA%\\LV2 (dussek.lv2)"
-        data="%APPDATA%\\Dussek"
-        run="dussek.exe (the standalone plays through the system's audio device; started from a
-  console, it first says \"Failed to load JACK DLL\": expected without JACK, it then uses the system's)"
-        note="Built with MinGW (UCRT): Windows 10 or newer, 64 bit. Windows may warn about an unknown publisher." ;;
+        how="Install: the release's dussek-$version-windows-setup.exe does all of this. By hand: copy the
+folder \"instruments\" into %APPDATA%\\Dussek, dussek.vst3 into C:\\Program Files\\Common Files\\VST3,
+dussek.clap into C:\\Program Files\\Common Files\\CLAP, dussek.lv2 into %APPDATA%\\LV2.
+Started from a console, the standalone first says \"Failed to load JACK DLL\": expected without
+JACK, it then uses the system's audio.
+Built with MinGW (UCRT): Windows 10 or newer, 64 bit. Not signed: Windows may warn about an
+unknown publisher (\"More info\", then \"Run anyway\")." ;;
+    *)
+        echo "package.sh: unknown platform $platform" >&2; exit 2 ;;
 esac
-cat > "$out/TRY-IT.txt" <<TXT
-Dussek, a test build from commit $commit ($platform). Not a release.
+cat > "$out/README.txt" <<TXT
+Dussek $version ($platform, commit $commit): a physically modeled piano, harpsichords, harps and
+percussion, as a standalone and LV2, CLAP and VST3 plugins. https://github.com/ccoors/dussek
 
-1. Copy the folder "instruments" into $data
-   (make the folder if needed); the plugin and the standalone find the instruments there.
-2. The standalone: $run
-3. The plugins: copy the bundles you want to $plugins.
-   The standalone, LV2, CLAP and VST3 are tested on Linux and Windows; the macOS build is untested.
-   Where a host offers LV2 or CLAP, prefer them: the VST3 has limits (no presets in the host's
-   menu, no diagnostics panels in some hosts).
+$how
 
-$note
+$tested
 The code is AGPL-3.0-or-later (LICENSE.txt); each instrument's license is in its folder.
 TXT
 echo "$out"

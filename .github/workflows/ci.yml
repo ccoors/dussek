@@ -59,8 +59,8 @@ jobs:
       - name: Package
         if: github.event_name != 'pull_request'
         run: |
-          plugin/tools/package.sh linux
-          tar -C dist -czf dist/dussek-linux.tar.gz dussek-linux   # tar keeps the executables' mode
+          out=$(plugin/tools/package.sh linux | tail -n 1)
+          tar -C dist -czf dist/dussek-linux.tar.gz "$(basename "$out")"   # tar keeps the executables' mode
       - uses: actions/upload-artifact@v7
         if: github.event_name != 'pull_request'
         with:
