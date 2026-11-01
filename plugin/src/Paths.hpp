@@ -26,7 +26,8 @@ DataDirs dataDirs();
 
 /// the folders an installer fills (the instruments, once for every user): Windows
 /// %PROGRAMDATA%\Dussek (none when unset); macOS /Library/Application Support/Dussek; Linux each
-/// absolute entry of $XDG_DATA_DIRS + /dussek, else /usr/local/share/dussek and /usr/share/dussek
+/// absolute entry of $XDG_DATA_DIRS + /dussek, then /usr/local/share/dussek and /usr/share/dussek
+/// where the list leaves them out
 std::vector<std::string> systemDataDirs(const std::function<const char*(const char*)>& env, Platform platform);
 
 /// the process's: its environment, this platform

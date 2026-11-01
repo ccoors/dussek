@@ -6080,8 +6080,10 @@ TEST(system_data_dirs_per_platform)
     CHECK(pe::systemDataDirs(env({{"HOME", "/Users/u"}}), Platform::MacOS) == V{"/Library/Application Support/Dussek"});
     CHECK(pe::systemDataDirs(env({}), Platform::Linux) == (V{"/usr/local/share/dussek", "/usr/share/dussek"}));
     CHECK(pe::systemDataDirs(env({{"XDG_DATA_DIRS", ""}}), Platform::Linux) == (V{"/usr/local/share/dussek", "/usr/share/dussek"}));
-    // the XDG spec: relative entries are ignored
-    CHECK(pe::systemDataDirs(env({{"XDG_DATA_DIRS", "/opt/a:rel:/usr/share/"}}), Platform::Linux) == (V{"/opt/a/dussek", "/usr/share//dussek"}));
+    // the XDG spec: relative entries are ignored; install.sh --system's folder and the distribution's
+    // come last when a list leaves them out (NixOS, a desktop's own list)
+    CHECK(pe::systemDataDirs(env({{"XDG_DATA_DIRS", "/opt/a:rel:/usr/share/"}}), Platform::Linux) == (V{"/opt/a/dussek", "/usr/share/dussek", "/usr/local/share/dussek"}));
+    CHECK(pe::systemDataDirs(env({{"XDG_DATA_DIRS", "/run/current-system/sw/share"}}), Platform::Linux) == (V{"/run/current-system/sw/share/dussek", "/usr/local/share/dussek", "/usr/share/dussek"}));
     CHECK(pe::systemDataDirs(env({{"XDG_DATA_DIRS", "rel"}}), Platform::Linux) == (V{"/usr/local/share/dussek", "/usr/share/dussek"}));
 }
 

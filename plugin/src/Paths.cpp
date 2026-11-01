@@ -189,12 +189,17 @@ std::vector<std::string> systemDataDirs(const std::function<const char*(const ch
         size_t start = 0;
         while (start <= list.size()) {
             const size_t end = std::min(list.find(':', start), list.size());
-            if (const std::string entry = list.substr(start, end - start); !entry.empty() && entry[0] == '/')
+            std::string entry = list.substr(start, end - start);
+            while (entry.size() > 1 && entry.back() == '/')
+                entry.pop_back();
+            if (!entry.empty() && entry[0] == '/')
                 dirs.push_back(entry + "/dussek");
             start = end + 1;
         }
-        if (dirs.empty())
-            dirs = { "/usr/local/share/dussek", "/usr/share/dussek" };
+        // install.sh --system's folder and the distribution's, when the list leaves them out
+        for (const char* fallback : { "/usr/local/share/dussek", "/usr/share/dussek" })
+            if (std::find(dirs.begin(), dirs.end(), fallback) == dirs.end())
+                dirs.push_back(fallback);
         break;
     }
     }
