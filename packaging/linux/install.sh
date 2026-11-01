@@ -21,6 +21,15 @@ fi
 data=$share/dussek
 manifest=$data/installed.txt
 
+# `just install` links these to a clone (its instruments, its builds): writing through the links would
+# change the clone, so a release install waits until they are gone (`just uninstall`)
+for t in "$data/instruments" "$bin/dussek" "$lv2/dussek.lv2" "$clap/dussek.clap" "$vst3/dussek.vst3"; do
+    if [ -L "$t" ]; then
+        echo "install.sh: $t is a link (from \`just install\`?); remove the links first (\`just uninstall\`)" >&2
+        exit 1
+    fi
+done
+
 # the previous install's files (an update): removed first, so nothing it shipped lingers
 if [ -f "$manifest" ]; then
     while IFS= read -r path; do
@@ -31,7 +40,8 @@ fi
 
 mkdir -p "$bin" "$lv2" "$clap" "$vst3" "$data/instruments" "$share/applications" "$share/icons/hicolor/256x256/apps"
 new=$(mktemp)
-put() { # copy $1 to $2, list $2
+put() { # copy $1 to $2 (replacing what is there: a test build's bundle copied by hand), list $2
+    rm -rf "$2"
     cp -R "$1" "$2"
     echo "$2" >> "$new"
 }
@@ -41,7 +51,6 @@ put "$here/dussek.clap" "$clap/dussek.clap"
 put "$here/dussek.vst3" "$vst3/dussek.vst3"
 for dir in "$here"/instruments/*/; do
     id=$(basename "$dir")
-    rm -rf "${data:?}/instruments/$id" # an older copy of a shipped instrument
     put "${dir%/}" "$data/instruments/$id"
 done
 [ -f "$here/instruments/aliases.txt" ] && put "$here/instruments/aliases.txt" "$data/instruments/aliases.txt"

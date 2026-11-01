@@ -13,7 +13,26 @@ unset DUSSEK_INSTRUMENTS
 data="$XDG_DATA_HOME/dussek"
 fail() { echo "check-install: $*" >&2; exit 1; }
 
+# `just install`'s links (a clone's instruments and builds): refused, nothing written through them
+clone="$tmp/clone"
+mkdir -p "$clone/instruments/harp" "$clone/dussek.lv2" "$data" "$HOME/.lv2"
+echo kept > "$clone/instruments/harp/marker"
+echo kept > "$clone/dussek.lv2/marker"
+ln -s "$clone/instruments" "$data/instruments"
+ln -s "$clone/dussek.lv2" "$HOME/.lv2/dussek.lv2"
+"$dist/install.sh" 2>/dev/null && fail "install.sh wrote through just install's links"
+[ -f "$clone/instruments/harp/marker" ] && [ -f "$clone/dussek.lv2/marker" ] || fail "install.sh changed the linked clone"
+rm "$data/instruments" "$HOME/.lv2/dussek.lv2"
+
+# a test build's bundles copied by hand (no manifest): replaced, not nested
+mkdir -p "$HOME/.lv2/dussek.lv2" "$HOME/.vst3/dussek.vst3"
+echo old > "$HOME/.lv2/dussek.lv2/old"
+echo old > "$HOME/.vst3/dussek.vst3/old"
+
 "$dist/install.sh"
+for b in "$HOME/.lv2/dussek.lv2" "$HOME/.vst3/dussek.vst3"; do
+    [ ! -e "$b/old" ] && [ ! -e "$b/$(basename "$b")" ] || fail "an old bundle kept or nested: $b"
+done
 # a previous version's instrument, removed since: listed as installed, present on disk
 mkdir -p "$data/instruments/stale"
 cp "$data/instruments/harp/instrument.json" "$data/instruments/harp/data.bin" "$data/instruments/stale/"
