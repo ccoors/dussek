@@ -206,6 +206,7 @@ jobs:
         with:
           path: assets
           merge-multiple: true
+          skip-decompress: true   # the Windows portable archive is a zip itself: kept, not unpacked
       - name: The five files the release text names, and nothing else
         env:
           VERSION: ${{ needs.version.outputs.version }}
