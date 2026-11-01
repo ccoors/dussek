@@ -5,7 +5,8 @@ set -eu
 if [ "${1:-}" = "--system" ]; then
     data=/usr/local/share/dussek
 elif [ -z "${1:-}" ]; then
-    data=${XDG_DATA_HOME:-$HOME/.local/share}/dussek
+    # the XDG spec: a relative XDG_DATA_HOME is invalid and ignored
+    case "${XDG_DATA_HOME:-}" in /*) data=$XDG_DATA_HOME/dussek ;; *) data=$HOME/.local/share/dussek ;; esac
 else
     echo "usage: uninstall.sh [--system]" >&2
     exit 2

@@ -45,7 +45,8 @@ merged, then `git tag -a v<version>` pushed. `.github/workflows/release.yml` bui
 installs its installer on the runner and checks it, publishes the release with the changelog's
 section and starts the website's workflow, which renders the site again for the new release; a tag
 that is not the code's version, or has no section, publishes nothing. Run by hand from the Actions
-tab with a version, it builds the installers to try without publishing.
+tab with a version, it builds the installers to try without publishing. Changes collect under
+"Unreleased" in the changelog; a release renames it to its version and date.
 
 ## Sound changes
 

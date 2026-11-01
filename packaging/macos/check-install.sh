@@ -27,9 +27,9 @@ for f in /Applications/Dussek.app "$plugins/CLAP/dussek.clap" "$plugins/VST3/dus
     codesign -v "$f" || fail "no valid signature: $f"
 done
 list=$(/Applications/Dussek.app/Contents/MacOS/dussek list) || fail "dussek list found no instruments"
-shipped=$(find "$dist/instruments" -mindepth 1 -maxdepth 1 -type d | wc -l)
+missing=$(printf '%s\n' "$list" | "$(dirname "$0")/../unlisted.sh" "$dist/instruments")
+[ -z "$missing" ] || fail "shipped but not listed: $(echo $missing)"
 listed=$(printf '%s\n' "$list" | grep -vc '^#' || true)
-[ "$listed" -ge "$((shipped - 1))" ] || fail "$listed instruments listed, $shipped shipped"
 printf '%s\n' "$list" | grep -q "^stale	" && fail "a removed instrument stayed"
 printf '%s\n' "$list" | grep -q "^harp	.*/Library/Application Support/Dussek/" || fail "the instruments do not come from /Library"
 echo "check-install: ok ($listed instruments listed)"

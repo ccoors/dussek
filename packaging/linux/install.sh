@@ -2,8 +2,9 @@
 # Dussek on Linux: the standalone, the LV2, CLAP and VST3 plugins and the instruments.
 #   ./install.sh            for you: ~/.lv2, ~/.clap, ~/.vst3, ~/.local/bin, ~/.local/share
 #   sudo ./install.sh --system   for every user, under /usr/local (CLAP: /usr/lib/clap)
-# Run again to update. What it installed is listed in installed.txt beside the instruments, so an
-# update and ./uninstall.sh remove that and nothing else (your presets and own instruments stay).
+# Run again to update. What it installed is listed in installed.txt beside the instruments (each
+# path before its copy: a failed install leaves nothing unlisted), so an update and ./uninstall.sh
+# remove that and nothing else (your presets and own instruments stay).
 set -eu
 here=$(cd "$(dirname "$0")" && pwd)
 if [ "${1:-}" = "--system" ]; then
@@ -12,7 +13,9 @@ if [ "${1:-}" = "--system" ]; then
     # the CLAP spec's system folder is /usr/lib/clap (hosts do not look under /usr/local)
     lv2=$lib/lv2 clap=/usr/lib/clap vst3=$lib/vst3
 elif [ -z "${1:-}" ]; then
-    bin=$HOME/.local/bin share=${XDG_DATA_HOME:-$HOME/.local/share}
+    # the XDG spec: a relative XDG_DATA_HOME is invalid and ignored
+    case "${XDG_DATA_HOME:-}" in /*) share=$XDG_DATA_HOME ;; *) share=$HOME/.local/share ;; esac
+    bin=$HOME/.local/bin
     lv2=$HOME/.lv2 clap=$HOME/.clap vst3=$HOME/.vst3
 else
     echo "usage: install.sh [--system]" >&2
@@ -35,15 +38,15 @@ if [ -f "$manifest" ]; then
     while IFS= read -r path; do
         [ -n "$path" ] && rm -rf "$path"
     done < "$manifest"
-    rm -f "$manifest"
 fi
 
 mkdir -p "$bin" "$lv2" "$clap" "$vst3" "$data/instruments" "$share/applications" "$share/icons/hicolor/256x256/apps"
-new=$(mktemp)
-put() { # copy $1 to $2 (replacing what is there: a test build's bundle copied by hand), list $2
+: > "$manifest"
+chmod 644 "$manifest"
+put() { # list $2, then copy $1 to $2 (replacing what is there: a test build's bundle copied by hand)
+    echo "$2" >> "$manifest"
     rm -rf "$2"
     cp -R "$1" "$2"
-    echo "$2" >> "$new"
 }
 put "$here/dussek" "$bin/dussek"
 put "$here/dussek.lv2" "$lv2/dussek.lv2"
@@ -54,11 +57,9 @@ for dir in "$here"/instruments/*/; do
     put "${dir%/}" "$data/instruments/$id"
 done
 [ -f "$here/instruments/aliases.txt" ] && put "$here/instruments/aliases.txt" "$data/instruments/aliases.txt"
+echo "$share/applications/dussek.desktop" >> "$manifest"
 sed "s|^Exec=.*|Exec=$bin/dussek|" "$here/dussek.desktop" > "$share/applications/dussek.desktop"
-echo "$share/applications/dussek.desktop" >> "$new"
 put "$here/dussek.png" "$share/icons/hicolor/256x256/apps/dussek.png"
-mv "$new" "$manifest"
-chmod 644 "$manifest"
 
 echo "Dussek installed: $bin/dussek, the plugins in $lv2, $clap, $vst3, the instruments in $data/instruments."
 case ":$PATH:" in *":$bin:"*) ;; *) echo "($bin is not on your PATH: start it from the menu or as $bin/dussek)";; esac

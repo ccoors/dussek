@@ -2,8 +2,8 @@
 # The Windows installer, checked on a runner (MSYS2 bash, as administrator):
 #   packaging/windows/check-install.sh dist/dussek-<version>-windows-setup.exe <portable folder>
 # Plugins only first (the instruments come regardless), then everything over a version that left an
-# instrument behind; the standalone lists the instruments; the uninstaller removes the program and
-# keeps the player's own files.
+# instrument behind; the standalone lists the instruments; an update without the standalone removes it
+# and its Start menu entry; the uninstaller removes the program and keeps the player's own files.
 set -eu
 export MSYS2_ARG_CONV_EXCL="*"   # /VERYSILENT and the like are options, not paths to convert
 setup=${1:?usage: check-install.sh <setup.exe> <portable folder>}
@@ -33,15 +33,21 @@ run /COMPONENTS="standalone,lv2,clap,vst3"
 [ -e "$cf/VST3/dussek.vst3" ] && [ -e "$pf/Dussek/dussek.exe" ] || fail "VST3 or the standalone missing"
 
 list=$("$pf/Dussek/dussek.exe" list) || fail "dussek list found no instruments"
-shipped=$(find "$dist/instruments" -mindepth 1 -maxdepth 1 -type d | wc -l)
+missing=$(printf '%s\n' "$list" | "$(dirname "$0")/../unlisted.sh" "$dist/instruments")
+[ -z "$missing" ] || fail "shipped but not listed: $(echo $missing)"
 listed=$(printf '%s\n' "$list" | grep -vc '^#' || true)
-[ "$listed" -ge "$((shipped - 1))" ] || fail "$listed instruments listed, $shipped shipped"
 printf '%s\n' "$list" | grep -q "^stale	" && fail "a removed instrument stayed"
 printf '%s\n' "$list" | grep -q "^harp	.*ProgramData" || fail "the instruments do not come from ProgramData"
 
-# the uninstaller hands over to a copy of itself and returns: wait for the program folder to go
+# an update that leaves the standalone out removes it and its Start menu entry
+menu="$pd/Microsoft/Windows/Start Menu/Programs/Dussek.lnk"
+[ -e "$menu" ] || fail "no Start menu entry: $menu"
+run /COMPONENTS="lv2,clap,vst3"
+[ ! -e "$menu" ] && [ ! -e "$pf/Dussek/dussek.exe" ] || fail "the standalone or its Start menu entry stayed"
+
+# the uninstaller hands over to a copy of itself and returns: wait for it to remove itself
 "$pf/Dussek/unins000.exe" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
-for _ in $(seq 60); do [ -e "$pf/Dussek/dussek.exe" ] || break; sleep 1; done
+for _ in $(seq 60); do [ -e "$pf/Dussek/unins000.exe" ] || break; sleep 1; done
 for f in "$pf/Dussek/dussek.exe" "$cf/LV2/dussek.lv2" "$cf/CLAP/dussek.clap" "$cf/VST3/dussek.vst3" "$pd/Dussek/instruments"; do
     [ ! -e "$f" ] || fail "left after uninstall: $f"
 done

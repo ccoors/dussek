@@ -22,6 +22,8 @@ AppPublisher=Christian Friedrich Coors
 AppPublisherURL=https://github.com/ccoors/dussek
 AppSupportURL=https://github.com/ccoors/dussek/issues
 DefaultDirName={autopf}\Dussek
+; fixed: a plugin's Copy CLI looks for the standalone there (pe::installedProgramDirs)
+DisableDirPage=yes
 DefaultGroupName=Dussek
 DisableProgramGroupPage=yes
 PrivilegesRequired=admin
@@ -57,6 +59,8 @@ Type: filesandordirs; Name: "{commoncf64}\LV2\dussek.lv2"
 Type: filesandordirs; Name: "{commoncf64}\VST3\dussek.vst3"
 Type: files; Name: "{commoncf64}\CLAP\dussek.clap"
 Type: files; Name: "{app}\dussek.exe"
+; the Start menu entry, gone with the standalone when an update leaves it out
+Type: files; Name: "{autoprograms}\Dussek.lnk"
 
 [Files]
 Source: "{#Source}\dussek.exe"; DestDir: "{app}"; Components: standalone; Flags: ignoreversion

@@ -3,6 +3,17 @@
 What each release changes for a player. From 1.0 on a break needs a major version; before it, a
 break is allowed but listed under "Breaking" (`docs/compatibility.md`).
 
+## Unreleased
+
+### Fixed
+
+- Linux: instruments installed with `install.sh --system` are found when `$XDG_DATA_DIRS`
+  leaves out `/usr/local/share` (NixOS, some desktops).
+- Linux: a failed `install.sh` lists what it copied, so `uninstall.sh` or the next install removes
+  it; a relative `$XDG_DATA_HOME` is ignored, as the XDG spec says.
+- Windows: the installer keeps Dussek in its fixed folder (a plugin's Copy CLI looks for the
+  standalone there) and removes the Start menu entry when an update leaves the standalone out.
+
 ## 0.3.0 — 2026-11-01
 
 The first release.

@@ -54,8 +54,9 @@ The plugin lists every instrument directory it finds in these paths:
 3. the standalone's own folder's `instruments` (an unpacked archive plays without installing; on
    macOS the folder holding `Dussek.app`), only when the running program is the standalone;
 4. the system folder's `instruments`, where an installer puts them for every user: on Linux
-   `/usr/local/share/dussek` and `/usr/share/dussek` (`$XDG_DATA_DIRS` replaces the two), on
-   macOS `/Library/Application Support/Dussek`, on Windows `%PROGRAMDATA%\Dussek`;
+   each entry of `$XDG_DATA_DIRS` + `/dussek`, then `/usr/local/share/dussek` and
+   `/usr/share/dussek` where the list leaves them out, on macOS
+   `/Library/Application Support/Dussek`, on Windows `%PROGRAMDATA%\Dussek`;
 5. `~/.local/share/dussek/instruments` (`just install` links `instruments/` there;
    `$XDG_DATA_HOME` replaces `~/.local/share`);
 6. `~/.local/share/dussek/snapshots`: instruments from a git ref (`just snapshot <ref>`), in
@@ -63,7 +64,8 @@ The plugin lists every instrument directory it finds in these paths:
 
 A name found in an earlier path hides the same name in the later ones: an installed instrument
 hides an old copy of it in the user folder (from a test build); the instruments you add keep
-names of their own.
+names of their own. Put them in the user folder, not the system folder: the Windows and macOS
+installers empty the system folder's `instruments` on every update.
 `dussek list` (the standalone) prints what it finds: a line per instrument (its name, menu
 group and entry, folder), then the hidden copies; it exits with 1 when it finds none.
 
