@@ -38,7 +38,7 @@ tab() { # the tab bar's labels' centers at 1x
 key() { click "$(($1 * 31 / 2 + 7))" 616 0.12; } # white key n (0: A0), on the strip's lower half
 
 start() { # <instrument folder>: the standalone with only it, settings of its own
-    local inst=$1 old=${win:-}
+    local inst=$1
     if [ -n "${app:-}" ]; then kill "$app" 2>/dev/null || true; wait "$app" 2>/dev/null || true; fi
     rm -rf "$tmp/run" && mkdir -p "$tmp/run/cfg" "$tmp/run/data" "$tmp/run/sys" "$tmp/run/inst"
     ln -s "$repo/instruments/$inst" "$tmp/run/inst/$inst"
@@ -49,8 +49,9 @@ start() { # <instrument folder>: the standalone with only it, settings of its ow
     app=$!
     pids+=("$app")
     win=
-    for _ in $(seq 100); do
-        win=$(DISPLAY=$display xdotool search --pid "$app" --name '^Dussek$' 2>/dev/null | grep -vx "$old" | head -n 1 || true)
+    # the previous one waited for above: its window is gone (X may hand its id to this one)
+    for _ in $(seq 200); do
+        win=$(DISPLAY=$display xdotool search --pid "$app" --name '^Dussek$' 2>/dev/null | head -n 1 || true)
         [ -n "$win" ] && break
         sleep 0.1
     done
