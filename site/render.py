@@ -127,8 +127,9 @@ def measure(wav):
     return lufs, peak
 
 
-def render_step(c, s, wav, tmp):
-    """One step into `wav` (48 kHz), cut to start just before its first note and to `seconds`."""
+def render_step(c, s, wav, tmp, frame=None):
+    """One step into `wav` (48 kHz), cut to start just before its first note and to `seconds`; with
+    `frame`, also a still of its Visualization there (a demo's card picture)."""
     raw = wav + ".raw.wav"
     if "source" in s:
         ff("-i", os.path.join(REPO, s["source"]), "-ar", "48000", raw)
@@ -148,9 +149,17 @@ def render_step(c, s, wav, tmp):
             sound = os.path.join(tmp, f"{c['id']}-input.wav")
             ff("-i", os.path.join(REPO, s["input"]), sound)
             cmd += ["--input", sound]
+        video = os.path.join(tmp, f"{c['id']}.mp4")
+        if frame:
+            cmd += ["--video", video, "--size", "960x720", "--fps", "30"]
         subprocess.run(cmd, check=True, capture_output=True)
         _, first = notes_of(midi)
         start = max(0.0, first - LEAD_S) if first is not None else 0.0
+        if frame:
+            length = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", raw],
+                                          capture_output=True, text=True, check=True).stdout)
+            at = start + 0.45 * (min(length, start + c.get("seconds", length)) - start)
+            ff("-ss", f"{at:.2f}", "-i", video, "-frames:v", "1", "-q:v", "3", frame)
     cut = ["-ss", f"{start:.3f}"]
     if "seconds" in c:
         fade = 1.0
@@ -163,8 +172,12 @@ def render_clip(c, out_dir, tmp):
     """The clip's steps rendered, matched and encoded: its entry for clips.json."""
     steps = steps_of(c)
     wavs = [os.path.join(tmp, f"{c['id']}-{i}.wav") for i in range(len(steps))]
-    for s, w in zip(steps, wavs):
-        render_step(c, s, w, tmp)
+    frame = None
+    if c["section"] == "demo":
+        os.makedirs(os.path.join(os.path.dirname(out_dir), "frames"), exist_ok=True)
+        frame = os.path.join(os.path.dirname(out_dir), "frames", f"{c['id']}.jpg")
+    for i, (s, w) in enumerate(zip(steps, wavs)):
+        render_step(c, s, w, tmp, frame if i == 0 else None)
     levels = [measure(w) for w in wavs]
     if c.get("match", "together") == "each":
         gains = [LUFS - lufs for lufs, _ in levels]
@@ -180,8 +193,13 @@ def render_clip(c, out_dir, tmp):
         files.append({"label": s["label"], "file": f"audio/{name}"})
     name = value(c, steps[0], "instrument") if "source" not in steps[0] else c.get("instrument")
     menu = instrument(name).get("menu", {}) if name else {}
-    return {"id": c["id"], "section": c["section"], "title": c["title"], "instrument": menu.get("name", name),
-            "group": menu.get("group"), "listen": c.get("listen", ""), "license": c.get("license", "cc0"), "steps": files}
+    entry = {"id": c["id"], "section": c["section"], "title": c["title"], "instrument": menu.get("name", name),
+             "group": menu.get("group"), "listen": c.get("listen", ""), "license": c.get("license", "cc0"), "steps": files}
+    if frame:
+        entry["frame"] = f"frames/{c['id']}.jpg"
+    if "short" in c:
+        entry["short"] = c["short"]
+    return entry
 
 
 def group_members():

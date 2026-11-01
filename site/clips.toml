@@ -4,7 +4,8 @@
 # instruments/), `midi` (a phrase of site/midi by name, or a path from the repository's root);
 # optional: `set` (plugin controls by symbol, in their own units: what the plugin plays, through
 # its Copy CLI line), `tail` (seconds after the last event, default 4), `seconds` (cut after so
-# many, faded), `listen` (what to listen for), `license` (shown with the clip; default CC0).
+# many, faded), `listen` (what to listen for), `license` (shown with the clip; default CC0), `short`
+# (a shorter name where space is tight).
 # A feature lists `steps`, each a variant of the clip (`label`, and any of `instrument`, `midi`,
 # `set`, `morph`, `input` a sound into the audio input, `source` a sound file played as it is);
 # `match`: "together" (one gain for all steps: their differences in level stay) or "each" (every
@@ -111,6 +112,7 @@ midi = "albums/demos/midi/04-ferry-montuno.mid"
 id = "scarlatti"
 section = "performance"
 title = "Scarlatti: Sonata in D minor, K. 9"
+short = "Scarlatti's K. 9"
 instrument = "grand_c"
 midi = "site/midi/maestro/scarlatti-k9.mid"
 license = "maestro"
@@ -119,6 +121,7 @@ license = "maestro"
 id = "bach"
 section = "performance"
 title = "Bach: Prelude and Fugue in C-sharp major, BWV 848"
+short = "Bach's BWV 848"
 instrument = "grand_b"
 midi = "site/midi/maestro/bach-bwv848.mid"
 license = "maestro"
@@ -127,6 +130,7 @@ license = "maestro"
 id = "schubert"
 section = "performance"
 title = "Schubert: Impromptu in G-flat major, Op. 90 No. 3"
+short = "Schubert's Op. 90 No. 3"
 instrument = "grand_a"
 midi = "site/midi/maestro/schubert-op90-3.mid"
 license = "maestro"
