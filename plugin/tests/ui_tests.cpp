@@ -6251,6 +6251,10 @@ TEST(settings_line_is_copy_cli_for_named_controls)
     const std::string worn = pe::settingsLine("/i/grand_a", { { "condition", 35.0f } }, error);
     CHECK(error.empty() && worn != pe::settingsLine("/i/grand_a", {}, error));
     CHECK(pe::settingsLine("/i/grand_a", { { "nonesuch", 1.0f } }, error).empty() && error.find("nonesuch") != std::string::npos);
+    // a value outside the control's range (or not a number) is refused too, naming the control
+    CHECK(pe::settingsLine("/i/grand_a", { { "condition", 1000.0f } }, error).empty() && error.find("condition") != std::string::npos);
+    CHECK(pe::settingsLine("/i/grand_a", { { "condition", INFINITY } }, error).empty() && error.find("condition") != std::string::npos);
+    CHECK(pe::settingsLine("/i/grand_a", { { "condition", NAN } }, error).empty() && error.find("condition") != std::string::npos);
 }
 
 TEST(copy_cli_finds_the_standalone)

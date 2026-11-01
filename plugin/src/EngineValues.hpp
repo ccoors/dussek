@@ -63,7 +63,8 @@ std::string midi2wavLine(const float* values, const std::string& dir, double rat
 
 /// Copy CLI's line for the plugin's defaults with the controls named by symbol set to the given
 /// values (in the controls' own units: dB, %, …), as `dussek render`'s options; empty, with `error`
-/// naming it, for an unknown symbol. The website's clips (site/render.py) name their settings so.
+/// naming it, for an unknown symbol or a value outside the control's range. The website's clips
+/// (site/render.py) name their settings so.
 std::string settingsLine(const std::string& dir, const std::vector<std::pair<std::string, float>>& settings, std::string& error);
 
 } // namespace pe

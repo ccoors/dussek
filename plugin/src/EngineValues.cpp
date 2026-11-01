@@ -280,6 +280,13 @@ std::string settingsLine(const std::string& dir, const std::vector<std::pair<std
             error = "no control named " + symbol;
             return std::string();
         }
+        const ParamInfo& p = paramInfo(i);
+        if (!std::isfinite(value) || value < p.min || value > p.max) {
+            char range[64];
+            std::snprintf(range, sizeof(range), "%g … %g", p.min, p.max);
+            error = symbol + " = " + std::to_string(value) + " is outside " + range;
+            return std::string();
+        }
         v[i] = value;
     }
     return midi2wavLine(v.data(), dir, 48000);
