@@ -7,10 +7,12 @@
 set -eu
 setup=${1:?usage: check-install.sh <setup.exe> <portable folder>}
 dist=${2:?usage: check-install.sh <setup.exe> <portable folder>}
-pf=$(cygpath -u "$PROGRAMFILES")
-cf=$(cygpath -u "$COMMONPROGRAMFILES")
-pd=$(cygpath -u "$PROGRAMDATA")
-ad=$(cygpath -u "$APPDATA")
+# MSYS2 keeps some variables in their Windows spelling (ProgramData); Windows' getenv ignores case
+var() { printenv "$1" || printenv "$2" || { echo "check-install: $1 unset" >&2; exit 1; }; }
+pf=$(cygpath -u "$(var PROGRAMFILES ProgramFiles)")
+cf=$(cygpath -u "$(var COMMONPROGRAMFILES CommonProgramFiles)")
+pd=$(cygpath -u "$(var PROGRAMDATA ProgramData)")
+ad=$(cygpath -u "$(var APPDATA AppData)")
 fail() { echo "check-install: $*" >&2; exit 1; }
 run() { "$setup" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART "$@" || fail "the installer failed ($*)"; }
 
