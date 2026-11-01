@@ -25,9 +25,10 @@ struct InstrumentEntry {
 /// The instruments found, in menu order (hidden ones kept, for a session that names one).
 class Catalog {
 public:
-    /// the search paths, in precedence order: $DUSSEK_INSTRUMENTS, <resources>/instruments,
-    /// the user data folder's instruments (pe::dataDirs: ~/.local/share/dussek/instruments on
-    /// Linux), then its snapshots folder (proto/snapshot.py); unset ones left out
+    /// the search paths, in precedence order: $DUSSEK_INSTRUMENTS, <resources>/instruments, the
+    /// system folders' instruments (pe::systemDataDirs: an installer's), the user data folder's
+    /// instruments (pe::dataDirs: ~/.local/share/dussek/instruments on Linux), then its snapshots
+    /// folder (proto/snapshot.py); unset ones left out
     static std::vector<std::string> searchPaths(const char* resources);
     /// every subdirectory with an instrument.json (that the engine's report accepts) and a data.bin
     /// (present); an id seen in an earlier path shadows later ones; rejected files are left out
@@ -78,5 +79,9 @@ struct Choice {
 };
 /// the state's value as a choice: empty → the catalog's first; an id not found stays, entry nullptr
 Choice choose(const Catalog& c, const std::string& state);
+
+/// `dussek list`: a line per instrument in the menu's order, "<id>\t<group>\t<name>\t<folder>\n",
+/// then the scan's messages as "# <message>\n"; empty without instruments and messages
+std::string listingText(const Catalog& c);
 
 } // namespace pe

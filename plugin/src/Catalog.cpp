@@ -267,4 +267,14 @@ Choice choose(const Catalog& c, const std::string& state)
     return { state, c.find(state) };
 }
 
+std::string listingText(const Catalog& c)
+{
+    std::string out;
+    for (const InstrumentEntry* e : c.menu())
+        out += e->id + "\t" + e->group + "\t" + e->name + "\t" + e->dir + "\n";
+    for (const std::string& m : c.messages())
+        out += "# " + m + "\n";
+    return out;
+}
+
 } // namespace pe

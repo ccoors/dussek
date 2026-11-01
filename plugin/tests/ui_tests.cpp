@@ -6029,6 +6029,28 @@ TEST(a_preset_rows_menu_offers_save_and_deletes_only_the_users)
     CHECK(pe::presetLabel(offered, 1) == "Mine" && pe::presetLabel(offered, -1) == "None");
 }
 
+TEST(listing_text_names_each_instrument_once)
+{
+    // `dussek list`: one line per instrument in the menu's order (id, group, name, folder), then the
+    // catalog's messages; a shadowed copy only as a message
+    TempTree t;
+    t.add("a", "harp", "harp", R"({"name": "Harp A", "group": "Harps"})");
+    t.add("a", "grand", "grand_a", R"({"name": "Grand A", "group": "Grand pianos"})");
+    t.add("b", "harp", "harp", R"({"name": "Harp A, old", "group": "Harps"})");
+    const Catalog c = Catalog::scan({ t.path("a"), t.path("b") });
+    const std::string text = listingText(c);
+    std::vector<std::string> lines;
+    for (size_t at = 0, end; at < text.size(); at = end + 1) {
+        end = std::min(text.find('\n', at), text.size());
+        lines.push_back(text.substr(at, end - at));
+    }
+    CHECK(lines.size() == 3);
+    CHECK(lines.size() == 3 && lines[0] == "grand\tGrand pianos\tGrand A\t" + t.path("a") + "/grand");
+    CHECK(lines.size() == 3 && lines[1] == "harp\tHarps\tHarp A\t" + t.path("a") + "/harp");
+    CHECK(lines.size() == 3 && lines[2].rfind("# ", 0) == 0 && lines[2].find(t.path("b")) != std::string::npos);
+    CHECK(listingText(Catalog::scan({ t.path("none") })).empty());
+}
+
 TEST(system_data_dirs_per_platform)
 {
     // the folders an installer fills (the instruments, once), from an environment and a platform

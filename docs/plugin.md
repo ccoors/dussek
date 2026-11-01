@@ -62,6 +62,8 @@ The plugin lists every instrument directory it finds in these paths:
 A name found in an earlier path hides the same name in the later ones: an installed instrument
 hides an old copy of it in the user folder (from a test build); the instruments you add keep
 names of their own.
+`dussek list` (the standalone) prints what it finds: a line per instrument (its name, menu
+group and entry, folder), then the hidden copies; it exits with 1 when it finds none.
 
 The user folder (`~/.local/share/dussek` above, with the presets beside the instruments)
 is the platform's own: on Linux `$XDG_DATA_HOME/dussek`, else `~/.local/share/dussek`
