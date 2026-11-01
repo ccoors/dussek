@@ -44,7 +44,7 @@ start() { # <instrument folder>: the standalone with only it, settings of its ow
     ln -s "$repo/instruments/$inst" "$tmp/run/inst/$inst"
     DISPLAY=$display DPF_SCALE_FACTOR=$scale WAYLAND_DISPLAY='' \
         XDG_CONFIG_HOME=$tmp/run/cfg XDG_DATA_HOME=$tmp/run/data XDG_DATA_DIRS=$tmp/run/sys \
-        DUSSEK_INSTRUMENTS=$tmp/run/inst PIPEWIRE_PROPS='{ node.autoconnect = false }' \
+        DUSSEK_INSTRUMENTS=$tmp/run/inst PIPEWIRE_PROPS='{ node.autoconnect = false }' DUSSEK_AUTOCONNECT=0 \
         "$bin" >"$tmp/run/log" 2>&1 &
     app=$!
     pids+=("$app")

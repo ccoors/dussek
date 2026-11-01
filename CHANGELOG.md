@@ -23,6 +23,8 @@ break is allowed but listed under "Breaking" (`docs/compatibility.md`).
 - Linux: the standalone links its outputs to the default output when nothing else does, so it
   plays when started on its own under PipeWire (it was silent there); `DUSSEK_AUTOCONNECT=0` turns
   this off.
+- The microphone drawings keep clear of their captions ("from above" ran into the left microphone
+  with a bottom panel open; the floor line crossed "from the front").
 - Grand H: no hiss in its room (its room rang 1.4 s from 1.6 kHz up: the strings in its recording's
   gaps read as a room).
 - Linux: instruments installed with `install.sh --system` are found when `$XDG_DATA_DIRS`

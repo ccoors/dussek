@@ -1068,6 +1068,33 @@ TEST(view_round_trip_and_fit)
     CHECK(f.toScreen(0, 1).y < f.toScreen(0, 0).y);
 }
 
+TEST(the_drawing_keeps_clear_of_the_views_caption)
+{
+    // the caption ("from above") stands at the view's foot: no microphone, its letter (10 px beside
+    // it) or the floor line in its band, for every body and position (the grand's player pair sat on
+    // it in the website's screenshot)
+    const Rect r { 10, 20, 500, 215 };
+    for (uint32_t body = 0; body < 18; ++body)
+        for (uint32_t pos = 1; pos <= 4; ++pos)
+            for (double spacing : { 0.2, 0.5, 2.0 }) {
+                PeMicGeometry g {};
+                if (!pe_mic_geometry(body, pos, spacing, 0.0, 1.0, nullptr, &g))
+                    continue;
+                for (View v : { kTop, kFront }) {
+                    const ViewTransform t = fitView(g, v, r);
+                    const float band = r.y + r.h - kCaptionBand;
+                    for (int i = 0; g.has_pair && i < 2; ++i) {
+                        double a, b;
+                        viewAB(g, v, g.mics[i], a, b);
+                        const Point2 m = t.toScreen(a, b);
+                        CHECK(m.y + 7 <= band);
+                    }
+                    if (v == kFront)
+                        CHECK(t.toScreen(0, g.floor_z).y <= band);
+                }
+            }
+}
+
 TEST(drag_player_distance_and_spacing)
 {
     const PeMicGeometry g = geom(0, 1, 0.5, 0.0); // grand player: distance along −y, spread along x

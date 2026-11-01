@@ -57,10 +57,12 @@ ViewTransform fitView(const PeMicGeometry& g, View v, const Rect& r)
     // both views upwards on the screen: from the front z, from above y (the back; the
     // front faces the viewer at the bottom), so +x (treble) is right in both, unmirrored
     t.flip = true;
-    t.scale = (float)std::max(1e-3, std::min(r.w / wa, r.h / wb) * 0.84);
+    // above the caption's band at the foot (the microphones and the floor off its text)
+    const float h = std::max(r.h - kCaptionBand, 1.0f);
+    t.scale = (float)std::max(1e-3, std::min(r.w / wa, h / wb) * 0.84);
     const double ca = (box.a0 + box.a1) / 2, cb = (box.b0 + box.b1) / 2;
     t.ox = (float)(r.x + r.w / 2 - ca * t.scale);
-    t.oy = (float)(t.flip ? r.y + r.h / 2 + cb * t.scale : r.y + r.h / 2 - cb * t.scale);
+    t.oy = (float)(t.flip ? r.y + h / 2 + cb * t.scale : r.y + h / 2 - cb * t.scale);
     return t;
 }
 

@@ -19,7 +19,9 @@ inline void viewAB(const PeMicGeometry& g, View v, const double p[3], double& a,
 /// (from the side, the harp: a = y)
 struct ViewTransform { float scale = 1, ox = 0, oy = 0; bool flip = false;
     Point2 toScreen(double a, double b) const; void toWorld(Point2 s, double& a, double& b) const; };
-ViewTransform fitView(const PeMicGeometry& g, View v, const Rect& r);  // whole drawing, aspect kept, centered, 8 % margin
+/// the band at a view's foot its caption stands in (MicView: the small font, 4 px from the edge), kept clear of the drawing
+constexpr float kCaptionBand = 18;
+ViewTransform fitView(const PeMicGeometry& g, View v, const Rect& r);  // whole drawing, aspect kept, centered above the caption's band, 8 % margin
 int hitMic(const PeMicGeometry& g, const ViewTransform& t, View v, Point2 p, float radius);    // 0/1, −1 none (and at Recording)
 int hitMarker(const PeMicGeometry& g, const ViewTransform& t, Point2 p, float radius, uint32_t current); // 1…4, 0 none (top view); never the current position (not drawn)
 struct DragValues { float distance; float spacingCm; };

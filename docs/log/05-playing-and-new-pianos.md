@@ -3691,3 +3691,15 @@ server it does nothing. `DUSSEK_AUTOCONNECT=0` turns it off; `run-standalone.sh`
 the default sink by name). Checked under PipeWire 1.6.10: linked to the default sink's FL and FR,
 unlinked with the variable.
 
+<a id="step-228"></a>
+## 228. The microphone drawings above their captions
+
+With a bottom panel open (the website's screenshot), the Mics view's "from above" ran into the
+left microphone, and the floor line crossed "from the front": `fitView` centered the drawing in the
+whole view, 8 % margin, and the caption stands in its foot. It now fits above `kCaptionBand` (18 px:
+the small font 4 px from the edge); `ui_tests` checks every body, position and spacing (the
+microphones with their letters and the floor line clear of the band; 313 checks failed before).
+Looked at on the website's screenshots and on Upright D, Harp A, the kalimba, the guitar, the psaltery
+and the tongue drum: nothing else ran into anything (the harp's side view shows its pair edge on, its
+R beside the neck).
+

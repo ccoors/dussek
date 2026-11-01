@@ -73,7 +73,8 @@ The engine's tests use the committed instruments; a test without its data return
   mtimes skip the rebuild and an A/B check runs the wrong binary. Never stash while a cargo run
   is going in the background.
 - The UI's drawing has no unit tests. To look at it without a display:
-  `Xvfb :97 -screen 0 1600x1000x24 &`, run `plugin/build/bin/dussek` with `DISPLAY=:97`,
+  `Xvfb :97 -screen 0 1600x1000x24 &`, run `plugin/build/bin/dussek` with `DISPLAY=:97` and
+  `DUSSEK_AUTOCONNECT=0` (else it links itself to the speakers),
   drive it with `xdotool`, capture with `import -window root`. Under PipeWire the standalone
   runs with `just standalone` (`plugin/tools/run-standalone.sh`: `pw-jack`, the outputs linked to the
   default sink, an ALSA MIDI port). The editor the same way
