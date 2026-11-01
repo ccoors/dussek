@@ -15,9 +15,16 @@ break is allowed but listed under "Breaking" (`docs/compatibility.md`).
 - Upright D: its own key release noise, from new recordings of its keys released without a
   note (it borrowed Grand A's): a low thud, at about the old noise's level. Its A5 at ff from a new,
   unclipped recording.
+- Harpsichord B: the lute stop plays under the 8′ II instead of 7 dB over it (its quill pulls as
+  hard as the row's: near the nut the string gives way less).
 
 ### Fixed
 
+- Linux: the standalone links its outputs to the default output when nothing else does, so it
+  plays when started on its own under PipeWire (it was silent there); `DUSSEK_AUTOCONNECT=0` turns
+  this off.
+- Grand H: no hiss in its room (its room rang 1.4 s from 1.6 kHz up: the strings in its recording's
+  gaps read as a room).
 - Linux: instruments installed with `install.sh --system` are found when `$XDG_DATA_DIRS`
   leaves out `/usr/local/share` (NixOS, some desktops).
 - Linux: a failed `install.sh` lists what it copied, so `uninstall.sh` or the next install removes

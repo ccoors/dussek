@@ -3647,3 +3647,46 @@ The bands at 6.4–12.8 kHz: −69 dB re the strongest (median over the keys; at
 −76; before −30). As played (velocity 64, keys C1–C6, the noise alone): its share above 2 kHz
 −44.8 dB (−51.6 … −37.6; before −18.9; Salamander's −52.5), its level −32 … −42 dB re the note's peak
 (Salamander's −36 … −43).
+
+<a id="step-225"></a>
+## 225. Grand H's room without the hiss
+
+Heard (the maintainer): a hiss in Grand H's Room, as Grand I's (2026-10-31). Its gaps between the
+partials hold no consistent decay (the IQR over a factor 2 in every band: the City Piano's strings
+ring in them), so `room_t60` fell back to each band's lower quartile, held above 2.5 kHz: 1.4 s from
+1.6 kHz up, to 20 kHz. The room alone during a held note (velocity 90, 0.5–2.5 s, re the note's
+peak) then made the top octave: at 16 kHz −104 … −116 dB where Grands A, B, C, D and I lie at −133 …
+−169, and all of the render there. `[strings] room_t60` now takes its quartiles up to 1.27 kHz (0.38–
+0.74 s, a room's), held above (Grands A, C and D measure 0.7–0.8 s at 6.4 kHz): 16 kHz −142 … −155
+dB, 8 kHz −118 … −132 (was −89 … −116). The refit moved the board's per-key gains by up to 1.3 dB
+(the export voices them even); the phrase −28.8 LUFS.
+
+<a id="step-226"></a>
+## 226. The lute stop at one quill force
+
+Heard (the maintainer): Harpsichord B's lute too loud (step 221 measured it 9 dB over the plain
+stop). Step 23 derived the lute row with the 8′ II row's amplitude (`LUTE_DB` 0), and the engine's
+pluck is a displacement at the pluck point: the same displacement near the nut sets the partials up to
+1/β at nearly the fundamental's level, so the lute played louder the nearer the nut it plucked. A
+quill lets go at a force, and at one force the string gives way as β(1−β): the lute row's amplitude
+is now the row's times β_lute(1−β_lute) / β_row(1−β_row) (`Engine`, at the pluck: no format change),
+its fundamental under the row's by sin(πβ_lute) / sin(πβ_row) (`lute.rs`). Step 173's phrase on
+Harpsichord B (EBU R128): the 8′ −30.6 LUFS, the 8′ II −30.2, the lute alone −34.9 (was −23.1), the 8′
+with the lute −28.1 (was −21.5). `LUTE_DB` stays 0 for a trim by ear.
+
+<a id="step-227"></a>
+## 227. The standalone links its outputs
+
+Under PipeWire nothing links a JACK client's ports by itself, and DPF's standalone links none: started
+on its own it played into nothing (`just standalone` linked it with `pw-link`). Setting
+`node.autoconnect` through `PIPEWIRE_PROPS` reaches the node but WirePlumber links no JACK client's
+node, with or without a media class. So the standalone (Linux, `StandaloneCli.cpp`) starts a thread
+with a second JACK client (libjack loaded as DPF loads it): it waits up to 10 s for the outputs and,
+if they are still unlinked half a second after they appear (a session manager's or the user's
+routing first), links them to the first playback device JACK lists (`pe::autoconnectPlan`): under
+PipeWire's JACK layer the default sink's ports come first (here the Bluetooth headphones before the
+analog output), under JACK `system:playback_1/2`; a mono device takes both outputs. Without a JACK
+server it does nothing. `DUSSEK_AUTOCONNECT=0` turns it off; `run-standalone.sh` sets it (it links
+the default sink by name). Checked under PipeWire 1.6.10: linked to the default sink's FL and FR,
+unlinked with the variable.
+
