@@ -9,8 +9,9 @@ their list for the pages (site/out/clips.json):
 
 A clip's settings name plugin controls; plugin/build/settings_line turns them into the plugin's own
 Copy CLI line, so a clip plays what the plugin plays. Each clip starts just before its first note.
-A feature's steps share one gain ("together": their differences in level stay) or are each
-matched ("each"); either way the clip sits at -18 LUFS, its true peak at most -1 dBFS."""
+A feature's steps share one gain ("together": the first step at -18 LUFS, the others' differences
+in level kept) or are each matched ("each": every step at -18 LUFS); no step's true peak above
+-1 dBFS."""
 import argparse
 import concurrent.futures
 import json
@@ -31,6 +32,11 @@ SECTIONS = ("demo", "piece", "performance", "feature")
 LUFS = -18.0
 PEAK = -1.0
 LEAD_S = 0.15  # kept before the first note
+WAV = ["-c:a", "pcm_f32le"]  # the files between the renders and the encoder (ffmpeg's default: 16 bit)
+# the keys a clip and a step may hold (a step's instrument, midi, morph, tail and set override the clip's)
+CLIP_KEYS = {"id", "section", "title", "instrument", "midi", "morph", "tail", "set", "seconds", "match",
+             "steps", "listen", "license", "short"}
+STEP_KEYS = {"label", "source", "input", "instrument", "midi", "morph", "tail", "set"}
 
 
 def midi_path(name):
@@ -82,8 +88,10 @@ def check(clips):
             errors.append(f"{cid}: section `{c.get('section')}` is none of {', '.join(SECTIONS)}")
         if c.get("match", "together") not in ("together", "each"):
             errors.append(f"{cid}: match is `together` or `each`")
+        errors += [f"{cid}: unknown key `{k}`" for k in sorted(set(c) - CLIP_KEYS)]
         for s in steps_of(c):
             where = f"{cid}" + (f" ({s['label']})" if "steps" in c else "")
+            errors += [f"{where}: unknown key `{k}`" for k in sorted(set(s) - STEP_KEYS)]
             if "source" in s:
                 if not os.path.isfile(os.path.join(REPO, s["source"])):
                     errors.append(f"{where}: no sound file {s['source']}")
@@ -132,7 +140,7 @@ def render_step(c, s, wav, tmp, frame=None):
     `frame`, also a still of its Visualization there (a demo's card picture)."""
     raw = wav + ".raw.wav"
     if "source" in s:
-        ff("-i", os.path.join(REPO, s["source"]), "-ar", "48000", raw)
+        ff("-i", os.path.join(REPO, s["source"]), "-ar", "48000", *WAV, raw)
         start = 0.0
     else:
         name = value(c, s, "instrument")
@@ -147,12 +155,14 @@ def render_step(c, s, wav, tmp, frame=None):
             cmd += ["--morph", os.path.join(REPO, m)]
         if "input" in s:
             sound = os.path.join(tmp, f"{c['id']}-input.wav")
-            ff("-i", os.path.join(REPO, s["input"]), sound)
+            ff("-i", os.path.join(REPO, s["input"]), *WAV, sound)
             cmd += ["--input", sound]
         video = os.path.join(tmp, f"{c['id']}.mp4")
         if frame:
             cmd += ["--video", video, "--size", "960x720", "--fps", "30"]
-        subprocess.run(cmd, check=True, capture_output=True)
+        r = subprocess.run(cmd, capture_output=True, text=True)
+        if r.returncode != 0:
+            raise SystemExit(f"{c['id']}: midi2wav failed ({r.returncode}): {r.stderr.strip()}")
         _, first = notes_of(midi)
         start = max(0.0, first - LEAD_S) if first is not None else 0.0
         if frame:
@@ -164,7 +174,7 @@ def render_step(c, s, wav, tmp, frame=None):
     if "seconds" in c:
         fade = 1.0
         cut += ["-t", str(c["seconds"]), "-af", f"afade=t=out:st={c['seconds'] - fade}:d={fade}"]
-    ff(*cut, "-i", raw, "-ar", "48000", wav)
+    ff(*cut, "-i", raw, "-ar", "48000", *WAV, wav)
     os.remove(raw)
 
 

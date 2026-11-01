@@ -63,3 +63,50 @@ def test_an_unknown_control_is_refused(tmp_path):
                    'midi = "piano"\nsteps = [{ label = "x", set = { nonesuch = 1 } }]\n')
     r = check(bad)
     assert r.returncode == 1 and "knob" in r.stderr and "nonesuch" in r.stderr
+
+
+@needs_tool
+def test_an_unknown_key_is_refused(tmp_path):
+    # a misspelled key (`second` for `seconds`) or one in the wrong place (`input` on the clip, read
+    # only in a step) would be ignored without a word
+    bad = tmp_path / "clips.toml"
+    bad.write_text('[[clip]]\nid = "typo"\nsection = "demo"\ntitle = "Typo"\ninstrument = "grand_a"\nmidi = "piano"\n'
+                   'second = 10\ninput = "site/sounds/falling.ogg"\n'
+                   '[[clip]]\nid = "steptypo"\nsection = "feature"\ntitle = "T"\ninstrument = "grand_a"\nmidi = "piano"\n'
+                   'steps = [{ label = "x", sett = { condition = 1 } }]\n')
+    r = check(bad)
+    assert r.returncode == 1
+    assert "typo: unknown key `second`" in r.stderr and "typo: unknown key `input`" in r.stderr
+    assert "steptypo (x): unknown key `sett`" in r.stderr
+
+
+def load_render():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("site_render", RENDER)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_intermediate_files_are_float(tmp_path):
+    # the steps' WAVs between the renders and the encoder: 32-bit float, not ffmpeg's 16-bit default
+    import soundfile
+    render = load_render()
+    c = {"id": "src", "section": "feature", "title": "Src", "steps": [{"label": "s", "source": "site/sounds/falling.ogg"}]}
+    wav = tmp_path / "s.wav"
+    render.render_step(c, c["steps"][0], str(wav), str(tmp_path))
+    assert soundfile.info(str(wav)).subtype == "FLOAT"
+
+
+@needs_tool
+def test_a_failed_render_says_why(tmp_path, monkeypatch):
+    # midi2wav's own message reaches the log (CI's), not just its exit status
+    render = load_render()
+    fake = tmp_path / "midi2wav"
+    fake.write_text("#!/bin/sh\necho 'error: the reason' >&2\nexit 1\n")
+    fake.chmod(0o755)
+    monkeypatch.setattr(render, "MIDI2WAV", str(fake))
+    c = {"id": "boom", "section": "demo", "title": "Boom", "instrument": "grand_a", "midi": "piano"}
+    with pytest.raises(SystemExit) as e:
+        render.render_step(c, render.steps_of(c)[0], str(tmp_path / "b.wav"), str(tmp_path))
+    assert "boom" in str(e.value) and "the reason" in str(e.value)
