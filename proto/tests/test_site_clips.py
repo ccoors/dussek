@@ -4,6 +4,7 @@ one demo, and a bad clip stops the render before anything is rendered."""
 import glob
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tomllib
@@ -16,6 +17,7 @@ RENDER = f"{P.REPO}/site/render.py"
 TABLE = f"{P.REPO}/site/clips.toml"
 SETTINGS_LINE = f"{P.REPO}/plugin/build/settings_line"
 needs_tool = pytest.mark.skipif(not os.path.exists(SETTINGS_LINE), reason="needs plugin/build/settings_line (just plugin)")
+needs_ffmpeg = pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="needs ffmpeg (the site's runner installs it)")
 
 
 def check(table):
@@ -88,6 +90,7 @@ def load_render():
     return module
 
 
+@needs_ffmpeg
 def test_intermediate_files_are_float(tmp_path):
     # the steps' WAVs between the renders and the encoder: 32-bit float, not ffmpeg's 16-bit default
     import soundfile
