@@ -98,11 +98,14 @@ jobs:
       - name: The plugin's UI tests
         run: plugin/build/ui_tests
       - name: The portable folder
-        run: echo "PORTABLE=$(plugin/tools/package.sh macos | tail -n 1)" >> "$GITHUB_ENV"
+        run: |
+          out=$(plugin/tools/package.sh macos | tail -n 1)   # an assignment: a failure fails the step
+          echo "PORTABLE=$out" >> "$GITHUB_ENV"
       - name: The package
         run: |
           version=${PORTABLE#dist/dussek-}
-          echo "PKG=$(packaging/macos/build-pkg.sh "${version%-macos}" "$PORTABLE" | tail -n 1)" >> "$GITHUB_ENV"
+          pkg=$(packaging/macos/build-pkg.sh "${version%-macos}" "$PORTABLE" | tail -n 1)
+          echo "PKG=$pkg" >> "$GITHUB_ENV"
       - name: Installed, listed
         run: packaging/macos/check-install.sh "$PKG" "$PORTABLE"
       - name: The portable archive
@@ -153,7 +156,9 @@ jobs:
       - name: The plugin's UI tests
         run: plugin/build/ui_tests
       - name: The portable folder
-        run: echo "PORTABLE=$(plugin/tools/package.sh windows | tail -n 1)" >> "$GITHUB_ENV"
+        run: |
+          out=$(plugin/tools/package.sh windows | tail -n 1)   # an assignment: a failure fails the step
+          echo "PORTABLE=$out" >> "$GITHUB_ENV"
       - name: Inno Setup
         shell: pwsh
         run: |

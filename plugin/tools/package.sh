@@ -13,9 +13,14 @@ bin=plugin/build/bin
 out=dist/dussek-$version-$platform
 rm -rf "$out"
 mkdir -p "$out/instruments"
-for f in dussek dussek.exe dussek.app dussek.lv2 dussek.clap dussek.vst3; do
+for f in dussek dussek.exe dussek.lv2 dussek.clap dussek.vst3; do
     [ -e "$bin/$f" ] && cp -R "$bin/$f" "$out/"
 done
+# macOS: the standalone as an app (DPF builds a plain executable)
+if [ "$platform" = macos ]; then
+    packaging/macos/make-app.sh "$out/dussek" "$version" "$out/Dussek.app"
+    rm "$out/dussek"
+fi
 # the exports as committed (no caches, nothing untracked)
 git ls-files -z instruments | while IFS= read -r -d '' f; do
     mkdir -p "$out/$(dirname "$f")"
@@ -40,10 +45,10 @@ system's audio.
 Built with glibc $glibc: a Linux with glibc $glibc or newer." ;;
     macos)
         how="Install: the release's dussek-$version-macos.pkg does all of this. By hand: copy the folder
-\"instruments\" into ~/Library/Application Support/Dussek, dussek.app into Applications, the
+\"instruments\" into ~/Library/Application Support/Dussek, Dussek.app into Applications, the
 bundles into ~/Library/Audio/Plug-Ins/LV2, …/CLAP, …/VST3. Not signed: the first time,
 right-click the app and choose Open, or run
-  xattr -dr com.apple.quarantine dussek.app dussek.lv2 dussek.clap dussek.vst3
+  xattr -dr com.apple.quarantine Dussek.app dussek.lv2 dussek.clap dussek.vst3
 Built for Apple silicon (arm64), macOS 13.3 or newer; not for Intel Macs." ;;
     windows)
         how="Install: the release's dussek-$version-windows-setup.exe does all of this. By hand: copy the

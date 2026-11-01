@@ -12,11 +12,9 @@ out=$(pwd)/dist/dussek-$version-macos.pkg
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 
-# the app, named for the Finder, with its icon
+# the app (package.sh made it: DPF builds a plain executable)
 mkdir -p "$work/app"
-cp -R "$src/dussek.app" "$work/app/Dussek.app"
-cp "$here/../icon/dussek.icns" "$work/app/Dussek.app/Contents/Resources/dussek.icns"
-plutil -replace CFBundleIconFile -string dussek "$work/app/Dussek.app/Contents/Info.plist"
+cp -R "$src/Dussek.app" "$work/app/Dussek.app"
 for b in lv2 clap vst3; do
     mkdir -p "$work/$b"
     cp -R "$src/dussek.$b" "$work/$b/"
