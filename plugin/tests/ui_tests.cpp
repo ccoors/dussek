@@ -6277,6 +6277,15 @@ TEST(copy_cli_finds_the_standalone)
     CHECK(same(pe::standaloneExecutable(plugin, false, path.c_str()), pkg / "bin" / exe));
     CHECK(pe::standaloneExecutable(plugin, false, nullptr).empty());
     CHECK(pe::standaloneExecutable("", false, nullptr).empty());
+    // an installer's layout: the plugin in the system's plugin folder, the program in its own
+    // (Windows: Program Files\Dussek; macOS: /Applications, the app named Dussek.app)
+    const fs::path apps = root / "apps";
+    const fs::path inApp = apps / (pe::hostPlatform() == pe::Platform::Windows ? fs::path(exe) : fs::path("Dussek.app") / "Contents" / "MacOS" / "dussek");
+    file(inApp);
+    file(root / "sys" / "LV2" / "dussek.lv2" / "dussek_dsp.so");
+    const std::string sysPlugin = (root / "sys" / "LV2" / "dussek.lv2" / "dussek_dsp.so").string();
+    CHECK(pe::standaloneExecutable(sysPlugin, false, nullptr).empty());
+    CHECK(same(pe::standaloneExecutable(sysPlugin, false, nullptr, { apps.string() }), inApp));
     fs::remove_all(root);
     // the line starts with it, quoted as the instrument's path is
     std::vector<float> v(pe::kParamCount);

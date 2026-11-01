@@ -50,7 +50,8 @@ DataDirs dataDirs(const std::function<const char*(const char*)>& env, Platform p
     return d;
 }
 
-std::string standaloneExecutable(const std::string& self, bool selfIsStandalone, const char* path)
+std::string standaloneExecutable(const std::string& self, bool selfIsStandalone, const char* path,
+    const std::vector<std::string>& installed)
 {
     namespace fs = std::filesystem;
     if (self.empty())
@@ -61,7 +62,7 @@ std::string standaloneExecutable(const std::string& self, bool selfIsStandalone,
     const char* const names[] = { "dussek.exe" };
     const char sep = ';';
 #else
-    const char* const names[] = { "dussek", "dussek.app/Contents/MacOS/dussek" };
+    const char* const names[] = { "dussek", "Dussek.app/Contents/MacOS/dussek", "dussek.app/Contents/MacOS/dussek" };
     const char sep = ':';
 #endif
     std::error_code ec;
@@ -83,6 +84,9 @@ std::string standaloneExecutable(const std::string& self, bool selfIsStandalone,
         if (dir == dir.root_path())
             break;
     }
+    for (const std::string& d : installed)
+        if (std::string s = standalone(d); !s.empty())
+            return s;
     for (std::string rest = path != nullptr ? path : ""; !rest.empty();) {
         const size_t end = rest.find(sep);
         const std::string d = rest.substr(0, end);
@@ -92,6 +96,21 @@ std::string standaloneExecutable(const std::string& self, bool selfIsStandalone,
                 return s;
     }
     return std::string();
+}
+
+std::vector<std::string> installedProgramDirs()
+{
+    switch (hostPlatform()) {
+    case Platform::Windows:
+        if (const char* pf = std::getenv("PROGRAMFILES"); pf != nullptr && *pf)
+            return { std::string(pf) + "/Dussek" };
+        return {};
+    case Platform::MacOS:
+        return { "/Applications" };
+    case Platform::Linux:
+        break;
+    }
+    return {};
 }
 
 DataDirs dataDirs()

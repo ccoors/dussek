@@ -35,9 +35,15 @@ std::vector<std::string> systemDataDirs();
 /// The standalone's executable, for Copy CLI's command line: `self` the running binary
 /// (DPF's getBinaryFilename) and whether it is the standalone; in a plugin, the standalone next to its
 /// bundle (links resolved: `just install` links the bundles to plugin/build/bin), up to four folders
-/// up (VST3's Contents/<arch>, a macOS bundle's Contents/MacOS), then in the folders of `path` (the
-/// PATH variable; null: none). Empty: none found.
-std::string standaloneExecutable(const std::string& self, bool selfIsStandalone, const char* path);
+/// up (VST3's Contents/<arch>, a macOS bundle's Contents/MacOS), then in `installed` (the folders an
+/// installer puts it in: installedProgramDirs), then in the folders of `path` (the PATH variable;
+/// null: none). Empty: none found.
+std::string standaloneExecutable(const std::string& self, bool selfIsStandalone, const char* path,
+    const std::vector<std::string>& installed = {});
+
+/// where the installers put the standalone: Windows %PROGRAMFILES%\Dussek, macOS /Applications
+/// (Linux: on PATH)
+std::vector<std::string> installedProgramDirs();
 
 /// The folder a file lies in (a file browser's answer): up to its last separator, `/` (on Windows
 /// also `\`); a root kept ("/", "C:\"); empty for a bare name.
