@@ -43,7 +43,8 @@ A release is a tag: the version in `plugin/CMakeLists.txt` raised, its section i
 [CHANGELOG.md](CHANGELOG.md) (what a player gets; before 1.0 a break goes under "Breaking"), both
 merged, then `git tag -a v<version>` pushed. `.github/workflows/release.yml` builds each platform,
 installs its installer on the runner and checks it, publishes the release with the changelog's
-section and starts the website's workflow, which renders the site again for the new release; a tag
+section, starts the website's workflow, which renders the site again for the new release, and pushes
+the same files to itch.io once that is set up (`packaging/itch/README.md`); a tag
 that is not the code's version, or has no section, publishes nothing. Run by hand from the Actions
 tab with a version, it builds the installers to try without publishing. Changes collect under
 "Unreleased" in the changelog; a release renames it to its version and date.

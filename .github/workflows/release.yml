@@ -229,3 +229,17 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         # a release made with this token starts no workflow by its event; Pages deploys from main only
         run: gh workflow run site.yml --ref main
+      # last: a failure here leaves the release and the website done (packaging/itch/README.md)
+      - name: itch.io (with the BUTLER_API_KEY secret and the ITCH_TARGET variable, user/game)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+          ITCH_TARGET: ${{ vars.ITCH_TARGET }}
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          if [ -z "$BUTLER_API_KEY" ] || [ -z "$ITCH_TARGET" ]; then
+            echo "no itch.io key or target: not pushed there"; exit 0
+          fi
+          curl -fsSL -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
+          unzip -q butler.zip -d butler && chmod +x butler/butler && butler/butler -V
+          BUTLER=butler/butler packaging/itch.sh "$VERSION" "$ITCH_TARGET" assets

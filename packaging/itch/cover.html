@@ -1,0 +1,33 @@
+<!doctype html>
+<!-- itch.io's cover image (630 × 500; its browse grid shows it at half that): the website's hero.
+     packaging/itch/README.md has the line that renders it to cover.png. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dussek itch.io cover</title>
+<style>
+@font-face { font-family: "Inter"; src: url("../../site/fonts/inter.woff2") format("woff2"); font-weight: 100 900; }
+@font-face { font-family: "Dussek Serif"; src: url("../../site/fonts/dussek-serif.woff2") format("woff2"); font-weight: 200 900; }
+:root { --bg: #0b0e15; --ink: #ffffff; --muted: #b4bccb; --accent: #f6e15a; --orange: #ff9d42; --deep-orange: #6b3008; --field-ink: #0b0e15; }
+html, body { margin: 0; width: 630px; height: 500px; overflow: hidden; }
+body { position: relative; background: var(--orange); font-family: "Inter", sans-serif; }
+body::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 240px; background: var(--bg); }
+.wordmark { position: absolute; left: 36px; top: 34px; display: flex; align-items: center; gap: 12px; color: var(--ink);
+  font: 800 40px/1 "Inter"; letter-spacing: -0.03em; }
+.wordmark img { width: 46px; height: 46px; }
+.title { position: absolute; left: 0; right: 0; top: 240px; transform: translateY(-50%); display: grid; text-align: center;
+  font: 800 80px/0.86 "Inter"; text-transform: uppercase; letter-spacing: -0.04em; }
+.title span { grid-area: 1 / 1; }
+.top { color: var(--accent); clip-path: inset(0 0 50% 0); }
+.bottom { color: var(--deep-orange); clip-path: inset(50% 0 0 0); }
+.lead { position: absolute; left: 30px; right: 30px; bottom: 40px; margin: 0; text-align: center; color: var(--field-ink);
+  font: 400 27px/1.25 "Dussek Serif"; }
+.lead b { display: block; font: 700 22px/1.4 "Inter"; letter-spacing: 0.01em; }
+</style>
+</head>
+<body>
+<div class="wordmark"><img src="../icon/dussek.svg" alt="">Dussek</div>
+<div class="title"><span class="top">Struck,<br>not sampled</span><span class="bottom">Struck,<br>not sampled</span></div>
+<p class="lead">Free piano, harpsichords, harps, percussion<b>LV2 · CLAP · VST3 · Standalone</b></p>
+</body>
+</html>
