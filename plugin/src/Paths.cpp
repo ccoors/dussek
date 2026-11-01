@@ -1,5 +1,6 @@
 #include "Paths.hpp"
 
+#include <algorithm>
 #include <cstdlib>
 #include <filesystem>
 
@@ -96,6 +97,44 @@ std::string standaloneExecutable(const std::string& self, bool selfIsStandalone,
 DataDirs dataDirs()
 {
     return dataDirs([](const char* name) { return static_cast<const char*>(std::getenv(name)); }, hostPlatform());
+}
+
+std::vector<std::string> systemDataDirs(const std::function<const char*(const char*)>& env, Platform platform)
+{
+    const auto get = [&](const char* name) {
+        const char* v = env(name);
+        return std::string(v != nullptr ? v : "");
+    };
+    std::vector<std::string> dirs;
+    switch (platform) {
+    case Platform::Windows:
+        if (const std::string all = get("PROGRAMDATA"); !all.empty())
+            dirs.push_back(all + "/Dussek");
+        break;
+    case Platform::MacOS:
+        dirs.push_back("/Library/Application Support/Dussek");
+        break;
+    case Platform::Linux: {
+        // the XDG spec: a colon-separated list, relative entries ignored, unset or empty the default
+        const std::string list = get("XDG_DATA_DIRS");
+        size_t start = 0;
+        while (start <= list.size()) {
+            const size_t end = std::min(list.find(':', start), list.size());
+            if (const std::string entry = list.substr(start, end - start); !entry.empty() && entry[0] == '/')
+                dirs.push_back(entry + "/dussek");
+            start = end + 1;
+        }
+        if (dirs.empty())
+            dirs = { "/usr/local/share/dussek", "/usr/share/dussek" };
+        break;
+    }
+    }
+    return dirs;
+}
+
+std::vector<std::string> systemDataDirs()
+{
+    return systemDataDirs([](const char* name) { return static_cast<const char*>(std::getenv(name)); }, hostPlatform());
 }
 
 std::string folderOf(const std::string& file)

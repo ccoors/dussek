@@ -1,6 +1,7 @@
 #pragma once
 #include <functional>
 #include <string>
+#include <vector>
 
 namespace pe {
 
@@ -22,6 +23,14 @@ DataDirs dataDirs(const std::function<const char*(const char*)>& env, Platform p
 
 /// the process's: its environment, this platform
 DataDirs dataDirs();
+
+/// the folders an installer fills (the instruments, once for every user): Windows
+/// %PROGRAMDATA%\Dussek (none when unset); macOS /Library/Application Support/Dussek; Linux each
+/// absolute entry of $XDG_DATA_DIRS + /dussek, else /usr/local/share/dussek and /usr/share/dussek
+std::vector<std::string> systemDataDirs(const std::function<const char*(const char*)>& env, Platform platform);
+
+/// the process's: its environment, this platform
+std::vector<std::string> systemDataDirs();
 
 /// The standalone's executable, for Copy CLI's command line: `self` the running binary
 /// (DPF's getBinaryFilename) and whether it is the standalone; in a plugin, the standalone next to its

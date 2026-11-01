@@ -69,6 +69,9 @@ std::vector<std::string> Catalog::searchPaths(const char* resources)
         p.push_back(env);
     if (resources != nullptr)
         p.push_back(std::string(resources) + "/instruments");
+    // an installer's, before the user's: an old copy there (a test build's) does not hide them
+    for (const std::string& dir : pe::systemDataDirs())
+        p.push_back(dir + "/instruments");
     if (const std::string data = pe::dataDirs().data; !data.empty()) {
         p.push_back(data + "/instruments");
         // instruments from git refs (proto/snapshot.py), for development; missing folders are skipped

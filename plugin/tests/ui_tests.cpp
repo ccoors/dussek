@@ -6029,6 +6029,63 @@ TEST(a_preset_rows_menu_offers_save_and_deletes_only_the_users)
     CHECK(pe::presetLabel(offered, 1) == "Mine" && pe::presetLabel(offered, -1) == "None");
 }
 
+TEST(system_data_dirs_per_platform)
+{
+    // the folders an installer fills (the instruments, once), from an environment and a platform
+    using pe::Platform;
+    using V = std::vector<std::string>;
+    const auto env = [](std::map<std::string, std::string> m) {
+        return [m](const char* k) -> const char* {
+            auto it = m.find(k);
+            return it == m.end() ? nullptr : it->second.c_str();
+        };
+    };
+    CHECK(pe::systemDataDirs(env({{"PROGRAMDATA", "C:\\ProgramData"}}), Platform::Windows) == V{"C:\\ProgramData/Dussek"});
+    CHECK(pe::systemDataDirs(env({}), Platform::Windows).empty());
+    CHECK(pe::systemDataDirs(env({{"HOME", "/Users/u"}}), Platform::MacOS) == V{"/Library/Application Support/Dussek"});
+    CHECK(pe::systemDataDirs(env({}), Platform::Linux) == (V{"/usr/local/share/dussek", "/usr/share/dussek"}));
+    CHECK(pe::systemDataDirs(env({{"XDG_DATA_DIRS", ""}}), Platform::Linux) == (V{"/usr/local/share/dussek", "/usr/share/dussek"}));
+    // the XDG spec: relative entries are ignored
+    CHECK(pe::systemDataDirs(env({{"XDG_DATA_DIRS", "/opt/a:rel:/usr/share/"}}), Platform::Linux) == (V{"/opt/a/dussek", "/usr/share//dussek"}));
+    CHECK(pe::systemDataDirs(env({{"XDG_DATA_DIRS", "rel"}}), Platform::Linux) == (V{"/usr/local/share/dussek", "/usr/share/dussek"}));
+}
+
+TEST(search_paths_put_the_installed_before_the_users)
+{
+    // an installer's instruments come before the user folder's: an old copy there (a test build's)
+    // does not hide them; the user's own instruments have names of their own
+    TempTree t;
+    const bool mac = pe::hostPlatform() == pe::Platform::MacOS;
+    const char* sysVar = pe::hostPlatform() == pe::Platform::Windows ? "PROGRAMDATA" : "XDG_DATA_DIRS";
+    const char* userVar = pe::hostPlatform() == pe::Platform::Linux ? "XDG_DATA_HOME" : mac ? "HOME" : "APPDATA";
+    const char* sysWas = std::getenv(sysVar);
+    const char* userWas = std::getenv(userVar);
+    const char* envWas = std::getenv("DUSSEK_INSTRUMENTS");
+    const std::string sysOld = sysWas ? sysWas : "", userOld = userWas ? userWas : "", envOld = envWas ? envWas : "";
+    unsetEnv("DUSSEK_INSTRUMENTS");
+    setEnv(sysVar, t.path("sys").c_str());
+    setEnv(userVar, t.path("user").c_str());
+    const std::string sys = pe::systemDataDirs().front();
+    const std::string user = pe::dataDirs().data;
+    const std::vector<std::string> p = Catalog::searchPaths(nullptr);
+    const auto at = [&](const std::string& dir) { return std::find(p.begin(), p.end(), dir) - p.begin(); };
+    CHECK(at(sys + "/instruments") < at(user + "/instruments"));
+    CHECK(at(user + "/instruments") < (long)p.size() && p.back() == user + "/snapshots");
+    if (!mac) { // the macOS folder is fixed (/Library/…): not one a test can fill
+        t.add(("sys" + sys.substr(t.path("sys").size()) + "/instruments").c_str(), "harp", "harp", R"({"name": "Harp A", "group": "Harps"})");
+        t.add(("user" + user.substr(t.path("user").size()) + "/instruments").c_str(), "harp", "harp", R"({"name": "Harp A, old", "group": "Harps"})");
+        const Catalog c = Catalog::scan(p);
+        CHECK(c.find("harp") != nullptr && c.find("harp")->dir.rfind(sys, 0) == 0);
+        bool named = false;
+        for (const std::string& m : c.messages())
+            named = named || (m.find("shadowed") != std::string::npos && m.find(user) != std::string::npos);
+        CHECK(named);
+    }
+    if (sysWas) setEnv(sysVar, sysOld.c_str()); else unsetEnv(sysVar);
+    if (userWas) setEnv(userVar, userOld.c_str()); else unsetEnv(userVar);
+    if (envWas) setEnv("DUSSEK_INSTRUMENTS", envOld.c_str());
+}
+
 TEST(data_dirs_per_platform)
 {
     // the folders for your own files (presets, MIDI maps, instruments you add, snapshots), from an

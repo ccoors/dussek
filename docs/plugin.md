@@ -51,12 +51,17 @@ The plugin lists every instrument directory it finds in these paths:
 
 1. `$DUSSEK_INSTRUMENTS`;
 2. the bundle's resources;
-3. `~/.local/share/dussek/instruments` (`just install` links `instruments/` there;
+3. the system folder's `instruments`, where an installer puts them for every user: on Linux
+   `/usr/local/share/dussek` and `/usr/share/dussek` (`$XDG_DATA_DIRS` replaces the two), on
+   macOS `/Library/Application Support/Dussek`, on Windows `%PROGRAMDATA%\Dussek`;
+4. `~/.local/share/dussek/instruments` (`just install` links `instruments/` there;
    `$XDG_DATA_HOME` replaces `~/.local/share`);
-4. `~/.local/share/dussek/snapshots`: instruments from a git ref (`just snapshot <ref>`), in
+5. `~/.local/share/dussek/snapshots`: instruments from a git ref (`just snapshot <ref>`), in
    the menu's "Snapshots" group.
 
-A name found in an earlier path hides the same name in the later ones.
+A name found in an earlier path hides the same name in the later ones: an installed instrument
+hides an old copy of it in the user folder (from a test build); the instruments you add keep
+names of their own.
 
 The user folder (`~/.local/share/dussek` above, with the presets beside the instruments)
 is the platform's own: on Linux `$XDG_DATA_HOME/dussek`, else `~/.local/share/dussek`
