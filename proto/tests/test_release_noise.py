@@ -56,3 +56,29 @@ def test_a_projects_impacts_replace_a_takes_by_turns():
     assert [t["impacts"] for t in out] == pattern * 2          # one pattern for every take
     assert out[0]["band_db"] == [0.0] and takes[0]["impacts"][0][1] == -6.0   # the rest kept, input untouched
     assert PN.with_impacts(takes, []) == takes
+
+
+def test_silent_releases_are_leveled_against_the_notes_at_one_gain(tmp_path):
+    # keys released without their note (split_session.py --silent): A0 and C1, each a thump then the
+    # room's floor; a key between takes the nearest, its level the release's peak re its note's at
+    # each dynamic (one noise whatever the strike: the key's return is the player's, not the hammer's)
+    import soundfile as sf
+    sr = 48000
+    rng = np.random.default_rng(1)
+    (tmp_path / "release_silent").mkdir()
+    for name, db in (("A0_1", -40.0), ("C1_1", -46.0), ("C1_2", -30.0)):
+        n = int(0.3 * sr)
+        thump = 10 ** (db / 20) * rng.standard_normal(n) * np.exp(-np.arange(n) / (0.03 * sr))
+        thump /= np.abs(thump).max() / 10 ** (db / 20)
+        floor = 10 ** (-80 / 20) * rng.standard_normal(int(1.5 * sr))
+        sf.write(tmp_path / "release_silent" / f"{name}.wav", np.r_[thump, floor], sr, subtype="FLOAT")
+    peaks = {"pp": {21: -30.0, 24: -32.0}, "mf": {21: -10.0, 24: -12.0}}
+    keys = {k["note"]: k for k in RN.silent_keys(str(tmp_path), "release_silent", peaks)}
+    assert set(keys) == set(range(21, 109))
+    assert abs(keys[21]["ratio_db"]["mf"] - (-40.0 + 10.0)) < 0.01
+    assert abs(keys[21]["ratio_db"]["pp"] - (-40.0 + 30.0)) < 0.01
+    assert abs(keys[22]["ratio_db"]["mf"] - (-40.0 + 10.0)) < 0.01          # nearest: A0
+    assert abs(keys[108]["ratio_db"]["mf"] - (-46.0 + 12.0)) < 0.01         # C1's first take
+    # the floor after the thump is no part of the noise's spectrum
+    x, _ = sf.read(tmp_path / "release_silent" / "A0_1.wav")
+    assert len(RN.trimmed(x, sr)) < 0.35 * sr

@@ -20,7 +20,8 @@ and links it in as `data/<name>`.
 | [City Piano](https://bigcatinstruments.blogspot.com/2015/09/all-keyboard-instruments.html) (Big Cat Instruments; close samples, http://www.mediafire.com/download/4vmjle2acsy1xd2/City_Piano_Close_Samples.zip) | public domain | 425 MB | extracted into `data/city-piano/` | `grand_h` (Grand H; its levels from Grand B's set, `data/iowa-mis-piano/` too) |
 | The OLPC sound library's grand piano multisamples (Zenph Studios, 2008), in the Wayback Machine | CC BY 3.0 | 125 MB | the 1212 files named in `data/olpc-grand-files.txt` into `data/olpc-grand/`: `mkdir -p data/olpc-grand && cd data/olpc-grand && while read -r f; do curl -sfL --retry 3 -o "$f" "https://web.archive.org/web/20160910064755if_/http://freepats.zenvoid.org/olpc-sounds/yamahaGrandPiano44/$f"; sleep 5; done < ../olpc-grand-files.txt` (the archive limits its rate) | `grand_i` (Grand I, credited) |
 | [LivingRoom Upright, Micro SFZ](https://downloads.keypleezer.com/dl-free-version-micro-sfz/v100/livingroom-upright-piano-micro-sfz.zip) (KeyPleezer) | audio CC BY-SA 4.0 | 91 MB | `data/livingroom-upright/` | `upright_c` (Upright C; its export is CC BY-SA 4.0 too) |
-| The maintainer's own upright, recorded 2026-10-31 | the maintainer's (not published) | 2 GB | split by `analysis/split_session.py` into `data/own-upright/` (`docs/recording-a-piano.md`) | `upright_d` (Upright D); not downloadable |
+| The maintainer's own upright, recorded 2026-10-31 and 2026-11-01 | the maintainer's (not published) | 2 GB | split by `analysis/split_session.py` into `data/own-upright/` (`docs/recording-a-piano.md`) | `upright_d` (Upright D); not downloadable |
+| The maintainer's steel tongue drum, recorded 2026-11-01 | the maintainer's (not published) | 0.6 GB | split by `analysis/split_session.py --tongues` into `data/own-steel-tongue-drum/` | none yet; not downloadable |
 
 ## Harpsichords, clavichord, harps and plucked strings
 

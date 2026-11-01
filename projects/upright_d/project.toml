@@ -1,8 +1,6 @@
 # upright_d: made from upright_a's project file (the closest key range, the usual one; its by-ear values measured again on this set where noted)
 [project]
 family = "struck"
-# the release noise borrowed (below, [uses]); the pedal's its own
-skip = ["release_noise"]
 body = "upright"
 
 [menu]
@@ -26,15 +24,11 @@ room_t60 = [[250.0, 0.65], [500.0, 0.34], [800.0, 0.26], [2000.0, 0.35], [4000.0
 [noises]
 pedal_level_db = -4.5
 
-[uses]
-# the release noise Salamander's, as the other pianos' (2026-10-31, heard "way too loud and clicky"):
-# its own release takes, the note's partials taken out, left the damped strings' remainder 20–30 dB
-# over the floor for 0.15 s and no distinct thump: 15–35 dB under the mf note's peak (median −29;
-# Salamander's −32 … −49, median −42), its bands at 6.4–12.8 kHz −13 … −16 dB re its strongest
-# (Salamander's −68 … −85), the first impact read at the file's edge on most keys (4–17 ms in, the
-# damper's fall at 50 ms). A fade-in and a 0.7 s window took the highs 15 dB down, not the level.
-# Its own dampers stay (the releases' first fall, 111 dB/s)
-release = "grand_a"
+# the release noise at its recordings' level re the notes (2026-11-01): played 1–7 dB over it (median
+# 4.5; velocities 64 and 110 against mf and ff, keys C1–C6), the export's reference over the engine's
+# played peak as for the pedal's thumps
+[release_noise]
+level_db = -4.5
 
 # the export voices the piano to one level curve, as a voicer leaves it (design log step 138), as the
 # grands (step 139) and the other uprights (step 168); the Condition's Normal zone adds the unevenness
@@ -107,6 +101,11 @@ dynamics = { pp = "pp", mf = "mf", ff = "ff" }
 levels = "recorded"
 # its releases pass (mf, A0–E6): the dampers
 dampers = { kind = "sfz", file = "own-upright.sfz" }
+# the release noise: its silent releases (2026-11-01: keys every third released without their note,
+# split_session.py --silent), the key's return and the damper landing on still strings; its notes'
+# release takes (step 205) held the damped strings' remainder, 20–30 dB over the floor and no
+# distinct thump ("way too loud and clicky"), and Grand A's (Salamander's) was borrowed until then
+release = { kind = "silent" }
 # its pedal pass, split by the strings' ring after each event (split_session.py --pedal): four
 # pedal-downs, three pedal-ups (nine events left out: unclear, or the next too soon)
 # The engine plays the downs in turn whatever the press: down_3 and down_4 are stomps (−10.1 and −4.6 dB

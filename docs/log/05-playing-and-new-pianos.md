@@ -3540,3 +3540,54 @@ its event, and Pages deploys from `main` only) and by hand. Nothing rendered is 
 The first listening: the Schubert moved from Grand D to Grand A, fewer feature steps (the
 microphones dropped), and two levels for the roadmap: the lute stop 9 dB above the plain stop,
 the morph halfway 4.6 dB above Grand A. The ensemble piece is now "Ensemble Demo 1".
+
+<a id="step-222"></a>
+## 222. A second session: Upright D's own release noise, and a steel tongue drum
+
+The maintainer's second session (2026-11-01, `data/SOURCES.md`): Upright D's silent releases, a
+second pedal pass, three redos, and a steel tongue drum (15 tongues, C major, E3–E5) at pp, mf and
+ff. `split_session.py` reads each:
+
+- **Silent releases** (`--silent`): each key pressed without its note and released: the key's
+  return and the damper landing on still strings, nothing else. No pitch to label them by: in the
+  sheet's order, an event within 3 s of the one before its key's second take, a note struck by
+  mistake (a series as a strike's) and the recorder's stop left out, the events before `--from`
+  skipped; a count that does not match the keys stops the split. 30 keys (D♯4 twice); the two notes
+  struck by mistake (A1, D♯3) lie where the order puts them.
+- **A second pedal pass**: numbered after the first (each pass keeps its numbers when split again),
+  its left-out events named by the pass. Four pedal-downs, quieter than the first pass's (10–25 dB
+  over a busier room); its ups not told from the room's noises, by ear either (the maintainer):
+  unused.
+- **Redos at another gain** (`--gain-db`): A5 and A6 at ff (clipped in the first session), C8 at pp,
+  at the recorder's level 50 instead of 60. The step from the floor of the same morning's passes:
+  4.2–4.5 dB from 1 to 20 kHz, 4.3 taken; the takes measured and written that much louder, as float
+  where that passes full scale, clipping judged on the samples as recorded. A clipped take plays after
+  a clean one of a later pass: A5 ff plays the redo (its level 1 dB under the clipped take's fit).
+- **A tongue drum** (`--tongues`): the comb over eight partials labeled C4's strikes C5 and D5's D4.
+  Its tongues' upper modes are no series (25–45 dB under the fundamental), and the others ring in
+  sympathy within half a second (a D5 strike sets D4 ringing louder than itself after 0.3 s): a
+  strike is labeled by its fundamental alone over 0.03–0.2 s, the comb's floor band widened by the
+  window's shortening (a 0.15 s window's peaks are 7× wider: the 150 Hz median sat on the strike's
+  own skirt), a rise 20 dB under a take that still rings no strike. Played in the drum's order (not
+  rising): 109 strikes, 88 takes kept over 15 tongues × 3 dynamics.
+- **Clipping at the recorder's own ceiling**: the drum's loudest E3 lay 61 samples flat at 0.9935;
+  a run of three equal samples at a channel's peak within 1 dB of full scale is clipped (no
+  tolerance: a low note's rounded peak repeats within 1e-3).
+
+**Upright D's release noise, its own.** Its notes' release takes (step 205) held the damped strings'
+remainder; the silent releases hold the thump alone, 25–35 dB over the floor for 0.3–1 s
+(`release_noise.py`, a source's `release = { kind = "silent" }`: trimmed where the level last lies
+10 dB over the file's floor). Its level re the note as recorded at one gain, now per dynamic (the
+key's return is the player's, not the hammer's: one noise after any strike): median −12.3 dB re the
+pp note's peak, −29.9 re mf, −40.1 re ff; Salamander's, borrowed until now, −32, −42, −50. Its bands
+at 6.4–12.8 kHz −30 dB re its strongest (Salamander's −76).
+
+As played (velocity 64 and 110, keys C1–C6, the noise alone: the render with `release=1` less the one
+with `release=0`, identical to −200 dB before the release), the noise lay 1–7 dB (median 4.5) over
+the recordings re the note's peak, as the pedal's thumps did (step 205): `[release_noise] level_db =
+−4.5`, then within ±2 dB. Against Salamander's as played before: −22 … −32 dB re the note's peak at
+velocity 64 (was −36 … −43), about 10 dB louder, and brighter. For the ear.
+
+The refit (the source changed; the A5 redo): A5's gain −1.0 dB, the board's and the coupling's fits
+moved a little (the horizontal coupling at C4 1.40 → 2.41, a fit known to wander), the license now
+the maintainer's recordings alone.

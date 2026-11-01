@@ -18,11 +18,15 @@ log step 121); its `[release_noise] level_db` moves every ratio (Salamander's: �
 Grand E's release recordings through the engine, design log step 120).
 Other sets with their own release samples (a source's `release = { kind = "sfz", … }`): the
 release region of each recorded note, its level re the note as the sampler plays both
-(`vcsl_keys`).
+(`vcsl_keys`). A session's silent releases (`release = { kind = "silent" }`, keys released without
+their note, split by split_session.py --silent): no note's partials to take out, the level re the
+key's note at each recorded dynamic, as recorded at one gain (`silent_keys`): one noise whatever the
+strike.
 Writes the part's release cache (release.json).
 
 Usage: release_noise.py <part>
 """
+import glob
 import json
 import os
 import sys
@@ -39,6 +43,7 @@ BANDS = 25.0 * 2 ** (np.arange(0, 30) / 3)   # 25 Hz … ~20 kHz
 SFZ_VOLUME_DB = -37.0
 VELTRACK_REL, VELTRACK_NOTE = 0.82, 0.73
 LAYER_VEL = {"pp": (1, 14), "mf": (8, 60), "ff": (16, 124)}
+SILENT_OVER_DB = 10.0
 
 
 def sfz_gain_db(vel, track):
@@ -149,6 +154,46 @@ def vcsl_keys(profile):
     return out
 
 
+def trimmed(x, sr):
+    """A silent release up to where its level (20 ms RMS) last lies SILENT_OVER_DB over the file's
+    floor (its 10th percentile): the room after it is no part of the noise (the thumps lie only
+    25–35 dB over it)."""
+    w = int(0.02 * sr)
+    env = 10 * np.log10(np.convolve(x ** 2, np.ones(w) / w, mode="same") + 1e-30)
+    loud = np.nonzero(env > np.percentile(env, 10) + SILENT_OVER_DB)[0]
+    return x[: loud[-1] + 1] if len(loud) else x
+
+
+def silent_keys(root, folder, note_peaks):
+    """Silent releases: <folder>/<key>_<take>.wav (take 1 per key; keys between take the nearest),
+    each trimmed (`trimmed`); its level re the note as recorded at one gain, per dynamic: the
+    release's peak less the key's note's (`note_peaks`, {dynamic: {key: peak dBFS}}; the nearest
+    key's)."""
+    rec = {}
+    for path in glob.glob(os.path.join(root, folder, "*_1.wav")):
+        name = os.path.basename(path)[: -len("_1.wav")]
+        x, sr = sf.read(path, always_2d=True)
+        mono = trimmed(x.sum(axis=1), sr)
+        rec[A.parse_note(name)] = (mono, sr, float(A.db(np.abs(x).max())))
+    out = []
+    for note in range(21, 109):
+        src = min(rec, key=lambda n: abs(n - note))
+        mono, sr, rel_db = rec[src]
+        near = lambda peaks: peaks[min(peaks, key=lambda n: abs(n - src))]  # noqa: E731
+        out.append({"note": note, "impacts": impacts(mono, sr), "band_db": bands(mono, sr).tolist(),
+                    "peak_dbfs": rel_db, "ratio_db": {d: rel_db - near(p) for d, p in note_peaks.items()}})
+    return out
+
+
+def note_peaks(profile):
+    """{dynamic: {key: peak dBFS}} of the part's analyzed notes (each key's first)."""
+    out = {}
+    for s in P.load_cache(profile, "analysis")["samples"]:
+        if "error" not in s:
+            out.setdefault(D.dynamic_of(profile, s), {}).setdefault(s.get("key", s["note"]), s["peak_dbfs"])
+    return out
+
+
 def with_perspective(band_db, bands_hz, curve):
     """Band levels (dB re the strongest) moved by a perspective curve [[Hz, dB], …]: 0 below its
     first point, interpolated in log frequency, held beyond its last; re the strongest again."""
@@ -171,7 +216,13 @@ def with_level(keys, level_db):
 
 def main():
     profile = sys.argv[1]
-    out = rel_keys(profile) if P.source(profile)["release"]["kind"] == "rel_files" else vcsl_keys(profile)
+    rel = P.source(profile)["release"]
+    if rel["kind"] == "rel_files":
+        out = rel_keys(profile)
+    elif rel["kind"] == "silent":
+        out = silent_keys(D.root(profile), rel.get("folder", "release_silent"), note_peaks(profile))
+    else:
+        out = vcsl_keys(profile)
     # a level re the sample author's mix, measured against release recordings ([release_noise])
     out = with_level(out, float(P.section(profile, "release_noise").get("level_db", 0.0)))
     # recorded closer than the instruments that borrow it ([noises] perspective_db)

@@ -24,7 +24,7 @@ What `project.toml` holds:
 - **The fits' choices** for this instrument.
 - **Borrowings** (`[uses]`): what it takes from another project. Examples:
   - the dampers (Grand E's, measured from its release recordings: every other string
-    instrument's), Salamander's release noise (all but the harpsichords, which measure their own)
+    instrument's), Salamander's release noise (all but the harpsichords and Upright D, which measure their own)
     and pedal noise;
   - another set's levels: a normalized set's balance along the keys and the steps between its
     dynamics then follow that set's recordings;
@@ -129,7 +129,9 @@ What `project.toml` holds:
     press: the build warns of one 6 dB over its kind's median. `ring`, if given, are the pedal-downs
     the ring is fitted to (the downs without it).
   - `release` and `dampers` (`{ kind = "sfz", file = … }`): the release regions of an SFZ
-    file; `release` also `{ kind = "rel_files" }`, the set's `rel1…rel88.wav` (Salamander's).
+    file; `release` also `{ kind = "rel_files" }`, the set's `rel1…rel88.wav` (Salamander's), or
+    `{ kind = "silent" }`, a session's silent releases (`release_silent/`, keys released without
+    their note: `split_session.py --silent`; Upright D), its level re the notes at each dynamic.
     `release` gives the release noise; `dampers` gives the damper loss, each partial's first
     fall after the key's release (`damper_decay.py`, the `dampers` step). A set without them
     borrows them (`[uses]`).
@@ -141,7 +143,8 @@ What `project.toml` holds:
   recording's (Salamander's rattle with Upright A's landing, step 122).
 - **`[release_noise] level_db`**: a level for the release noise the `release_noise` step writes,
   re the sample author's mix (Salamander's: −12 dB, design log step 120; the harpsichords' −4.5 …
-  −14 dB put each at −38 dB re the note, step 182). Only that step and the exports read it.
+  −14 dB put each at −38 dB re the note, step 182; Upright D's −4.5 dB, its recordings' level as
+  played, step 222). Only that step and the exports read it.
 - **`[take_checks]`** (`decay`, `rise`, `brightness`): the Check page's thresholds, only those
   moved from the defaults. Only the editor reads it.
 - **`[project] recorded_dry = true`** on a set recorded anechoic (the Iowa percussion and
@@ -336,7 +339,7 @@ change against.
 | `split_session.py` | a recording session's passes (`recording-a-piano.md`) cut into one file per strike, the takes checked and ranked, the set's SFZ; a pedal pass into pedal-downs and pedal-ups |
 | `body_decay.py` | the decay between the partials: soundboard and room |
 | `attack_noise.py` | the attack transient (hammer and action noise) per band |
-| `release_noise.py`, `pedal_noise.py` | from a set's release and pedal samples (Salamander's, or a set's own pedal files; the harpsichords' own release samples, their notes' partials taken out): the release noise, the pedal's thump and ring |
+| `release_noise.py`, `pedal_noise.py` | from a set's release and pedal samples (Salamander's, or a set's own pedal files; the harpsichords' own release samples, their notes' partials taken out; a session's silent releases): the release noise, the pedal's thump and ring |
 | `damper_decay.py` | the dampers: each partial's first fall in a set's release recordings (a source's `dampers`) |
 | `datasets.py`, `mapping.py`, `project.py` | the sets, a source's files → notes and dynamics, the projects' files and the steps' checks |
 | `survey.py`, `summarize.py` | a set's quality before fitting it (lengths, decays, endings, noise, mislabeled notes); an analysis's label mismatches and overview plots |

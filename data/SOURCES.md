@@ -273,7 +273,7 @@ these sets is embedded in or distributed with the engine.
 - Location: `own-upright/`, split from the session's files by `analysis/split_session.py`
   (`docs/recording-a-piano.md`); not downloadable: the maintainer's own recordings, not published
 - Instrument: an upright piano in a living room, last tuned years ago
-- Author: Christian Friedrich Coors (recorded 2026-10-31)
+- Author: Christian Friedrich Coors (recorded 2026-10-31; a second session 2026-11-01)
 - License: CC BY 4.0 (the maintainer's)
 - Recording: a handheld recorder's XY pair at 90°, 64 cm in front of the piano, a little left,
   1.2 m high; 48 kHz / 24 bit; the gain set once
@@ -305,8 +305,48 @@ these sets is embedded in or distributed with the engine.
     pedal down splits into its 8 notes (unused so far)
   - Releases: the dampers' first fall 111 dB/s (median, 100 Hz–1.5 kHz; Grand E's 111), A0–E6;
     the release noise not clean (the damped strings' remainder, an edge at each take's start):
-    Salamander's borrowed (design log step 205)
+    Salamander's borrowed (design log step 205) until the second session's silent releases
+  - The second session (2026-11-01; same position and gain, the redos at a lower gain), split by
+    `split_session.py` (design log step 222):
+    - silent releases (`key_releases.wav`; `--silent --from 30`): A0–C8 every third, each key pressed
+      without its note and released, 30 keys, D♯4 twice; two notes struck by mistake (A1, D♯3) and
+      the recorder's stop left out; the thumps 25–35 dB over the floor, 0.3–1 s; release_silent/
+    - a second pedal pass (`sustain_pedal_2.wav`): quieter than the first (the thumps 10–25 dB over
+      a busier room), four pedal-downs (pedal/down_5–8), its ups not told from the room's noises;
+      unused (the maintainer, by ear: the pedal disappears in the noise)
+    - redos (`redos.wav`; `--dynamic auto --keys 81,93,108 --gain-db 4.3`): A5 and A6 at ff (the
+      first session's clipped), C8 at pp, at the recorder's level 50 instead of 60: 4.3 dB down (the
+      floor 4.2–4.5 dB lower from 1 to 20 kHz than the same morning's passes at 60), written at the
+      session's gain as float; kept A5 ff ×2 (now its first take), A6 ff, C8 pp
+
 - Profile `upright_d` (Upright D): the SFZ the splitter writes, seq_position 1 (the more even take)
+
+## The maintainer's steel tongue drum (own recordings, not published)
+
+- Location: `own-steel-tongue-drum/`, split from the session's files by `analysis/split_session.py
+  --tongues` (pp, mf, ff; the drum's order `--keys 60,72,62,74,64,76,53,65,55,67,57,69,59,71,52`);
+  not downloadable: the maintainer's own recordings, not published
+- Instrument: a steel tongue drum, 35.5 cm, 15 tongues in C major, E3–E5
+- Author: Christian Friedrich Coors (recorded 2026-11-01)
+- License: CC BY 4.0 (the maintainer's)
+- Recording: on the floor, the handheld recorder's XY pair 18 cm above its center pointing down;
+  48 kHz / 24 bit; the gain set once (level 40)
+- Content: each tongue at pp, mf and ff with its own rubber mallet, two takes or more, rung out
+  (10–36 s), in the order C4 C5 D4 D5 E4 E5 F3 F4 G3 G4 A3 A4 B3 B4 E3. No other mallets, no hands
+- Notes from inspection (design log step 222):
+  - Split: 109 strikes, 88 takes kept over 15 tongues × 3 dynamics; left out: touches 23–60 dB
+    under their tongue's loudest, the recorder's handling at the files' ends, a wrong tongue (E5 pp
+    sounding F♯5), one ff take clipped (E3: 61 samples flat at 0.9935, the recorder's ceiling)
+  - Tuning within −7 … +7 cents of equal temperament (A4 440.2 Hz)
+  - The fundamental dominates: the tongues' upper modes 25–45 dB under it; in the bass a mode at
+    4.1–4.6 × (E3 −13 dB at 4.59), the second harmonic −14 dB (E3) to −62 dB (E4). A line at 758 Hz
+    in many strikes: likely the shell's
+  - The other tongues ring along within half a second, the one an octave below or a fifth above
+    among the loudest (a D5 strike sets D4 ringing louder than itself after 0.3 s)
+  - The upper octave's tongues lie 10–30 dB under the lower's at one dynamic (D5, E5 at mf −55 … −50
+    dB, D4, E4 −27 … −24)
+  - The noise floor −86 … −85 dBFS (5 ms, 30 Hz up); ff peaks −0.1 … −8 dBFS
+- No project yet
 
 ## Ivy Audio Piano in 162 (SFZ)
 

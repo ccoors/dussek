@@ -38,9 +38,16 @@ replayed note goes at the end of its pass.
    The dynamics clearly apart (8–12 dB), even across the keyboard; exact touch matters less, the
    export voices every key to one level curve (step 138).
 3. **Releases:** mf, all keys once: held about 2 s, then released normally.
-4. **The pedal:** the sustain pedal pressed and released about 10 times, no notes; slowly and
+4. **Silent releases:** all keys once, each pressed slowly without sounding its note, held a
+   moment, then released normally: the key's return and the damper landing on still strings, the
+   release noise. A note struck by mistake: the key again (the splitter leaves the note out).
+5. **The pedal:** the sustain pedal pressed and released about 10 times, no notes; slowly and
    quickly.
-5. **Optional:** one note per octave at mf with the sustain pedal down, rung out.
+6. **Optional:** one note per octave at mf with the sustain pedal down, rung out.
+
+The recorder's gain stays where it was set for the whole session. Where a loud take clipped and is
+recorded again at a lower gain, the gain's step is measured from the floor (the same room minutes
+apart) and given to the splitter (`--gain-db`).
 
 About 1.5–2 hours with breaks for three dynamics.
 
@@ -97,18 +104,23 @@ at its strikes and names the takes after the table (`<key>_<dynamic>_<take>.wav`
 early (a mis-strike, replayed), a wrong note, a key touched rather than struck and a clipped take
 (where the key has another) go to `discarded/`, each with its reason in the pass's JSON. The two
 strikes of each dynamic are ranked by how near their level lies to the neighboring keys' and the more
-even one is played. The releases pass gives each take from its damper's fall; the keys around the
-breaks, played at various velocities, take the dynamic their level is nearest. Then one SFZ file over
-all of it is the set's map, its release regions the dampers' and the release noise's source:
+even one is played. The releases pass gives each take from its damper's fall; the silent releases,
+which have no pitch, are labeled in the table's order; the keys around the breaks, played at various
+velocities, take the dynamic their level is nearest. Then one SFZ file over all of it is the set's
+map, its release regions the dampers' source; the silent releases (release_silent/) are the release
+noise's (a source's `release = { kind = "silent" }`):
 
 ```sh
 R=<the recordings>; D=data/<set>
 python3 analysis/split_session.py $R/pp.wav $D --dynamic pp      # likewise mf, ff
 python3 analysis/split_session.py $R/releases.wav $D --dynamic mf --releases --damped-to 88
 python3 analysis/split_session.py $R/breaks.wav $D --dynamic auto --keys 50,88,89
+python3 analysis/split_session.py $R/key_releases.wav $D --silent --from <s>   # the pass's start
 python3 analysis/split_session.py $R/sustain_pedal.wav $D --pedal     # pedal/down_<n>, up_<n>
+python3 analysis/split_session.py $R/redos.wav $D --dynamic auto --keys 81,93 --gain-db 4.3
 python3 analysis/split_session.py --sfz $D --name <set>.sfz
 ```
 
 The pedal pass's events become pedal-downs and pedal-ups by the strings' ring after each; a source's
-`pedal = { kind = "files", … }` names them. Upright D was recorded so (design log steps 204–205).
+`pedal = { kind = "files", … }` names them; a second pedal pass numbers after the first. Upright D
+was recorded so (design log steps 204–205, 222).

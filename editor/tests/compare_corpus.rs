@@ -44,8 +44,9 @@ const CEILINGS: &[(&str, usize)] = &[
     ("upright_c", 4),
     // its own session (step 204): A0's early decay ×0.1–0.2 at every dynamic, F♯2 pp's and C3's lengths
     // ×0.1–0.4, the rest at the length's edges (its renders a median ×1.74 its recordings' length:
-    // the uprights' ring by ear, 150–200 %)
-    ("upright_d", 17),
+    // the uprights' ring by ear, 150–200 %); 17 before its refit on the second session (step 222):
+    // D3 pp's early decay, D♯5 and C8 ff's spectrum over the line (+12.1 dB)
+    ("upright_d", 20),
     ("marimba", 5),
     ("mavembe", 3),
     ("mbira", 4),

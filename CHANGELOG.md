@@ -5,6 +5,12 @@ break is allowed but listed under "Breaking" (`docs/compatibility.md`).
 
 ## Unreleased
 
+### Changed
+
+- Upright D: its own key release noise, from new recordings of its keys released without a
+  note (it borrowed Grand A's), at its recordings' level: about 10 dB louder and brighter. Its A5
+  at ff from a new, unclipped recording.
+
 ### Fixed
 
 - Linux: instruments installed with `install.sh --system` are found when `$XDG_DATA_DIRS`
