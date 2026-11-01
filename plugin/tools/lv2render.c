@@ -199,7 +199,10 @@ int main(int argc, char** argv)
     for (uint32_t i = 0; i < n_ports; ++i) {
         const LilvPort* port = lilv_plugin_get_port_by_index(plugin, i);
         if (lilv_port_is_a(plugin, port, audio)) {
-            if (n_out < 2) {
+            if (lilv_port_is_a(plugin, port, input)) {
+                /* the audio inputs (step 94): silence */
+                lilv_instance_connect_port(inst, i, calloc(buf_frames, sizeof(float)));
+            } else if (n_out < 2) {
                 outs[n_out] = calloc(buf_frames, sizeof(float));
                 lilv_instance_connect_port(inst, i, outs[n_out++]);
             }

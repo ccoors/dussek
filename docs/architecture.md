@@ -234,7 +234,8 @@ VST3 are tested on Linux and Windows too.
   re-export or the editor's rolled preview.
 - **Threads**: a worker builds engines and hands them to the audio thread through single-writer
   atomic slots; it runs at nice 10, its builds on the physical cores but one
-  (`pe_set_build_threads`). The audio thread swaps them and calls `adopt`. The UI and the DSP talk through
+  (`pe_set_build_threads`), and builds nothing before the host's first `activate()` (DPF's VST3
+  editor side is a second instance that never plays). The audio thread swaps them and calls `adopt`. The UI and the DSP talk through
   parameters and a shared telemetry region: notes, the velocity history, values set by MIDI, and
   while a bottom panel is open, 30 frames a second of the voices' partials and each key's strings,
   damper and last strike (the Analysis and Visualization panels).

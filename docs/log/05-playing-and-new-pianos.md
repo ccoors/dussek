@@ -3473,3 +3473,13 @@ parameters; one host passes no output list at all, and DPF then prints an assert
 Both are DPF's and left as they are. The VST3 stays for hosts that load nothing else; the README,
 `docs/plugin.md` and `TRY-IT.txt` recommend LV2 or CLAP wherever a host offers them.
 The README, `docs/plugin.md`, `docs/architecture.md` and `TRY-IT.txt` say what is tested where.
+
+<a id="step-219"></a>
+## 219. Nothing built before the host activates
+
+With a UI, DPF's VST3 runs the sound and the editor as two instances of the plugin, and the editor's
+one never plays: it loaded the instrument and built an engine all the same, and built again at
+every change (a felt takes seconds). The worker now waits for the host's first `activate()`. An LV2
+instance created and left inactive holds +5 MB after 4 s, was +115 MB (an offline probe, lilv);
+activated, a note renders as before. `plugin/tools/lv2render.c` connects the plugin's audio
+inputs (step 94) to silence: it took the first two audio ports for its outputs and crashed.

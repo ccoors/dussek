@@ -391,6 +391,8 @@ protected:
 
     void activate() override
     {
+        if (!fActivated.exchange(true)) // the first: the worker starts building
+            fWake.notify_one();
         if (fEngine != nullptr)
             pe_all_keys_up(fEngine);
         // a non-zero UI pedal now is stale: mute it until the parameter changes (a drag sets it live again)
@@ -713,6 +715,12 @@ private:
         std::unique_lock<std::mutex> lock(fMutex);
         while (!fQuit) {
             pe_destroy(fHandoff.retired());
+            if (!fActivated.load()) {
+                // nothing before the host activates: DPF's VST3 editor side is a second instance that
+                // never plays, and an engine there cost ~115 MB and every build again
+                fWake.wait_for(lock, std::chrono::milliseconds(50));
+                continue;
+            }
             if (const double now = seconds(); now - watched >= 0.5) {
                 watched = now;
                 lock.unlock();
@@ -860,6 +868,7 @@ private:
     EngineHandoff<PeEngine> fHandoff;            // worker ↔ audio
 
     std::atomic<uint64_t> fRequest { 0 };
+    std::atomic<bool> fActivated { false }; // set by the first activate(): the worker builds from then on
     std::atomic<double> fRequestRate { 48000.0 };
     std::atomic<float> fShared[kParamCount]; // the parameter values for the worker (fValues: the host's thread)
     TuningWatch fTuningWatch; // marked by setParameterValue, compared by the worker
