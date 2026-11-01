@@ -14,6 +14,10 @@ concurrency:
   group: platforms-${{ github.ref }}
   cancel-in-progress: true
 
+defaults:
+  run:
+    shell: bash   # bash -eo pipefail: a failing script before a pipe fails its step
+
 jobs:
   macos:
     runs-on: macos-15
@@ -88,6 +92,7 @@ jobs:
         run: plugin/build/ui_tests
       - name: The standalone renders
         run: |
+          set -o pipefail
           bin=plugin/build/bin/dussek
           [ -e "$bin" ] || [ -e "$bin.exe" ] || bin=plugin/build/bin/dussek.app/Contents/MacOS/dussek
           "$bin" render instruments/grand_a albums/demos/midi/03-glass-rain.mid render.wav --tail 1 2>&1 | tee render.txt
@@ -95,6 +100,7 @@ jobs:
           grep -q "rendered in" render.txt   # its report reaches a pipe (Windows: a window program)
       - name: Only the system's DLLs imported
         run: |
+          set -o pipefail
           # linked statically (plugin/CMakeLists.txt): no MinGW runtime needed on the player's machine
           for f in plugin/build/bin/dussek.exe $(find plugin/build/bin -name '*.dll' -o -name '*.vst3' -type f -o -name '*.clap' -type f); do
             [ -f "$f" ] || continue
@@ -106,6 +112,7 @@ jobs:
       - name: Package
         if: github.event_name != 'pull_request'
         run: |
+          set -o pipefail
           out=$(plugin/tools/package.sh windows | tail -n 1)
           mv "$out" dist/dussek-windows
       - uses: actions/upload-artifact@v7

@@ -6,3 +6,4 @@ matplotlib
 mido
 pytest
 pytest-xdist
+pyyaml

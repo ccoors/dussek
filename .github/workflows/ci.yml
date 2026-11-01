@@ -16,6 +16,10 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+defaults:
+  run:
+    shell: bash   # bash -eo pipefail: a failing script before a pipe fails its step
+
 jobs:
   linux:
     runs-on: ubuntu-24.04
