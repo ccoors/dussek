@@ -168,6 +168,22 @@ def render_step(c, s, wav, tmp, frame=None):
     os.remove(raw)
 
 
+MAESTRO_CREDIT = ('Performance from the MAESTRO dataset v3.0.0 (Hawthorne et al., "Enabling Factorized Piano Music '
+                  'Modeling and Generation with the MAESTRO Dataset", ICLR 2019), rendered by Dussek')
+
+
+def tags(c, s):
+    """The file's own title, license and credit (a link to it alone still carries them)."""
+    title = c["title"] if len(steps_of(c)) == 1 else f"{c['title']}: {s['label']}"
+    if c.get("license") == "maestro":
+        lic = ["-metadata", "LICENSE=CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)",
+               "-metadata", f"COMMENT={MAESTRO_CREDIT}"]
+    else:
+        lic = ["-metadata", "LICENSE=CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+               "-metadata", "COMMENT=Rendered by Dussek, https://github.com/ccoors/dussek"]
+    return ["-metadata", f"TITLE={title}", "-metadata", "ARTIST=Dussek", *lic]
+
+
 def render_clip(c, out_dir, tmp):
     """The clip's steps rendered, matched and encoded: its entry for clips.json."""
     steps = steps_of(c)
@@ -189,7 +205,7 @@ def render_clip(c, out_dir, tmp):
     files = []
     for i, (s, w, g) in enumerate(zip(steps, wavs, gains)):
         name = f"{c['id']}.ogg" if len(steps) == 1 else f"{c['id']}-{i + 1}.ogg"
-        ff("-i", w, "-af", f"volume={g:.2f}dB", "-c:a", "libopus", "-b:a", "128k", os.path.join(out_dir, name))
+        ff("-i", w, "-af", f"volume={g:.2f}dB", "-c:a", "libopus", "-b:a", "128k", *tags(c, s), os.path.join(out_dir, name))
         files.append({"label": s["label"], "file": f"audio/{name}"})
     name = value(c, steps[0], "instrument") if "source" not in steps[0] else c.get("instrument")
     menu = instrument(name).get("menu", {}) if name else {}

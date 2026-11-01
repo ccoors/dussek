@@ -29,6 +29,7 @@
     return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0");
   }
   function play(control, keepTime) {
+    if (!canOpus) { current = control; cannot("This browser cannot play the clips (Ogg Opus): a newer one can."); return; }
     var src = control.getAttribute("data-src");
     var at = keepTime ? audio.currentTime : 0;
     if (current === control && !audio.paused) {
@@ -54,6 +55,18 @@
   audio.addEventListener("pause", function () { mark(current, false); barButton.textContent = "Play"; });
   audio.addEventListener("ended", function () { mark(current, false); barButton.textContent = "Play"; });
   audio.addEventListener("timeupdate", function () { barTime.textContent = clock(audio.currentTime) + " / " + clock(audio.duration); });
+  // a browser without Ogg Opus (older Safari) says so instead of seeming to play
+  var canOpus = audio.canPlayType('audio/ogg; codecs="opus"') !== "";
+  function cannot(text) {
+    mark(current, false);
+    barTitle.textContent = text;
+    barTime.textContent = "";
+    barButton.textContent = "Play";
+    bar.classList.add("on");
+  }
+  audio.addEventListener("error", function () {
+    cannot(canOpus ? "This clip did not load." : "This browser cannot play the clips (Ogg Opus): a newer one can.");
+  });
   barButton.addEventListener("click", function () {
     if (audio.paused) audio.play().catch(function () {}); else audio.pause();
   });
@@ -80,6 +93,7 @@
   var showcase = document.querySelector(".showcase");
   var track = showcase && showcase.querySelector(".cards");
   var wide = window.matchMedia("(min-width: 761px)");
+  var focused = -1;
   function travel() {
     if (!track) return;
     if (reduce || !wide.matches) { track.style.removeProperty("--shift"); return; }
@@ -90,12 +104,26 @@
     var cards = track.children;
     if (cards.length < 3) return;
     var step = cards[1].offsetLeft - cards[0].offsetLeft;
-    var index = Math.round(p * (cards.length - 2));
+    // the keyboard's card, while the focus is on one; else the scroll's
+    var index = focused >= 0 ? Math.min(focused, cards.length - 2) : Math.round(p * (cards.length - 2));
     track.style.setProperty("--shift", (-index * step) + "px");
   }
   window.addEventListener("scroll", travel, { passive: true });
   window.addEventListener("resize", travel);
   travel();
+  // a card reached by the keyboard comes into view, two whole cards as at rest; the focus scrolls the
+  // clipped window by itself, so that scroll is taken back and the travel follows the focus instead
+  if (track) {
+    var win = track.parentElement;
+    win.addEventListener("scroll", function () { if (win.scrollLeft !== 0) win.scrollLeft = 0; });
+    track.addEventListener("focusin", function (e) {
+      focused = Array.prototype.indexOf.call(track.children, e.target.closest(".card"));
+      travel();
+    });
+    track.addEventListener("focusout", function (e) {
+      if (!track.contains(e.relatedTarget)) { focused = -1; travel(); }
+    });
+  }
 
   // ---- the download: the visitor's system first
   var form = document.querySelector(".installer");

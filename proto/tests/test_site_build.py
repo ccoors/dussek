@@ -25,7 +25,7 @@ class Links(html.parser.HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         for k, v in attrs:
-            if k in ("href", "src", "poster") and v:
+            if k in ("href", "src", "poster", "data-src") and v:
                 self.refs.append(v)
 
 
@@ -82,8 +82,15 @@ def test_every_link_resolves(site):
 
 
 def test_performances_carry_their_license(site):
+    # each performance marked by its own name, apart from the CC0 pieces; the citation on the page
     page = open(f"{site}/index.html", encoding="utf-8").read()
-    assert page.count("CC BY-NC-SA 4.0") >= 1 and "Hawthorne" in page and "MAESTRO" in page
+    assert "Hawthorne" in page and "MAESTRO" in page
+    clips = tomllib.load(open(f"{P.REPO}/site/clips.toml", "rb"))["clip"]
+    for c in clips:
+        if c["section"] == "performance":
+            at = page.index(f'data-src="audio/{c["id"]}.ogg"')
+            name_end = page.index("</button>", at)
+            assert "CC BY-NC-SA 4.0" in page[name_end:name_end + 200], f"{c['id']}: not marked where it is named"
 
 
 def test_credits_name_every_instrument(site):
@@ -103,3 +110,22 @@ def test_no_external_fonts_or_scripts(site):
         for ref in p.refs:
             if ref.endswith((".js", ".css", ".woff2")):
                 assert not urlparse(ref).scheme, f"{page}: {ref} is not the site's own"
+
+
+def test_a_missing_clip_is_a_broken_link(tmp_path):
+    # the players' sources are links too: a render that went missing is reported
+    fixture_renders(tmp_path / "out")
+    r = subprocess.run([sys.executable, BUILD, "--renders", str(tmp_path / "out"), "--out", str(tmp_path / "public")],
+                       capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr
+    os.remove(tmp_path / "public" / "audio" / "grand.ogg")
+    check = subprocess.run([sys.executable, f"{P.REPO}/site/check_links.py", str(tmp_path / "public")], capture_output=True, text=True)
+    assert check.returncode == 1 and "audio/grand.ogg" in check.stdout + check.stderr
+
+
+def test_a_release_rebuilds_the_site():
+    # a release made with the workflow's own token starts no workflow by its event: the release job
+    # starts the site's run itself, on main (the Pages environment deploys from main only)
+    release = open(f"{P.REPO}/.github/workflows/release.yml").read()
+    publish = release[release.index("  publish:"):]
+    assert "gh workflow run site.yml --ref main" in publish and "actions: write" in publish

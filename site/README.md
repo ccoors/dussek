@@ -19,5 +19,7 @@ site/screenshots.sh site/out/screenshots   # the standalone on a virtual display
 - `midi/maestro/`: three performances from the MAESTRO dataset, CC BY-NC-SA 4.0 with their
   citation (`LICENSE.md`); their renders carry the same license.
 - `sounds/`: the audio input's sound (CC0, `LICENSE.md`).
+- `.github/workflows/site.yml` builds and deploys it: the release workflow starts it once a release is
+  published, or it runs by hand. `check_links.py` checks every link of the built pages first.
 - Each clip sits at −18 LUFS (true peak at most −1 dBFS); a feature's steps share one gain, so
   their differences in level stay, unless the clip says `match = "each"`.

@@ -8,6 +8,7 @@ the download) and credits.html (every instrument's LICENSE.md, the fonts, the MA
 sounds); the docs stay on GitHub (docs/), where their diagrams render. No external fonts or
 scripts; the pages read without JavaScript (only the play buttons need it)."""
 import argparse
+import hashlib
 import html
 import json
 import os
@@ -35,14 +36,23 @@ def esc(s):
     return html.escape(s, quote=True)
 
 
-def version():
+def version(given=None):
+    """The release the download links name: `given` (the latest published one, in CI), else the code's."""
+    if given:
+        return given.lstrip("v")
     cmake = open(os.path.join(REPO, "plugin", "CMakeLists.txt")).read()
     return re.search(r"project\(dussek-plugin VERSION ([0-9.]+)", cmake).group(1)
 
 
+def stamp(name):
+    """A file's content hash, in its URL: a browser fetches it anew once it changes (Pages caches for minutes)."""
+    return hashlib.sha256(open(os.path.join(HERE, name), "rb").read()).hexdigest()[:10]
+
+
 def page(title, description, body, root="", body_class=""):
     t = open(os.path.join(HERE, "template.html")).read()
-    return t.format(title=esc(title), description=esc(description), body=body, root=root, body_class=body_class)
+    return t.format(title=esc(title), description=esc(description), body=body, root=root, body_class=body_class,
+                    css_v=stamp("style.css"), js_v=stamp("player.js"))
 
 
 def header(root, current=""):
@@ -97,15 +107,18 @@ def index(clips, groups, ver):
   </div>
 </section>'''
 
-    names = []
-    for c in by.get("piece", []) + by.get("performance", []):
-        names.append(f'<button class="name" type="button" data-src="{esc(c["steps"][0]["file"])}" data-title="{esc(c["title"])}">{esc(c.get("short", c["title"]))}</button>')
+    def name(c, mark=""):
+        return (f'<button class="name" type="button" data-src="{esc(c["steps"][0]["file"])}" '
+                f'data-title="{esc(c["title"])}{esc(mark)}">{esc(c.get("short", c["title"]))}</button>')
+    pieces = ", ".join(name(c) for c in by.get("piece", []))
     perf = by.get("performance", [])
-    perf_pianos = ", ".join(f'{esc(c["title"].split(":")[0])} on {esc(c["instrument"])}' for c in perf)
+    # each performance marked where it is named: its own license, not the pieces' CC0
+    performances = ", ".join(f'{name(c, " (MAESTRO, CC BY-NC-SA 4.0)")} <span class="name-license">(on {esc(c["instrument"])}; MAESTRO, CC BY-NC-SA 4.0)</span>' for c in perf)
     work = f'''
 <section id="pieces" class="field field-yellow work" aria-labelledby="pieces-title">
-  <p class="names"><span id="pieces-title" class="names-head">Whole pieces:</span> {", ".join(names)}.</p>
-  <p class="work-note">Four pieces written for Dussek (CC0) on Grand A; three recorded performances replayed: {perf_pianos}.</p>
+  <p class="names"><span id="pieces-title" class="names-head">Whole pieces:</span> {pieces}.</p>
+  <p class="names names-second">Replayed: {performances}.</p>
+  <p class="work-note">The four pieces were written for Dussek (CC0) and play on Grand A; the three performances were recorded on a computer-controlled piano and play again on Dussek's grands.</p>
   <p class="work-note license">{MAESTRO}</p>
 </section>'''
 
@@ -236,6 +249,7 @@ def main():
     ap = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
     ap.add_argument("--renders", default=os.path.join(HERE, "out"))
     ap.add_argument("--out", default=os.path.join(HERE, "public"))
+    ap.add_argument("--version", help="the release the download links name (default: the code's version)")
     args = ap.parse_args()
     manifest = json.load(open(os.path.join(args.renders, "clips.json")))
     if os.path.exists(args.out):
@@ -249,7 +263,7 @@ def main():
         shutil.copy(os.path.join(HERE, f), args.out)
     shutil.copy(os.path.join(REPO, "packaging", "icon", "dussek.png"), os.path.join(args.out, "icon.png"))
     groups = manifest.get("groups") or {}
-    body = index(manifest["clips"], groups, version())
+    body = index(manifest["clips"], groups, version(args.version))
     open(os.path.join(args.out, "index.html"), "w", encoding="utf-8").write(page(
         "Dussek: a physically modeled piano",
         "A free piano, harpsichord, harp and percussion instrument: every note simulated, none recorded. LV2, CLAP, VST3 and a standalone.",

@@ -3518,13 +3518,14 @@ a tag that is not the code's version, or has no section, publishes nothing.
 ## 221. The website
 
 `site/` builds the website at ccoors.github.io/dussek from scripts, so a sound or UI change renews it
-(`site/README.md`); `.github/workflows/site.yml` renders and deploys it on every published release
-and by hand. Nothing rendered is kept in git:
+(`site/README.md`); `.github/workflows/site.yml` renders and deploys it, started by the release
+workflow once a release is published (a release made with the workflow's token starts no workflow by
+its event, and Pages deploys from `main` only) and by hand. Nothing rendered is kept in git:
 
 - **The clips** (`clips.toml`, `render.py`): a demo per menu group on the maintainer's choice of
   its best (Grand A, Upright D, …), phrases composed per kind (`phrases.py`, CC0, each inside its
   instrument's recorded keys), the four original pieces and the Schubert on Grand A, the Scarlatti
-  and the Bach on Grands C and B (MAESTRO, CC BY-NC-SA 4.0, credited), eleven features as steps of
+  and the Bach on Grands C and B (MAESTRO, CC BY-NC-SA 4.0, credited), nine features as steps of
   one phrase, the audio input fed the maintainer's own falling sound (CC0, `midi2wav --input`).
   A clip names plugin controls; `plugin/build/settings_line` turns them into the plugin's own Copy
   CLI line, so the site plays what the plugin plays. Each clip at -18 LUFS, a feature's steps

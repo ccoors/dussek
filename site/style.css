@@ -126,6 +126,8 @@ button { font: inherit; color: inherit; }
 .work { display: flex; flex-direction: column; justify-content: center; gap: 40px; }
 .names { max-width: none; font: 700 clamp(1.5rem, 1rem + 1.8vw, 2.25rem)/1.25 var(--display); letter-spacing: -0.02em; }
 .names-head { margin-right: 0.2em; }
+.names-second { margin-top: -16px; }
+.name-license { font: 400 var(--step-small)/1.4 var(--text); letter-spacing: 0; white-space: nowrap; }
 .name { display: inline; text-align: left; padding: 0 0.12em; margin: 0; border: 0; background: none; font: inherit; color: var(--field-ink);
   text-decoration: underline; text-decoration-thickness: 0.06em; text-underline-offset: 0.16em; cursor: pointer; }
 .name:hover { text-decoration-thickness: 0.14em; }
