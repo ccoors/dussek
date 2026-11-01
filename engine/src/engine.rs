@@ -1755,8 +1755,10 @@ impl Engine {
                         );
                         self.voices[j].pluck_with(&self.inst.notes[j], &spec, hammer_speed, 1.0, harm, 1);
                     } else if let (true, Some((beta, gain_db)), Some(own)) = (p.lute, self.inst.notes[j].spec.lute, self.inst.notes[j].pluck) {
-                        // the lute row: the same strings plucked near the nut
-                        let spec = crate::physics::PluckSpec { beta, amp: own.amp * 10f64.powf(gain_db / 20.0), ..own };
+                        // the lute row: the same strings plucked near the nut by a quill as strong as
+                        // the row's: at one force the string gives way as β(1−β), so less near the nut
+                        let force = beta * (1.0 - beta) / (own.beta * (1.0 - own.beta));
+                        let spec = crate::physics::PluckSpec { beta, amp: own.amp * force * 10f64.powf(gain_db / 20.0), ..own };
                         self.voices[j].pluck_with(&self.inst.notes[j], &spec, hammer_speed, hardness * felt, harm, usize::MAX);
                         if p.prep == Prep::Paper {
                             self.voices[j].start_paper();

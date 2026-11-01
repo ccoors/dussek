@@ -208,3 +208,20 @@ fn the_lute_row_buzzes_with_paper_too() {
     let paper = Params { prep: dussek::Prep::Paper, paper: 1.0, ..quiet(0, true) };
     assert_ne!(run(&inst, paper, &C4, 24000, None), run(&inst, quiet(0, true), &C4, 24000, None));
 }
+
+#[test]
+fn the_lute_row_plucks_as_hard_as_the_8ii_row() {
+    // one quill force: near the nut the string gives way less (its displacement ∝ β(1−β)), so the
+    // fundamental falls by sin(πβ_lute) / sin(πβ_II) and the lute plays under the row, not over it
+    let Some(inst) = load("flemish") else { return };
+    let n = &inst.notes[176 + 39];
+    let (b_lute, _) = n.spec.lute.unwrap();
+    let b_row = n.pluck.unwrap().beta;
+    let want = 20.0 * ((std::f64::consts::PI * b_lute).sin() / (std::f64::consts::PI * b_row).sin()).log10();
+    let f0 = n.f_mean[0];
+    let row = run(&inst, quiet(4, false), &C4, 12000, None);
+    let lute = run(&inst, quiet(0, true), &C4, 12000, None);
+    let got = level(&lute[2400..2400 + 8192], f0) - level(&row[2400..2400 + 8192], f0);
+    assert!((got - want).abs() < 1.0, "the lute's fundamental {got:.1} dB re the row's, want {want:.1}");
+    assert!(energy(&lute) < energy(&row), "the lute louder than its row");
+}

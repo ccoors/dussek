@@ -32,7 +32,11 @@ through `pw-jack`:
   "Dussek". It ends the bridge when the standalone closes.
 - Keyboards are not linked: connect them in a patchbay.
 
-Without the script: `pw-jack plugin/build/bin/dussek`.
+Without the script: `plugin/build/bin/dussek` (or the installed `dussek`). On Linux the standalone
+links its outputs itself when nothing else does: half a second after its ports appear, still
+unlinked, they go to the first playback device JACK lists (under PipeWire the default output, under
+JACK `system:playback_1` and `_2`; a mono device takes both). A session manager or your own routing
+that links them first wins; `DUSSEK_AUTOCONNECT=0` turns it off.
 
 Without a JACK server the standalone plays on its own audio (DPF's fallback: CoreAudio on macOS,
 WASAPI on Windows, PulseAudio or ALSA on Linux) to the default output. It opens every MIDI input
@@ -467,7 +471,7 @@ What they do beyond strings struck or plucked:
 | Grand G | a worn grand recorded softly with the soft pedal down: a quiet piano, narrow dynamics |
 | Grand H | a baby grand recorded close and in mono, every file normalized: its levels from Grand B's recordings, its timbre per layer its own |
 | Grand I | recorded from a reproducing piano at named MIDI velocities: its pp, mf and ff are the takes nearest the velocities the engine plays them at (14, 60, 124); recorded in mono |
-| Harpsichord B | 8′, 4′ and 8′ II registers and a lute row (the header's stops); the 8′ II and the lute derived from the 8′ |
+| Harpsichord B | 8′, 4′ and 8′ II registers and a lute row (the header's stops); the 8′ II and the lute derived from the 8′. The lute's quill pulls as hard as the 8′ II's, near the nut: nasal and quieter |
 | Harpsichord E | a French double of 1755: the lower manual's 8′ and the upper manual's (the 8′ II), each recorded; F1–F6 |
 | Harpsichord F | an English single of 1709: its two 8′ choirs, each recorded (the 8′ and the 8′ II); G1–D6, the bass a short octave in the original, chromatic here |
 | Harpsichords | the buff stop; the hardness is the quill's lowpass |
