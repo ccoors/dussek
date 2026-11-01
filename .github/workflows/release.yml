@@ -57,7 +57,7 @@ jobs:
         run: |
           version=${PORTABLE#dist/dussek-}
           version=${version%-windows}
-          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" /Q "/DVersion=$version" "/DSource=$(cygpath -w "$PORTABLE")" packaging/windows/dussek.iss
+          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" /Q "/DVersion=$version" "/DSource=$(cygpath -w "$PWD/$PORTABLE")" packaging/windows/dussek.iss
           echo "SETUP=dist/dussek-$version-windows-setup.exe" >> "$GITHUB_ENV"
       - name: Installed, listed, uninstalled
         run: packaging/windows/check-install.sh "$SETUP" "$PORTABLE"
