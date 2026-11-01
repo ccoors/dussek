@@ -26,6 +26,10 @@ Nothing in progress; the next item comes from below.
   plucker takes the old motion at its point, then releases: mostly the guitars' tremolo).
 - **Morphing beyond the pianos.** The other groups (harpsichords, plucked strings, percussion),
   then across families. [Notes](docs/roadmap-notes.md#morphing)
+- **Levels: the lute stop and the morph.** Harpsichord B's lute plays about 9 dB above the plain
+  stop (heard as too loud), and Grand A morphed halfway to Grand B measures 4.6 dB above Grand A
+  and 1.3 dB above Grand B (the website's feature clips, 2026-11-01). Where each comes from (the
+  lute's pluck, the morph's level between its ends), then a fix by ear.
 - **Presets, the rest.** Microphone presets per body type and full presets, shipped and saved
   (step 175), the first two shipped full presets, also in LV2 hosts' preset menus (step 179). Left: shipped
   mic setups for the other bodies; snapshots and a morph between two settings.

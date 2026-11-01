@@ -237,6 +237,11 @@ def main():
             print(f"{entry['id']}: {len(entry['steps'])} file(s)")
     ordered = [entries[c["id"]] for c in clips if c["id"] in entries]
     json.dump({"clips": ordered, "groups": group_members()}, open(manifest_path, "w"), indent=1, ensure_ascii=False)
+    # files of steps or clips since removed from the table
+    used = {os.path.basename(s["file"]) for e in ordered for s in e["steps"]}
+    for f in os.listdir(audio):
+        if f.endswith(".ogg") and f not in used:
+            os.remove(os.path.join(audio, f))
     if args.video:
         video(os.path.join(args.out, "video"))
 

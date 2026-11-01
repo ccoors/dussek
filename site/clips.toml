@@ -127,7 +127,7 @@ license = "maestro"
 id = "schubert"
 section = "performance"
 title = "Schubert: Impromptu in G-flat major, Op. 90 No. 3"
-instrument = "grand_d"
+instrument = "grand_a"
 midi = "site/midi/maestro/schubert-op90-3.mid"
 license = "maestro"
 
@@ -153,13 +153,11 @@ section = "feature"
 title = "Preparations"
 instrument = "grand_a"
 midi = "f-piano"
-listen = "Things on the strings: a bolt between them, paper over them, a finger at a node (harmonics), the strings plucked."
+listen = "Things done to the strings: paper laid over them (a buzz), the strings plucked instead of struck."
 match = "together"
 steps = [
   { label = "None", set = { preparation = 0 } },
-  { label = "Bolt", set = { preparation = 4 } },
   { label = "Paper", set = { preparation = 5 } },
-  { label = "Harmonic", set = { preparation = 3 } },
   { label = "Plucked", set = { preparation = 1 } },
 ]
 
@@ -183,26 +181,11 @@ section = "feature"
 title = "Morphing"
 instrument = "grand_a"
 midi = "f-piano"
-listen = "Grand A, an instrument halfway to Grand B that no recording holds, and Grand B."
+listen = "Grand A, then an instrument halfway to Grand B that no recording holds."
 match = "together"
 steps = [
   { label = "Grand A" },
-  { label = "Halfway", morph = ["instruments/grand_b=0.5"] },
-  { label = "Grand B", instrument = "grand_b" },
-]
-
-[[clip]]
-id = "microphones"
-section = "feature"
-title = "Microphones"
-instrument = "grand_a"
-midi = "f-piano"
-listen = "Where the microphones stand: at the player, in the audience, and with the lid taken off."
-match = "together"
-steps = [
-  { label = "Player", set = { mic_position = 1 } },
-  { label = "Audience", set = { mic_position = 2 } },
-  { label = "Lid removed", set = { mic_position = 1, lid_off = 1 } },
+  { label = "Halfway to Grand B", morph = ["instruments/grand_b=0.5"] },
 ]
 
 [[clip]]
@@ -211,14 +194,12 @@ section = "feature"
 title = "Pedals"
 instrument = "grand_a"
 midi = "f-piano"
-listen = "No pedal, the sustain pedal changed with the harmony, half pedal, the sostenuto holding only the first chord, the soft pedal."
+listen = "No pedal, the sustain pedal changed with the harmony, the sostenuto holding only the first chord."
 match = "together"
 steps = [
   { label = "No pedal", midi = "f-piano-dry" },
   { label = "Pedal", midi = "f-piano" },
-  { label = "Half pedal", midi = "f-piano-half" },
   { label = "Sostenuto", midi = "f-piano-sostenuto" },
-  { label = "Soft pedal", midi = "f-piano-soft" },
 ]
 
 [[clip]]

@@ -142,7 +142,7 @@ def kalimba():
 
 # the features' phrases: short, the same music plain and with the feature
 
-def feature_piano(pedal=True, half=False, soft=False, sostenuto=False):
+def feature_piano(pedal=True, sostenuto=False):
     """A held chord and a line over it (8 s): the base for the pedal comparisons."""
     p = Piece("Feature phrase", 76, seed=9)
     p.seq(0, "C3+G3+E4:4_ | F2+C3+A3:4_ | G2+D3+B3:4_ | C3+G3+E4:4_", 58, legato=0.98)
@@ -151,13 +151,10 @@ def feature_piano(pedal=True, half=False, soft=False, sostenuto=False):
         p.sostenuto(0.3, True)
         p.sostenuto(15.5, False)
     elif pedal:
-        depth = 64 if half else 127
-        p.pedal(0, 0, depth)
+        p.pedal(0, 0, 127)
         for t in (4, 8, 12):
-            p.change(t, depth)
-        p.pedal(15.5, depth, 0, 0.4)
-    if soft:
-        p.soft(0, 0, 127, 0.05)
+            p.change(t)
+        p.pedal(15.5, 127, 0, 0.4)
     return p
 
 
@@ -209,7 +206,6 @@ PHRASES = {
     "piano": piano, "harpsichord": harpsichord, "clavichord": clavichord, "harp": harp, "guitar": guitar,
     "zither": zither, "vibraphone": vibraphone, "kalimba": kalimba,
     "f-piano": feature_piano, "f-piano-dry": lambda: feature_piano(pedal=False),
-    "f-piano-half": lambda: feature_piano(half=True), "f-piano-soft": lambda: feature_piano(soft=True),
     "f-piano-sostenuto": lambda: feature_piano(sostenuto=True),
     "f-chords": feature_chords, "f-mallets": feature_mallets, "f-harpsichord": feature_harpsichord,
     "f-clavichord": feature_clavichord, "f-clavichord-plain": lambda: feature_clavichord(bebung=False),
