@@ -75,17 +75,20 @@ fn too_few_keys_guess_nothing() {
 
 #[test]
 fn the_donor_with_the_closest_overtones() {
-    // a donor scored by its own tracks: a set with exactly a donor's nominal ratios picks it
+    // a donor scored by its own tracks: a set with exactly a donor's nominal ratios picks it (at the
+    // keys where its main track lies among the upper modes: the tongue drum's shell mode, 758 Hz,
+    // is 1.15 × its top tongue's fundamental)
     let repo = Repo::from_env();
     let kinds = project::kinds(&repo);
     let k = kinds.iter().find(|k| k.bar_like && k.donors.len() > 2).unwrap();
     for d in &k.donors {
         let (tracks, _) = kind::donor_tracks(&repo, d).unwrap();
-        let notes = [60i64, 64, 67, 72, 76, 79];
         let ratios_at = |n: i64| -> Vec<f32> { tracks.as_array().unwrap().iter().map(|t| kind::nominal(t, n)).collect() };
+        let notes: Vec<i64> = [60i64, 64, 67, 72, 76, 79].into_iter().filter(|&n| ratios_at(n).get(1).is_none_or(|&r| r >= kind::UPPER_FROM)).collect();
+        assert!(notes.len() >= 4, "{d}: {notes:?}");
         let mut m = Measures::default();
         let mut items = Vec::new();
-        for &n in &notes {
+        for &n in notes.iter() {
             let path = format!("/s/{n}.wav");
             take(&mut m, &path, midi_hz(n as f64), &ratios_at(n));
             items.push(json!({"path": path, "note": n, "dynamic": "mf", "layer": 1, "layers": 1}).as_object().unwrap().clone());

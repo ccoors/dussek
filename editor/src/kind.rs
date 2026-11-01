@@ -129,11 +129,14 @@ pub fn bar_share(keys: &[Key]) -> f32 {
 
 /// a key's upper modes: its strongest peaks (PEAK_DB or more) from 1.3 times the fundamental up
 /// to the profile's limit, peaks within 3 % of a stronger one merged, strongest first
+/// the upper modes from this ratio to the fundamental on
+pub const UPPER_FROM: f32 = 1.3;
+
 fn upper_modes(k: &Key) -> Vec<f32> {
     let limit = (0.9 * k.nyquist).min(16000.0);
     let mut out: Vec<f32> = Vec::new();
     for p in &k.peaks {
-        if p[1] >= PEAK_DB && p[0] >= 1.3 * k.f1 && p[0] <= limit && !out.iter().any(|f| (p[0] / f - 1.0).abs() < 0.03) {
+        if p[1] >= PEAK_DB && p[0] >= UPPER_FROM * k.f1 && p[0] <= limit && !out.iter().any(|f| (p[0] / f - 1.0).abs() < 0.03) {
             out.push(p[0]);
         }
         if out.len() == SET_MODES {
