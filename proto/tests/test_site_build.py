@@ -89,7 +89,7 @@ def test_performances_carry_their_license(site):
     for c in clips:
         if c["section"] == "performance":
             at = page.index(f'data-src="audio/{c["id"]}.ogg"')
-            name_end = page.index("</button>", at)
+            name_end = page.index("</a>", at)
             assert "CC BY-NC-SA 4.0" in page[name_end:name_end + 200], f"{c['id']}: not marked where it is named"
 
 
@@ -129,3 +129,77 @@ def test_a_release_rebuilds_the_site():
     release = open(f"{P.REPO}/.github/workflows/release.yml").read()
     publish = release[release.index("  publish:"):]
     assert "gh workflow run site.yml --ref main" in publish and "actions: write" in publish
+
+
+class Tags(html.parser.HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.tags = []
+
+    def handle_starttag(self, tag, attrs):
+        self.tags.append((tag, dict(attrs)))
+
+
+def tags_of(page):
+    p = Tags()
+    p.feed(open(page, encoding="utf-8").read())
+    return p.tags
+
+
+def test_each_page_has_one_main(site):
+    for page in ("index.html", "credits.html"):
+        assert [t for t, _ in tags_of(f"{site}/{page}")].count("main") == 1, page
+
+
+def test_play_controls_are_links_without_javascript(site):
+    # each player's control is a link to its file: without the script it opens the clip; with it, the
+    # page's player plays it
+    controls = [(t, a) for t, a in tags_of(f"{site}/index.html") if "data-src" in a]
+    assert controls
+    for t, a in controls:
+        assert t == "a" and a.get("href") == a["data-src"], (t, a)
+
+
+def build(tmp_path, change):
+    fixture_renders(tmp_path / "out")
+    manifest = json.load(open(tmp_path / "out" / "clips.json"))
+    change(manifest["clips"])
+    json.dump(manifest, open(tmp_path / "out" / "clips.json", "w"))
+    r = subprocess.run([sys.executable, BUILD, "--renders", str(tmp_path / "out"), "--out", str(tmp_path / "public")],
+                       capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr
+    return open(tmp_path / "public" / "index.html", encoding="utf-8").read()
+
+
+def test_the_counts_and_names_follow_the_clips(tmp_path):
+    def change(clips):
+        demos = [c for c in clips if c["section"] == "demo"]
+        pieces = [c for c in clips if c["section"] == "piece"]
+        clips.remove(demos[0])
+        clips.remove(pieces[0])
+        for c in pieces:
+            c["instrument"] = "Grand Z"
+    page = build(tmp_path, change)
+    clips = tomllib.load(open(f"{P.REPO}/site/clips.toml", "rb"))["clip"]
+    words = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"]
+    demos = sum(c["section"] == "demo" for c in clips) - 1
+    pieces = sum(c["section"] == "piece" for c in clips) - 1
+    performances = sum(c["section"] == "performance" for c in clips)
+    assert f"{words[demos - 1].capitalize()} kinds of instrument" in page
+    assert f"The {words[pieces - 1]} pieces were written for Dussek (CC0) and play on Grand Z" in page
+    assert f"the {words[performances - 1]} performances" in page
+
+
+def load_build():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("site_build", BUILD)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_credits_escape_raw_html():
+    # a license file's text is text: a tag in it shows, it does not run; its links stay links
+    out = load_build().md("A <script>alert(1)</script> and <https://example.org/x>.")
+    assert "<script>" not in out and "&lt;script&gt;" in out
+    assert '<a href="https://example.org/x">' in out

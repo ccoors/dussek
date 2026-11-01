@@ -6,7 +6,7 @@
 index.html (the demos, the pieces and performances, the ensemble video, the features, the window,
 the download) and credits.html (every instrument's LICENSE.md, the fonts, the MAESTRO files, the
 sounds); the docs stay on GitHub (docs/), where their diagrams render. No external fonts or
-scripts; the pages read without JavaScript (only the play buttons need it)."""
+scripts; the pages work without JavaScript (each play control is a link to its clip)."""
 import argparse
 import hashlib
 import html
@@ -36,6 +36,16 @@ def esc(s):
     return html.escape(s, quote=True)
 
 
+def count(n):
+    """A small number as a word ("nine"); a larger one in digits."""
+    words = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"]
+    return words[n] if n < len(words) else str(n)
+
+
+def listing(names):
+    return names[0] if len(names) == 1 else ", ".join(names[:-1]) + " and " + names[-1]
+
+
 def version(given=None):
     """The release the download links name: `given` (the latest published one, in CI), else the code's."""
     if given:
@@ -63,9 +73,15 @@ def header(root, current=""):
             f'<nav aria-label="Site">{items}</nav><a class="button" href="{root}index.html#download">Download</a></header>')
 
 
+def control(cls, src, title, inner, extra=""):
+    """A player's control: a link to its clip (without the script the browser plays it), the page's
+    player with it (player.js makes it a toggle button)."""
+    return f'<a class="{cls}" href="{esc(src)}" data-src="{esc(src)}" data-title="{esc(title)}"{extra}>{inner}</a>'
+
+
 def play_button(src, label, text="Play"):
-    return (f'<button class="play" type="button" data-src="{esc(src)}" data-title="{esc(label)}" aria-label="{esc(text)}: {esc(label)}">'
-            f'<span class="play-icon" aria-hidden="true"></span><span class="play-text">{esc(text)}</span></button>')
+    return control("play", src, label, f'<span class="play-icon" aria-hidden="true"></span><span class="play-text">{esc(text)}</span>',
+                   f' aria-label="{esc(text)}: {esc(label)}"')
 
 
 def index(clips, groups, ver):
@@ -87,7 +103,7 @@ def index(clips, groups, ver):
     for c in by.get("demo", []):
         group = c.get("group") or ""
         others = [n for n in groups.get(group, []) if n != c["instrument"]]
-        also = f"Also {', '.join(others[:-1]) + ' and ' + others[-1] if len(others) > 1 else others[0]}." if others else "The only one of its kind."
+        also = f"Also {listing(others)}." if others else "The only one of its kind."
         cards.append(f'''
     <li class="card">
       <img src="{esc(c.get("frame", f"frames/{c['id']}.jpg"))}" alt="{esc(c["instrument"])} playing its demo: the strings as the engine moves them" width="960" height="720" loading="lazy">
@@ -101,16 +117,16 @@ def index(clips, groups, ver):
 <section id="listen" class="showcase" aria-labelledby="listen-title">
   <div class="showcase-stage">
     <img class="showcase-ground" src="screenshots/grand-visualization.png" alt="" width="1800" height="1248">
-    <h2 id="listen-title" class="showcase-title">Nine kinds of instrument</h2>
+    <h2 id="listen-title" class="showcase-title">{count(len(cards)).capitalize()} kinds of instrument</h2>
     <div class="cards-window"><ol class="cards">{"".join(cards)}
     </ol></div>
   </div>
 </section>'''
 
     def name(c, mark=""):
-        return (f'<button class="name" type="button" data-src="{esc(c["steps"][0]["file"])}" '
-                f'data-title="{esc(c["title"])}{esc(mark)}">{esc(c.get("short", c["title"]))}</button>')
+        return control("name", c["steps"][0]["file"], c["title"] + mark, esc(c.get("short", c["title"])))
     pieces = ", ".join(name(c) for c in by.get("piece", []))
+    played_on = listing(list(dict.fromkeys(c["instrument"] for c in by.get("piece", []))) or ["Dussek"])
     perf = by.get("performance", [])
     # each performance marked where it is named: its own license, not the pieces' CC0
     performances = ", ".join(f'{name(c, " (MAESTRO, CC BY-NC-SA 4.0)")} <span class="name-license">(on {esc(c["instrument"])}; MAESTRO, CC BY-NC-SA 4.0)</span>' for c in perf)
@@ -118,7 +134,7 @@ def index(clips, groups, ver):
 <section id="pieces" class="field field-yellow work" aria-labelledby="pieces-title">
   <p class="names"><span id="pieces-title" class="names-head">Whole pieces:</span> {pieces}.</p>
   <p class="names names-second">Replayed: {performances}.</p>
-  <p class="work-note">The four pieces were written for Dussek (CC0) and play on Grand A; the three performances were recorded on a computer-controlled piano and play again on Dussek's grands.</p>
+  <p class="work-note">The {count(len(by.get("piece", [])))} pieces were written for Dussek (CC0) and play on {esc(played_on)}; the {count(len(perf))} performances were recorded on a computer-controlled piano and play again on Dussek's grands.</p>
   <p class="work-note license">{MAESTRO}</p>
 </section>'''
 
@@ -136,9 +152,7 @@ def index(clips, groups, ver):
 
     rows = []
     for c in by.get("feature", []):
-        steps = "".join(
-            f'<button type="button" class="step" data-src="{esc(s["file"])}" data-title="{esc(c["title"])}: {esc(s["label"])}" '
-            f'aria-pressed="false">{esc(s["label"])}</button>' for s in c["steps"])
+        steps = "".join(control("step", s["file"], f'{c["title"]}: {s["label"]}', esc(s["label"])) for s in c["steps"])
         rows.append(f'''
     <li class="feature" data-feature="{esc(c["id"])}">
       <h3>{esc(c["title"])}</h3>
@@ -189,7 +203,7 @@ def index(clips, groups, ver):
   </form>
 </section>'''
 
-    return hero + showcase + work + ensemble + features + window + download + footer("")
+    return '<main id="main">' + hero + showcase + work + ensemble + features + window + download + "</main>" + footer("")
 
 
 def footer(root):
@@ -211,6 +225,8 @@ def footer(root):
 
 
 def md(text):
+    """A license file's Markdown as HTML; a tag in it shown as text (its <https://…> links kept)."""
+    text = re.sub(r"<(?!https?://)", "&lt;", text)
     return markdown.markdown(text, extensions=["tables", "fenced_code", "toc"])
 
 

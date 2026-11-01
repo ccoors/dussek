@@ -1,7 +1,7 @@
 // Dussek's website: one player for the page (a play button, a piece's name, a feature's step), the
 // features' A/B (a step switched while playing keeps its place), the demos' cards travelling across
-// the held picture, the download's system, the entrances. Without it the page still works: the
-// buttons are then inert and the video and the download links are plain.
+// the held picture, the download's system, the entrances. Without it the page still works: each play
+// control is a link the browser plays, and the video and the download links are plain.
 (function () {
   "use strict";
   document.documentElement.classList.add("js");
@@ -20,6 +20,27 @@
   var barTitle = bar.querySelector(".now-title");
   var barTime = bar.querySelector(".now-time");
   var barButton = bar.querySelector("button");
+  // out of the tab order and the reading until it first shows
+  bar.inert = true;
+  bar.setAttribute("aria-hidden", "true");
+  barButton.tabIndex = -1;
+  function showBar() {
+    if (bar.classList.contains("on")) return;
+    bar.classList.add("on");
+    bar.inert = false;
+    bar.removeAttribute("aria-hidden");
+    barButton.removeAttribute("tabindex");
+    // the page's end clear of it (the footer's links on a phone)
+    document.documentElement.style.setProperty("--now-h", bar.offsetHeight + 16 + "px");
+    document.documentElement.classList.add("playing");
+  }
+  // a step switched while playing seeks the new file once it loads: one pending time, so a quick
+  // second choice does not inherit the first one's
+  var seekTo = 0;
+  audio.addEventListener("loadedmetadata", function () {
+    if (seekTo > 0) audio.currentTime = Math.min(seekTo, Math.max(0, audio.duration - 0.05));
+    seekTo = 0;
+  });
 
   function mark(control, on) {
     if (control) control.setAttribute("aria-pressed", on ? "true" : "false");
@@ -39,22 +60,20 @@
     if (current && current !== control) mark(current, false);
     current = control;
     if (audio.getAttribute("src") !== src) {
+      seekTo = at;
       audio.src = src;
-      if (at > 0) {
-        audio.addEventListener("loadedmetadata", function seek() {
-          audio.removeEventListener("loadedmetadata", seek);
-          audio.currentTime = Math.min(at, Math.max(0, audio.duration - 0.05));
-        });
-      }
     }
     barTitle.textContent = control.getAttribute("data-title");
-    bar.classList.add("on");
+    showBar();
     audio.play().catch(function () {});
   }
   audio.addEventListener("play", function () { mark(current, true); barButton.textContent = "Pause"; });
   audio.addEventListener("pause", function () { mark(current, false); barButton.textContent = "Play"; });
   audio.addEventListener("ended", function () { mark(current, false); barButton.textContent = "Play"; });
-  audio.addEventListener("timeupdate", function () { barTime.textContent = clock(audio.currentTime) + " / " + clock(audio.duration); });
+  // the length once known (a server that does not say a file's size leaves it unknown while it streams)
+  audio.addEventListener("timeupdate", function () {
+    barTime.textContent = clock(audio.currentTime) + (isFinite(audio.duration) ? " / " + clock(audio.duration) : "");
+  });
   // a browser without Ogg Opus (older Safari) says so instead of seeming to play
   var canOpus = audio.canPlayType('audio/ogg; codecs="opus"') !== "";
   function cannot(text) {
@@ -62,7 +81,7 @@
     barTitle.textContent = text;
     barTime.textContent = "";
     barButton.textContent = "Play";
-    bar.classList.add("on");
+    showBar();
   }
   audio.addEventListener("error", function () {
     cannot(canOpus ? "This clip did not load." : "This browser cannot play the clips (Ogg Opus): a newer one can.");
@@ -80,7 +99,16 @@
       current.closest(".feature") === b.closest(".feature") && current !== b && !audio.paused;
     play(b, same);
   });
-  document.querySelectorAll("[data-src]").forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
+  // the links to the clips become toggle buttons: pressed while theirs plays, Space plays as Enter does
+  document.querySelectorAll("[data-src]").forEach(function (b) {
+    b.setAttribute("role", "button");
+    b.setAttribute("aria-pressed", "false");
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== " " || !e.target.closest) return;
+    var b = e.target.closest("[data-src]");
+    if (b) { e.preventDefault(); b.click(); }
+  });
   // the video and the page's audio: one at a time
   document.querySelectorAll("video").forEach(function (v) {
     v.addEventListener("play", function () { audio.pause(); });
@@ -139,9 +167,18 @@
     form.addEventListener("change", function (e) { if (e.target.name === "os") pick(e.target); });
     form.addEventListener("submit", function (e) { e.preventDefault(); window.location = go.href; });
     var ua = navigator.userAgent;
-    var os = /Mac/.test(ua) ? "macos" : /Linux|X11/.test(ua) && !/Android/.test(ua) ? "linux" : "windows";
-    var input = form.querySelector('input[value="' + os + '"]');
-    if (input) { input.checked = true; pick(input); }
+    // a phone or a tablet (an iPad says "Macintosh" but has touch points): no system of its own to offer
+    var handheld = /iPhone|iPad|iPod|Android/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+    if (handheld) {
+      form.querySelectorAll('input[name="os"]').forEach(function (i) { i.checked = false; });
+      go.href = base.replace("/releases/download/", "/releases/tag/").replace(/\/$/, "");
+      go.textContent = "All downloads";
+      note.textContent = "Dussek runs on a computer (Windows, macOS or Linux), not on a phone or a tablet: choose the computer's system.";
+    } else {
+      var os = /Mac/.test(ua) ? "macos" : /Linux|X11/.test(ua) ? "linux" : "windows";
+      var input = form.querySelector('input[value="' + os + '"]');
+      if (input) { input.checked = true; pick(input); }
+    }
   }
 
   // ---- entrances: each part of a section rising in, once

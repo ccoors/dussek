@@ -106,7 +106,7 @@ button { font: inherit; color: inherit; }
 .js .card img { aspect-ratio: auto; height: min(380px, 42svh); }
 
 /* play buttons */
-.play { display: inline-flex; align-items: center; gap: 10px; background: var(--field-ink); color: #fff; border: 0; border-radius: 999px;
+.play { display: inline-flex; align-items: center; gap: 10px; background: var(--field-ink); color: #fff; border: 0; border-radius: 999px; text-decoration: none;
   padding: 12px 20px 12px 16px; font: 700 var(--step-body)/1 var(--display); cursor: pointer; transition: transform 160ms var(--ease); }
 .play:hover { transform: scale(1.04); }
 .play:active { transform: scale(0.97); }
@@ -148,7 +148,8 @@ button { font: inherit; color: inherit; }
 .feature-head h2 { color: #1f5a33; }
 .feature-body { grid-column: 8 / 13; font-size: var(--step-body); display: grid; gap: 14px; }
 .steps { display: flex; flex-wrap: wrap; gap: 8px; }
-.step { background: #74cf8b; color: var(--field-ink); border: 0; border-radius: 999px; padding: 9px 16px; font: 600 var(--step-small)/1 var(--display); cursor: pointer;
+.step { display: inline-flex; align-items: center; min-height: 44px; background: #74cf8b; color: var(--field-ink); border: 0; border-radius: 999px;
+  padding: 9px 18px; font: 600 var(--step-small)/1 var(--display); text-decoration: none; cursor: pointer;
   transition: transform 160ms var(--ease), background-color 160ms var(--ease); }
 .step:hover { background: #63c27b; }
 .step:active { transform: scale(0.96); }
@@ -199,14 +200,14 @@ button { font: inherit; color: inherit; }
 .now.on { transform: none; }
 .now-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .now-time { font-variant-numeric: tabular-nums; color: var(--muted); }
-.now button { background: var(--accent); color: var(--accent-ink); border: 0; padding: 8px 14px; font: inherit; cursor: pointer; }
+.now button { min-height: 44px; background: var(--accent); color: var(--accent-ink); border: 0; padding: 8px 16px; font: inherit; cursor: pointer; }
+.playing .footer { padding-bottom: calc(48px + var(--now-h, 80px)); }
 
 /* entrances: present without the script, risen in with it */
 .js .rise { opacity: 0; transform: translateY(24px); transition: opacity 600ms var(--ease), transform 600ms var(--ease); }
 .js .rise.in { opacity: 1; transform: none; }
 
 /* the credits */
-.doc-page .bar { background: var(--bg); }
 .doc { max-width: 76ch; margin: 0 auto; padding: 48px var(--margin) var(--gap); overflow-wrap: anywhere; }
 .doc h1 { font-size: var(--step-head); margin: 0 0 32px; }
 .doc h2 { font-size: var(--step-lead); margin: 48px 0 16px; letter-spacing: -0.02em; line-height: 1.1; }
