@@ -18,9 +18,9 @@ plays it.
   project caches are not built, returns early or is skipped and names what it needs, so the suites
   pass in a fresh clone.
 - **CI** runs on pull requests and on `main`: on Linux the build, the plugin's UI tests, the
-  prototype's and the editor's suites and `just check`; on macOS and Windows the plugin's build and
-  UI tests where the plugin or the engine changed. The engine's suite, which takes longer, runs by
-  hand (and locally: `just test-engine`).
+  prototype's, the editor's and the engine's suites and `just check`; on macOS and Windows the
+  plugin's build and UI tests where the plugin or the engine changed. The engine's suite takes
+  about 40 min there (locally: `just test-engine`).
 
 ## Commits
 

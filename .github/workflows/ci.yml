@@ -1,6 +1,7 @@
 # Linux, for main and pull requests (a branch is tested locally, `just test`; by hand here from the
-# Actions tab): the build, the plugin's UI tests, the prototype's and the editor's suites, and the
-# checks a commit needs. macOS and Windows: platforms.yml; the engine's suite: engine-tests.yml.
+# Actions tab): the build, the plugin's UI tests, the prototype's and the editor's suites, the checks
+# a commit needs, and beside them the engine's suite (its own job, ~40 min). macOS and Windows:
+# platforms.yml; the engine's suite alone, by hand: engine-tests.yml.
 name: CI
 
 on:
@@ -73,3 +74,18 @@ jobs:
         run: just test-editor
       - name: Nothing stale
         run: just check
+
+  engine:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90  # 40 min on a 4-core runner (2026-10-31)
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: just,cargo-nextest
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: engine -> target
+      - name: The engine's suite
+        run: just test-engine
