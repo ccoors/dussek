@@ -19,9 +19,11 @@ for b in lv2 clap vst3; do
     mkdir -p "$work/$b"
     cp -R "$src/dussek.$b" "$work/$b/"
 done
-for b in "$work/app/Dussek.app" "$work/lv2/dussek.lv2" "$work/clap/dussek.clap" "$work/vst3/dussek.vst3"; do
+for b in "$work/app/Dussek.app" "$work/clap/dussek.clap" "$work/vst3/dussek.vst3"; do
     codesign --force --deep -s - "$b"
 done
+# an LV2 bundle is a plain folder, not a macOS bundle: its libraries are signed one by one
+find "$work/lv2/dussek.lv2" -type f \( -name '*.dylib' -o -name '*.so' \) -exec codesign --force -s - {} \;
 
 component() { # <name> <root> <install location> [scripts]
     local plist="$work/$1.plist"

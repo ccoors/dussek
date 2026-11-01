@@ -16,6 +16,10 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    shell: bash   # bash -eo pipefail: a failing script before a pipe fails its step
+
 jobs:
   version:
     runs-on: ubuntu-24.04
@@ -99,7 +103,7 @@ jobs:
         run: plugin/build/ui_tests
       - name: The portable folder
         run: |
-          out=$(plugin/tools/package.sh macos | tail -n 1)   # an assignment: a failure fails the step
+          out=$(plugin/tools/package.sh macos | tail -n 1)
           echo "PORTABLE=$out" >> "$GITHUB_ENV"
       - name: The package
         run: |
@@ -157,7 +161,8 @@ jobs:
         run: plugin/build/ui_tests
       - name: The portable folder
         run: |
-          out=$(plugin/tools/package.sh windows | tail -n 1)   # an assignment: a failure fails the step
+          set -o pipefail
+          out=$(plugin/tools/package.sh windows | tail -n 1)
           echo "PORTABLE=$out" >> "$GITHUB_ENV"
       - name: Inno Setup
         shell: pwsh

@@ -17,6 +17,10 @@ sudo installer -pkg "$pkg" -target / || fail "the update failed"
 
 for f in /Applications/Dussek.app "$plugins/LV2/dussek.lv2" "$plugins/CLAP/dussek.clap" "$plugins/VST3/dussek.vst3"; do
     [ -e "$f" ] || fail "missing: $f"
+done
+# the bundles' signatures; the LV2's (a plain folder) on its libraries
+for f in /Applications/Dussek.app "$plugins/CLAP/dussek.clap" "$plugins/VST3/dussek.vst3" \
+         $(find "$plugins/LV2/dussek.lv2" -type f \( -name '*.dylib' -o -name '*.so' \)); do
     codesign -v "$f" || fail "no valid signature: $f"
 done
 list=$(/Applications/Dussek.app/Contents/MacOS/dussek list) || fail "dussek list found no instruments"
