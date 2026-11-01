@@ -12,6 +12,8 @@ plays well (a continuous response to velocity, fast repetition, half pedaling, s
 resonance, low latency) and has a character of its own. It is named after Jan Ladislav Dussek
 (1760–1812), the pianist who had the piano's keyboard extended to five and a half octaves.
 
+![The plugin with Grand A: a chord ringing with the sustain pedal held, the Visualization panel showing the strings as the engine moves them](docs/screenshot.png)
+
 <!-- a screenshot: docs/img/plugin-grand.png, the plugin on a grand, taken by a script -->
 
 ## The instruments

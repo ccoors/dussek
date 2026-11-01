@@ -9,6 +9,7 @@ python3 site/render.py --check   # the clip table: instruments, keys, controls, 
 python3 site/render.py           # every clip into site/out/audio/*.ogg and site/out/clips.json
 python3 site/render.py --only grand,pedals
 python3 site/render.py --video   # also the ensemble piece's video (site/out/video)
+site/screenshots.sh site/out/screenshots   # the standalone on a virtual display (Xvfb, xdotool)
 ```
 
 - `clips.toml`: every clip, by section (the menu groups' demos, the original pieces, the real
