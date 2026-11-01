@@ -10,6 +10,9 @@ lib="/Library/Application Support/Dussek/instruments"
 plugins=/Library/Audio/Plug-Ins
 fail() { echo "check-install: $*" >&2; exit 1; }
 
+# the unpacked archive itself, nothing installed: its app plays the instruments beside it
+"$dist/Dussek.app/Contents/MacOS/dussek" list | grep -q "^harp	" || fail "the archive's app does not find its instruments"
+
 sudo installer -pkg "$pkg" -target / || fail "the first install failed"
 sudo mkdir -p "$lib/stale"
 sudo cp "$lib/harp/instrument.json" "$lib/harp/data.bin" "$lib/stale/"

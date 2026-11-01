@@ -26,6 +26,7 @@ struct InstrumentEntry {
 class Catalog {
 public:
     /// the search paths, in precedence order: $DUSSEK_INSTRUMENTS, <resources>/instruments, the
+    /// standalone's own folder's instruments (pe::portableFolder: an unpacked archive), the
     /// system folders' instruments (pe::systemDataDirs: an installer's), the user data folder's
     /// instruments (pe::dataDirs: ~/.local/share/dussek/instruments on Linux), then its snapshots
     /// folder (proto/snapshot.py); unset ones left out

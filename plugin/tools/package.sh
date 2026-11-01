@@ -37,23 +37,27 @@ case $platform in
         cp packaging/icon/dussek.png "$out/dussek.png"
         glibc=$(ldd --version 2>/dev/null | sed -n '1s/.* \([0-9][0-9.]*\)$/\1/p')
         glibc=${glibc:-unknown}
-        how="Install: ./install.sh (for you: ~/.lv2, ~/.clap, ~/.vst3, ~/.local/bin, the instruments in
+        how="Without installing, ./dussek plays the instruments beside it.
+Install: ./install.sh (for you: ~/.lv2, ~/.clap, ~/.vst3, ~/.local/bin, the instruments in
 ~/.local/share/dussek), or sudo ./install.sh --system (for every user, under /usr/local; CLAP in /usr/lib/clap).
 Run it again to update; ./uninstall.sh removes it (your presets and own instruments stay).
 The standalone plays through JACK when a JACK server runs (PipeWire's too), else through the
 system's audio.
 Built with glibc $glibc: a Linux with glibc $glibc or newer." ;;
     macos)
-        how="Install: the release's dussek-$version-macos.pkg does all of this. By hand: copy the folder
-\"instruments\" into ~/Library/Application Support/Dussek, Dussek.app into Applications, the
-bundles into ~/Library/Audio/Plug-Ins/LV2, …/CLAP, …/VST3. Not signed: the first time,
+        how="Install: the release's dussek-$version-macos.pkg does all of this. Without installing,
+Dussek.app plays the instruments beside it: open it from this folder. By hand, for the plugins:
+copy the folder \"instruments\" into ~/Library/Application Support/Dussek, the bundles into
+~/Library/Audio/Plug-Ins/LV2, …/CLAP, …/VST3. Not signed: the first time,
 right-click the app and choose Open, or run
   xattr -dr com.apple.quarantine Dussek.app dussek.lv2 dussek.clap dussek.vst3
 Built for Apple silicon (arm64), macOS 13.3 or newer; not for Intel Macs." ;;
     windows)
-        how="Install: the release's dussek-$version-windows-setup.exe does all of this. By hand: copy the
-folder \"instruments\" into %APPDATA%\\Dussek, dussek.vst3 into C:\\Program Files\\Common Files\\VST3,
-dussek.clap into C:\\Program Files\\Common Files\\CLAP, dussek.lv2 into %APPDATA%\\LV2.
+        how="Install: the release's dussek-$version-windows-setup.exe does all of this. Without installing,
+dussek.exe plays the instruments beside it: start it from this folder. By hand, for the plugins:
+copy the folder \"instruments\" into %APPDATA%\\Dussek, dussek.vst3 into
+C:\\Program Files\\Common Files\\VST3, dussek.clap into C:\\Program Files\\Common Files\\CLAP,
+dussek.lv2 into %APPDATA%\\LV2.
 Started from a console, the standalone first says \"Failed to load JACK DLL\": expected without
 JACK, it then uses the system's audio.
 Built with MinGW (UCRT): Windows 10 or newer, 64 bit. Not signed: Windows may warn about an

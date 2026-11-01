@@ -6051,6 +6051,19 @@ TEST(listing_text_names_each_instrument_once)
     CHECK(listingText(Catalog::scan({ t.path("none") })).empty());
 }
 
+TEST(the_standalone_reads_the_instruments_beside_it)
+{
+    // an archive unpacked anywhere: the standalone (and only it, not a host running the plugin)
+    // reads the instruments folder beside it; on macOS beside its app
+    CHECK(pe::portableFolder("/x/dussek-0.3.0-linux/dussek") == "/x/dussek-0.3.0-linux");
+    CHECK(pe::portableFolder("C:\\x\\dussek-0.3.0-windows\\dussek.exe") == "C:\\x\\dussek-0.3.0-windows");
+    CHECK(pe::portableFolder("C:/x/d/Dussek.exe") == "C:/x/d");
+    CHECK(pe::portableFolder("/x/m/Dussek.app/Contents/MacOS/dussek") == "/x/m");
+    CHECK(pe::portableFolder("/usr/bin/ardour8").empty());
+    CHECK(pe::portableFolder("C:\\Program Files\\REAPER\\reaper.exe").empty());
+    CHECK(pe::portableFolder("dussek").empty() && pe::portableFolder("").empty());
+}
+
 TEST(system_data_dirs_per_platform)
 {
     // the folders an installer fills (the instruments, once), from an environment and a platform

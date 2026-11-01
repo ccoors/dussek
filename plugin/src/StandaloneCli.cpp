@@ -4,6 +4,7 @@
 // and macOS (glibc and dyld pass it the arguments), a static initializer on Windows. Linked into the
 // standalone only.
 #include "Catalog.hpp"
+#include "Paths.hpp"
 #include "dussek.h"
 
 #include <cstdio>
@@ -13,12 +14,6 @@
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#elif defined(__APPLE__)
-#include <mach-o/dyld.h>
-#include <climits>
-#else
-#include <climits>
-#include <unistd.h>
 #endif
 
 namespace {
@@ -27,23 +22,7 @@ namespace {
 // macOS the app's Contents/Resources (empty: the executable not found)
 std::string resourcesFolder()
 {
-    std::string self;
-#ifdef _WIN32
-    char buf[MAX_PATH];
-    const DWORD n = GetModuleFileNameA(nullptr, buf, MAX_PATH);
-    if (n > 0 && n < MAX_PATH)
-        self.assign(buf, n);
-#elif defined(__APPLE__)
-    char buf[PATH_MAX];
-    uint32_t size = sizeof(buf);
-    if (_NSGetExecutablePath(buf, &size) == 0)
-        self = buf;
-#else
-    char buf[PATH_MAX];
-    const ssize_t n = readlink("/proc/self/exe", buf, sizeof(buf));
-    if (n > 0 && (size_t)n < sizeof(buf))
-        self.assign(buf, (size_t)n);
-#endif
+    const std::string self = pe::executablePath();
     const size_t cut = self.find_last_of("/\\");
     if (cut == std::string::npos)
         return std::string();

@@ -17,6 +17,9 @@ ad=$(cygpath -u "$(var APPDATA AppData)")
 fail() { echo "check-install: $*" >&2; exit 1; }
 run() { "$setup" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART "$@" || fail "the installer failed ($*)"; }
 
+# the unpacked archive itself, nothing installed: its standalone plays the instruments beside it
+"$dist/dussek.exe" list | grep -q "^harp	" || fail "the archive's standalone does not find its instruments"
+
 run /COMPONENTS="lv2,clap"
 [ -e "$cf/LV2/dussek.lv2" ] && [ -e "$cf/CLAP/dussek.clap" ] || fail "plugins missing"
 [ ! -e "$cf/VST3/dussek.vst3" ] && [ ! -e "$pf/Dussek/dussek.exe" ] || fail "an unchosen component was installed"

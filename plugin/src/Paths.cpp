@@ -1,7 +1,19 @@
 #include "Paths.hpp"
 
 #include <algorithm>
+#include <cctype>
 #include <cstdlib>
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+#elif defined(__APPLE__)
+#include <climits>
+#include <mach-o/dyld.h>
+#else
+#include <climits>
+#include <unistd.h>
+#endif
 #include <filesystem>
 
 namespace pe {
@@ -96,6 +108,44 @@ std::string standaloneExecutable(const std::string& self, bool selfIsStandalone,
                 return s;
     }
     return std::string();
+}
+
+std::string executablePath()
+{
+#ifdef _WIN32
+    char buf[MAX_PATH];
+    const DWORD n = GetModuleFileNameA(nullptr, buf, MAX_PATH);
+    return n > 0 && n < MAX_PATH ? std::string(buf, n) : std::string();
+#elif defined(__APPLE__)
+    char buf[PATH_MAX];
+    uint32_t size = sizeof(buf);
+    return _NSGetExecutablePath(buf, &size) == 0 ? std::string(buf) : std::string();
+#else
+    char buf[PATH_MAX];
+    const ssize_t n = readlink("/proc/self/exe", buf, sizeof(buf));
+    return n > 0 && (size_t)n < sizeof(buf) ? std::string(buf, (size_t)n) : std::string();
+#endif
+}
+
+std::string portableFolder(const std::string& exe)
+{
+    const size_t cut = exe.find_last_of("/\\");
+    if (cut == std::string::npos)
+        return std::string();
+    std::string name = exe.substr(cut + 1);
+    std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return (char)std::tolower(c); });
+    if (name != "dussek" && name != "dussek.exe")
+        return std::string();
+    std::string dir = exe.substr(0, cut);
+    // macOS: <folder>/Dussek.app/Contents/MacOS/dussek
+    static const std::string inApp = "/Contents/MacOS";
+    if (dir.size() > inApp.size() && dir.compare(dir.size() - inApp.size(), inApp.size(), inApp) == 0) {
+        const std::string app = dir.substr(0, dir.size() - inApp.size());
+        if (app.size() > 4 && app.compare(app.size() - 4, 4, ".app") == 0)
+            if (const size_t up = app.find_last_of('/'); up != std::string::npos)
+                return app.substr(0, up);
+    }
+    return dir;
 }
 
 std::vector<std::string> installedProgramDirs()

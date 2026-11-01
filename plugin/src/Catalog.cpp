@@ -69,6 +69,9 @@ std::vector<std::string> Catalog::searchPaths(const char* resources)
         p.push_back(env);
     if (resources != nullptr)
         p.push_back(std::string(resources) + "/instruments");
+    // the standalone from an unpacked archive: the instruments beside it
+    if (const std::string here = pe::portableFolder(pe::executablePath()); !here.empty())
+        p.push_back(here + "/instruments");
     // an installer's, before the user's: an old copy there (a test build's) does not hide them
     for (const std::string& dir : pe::systemDataDirs())
         p.push_back(dir + "/instruments");

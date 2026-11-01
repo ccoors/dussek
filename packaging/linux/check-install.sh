@@ -13,6 +13,9 @@ unset DUSSEK_INSTRUMENTS
 data="$XDG_DATA_HOME/dussek"
 fail() { echo "check-install: $*" >&2; exit 1; }
 
+# the unpacked archive itself, nothing installed: its standalone plays the instruments beside it
+"$dist/dussek" list | grep -q "^harp	.*$dist/instruments/harp" || fail "the archive's standalone does not find its instruments"
+
 # `just install`'s links (a clone's instruments and builds): refused, nothing written through them
 clone="$tmp/clone"
 mkdir -p "$clone/instruments/harp" "$clone/dussek.lv2" "$data" "$HOME/.lv2"
