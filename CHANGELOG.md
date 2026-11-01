@@ -3,7 +3,7 @@
 What each release changes for a player. From 1.0 on a break needs a major version; before it, a
 break is allowed but listed under "Breaking" (`docs/compatibility.md`).
 
-## 0.3.0 — 2026-11-02
+## 0.3.0 — 2026-11-01
 
 The first release.
 
