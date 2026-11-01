@@ -3672,7 +3672,8 @@ quill lets go at a force, and at one force the string gives way as β(1−β): t
 is now the row's times β_lute(1−β_lute) / β_row(1−β_row) (`Engine`, at the pluck: no format change),
 its fundamental under the row's by sin(πβ_lute) / sin(πβ_row) (`lute.rs`). Step 173's phrase on
 Harpsichord B (EBU R128): the 8′ −30.6 LUFS, the 8′ II −30.2, the lute alone −34.9 (was −23.1), the 8′
-with the lute −28.1 (was −21.5). `LUTE_DB` stays 0 for a trim by ear.
+with the lute −28.1 (was −21.5). Heard as a bit quiet then: `LUTE_DB` +3 dB, the lute alone −31.9
+LUFS (1.7 dB under the 8′ II), the 8′ with the lute −27.0.
 
 <a id="step-227"></a>
 ## 227. The standalone links its outputs

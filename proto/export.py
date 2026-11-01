@@ -194,7 +194,7 @@ DETUNE_SEED = 9208
 ROW2_DB = 0.0          # the 8′ II's level re the 8′ I
 D_LUTE = 0.025         # m: the lute row's distance from the nut
 LUTE_FRAC = 0.6        # on short strings the lute stays this fraction of the 8′ II's point
-LUTE_DB = 0.0          # the lute's level re the 8′ II row
+LUTE_DB = 3.0          # the lute's level re the 8′ II row (by ear: at one quill force a bit quiet, step 226)
 
 
 def choir_beta(beta_main, L):

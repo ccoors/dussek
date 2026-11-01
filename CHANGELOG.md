@@ -15,8 +15,8 @@ break is allowed but listed under "Breaking" (`docs/compatibility.md`).
 - Upright D: its own key release noise, from new recordings of its keys released without a
   note (it borrowed Grand A's): a low thud, at about the old noise's level. Its A5 at ff from a new,
   unclipped recording.
-- Harpsichord B: the lute stop plays under the 8′ II instead of 7 dB over it (its quill pulls as
-  hard as the row's: near the nut the string gives way less).
+- Harpsichord B: the lute stop plays a little under the 8′ II instead of 7 dB over it (its quill
+  pulls as hard as the row's: near the nut the string gives way less).
 
 ### Fixed
 
