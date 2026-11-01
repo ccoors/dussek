@@ -5,7 +5,10 @@
 
 index.html (the demos, the pieces and performances, the ensemble video, the features, the window,
 the download) and credits.html (every instrument's LICENSE.md, the fonts, the MAESTRO files, the
-sounds); the docs stay on GitHub (docs/), where their diagrams render. No external fonts or
+sounds); the docs stay on GitHub (docs/), where their diagrams render. For search engines and
+language models: each page's preview card (docs/social-preview.png), the start page's schema.org
+data, llms.txt (the site in Markdown, linked from each page's head) and sitemap.xml (robots.txt
+would count only at the host's root, outside this site). No external fonts or
 scripts; the pages work without JavaScript (each play control is a link to its clip)."""
 import argparse
 import hashlib
@@ -20,6 +23,9 @@ import markdown
 REPO = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 HERE = os.path.join(REPO, "site")
 GITHUB = "https://github.com/ccoors/dussek"
+SITE = "https://ccoors.github.io/dussek/"
+DESCRIPTION = ("A free piano, harpsichord, harp and percussion instrument: every note simulated, none recorded. "
+               "LV2, CLAP, VST3 and a standalone.")
 DOCS = f"{GITHUB}/tree/main/docs"
 SHOTS = [("grand-visualization", "Grand A with a chord ringing: the Visualization draws each string as the engine moves it"),
          ("grand-felt", "The Felt tab: the hammers' felt, key by key"),
@@ -59,10 +65,78 @@ def stamp(name):
     return hashlib.sha256(open(os.path.join(HERE, name), "rb").read()).hexdigest()[:10]
 
 
-def page(title, description, body, root="", body_class=""):
+def page(title, description, body, root="", body_class="", path="", head=""):
+    """`path`: the page's address under SITE (its canonical URL and its preview card's)."""
     t = open(os.path.join(HERE, "template.html")).read()
     return t.format(title=esc(title), description=esc(description), body=body, root=root, body_class=body_class,
-                    css_v=stamp("style.css"), js_v=stamp("player.js"))
+                    url=esc(SITE + path), site=SITE, head=head, css_v=stamp("style.css"), js_v=stamp("player.js"))
+
+
+def instruments():
+    """The menu's instruments: (directory, menu block), hidden ones left out."""
+    out = []
+    for d in sorted(os.listdir(os.path.join(REPO, "instruments"))):
+        f = os.path.join(REPO, "instruments", d, "instrument.json")
+        if os.path.isfile(f):
+            menu = json.load(open(f)).get("menu", {})
+            if not menu.get("hidden"):
+                out.append((d, menu))
+    return out
+
+
+def by_group(items):
+    """{group: [item]} in the menu's order, bass to treble as on the start page; any other group after them."""
+    order = ["Grand pianos", "Upright pianos", "Harpsichords", "Clavichords", "Harps", "Guitars", "Zithers", "Percussion", "Thumb pianos"]
+    groups = {}
+    for g, item in items:
+        groups.setdefault(g, []).append(item)
+    return {g: groups[g] for g in sorted(groups, key=lambda g: (order.index(g) if g in order else len(order), g))}
+
+
+def installers(v):
+    """The installers: (key, system, file, what it needs and holds)."""
+    return [("windows", "Windows", f"dussek-{v}-windows-setup.exe", "Windows 10 or newer, 64 bit: the standalone in the Start menu, the plugins, an uninstaller."),
+            ("macos", "macOS", f"dussek-{v}-macos.pkg", "Apple silicon, macOS 13.3 or newer: the app, the plugins. Untested: reports welcome."),
+            ("linux", "Linux", f"dussek-{v}-linux.tar.gz", "x86-64, glibc 2.35 or newer: unpack, run ./install.sh.")]
+
+
+def structured(v):
+    """The start page's schema.org data: the software, free, its systems and its release."""
+    data = {"@context": "https://schema.org", "@type": "SoftwareApplication", "name": "Dussek", "url": SITE,
+            "description": DESCRIPTION, "applicationCategory": "MultimediaApplication",
+            "applicationSubCategory": "Virtual instrument (LV2, CLAP, VST3 plugin and standalone)",
+            "operatingSystem": "Linux, Windows, macOS", "softwareVersion": v,
+            "downloadUrl": f"{GITHUB}/releases/tag/v{v}", "image": SITE + "social-preview.png",
+            "license": "https://spdx.org/licenses/AGPL-3.0-or-later", "sameAs": GITHUB,
+            "author": {"@type": "Person", "name": "Christian Friedrich Coors"},
+            "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"}}
+    return '<script type="application/ld+json">' + json.dumps(data, ensure_ascii=False).replace("</", "<\\/") + "</script>"
+
+
+def llms_txt(v):
+    """The site in Markdown for a language model's reader (llmstxt.org)."""
+    groups = by_group((m.get("group", "Other"), m.get("name", d)) for d, m in instruments())
+    lines = ["# Dussek", "", f"> {DESCRIPTION}", "",
+             "Dussek is a physically modeled instrument: each string, bar or tongue is simulated as it is played, "
+             "from measurements of freely licensed recordings; no samples ship with it. It runs as an LV2, CLAP and "
+             "VST3 plugin and as a standalone on Linux, Windows and macOS. "
+             "The code is under the AGPL-3.0-or-later; each instrument under CC BY 4.0 or CC BY-SA 4.0. Free of charge.",
+             "", f"## Instruments ({sum(len(n) for n in groups.values())})", ""]
+    lines += [f"- {g}: {', '.join(sorted(names))}" for g, names in groups.items()]
+    lines += ["", f"## Download (version {v})", ""]
+    lines += [f"- [{name}]({GITHUB}/releases/download/v{v}/{f}): {note}" for _, name, f, note in installers(v)]
+    lines += [f"- [Release notes and the portable archives]({GITHUB}/releases/tag/v{v})", "",
+              "## Docs", "",
+              f"- [Website]({SITE}): demos of every kind of instrument, the features, screenshots",
+              f"- [README]({GITHUB}#readme): what it is, how to install and build it",
+              f"- [Quick start]({GITHUB}/blob/main/docs/quick-start.md): the first notes in a host or the standalone",
+              f"- [The plugin]({GITHUB}/blob/main/docs/plugin.md): every control",
+              f"- [Building instruments]({GITHUB}/blob/main/docs/building-instruments.md): an instrument from your own recordings",
+              f"- [Architecture]({GITHUB}/blob/main/docs/architecture.md): how the engine models strings, bars and the room",
+              "", "## Optional", "",
+              f"- [Credits]({SITE}credits.html): every instrument's license and the recordings it was measured from",
+              f"- [Source]({GITHUB}): Rust engine, C++ plugin (DPF), Python fitting", ""]
+    return "\n".join(lines)
 
 
 def header(root, current=""):
@@ -180,9 +254,7 @@ def index(clips, groups, ver):
   <div class="prints">{prints}</div>
 </section>'''
 
-    assets = [("windows", "Windows", f"dussek-{v}-windows-setup.exe", "Windows 10 or newer, 64 bit: the standalone in the Start menu, the plugins, an uninstaller."),
-              ("macos", "macOS", f"dussek-{v}-macos.pkg", "Apple silicon, macOS 13.3 or newer: the app, the plugins. Untested: reports welcome."),
-              ("linux", "Linux", f"dussek-{v}-linux.tar.gz", "x86-64, glibc 2.35 or newer: unpack, run ./install.sh.")]
+    assets = installers(v)
     choices = "".join(
         f'<label class="os"><input type="radio" name="os" value="{k}" data-file="{f}" data-note="{esc(n)}"{" checked" if k == "windows" else ""}><span>{name}</span></label>'
         for k, name, f, n in assets)
@@ -231,24 +303,16 @@ def md(text):
 
 
 def credits_page(out):
-    groups = {}
-    for d in sorted(os.listdir(os.path.join(REPO, "instruments"))):
-        f = os.path.join(REPO, "instruments", d, "instrument.json")
-        if not os.path.isfile(f):
-            continue
-        menu = json.load(open(f)).get("menu", {})
-        if menu.get("hidden"):
-            continue
+    items = []
+    for d, menu in instruments():
         lic = os.path.join(REPO, "instruments", d, "LICENSE.md")
         text = open(lic, encoding="utf-8").read() if os.path.exists(lic) else ""
         text = re.sub(r"^# .*\n", "", text, count=1)
-        groups.setdefault(menu.get("group", "Other"), []).append((menu.get("name", d), md(text)))
-    # the menu's order, bass to treble as on the start page; any other group after them
-    order = ["Grand pianos", "Upright pianos", "Harpsichords", "Clavichords", "Harps", "Guitars", "Zithers", "Percussion", "Thumb pianos"]
+        items.append((menu.get("group", "Other"), (menu.get("name", d), md(text))))
     parts = []
-    for g in sorted(groups, key=lambda g: (order.index(g) if g in order else len(order), g)):
+    for g, members in by_group(items).items():
         parts.append(f"<h2>{esc(g)}</h2>")
-        for name, body in sorted(groups[g]):
+        for name, body in sorted(members):
             parts.append(f'<section class="credit"><h3>{esc(name)}</h3>{body}</section>')
     site = f'''<h2>This website</h2>
 <p>The demos, the features and the pieces were rendered by Dussek from MIDI files in the repository (CC0, except the
@@ -258,7 +322,7 @@ performances). {MAESTRO}</p>
 Font License 1.1, served from this site.</p>'''
     body = header("", "Credits") + f'<main class="doc credits"><h1>Credits</h1><p>Every instrument is measured from freely licensed recordings; each carries its license and the credits of what it was measured from.</p>{"".join(parts)}{site}</main>' + footer("")
     open(os.path.join(out, "credits.html"), "w", encoding="utf-8").write(
-        page("Credits · Dussek", "The instruments' licenses and the recordings they were measured from", body))
+        page("Credits · Dussek", "The instruments' licenses and the recordings they were measured from", body, path="credits.html"))
 
 
 def main():
@@ -278,13 +342,17 @@ def main():
     for f in ("style.css", "player.js"):
         shutil.copy(os.path.join(HERE, f), args.out)
     shutil.copy(os.path.join(REPO, "packaging", "icon", "dussek.png"), os.path.join(args.out, "icon.png"))
+    shutil.copy(os.path.join(REPO, "docs", "social-preview.png"), args.out)
     groups = manifest.get("groups") or {}
-    body = index(manifest["clips"], groups, version(args.version))
+    v = version(args.version)
+    body = index(manifest["clips"], groups, v)
     open(os.path.join(args.out, "index.html"), "w", encoding="utf-8").write(page(
-        "Dussek: a physically modeled piano",
-        "A free piano, harpsichord, harp and percussion instrument: every note simulated, none recorded. LV2, CLAP, VST3 and a standalone.",
-        body, "", "home"))
+        "Dussek: a physically modeled piano", DESCRIPTION, body, "", "home", head=structured(v)))
     credits_page(args.out)
+    open(os.path.join(args.out, "llms.txt"), "w", encoding="utf-8").write(llms_txt(v))
+    urls = "".join(f"<url><loc>{SITE}{p}</loc></url>" for p in ("", "credits.html"))
+    open(os.path.join(args.out, "sitemap.xml"), "w").write(
+        f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>\n')
     open(os.path.join(args.out, ".nojekyll"), "w").close()
     print(args.out)
 

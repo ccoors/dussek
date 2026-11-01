@@ -21,6 +21,9 @@ chromium --headless --window-size=1280,640 --screenshot=docs/social-preview.png 
 - `midi/maestro/`: three performances from the MAESTRO dataset, CC BY-NC-SA 4.0 with their
   citation (`LICENSE.md`); their renders carry the same license.
 - `sounds/`: the audio input's sound (CC0, `LICENSE.md`).
+- For search engines and language models, `build.py` gives each page a preview card (Open Graph:
+  `docs/social-preview.png`), the start page schema.org data (the software, its version, free), and
+  writes `llms.txt` (the site in Markdown: the instruments, the downloads, the docs) and `sitemap.xml`.
 - `.github/workflows/site.yml` builds and deploys it: the release workflow starts it once a release is
   published, or it runs by hand. `check_links.py` checks every link of the built pages first.
 - A clip sits at −18 LUFS (true peak at most −1 dBFS). A feature's steps share one gain: the first

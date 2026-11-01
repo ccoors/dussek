@@ -214,3 +214,50 @@ def test_the_serif_carries_its_new_name_only():
         names = ttLib.TTFont(f)["name"].names
         left = [(r.nameID, r.toUnicode()) for r in names if r.nameID != 0 and "Source" in r.toUnicode()]
         assert not left, f"{os.path.basename(f)}: {left[:3]}"
+
+
+def test_the_pages_carry_a_preview_card(site):
+    # a link to the site, shared anywhere, shows the social preview and the page's own words
+    for page in ("index.html", "credits.html"):
+        meta = {a.get("property") or a.get("name"): a.get("content") for t, a in tags_of(f"{site}/{page}") if t == "meta"}
+        assert meta["og:image"] == "https://ccoors.github.io/dussek/social-preview.png", page
+        assert meta["og:url"] == f"https://ccoors.github.io/dussek/{'' if page == 'index.html' else page}", page
+        assert meta["og:title"] and meta["og:description"] == meta["description"], page
+        assert meta["twitter:card"] == "summary_large_image", page
+    assert os.path.getsize(f"{site}/social-preview.png") > 0
+
+
+def test_the_start_page_describes_the_software(site):
+    # schema.org data for search engines: what it is, that it is free, for which systems, which release
+    text = open(f"{site}/index.html", encoding="utf-8").read()
+    start = text.index('<script type="application/ld+json">') + len('<script type="application/ld+json">')
+    data = json.loads(text[start:text.index("</script>", start)])
+    load = load_build()
+    assert data["@type"] == "SoftwareApplication" and data["name"] == "Dussek"
+    assert data["softwareVersion"] == load.version()
+    assert data["offers"]["price"] == "0"
+    assert {"Linux", "Windows", "macOS"} <= set(data["operatingSystem"].split(", "))
+    assert data["license"].endswith("AGPL-3.0-or-later")
+
+
+def test_llms_txt_lists_the_instruments_and_the_downloads(site):
+    # llms.txt (llmstxt.org): the site in plain Markdown for a language model's reader
+    text = open(f"{site}/llms.txt", encoding="utf-8").read()
+    v = load_build().version()
+    assert text.startswith("# Dussek\n\n> ")
+    for f in glob.glob(f"{P.REPO}/instruments/*/instrument.json"):
+        menu = json.load(open(f)).get("menu", {})
+        if not menu.get("hidden"):
+            assert menu["name"] in text, menu["name"]
+    for f in (f"dussek-{v}-windows-setup.exe", f"dussek-{v}-macos.pkg", f"dussek-{v}-linux.tar.gz"):
+        assert f"https://github.com/ccoors/dussek/releases/download/v{v}/{f}" in text
+    for word in ("LV2", "CLAP", "VST3", "AGPL-3.0-or-later", "CC BY 4.0"):
+        assert word in text, word
+    for page in ("index.html", "credits.html"):
+        assert any(t == "link" and a.get("href") == "llms.txt" for t, a in tags_of(f"{site}/{page}")), page
+
+
+def test_the_sitemap_lists_the_pages(site):
+    sitemap = open(f"{site}/sitemap.xml").read()
+    for url in ("https://ccoors.github.io/dussek/", "https://ccoors.github.io/dussek/credits.html"):
+        assert f"<loc>{url}</loc>" in sitemap
