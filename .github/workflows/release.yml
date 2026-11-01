@@ -6,6 +6,7 @@ name: Release
 on:
   push:
     tags: ["v*"]
+    branches: ["releases"]   # TEMPORARY: the publish job's download checked once, removed again
   workflow_dispatch:
     inputs:
       version:
@@ -195,22 +196,29 @@ jobs:
           retention-days: 7
 
   publish:
-    if: startsWith(github.ref, 'refs/tags/v')
     needs: [version, linux, macos, windows]
     runs-on: ubuntu-24.04
     permissions:
       contents: write   # the release; everything else stays read-only
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v8   # v8: the files uploaded unzipped (archive: false) as they are
         with:
           path: assets
           merge-multiple: true
-      - name: The release
+      - name: The five files the release text names, and nothing else
         env:
-          GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.version.outputs.version }}
         run: |
           ls -l assets
+          for f in linux.tar.gz macos.pkg macos-portable.tar.gz windows-setup.exe windows-portable.zip; do
+            [ -s "assets/dussek-$VERSION-$f" ] || { echo "missing: dussek-$VERSION-$f"; exit 1; }
+          done
+          [ "$(ls assets | wc -l)" -eq 5 ] || { echo "more than the five files"; exit 1; }
           packaging/release-notes.sh "$VERSION" > notes.md
-          gh release create "v$VERSION" assets/* --title "Dussek $VERSION" --notes-file notes.md --verify-tag
+      - name: The release (a pushed tag only; by hand, nothing is published)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.version.outputs.version }}
+        run: gh release create "v$VERSION" assets/* --title "Dussek $VERSION" --notes-file notes.md --verify-tag
