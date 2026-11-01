@@ -35,7 +35,8 @@ rolled pianos that no recording holds (a "Rolled pianos" group).
 
 ## Download and install
 
-From the [releases](https://github.com/ccoors/dussek/releases), each with:
+The website, [ccoors.github.io/dussek](https://ccoors.github.io/dussek/), plays every kind of
+instrument and the features. From the [releases](https://github.com/ccoors/dussek/releases), each with:
 
 - **Windows** (10 or newer, 64 bit): `dussek-<version>-windows-setup.exe` installs the standalone
   (in the Start menu), the LV2, CLAP and VST3 plugins (each one optional) and the instruments, with

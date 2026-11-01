@@ -10,9 +10,8 @@ Nothing in progress; the next item comes from below.
 
 ## Next
 
-- **The website.** GitHub Pages: a demo per menu group playable on the page, the ensemble piece's
-  video, the original piano pieces, a few real performances, short clips of the features,
-  screenshots, the instruments' credits; rendered by a script, so a sound change renews them.
+- **The plugin window's small flaws.** With a bottom panel open, the Mics view's "from above"
+  label runs into the left microphone (seen in the website's screenshot).
 - **Traits, the rest.** The plan (design 2026-10-21-traits-plan): a piano as smooth curves with
   its few breaks plus traits (knobs), its unevenness as statistics with a seed, the tuner's and
   voicer's choices on top. Done: the rail (step 136), the even levels (138–139), the felt as runtime

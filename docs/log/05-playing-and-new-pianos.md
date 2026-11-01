@@ -3513,3 +3513,29 @@ put it (`Program Files\Dussek`, `/Applications`). On each runner the installer i
 instrument, listed and (Windows, Linux) uninstalled before anything is published. The release
 text is the version's section of `CHANGELOG.md` and a fixed footer (`packaging/release-notes.sh`);
 a tag that is not the code's version, or has no section, publishes nothing.
+
+<a id="step-221"></a>
+## 221. The website
+
+`site/` builds the website at ccoors.github.io/dussek from scripts, so a sound or UI change renews it
+(`site/README.md`); `.github/workflows/site.yml` renders and deploys it on every published release
+and by hand. Nothing rendered is kept in git:
+
+- **The clips** (`clips.toml`, `render.py`): a demo per menu group on the maintainer's choice of
+  its best (Grand A, Upright D, …), phrases composed per kind (`phrases.py`, CC0, each inside its
+  instrument's recorded keys), the four original pieces and the Schubert on Grand A, the Scarlatti
+  and the Bach on Grands C and B (MAESTRO, CC BY-NC-SA 4.0, credited), eleven features as steps of
+  one phrase, the audio input fed the maintainer's own falling sound (CC0, `midi2wav --input`).
+  A clip names plugin controls; `plugin/build/settings_line` turns them into the plugin's own Copy
+  CLI line, so the site plays what the plugin plays. Each clip at -18 LUFS, a feature's steps
+  sharing one gain; Ogg Opus. A card's picture is a still of the instrument's demo from `--video`.
+- **The screenshots** (`screenshots.sh`): the standalone on a virtual display, its audio on an
+  unconnected JACK client; one with a chord ringing in the Visualization, also in the README.
+- **The pages** (`build.py`): chapters in the Visualization's string colours, bass to treble; the
+  features switch steps while playing and keep the place; the download picks the visitor's system;
+  the credits from every instrument's `LICENSE.md`. The fonts are served from the site (Inter,
+  Source Serif 4 renamed under its license); no external script or font. The docs stay on GitHub.
+
+The first listening: the Schubert moved from Grand D to Grand A, fewer feature steps (the
+microphones dropped), and two levels for the roadmap: the lute stop 9 dB above the plain stop,
+the morph halfway 4.6 dB above Grand A. The ensemble piece is now "Ensemble Demo 1".
