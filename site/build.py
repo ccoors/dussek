@@ -4,11 +4,9 @@
     python3 site/build.py [--renders site/out] [--out site/public]
 
 index.html (the demos, the pieces and performances, the ensemble video, the features, the window,
-the download), credits.html (every instrument's LICENSE.md, the fonts, the MAESTRO files, the
-sounds) and docs/<name>.html from the repository's Markdown (README's quick starts and docs/*.md),
-their links to each other rewritten to the built pages and every other link to the repository on
-GitHub. No external fonts or scripts; the pages work without JavaScript (the players fall back to
-the browser's own)."""
+the download) and credits.html (every instrument's LICENSE.md, the fonts, the MAESTRO files, the
+sounds); the docs stay on GitHub (docs/), where their diagrams render. No external fonts or
+scripts; the pages read without JavaScript (only the play buttons need it)."""
 import argparse
 import html
 import json
@@ -21,8 +19,7 @@ import markdown
 REPO = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 HERE = os.path.join(REPO, "site")
 GITHUB = "https://github.com/ccoors/dussek"
-DOCS = ["quick-start", "plugin", "quick-start-editor", "editor", "building-instruments", "engine", "compatibility",
-        "architecture", "getting-data", "recording-a-piano", "lessons"]
+DOCS = f"{GITHUB}/tree/main/docs"
 SHOTS = [("grand-visualization", "Grand A with a chord ringing: the Visualization draws each string as the engine moves it"),
          ("grand-felt", "The Felt tab: the hammers' felt, key by key"),
          ("vibraphone", "The vibraphone: its own controls, the motor among them"),
@@ -50,7 +47,7 @@ def page(title, description, body, root="", body_class=""):
 
 def header(root, current=""):
     links = [("Listen", f"{root}index.html#listen"), ("Features", f"{root}index.html#features"),
-             ("Docs", f"{root}docs/index.html"), ("Credits", f"{root}credits.html")]
+             ("Docs", DOCS), ("Credits", f"{root}credits.html")]
     items = "".join(f'<a href="{h}"{" aria-current=\"page\"" if n == current else ""}>{n}</a>' for n, h in links)
     return (f'<header class="bar"><a class="wordmark" href="{root}index.html"><img src="{root}icon.png" alt="" width="32" height="32">Dussek</a>'
             f'<nav aria-label="Site">{items}</nav><a class="button" href="{root}index.html#download">Download</a></header>')
@@ -192,7 +189,7 @@ def footer(root):
     <ul>
       <li><a href="{GITHUB}">The source on GitHub</a></li>
       <li><a href="{GITHUB}/releases">Releases</a></li>
-      <li><a href="{root}docs/index.html">Docs</a></li>
+      <li><a href="{DOCS}">Docs</a></li>
       <li><a href="{root}credits.html">Credits</a></li>
       <li><a href="{GITHUB}/issues">Report a problem</a></li>
     </ul>
@@ -200,48 +197,8 @@ def footer(root):
 </footer>'''
 
 
-def link_rewriter(names, doc_root):
-    """A Markdown file's relative links: other docs to their pages, the rest to GitHub."""
-    def fix(m):
-        attr, url = m.group(1), m.group(2)
-        if re.match(r"^[a-z]+:|^#", url):
-            return m.group(0)
-        path, _, frag = url.partition("#")
-        base = os.path.splitext(os.path.basename(path))[0]
-        if path.endswith(".md") and base in names:
-            return f'{attr}="{doc_root}{base}.html{"#" + frag if frag else ""}"'
-        if path.endswith(".png") and os.path.exists(os.path.join(REPO, "docs", os.path.basename(path))):
-            return f'{attr}="{doc_root}{os.path.basename(path)}"'
-        target = os.path.normpath(os.path.join("docs", path)) if not path.startswith("/") else path.lstrip("/")
-        kind = "tree" if os.path.isdir(os.path.join(REPO, target)) else "blob"
-        return f'{attr}="{GITHUB}/{kind}/main/{target}{"#" + frag if frag else ""}"'
-    return lambda text: re.sub(r'(href|src)="([^"]+)"', fix, text)
-
-
 def md(text):
     return markdown.markdown(text, extensions=["tables", "fenced_code", "toc"])
-
-
-def docs_pages(out):
-    os.makedirs(os.path.join(out, "docs"), exist_ok=True)
-    fix = link_rewriter(set(DOCS), "")
-    entries = []
-    for name in DOCS:
-        src = os.path.join(REPO, "docs", f"{name}.md")
-        text = open(src, encoding="utf-8").read()
-        title = re.search(r"^# (.+)$", text, re.M).group(1)
-        body = (header("../", "Docs") + f'<main class="doc">{fix(md(text))}'
-                f'<p class="doc-source"><a href="{GITHUB}/blob/main/docs/{name}.md">This page on GitHub</a></p></main>' + footer("../"))
-        open(os.path.join(out, "docs", f"{name}.html"), "w", encoding="utf-8").write(
-            page(f"{title} · Dussek", title, body, "../", "doc-page"))
-        first = re.search(r"^# .+\n\n(.+?)(\n\n|$)", text, re.S)
-        entries.append((name, title, first.group(1).replace("\n", " ") if first else ""))
-    for png in ("screenshot.png",):
-        shutil.copy(os.path.join(REPO, "docs", png), os.path.join(out, "docs", png))
-    items = "".join(f'<li><h2><a href="{n}.html">{esc(t)}</a></h2><p>{fix(md(s))[3:-4]}</p></li>' for n, t, s in entries)
-    body = header("../", "Docs") + f'<main class="doc doc-index"><h1>Docs</h1><ul class="doc-list">{items}</ul></main>' + footer("../")
-    open(os.path.join(out, "docs", "index.html"), "w", encoding="utf-8").write(
-        page("Docs · Dussek", "How to install, play and build Dussek's instruments", body, "../", "doc-page"))
 
 
 def credits_page(out):
@@ -257,8 +214,10 @@ def credits_page(out):
         text = open(lic, encoding="utf-8").read() if os.path.exists(lic) else ""
         text = re.sub(r"^# .*\n", "", text, count=1)
         groups.setdefault(menu.get("group", "Other"), []).append((menu.get("name", d), md(text)))
+    # the menu's order, bass to treble as on the start page; any other group after them
+    order = ["Grand pianos", "Upright pianos", "Harpsichords", "Clavichords", "Harps", "Guitars", "Zithers", "Percussion", "Thumb pianos"]
     parts = []
-    for g in groups:
+    for g in sorted(groups, key=lambda g: (order.index(g) if g in order else len(order), g)):
         parts.append(f"<h2>{esc(g)}</h2>")
         for name, body in sorted(groups[g]):
             parts.append(f'<section class="credit"><h3>{esc(name)}</h3>{body}</section>')
@@ -296,7 +255,6 @@ def main():
         "A free piano, harpsichord, harp and percussion instrument: every note simulated, none recorded. LV2, CLAP, VST3 and a standalone.",
         body, "", "home"))
     credits_page(args.out)
-    docs_pages(args.out)
     open(os.path.join(args.out, ".nojekyll"), "w").close()
     print(args.out)
 

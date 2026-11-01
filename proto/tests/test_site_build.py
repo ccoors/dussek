@@ -66,7 +66,7 @@ def site(tmp_path_factory):
 
 def test_every_link_resolves(site):
     pages = glob.glob(f"{site}/**/*.html", recursive=True)
-    assert len(pages) >= 3
+    assert len(pages) >= 2
     broken = []
     for page in pages:
         p = Links()
