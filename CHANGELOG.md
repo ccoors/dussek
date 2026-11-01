@@ -3,7 +3,7 @@
 What each release changes for a player. From 1.0 on a break needs a major version; before it, a
 break is allowed but listed under "Breaking" (`docs/compatibility.md`).
 
-## Unreleased
+## 0.3.1 — 2026-11-01
 
 ### New
 
@@ -31,6 +31,7 @@ break is allowed but listed under "Breaking" (`docs/compatibility.md`).
   leaves out `/usr/local/share` (NixOS, some desktops).
 - Linux: a failed `install.sh` lists what it copied, so `uninstall.sh` or the next install removes
   it; a relative `$XDG_DATA_HOME` is ignored, as the XDG spec says.
+- `dussek render` and midi2wav refuse an `--input` that is no WAV file at once, not after the render.
 - Windows: the installer keeps Dussek in its fixed folder (a plugin's Copy CLI looks for the
   standalone there) and removes the Start menu entry when an update leaves the standalone out.
 
