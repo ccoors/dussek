@@ -113,7 +113,7 @@ def index(clips, groups, ver):
 <section id="ensemble" class="field field-dark ensemble" aria-labelledby="ensemble-title">
   <h2 id="ensemble-title">Seven at once</h2>
   <figure>
-    <video controls preload="none" poster="video/ensemble.jpg" width="1280" height="720">
+    <video controls preload="none" poster="video/ensemble.jpg" width="1920" height="1080">
       <source src="video/ensemble.mp4" type="video/mp4">
     </video>
     <figcaption>Ensemble Demo 1: piano, vibraphone, marimba, harp, kalimba, bells and tubular bells,

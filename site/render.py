@@ -215,13 +215,13 @@ def group_members():
 
 
 def video(out_dir):
-    """The ensemble piece's video, for the web: 1280 x 720 H.264, its poster frame."""
+    """The ensemble piece's video as mix.py makes it (1080p60, H.264 at CRF 18, AAC at 256 kbit/s from the
+    mix): copied, not encoded again; its poster frame."""
     subprocess.run(["nice", "-n", "19", sys.executable, os.path.join(REPO, "albums", "demos", "mix.py"), "--video"], check=True)
     src = os.path.join(REPO, "albums", "demos", "out", "05-ensemble-demo-1.mp4")
     os.makedirs(out_dir, exist_ok=True)
-    ff("-i", src, "-vf", "scale=1280:720", "-c:v", "libx264", "-preset", "slow", "-crf", "24", "-pix_fmt", "yuv420p",
-       "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart", os.path.join(out_dir, "ensemble.mp4"))
-    ff("-ss", "20", "-i", src, "-frames:v", "1", "-vf", "scale=1280:720", os.path.join(out_dir, "ensemble.jpg"))
+    ff("-i", src, "-c", "copy", "-movflags", "+faststart", os.path.join(out_dir, "ensemble.mp4"))
+    ff("-ss", "20", "-i", src, "-frames:v", "1", "-q:v", "3", os.path.join(out_dir, "ensemble.jpg"))
 
 
 def main():
