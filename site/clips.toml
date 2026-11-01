@@ -1,0 +1,275 @@
+# The website's clips, rendered by site/render.py (`--check` checks this table only).
+#
+# A clip: `id`, `section` (demo, piece, performance, feature), `title`, `instrument` (a folder of
+# instruments/), `midi` (a phrase of site/midi by name, or a path from the repository's root);
+# optional: `set` (plugin controls by symbol, in their own units: what the plugin plays, through
+# its Copy CLI line), `tail` (seconds after the last event, default 4), `seconds` (cut after so
+# many, faded), `listen` (what to listen for), `license` (shown with the clip; default CC0).
+# A feature lists `steps`, each a variant of the clip (`label`, and any of `instrument`, `midi`,
+# `set`, `morph`, `input` a sound into the audio input, `source` a sound file played as it is);
+# `match`: "together" (one gain for all steps: their differences in level stay) or "each" (every
+# step at the same loudness).
+
+# ---- one demo per menu group, on the group's best (the maintainer's ear decides)
+
+[[clip]]
+id = "grand"
+section = "demo"
+title = "Grand A"
+instrument = "grand_a"
+midi = "piano"
+
+[[clip]]
+id = "upright"
+section = "demo"
+title = "Upright D"
+instrument = "upright_d"
+midi = "piano"
+
+[[clip]]
+id = "harpsichord"
+section = "demo"
+title = "Harpsichord E"
+instrument = "harpsichord_e"
+midi = "harpsichord"
+
+[[clip]]
+id = "clavichord"
+section = "demo"
+title = "Clavichord"
+instrument = "clavichord"
+midi = "clavichord"
+
+[[clip]]
+id = "harp"
+section = "demo"
+title = "Harp A"
+instrument = "harp"
+midi = "harp"
+
+[[clip]]
+id = "guitar"
+section = "demo"
+title = "Guitar"
+instrument = "guitar"
+midi = "guitar"
+
+[[clip]]
+id = "zither"
+section = "demo"
+title = "Psaltery"
+instrument = "psaltery"
+midi = "zither"
+
+[[clip]]
+id = "percussion"
+section = "demo"
+title = "Vibraphone"
+instrument = "vibraphone"
+midi = "vibraphone"
+
+[[clip]]
+id = "thumb-piano"
+section = "demo"
+title = "Kalimba"
+instrument = "kalimba"
+midi = "kalimba"
+
+# ---- the original pieces (albums/demos, CC0) on the best grand
+
+[[clip]]
+id = "boogie"
+section = "piece"
+title = "Back Porch Boogie"
+instrument = "grand_a"
+midi = "albums/demos/midi/01-back-porch-boogie.mid"
+
+[[clip]]
+id = "streetlights"
+section = "piece"
+title = "Streetlights"
+instrument = "grand_a"
+midi = "albums/demos/midi/02-streetlights.mid"
+
+[[clip]]
+id = "glass-rain"
+section = "piece"
+title = "Glass Rain"
+instrument = "grand_a"
+midi = "albums/demos/midi/03-glass-rain.mid"
+
+[[clip]]
+id = "ferry-montuno"
+section = "piece"
+title = "Ferry Montuno"
+instrument = "grand_a"
+midi = "albums/demos/midi/04-ferry-montuno.mid"
+
+# ---- real performances (MAESTRO, CC BY-NC-SA 4.0: site/midi/maestro/LICENSE.md)
+
+[[clip]]
+id = "scarlatti"
+section = "performance"
+title = "Scarlatti: Sonata in D minor, K. 9"
+instrument = "grand_c"
+midi = "site/midi/maestro/scarlatti-k9.mid"
+license = "maestro"
+
+[[clip]]
+id = "bach"
+section = "performance"
+title = "Bach: Prelude and Fugue in C-sharp major, BWV 848"
+instrument = "grand_b"
+midi = "site/midi/maestro/bach-bwv848.mid"
+license = "maestro"
+
+[[clip]]
+id = "schubert"
+section = "performance"
+title = "Schubert: Impromptu in G-flat major, Op. 90 No. 3"
+instrument = "grand_d"
+midi = "site/midi/maestro/schubert-op90-3.mid"
+license = "maestro"
+
+# ---- the features: the same phrase plain, then with the feature
+
+[[clip]]
+id = "condition"
+section = "feature"
+title = "Condition"
+instrument = "grand_a"
+midi = "f-piano"
+listen = "The same grand mint, worn and broken: the hammers harden, the unisons drift apart, the dampers and the action get noisy."
+match = "together"
+steps = [
+  { label = "Mint", set = { condition = 0 } },
+  { label = "Worn", set = { condition = 35 } },
+  { label = "Broken", set = { condition = 100 } },
+]
+
+[[clip]]
+id = "preparations"
+section = "feature"
+title = "Preparations"
+instrument = "grand_a"
+midi = "f-piano"
+listen = "Things on the strings: a bolt between them, paper over them, a finger at a node (harmonics), the strings plucked."
+match = "together"
+steps = [
+  { label = "None", set = { preparation = 0 } },
+  { label = "Bolt", set = { preparation = 4 } },
+  { label = "Paper", set = { preparation = 5 } },
+  { label = "Harmonic", set = { preparation = 3 } },
+  { label = "Plucked", set = { preparation = 1 } },
+]
+
+[[clip]]
+id = "audio-input"
+section = "feature"
+title = "Audio input"
+instrument = "grand_a"
+midi = "silence"
+tail = 10
+listen = "A sound sung into the strings: with the dampers lifted, the strings that share its pitches ring on after it has stopped. Both at the same loudness."
+match = "each"
+steps = [
+  { label = "The sound", source = "site/sounds/falling.ogg" },
+  { label = "Grand A ringing to it", input = "site/sounds/falling.ogg", set = { audio_input = 0, sustain_latch = 1 } },
+]
+
+[[clip]]
+id = "morph"
+section = "feature"
+title = "Morphing"
+instrument = "grand_a"
+midi = "f-piano"
+listen = "Grand A, an instrument halfway to Grand B that no recording holds, and Grand B."
+match = "together"
+steps = [
+  { label = "Grand A" },
+  { label = "Halfway", morph = ["instruments/grand_b=0.5"] },
+  { label = "Grand B", instrument = "grand_b" },
+]
+
+[[clip]]
+id = "microphones"
+section = "feature"
+title = "Microphones"
+instrument = "grand_a"
+midi = "f-piano"
+listen = "Where the microphones stand: at the player, in the audience, and with the lid taken off."
+match = "together"
+steps = [
+  { label = "Player", set = { mic_position = 1 } },
+  { label = "Audience", set = { mic_position = 2 } },
+  { label = "Lid removed", set = { mic_position = 1, lid_off = 1 } },
+]
+
+[[clip]]
+id = "pedals"
+section = "feature"
+title = "Pedals"
+instrument = "grand_a"
+midi = "f-piano"
+listen = "No pedal, the sustain pedal changed with the harmony, half pedal, the sostenuto holding only the first chord, the soft pedal."
+match = "together"
+steps = [
+  { label = "No pedal", midi = "f-piano-dry" },
+  { label = "Pedal", midi = "f-piano" },
+  { label = "Half pedal", midi = "f-piano-half" },
+  { label = "Sostenuto", midi = "f-piano-sostenuto" },
+  { label = "Soft pedal", midi = "f-piano-soft" },
+]
+
+[[clip]]
+id = "motor"
+section = "feature"
+title = "Vibraphone motor"
+instrument = "vibraphone"
+midi = "f-mallets"
+listen = "The vibraphone's fans: still, then turning (the tremolo)."
+match = "together"
+steps = [
+  { label = "Motor off", set = { motor = 0 } },
+  { label = "Motor on", set = { motor = 1 } },
+]
+
+[[clip]]
+id = "stops"
+section = "feature"
+title = "Harpsichord stops"
+instrument = "flemish"
+midi = "f-harpsichord"
+listen = "Harpsichord B plain, with the buff (pads on the strings: short and dark) and with the lute (plucked near the nut: nasal)."
+match = "together"
+steps = [
+  { label = "Plain" },
+  { label = "Buff", set = { buff = 1 } },
+  { label = "Lute", set = { lute = 1 } },
+]
+
+[[clip]]
+id = "bebung"
+section = "feature"
+title = "Bebung"
+instrument = "clavichord"
+midi = "f-clavichord"
+listen = "The clavichord's vibrato: the player's finger presses the key harder and softer, the tangent pulls the string's pitch."
+match = "together"
+steps = [
+  { label = "Plain", midi = "f-clavichord-plain" },
+  { label = "Bebung", midi = "f-clavichord" },
+]
+
+[[clip]]
+id = "temperament"
+section = "feature"
+title = "Temperament"
+instrument = "grand_a"
+midi = "f-chords"
+listen = "A cadence in C, in equal temperament and in quarter-comma meantone: the thirds settle and stop beating."
+match = "together"
+steps = [
+  { label = "Equal", set = { temperament = 0 } },
+  { label = "Meantone 1/4 comma", set = { temperament = 1 } },
+]
