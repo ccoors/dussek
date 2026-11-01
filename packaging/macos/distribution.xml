@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dussek's macOS package: the standalone and each plugin format as choices, the instruments
+     always (build-pkg.sh). -->
+<installer-gui-script minSpecVersion="2">
+    <title>Dussek</title>
+    <welcome file="welcome.txt"/>
+    <options customize="always" require-scripts="false" hostArchitectures="arm64"/>
+    <domains enable_localSystem="true"/>
+    <choices-outline>
+        <line choice="app"/>
+        <line choice="lv2"/>
+        <line choice="clap"/>
+        <line choice="vst3"/>
+        <line choice="instruments"/>
+    </choices-outline>
+    <choice id="app" title="The standalone" description="Dussek in Applications.">
+        <pkg-ref id="de.ccoors.dussek.app"/>
+    </choice>
+    <choice id="lv2" title="LV2 plugin" description="In /Library/Audio/Plug-Ins/LV2.">
+        <pkg-ref id="de.ccoors.dussek.lv2"/>
+    </choice>
+    <choice id="clap" title="CLAP plugin" description="In /Library/Audio/Plug-Ins/CLAP.">
+        <pkg-ref id="de.ccoors.dussek.clap"/>
+    </choice>
+    <choice id="vst3" title="VST3 plugin" description="In /Library/Audio/Plug-Ins/VST3. Where a host offers LV2 or CLAP, prefer them.">
+        <pkg-ref id="de.ccoors.dussek.vst3"/>
+    </choice>
+    <choice id="instruments" title="The instruments" description="In /Library/Application Support/Dussek: the standalone and every plugin format play them." enabled="false" selected="true">
+        <pkg-ref id="de.ccoors.dussek.instruments"/>
+    </choice>
+    <pkg-ref id="de.ccoors.dussek.app">app.pkg</pkg-ref>
+    <pkg-ref id="de.ccoors.dussek.lv2">lv2.pkg</pkg-ref>
+    <pkg-ref id="de.ccoors.dussek.clap">clap.pkg</pkg-ref>
+    <pkg-ref id="de.ccoors.dussek.vst3">vst3.pkg</pkg-ref>
+    <pkg-ref id="de.ccoors.dussek.instruments">instruments.pkg</pkg-ref>
+</installer-gui-script>

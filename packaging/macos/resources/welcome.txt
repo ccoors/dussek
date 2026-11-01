@@ -1,0 +1,9 @@
+This installs Dussek: a physically modeled piano, harpsichords, harps and percussion, as a standalone (Dussek in Applications) and as LV2, CLAP and VST3 plugins (in /Library/Audio/Plug-Ins). The instruments go to /Library/Application Support/Dussek.
+
+Where a host offers LV2 or CLAP, prefer them to the VST3.
+
+The macOS build is untested: reports welcome at https://github.com/ccoors/dussek/issues
+
+The package is not signed by a registered developer: macOS asked you to confirm before opening it (right-click, Open; or System Settings, Privacy & Security, Open Anyway).
+
+To remove Dussek, delete Dussek from Applications, dussek.lv2, dussek.clap and dussek.vst3 from /Library/Audio/Plug-Ins, and /Library/Application Support/Dussek.

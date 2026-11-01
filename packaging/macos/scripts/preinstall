@@ -1,0 +1,4 @@
+#!/bin/sh
+# the instruments' package: what an earlier version installed goes first (nothing dropped lingers)
+rm -rf "/Library/Application Support/Dussek/instruments"
+exit 0
