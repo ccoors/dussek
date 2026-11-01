@@ -6,7 +6,6 @@ name: Release
 on:
   push:
     tags: ["v*"]
-    branches: ["releases"]   # TEMPORARY: the publish job's download checked once, removed again
   workflow_dispatch:
     inputs:
       version:
