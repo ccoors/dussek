@@ -1,7 +1,14 @@
 # The plugin
 
 A DPF wrapper (C++) around the engine's C interface: LV2, CLAP, VST3 and a JACK standalone.
-LV2 and the standalone are the targets; CLAP and VST3 are built but untested.
+LV2 and the standalone are the main targets; all four are tested on Linux and Windows.
+
+Where a host offers LV2 or CLAP, use them: the VST3 is kept for hosts that load nothing else.
+In VST3 the shipped presets are missing from the host's own preset menu (the plugin's Preset menu
+has them), a host's generic controls list 2080 hidden MIDI parameters before the plugin's own (a
+VST3 receives MIDI controllers, the sustain pedal among them, only as parameters), and the
+Analysis and Visualization panels work only in hosts that pass the plugin's output values on to
+its editor. All three come from DPF, the framework the plugin is built on.
 
 ## Building and running
 
@@ -112,6 +119,10 @@ The UI is NanoVG and scalable: the host's HiDPI factor × a zoom of 100–400 %.
     second; a live note-on comes as the hammer arrives, so no hammer rises before it. The Copy
     CLI line plus `--video out.mp4` renders the same picture as a video ([engine.md](engine.md)).
 
+  Both panels read what the sound side shares with the window. In VST3 that needs a host that
+  passes the plugin's output values on to its editor (DPF runs the two as separate objects); where
+  the host does not, the panels stay empty and the sound is unaffected.
+
 Using the controls:
 
 - The mouse wheel scrolls the panel and never changes a value.
@@ -162,7 +173,7 @@ parameter table only grows from release to release ([compatibility.md](compatibi
 
 | Control | What |
 |---|---|
-| Preset | whole configurations: the instrument and every setting (the velocity curve, the felt, the morph, the tuning file among them); picking one switches to it. Save as… keeps the current one under a name (typed in place, Enter); your own preset shown gets a Delete (a second click within 3 s confirms). Shipped: **Default** (every control and state at its default, the instrument the menu's first; Reset keeps the instrument, the felt, the morph's partners and the Scala file), **Production, bright** (Grand A at Close 1, Hammer hardness +12 dB, Room −12 dB: present and dry, like a GM soundfont's bright piano) and **Production, warm** (Grand B with Dynamics 25 dB: full low mids and even levels); each sets every other control to its default. Hosts list them too, in their own preset menus |
+| Preset | whole configurations: the instrument and every setting (the velocity curve, the felt, the morph, the tuning file among them); picking one switches to it. Save as… keeps the current one under a name (typed in place, Enter); your own preset shown gets a Delete (a second click within 3 s confirms). Shipped: **Default** (every control and state at its default, the instrument the menu's first; Reset keeps the instrument, the felt, the morph's partners and the Scala file), **Production, bright** (Grand A at Close 1, Hammer hardness +12 dB, Room −12 dB: present and dry, like a GM soundfont's bright piano) and **Production, warm** (Grand B with Dynamics 25 dB: full low mids and even levels); each sets every other control to its default. LV2 hosts list them too, in their own preset menus (DPF gives CLAP and VST3 hosts no preset list) |
 | Mallet | the instrument's mallets (the marimba's yarn, cord, rubber; the xylophone's rosewood, hard rubber; …) |
 | Hammer hardness | −24 … +12 dB, from the next note. Below 0 a softer felt, down to old, dull hammers; harder, compressed felt is the condition's hammer wear. On the hammer pianos every key keeps its loudness: the change is measured in the background, as the Felt tab's (below), and heard once that is done. On a harpsichord the quill's lowpass. Named for what strikes or plucks: "Quill brightness" (the harpsichords), "Tangent brightness" (the clavichord), "Finger brightness" (the harps, the guitars), "Pick brightness" (the zithers), "Mallet hardness" (the bars), "Thumb brightness" (the kalimba) |
 | Sustain | 50 … 400 %: how long the notes ring, every partial's decay that much slower or faster (200 %: twice as long), its pitch and the attack kept; on top of an instrument's own ring per key (the uprights 150–200 %); the strings, the bars and the sympathetic ring alike, the dampers not. Rebuilds the instrument in the background, as the Tuning tab's settings. Not the sustain pedal |

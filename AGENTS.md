@@ -5,8 +5,8 @@ If `private/` exists (the maintainer's private material, a repository of its own
 
 A physically modeled piano (and harpsichords, harps, mallet instruments): measurements from
 freely licensed recordings → a Python prototype that fits each instrument → exported
-instruments → a real-time Rust engine → a DPF plugin (LV2, JACK standalone; VST3/CLAP built
-but untested).
+instruments → a real-time Rust engine → a DPF plugin (LV2, JACK standalone; VST3/CLAP tested
+once on Linux and Windows).
 
 - `README.md`: the front page; `docs/*.md`: the user-facing description.
 - `docs/architecture.md`: how the system works today.
@@ -135,7 +135,7 @@ The engine's tests use the committed instruments; a test without its data return
   `instrument.json` grows by optional fields (a change that cannot be optional raises `format` and
   freezes a copy in `engine/tests/formats/`); `render`'s options are added, not renamed. During 0.x
   a break is a deliberate edit of the lock in a commit that says why.
-- LV2 and the JACK standalone are the targets; VST3/CLAP are not tested.
+- LV2 and the JACK standalone are the targets; VST3/CLAP were tested once by hand (Linux, Windows).
 
 ## Style
 

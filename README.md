@@ -1,15 +1,16 @@
 # Dussek
 
-A physically modeled piano, as an LV2 plugin and a standalone (CLAP and VST3 are built too, but
-untested). Linux is where it is tested; the macOS (Apple silicon) and Windows builds come from CI
-and are untested: reports welcome. It plays nine grands, four uprights, six harpsichords, a
-clavichord, harps, guitars, zithers and percussion. None of them plays back a recording: the engine
-simulates the hammer (or plectrum, or mallet), stiff strings with coupled unisons, the soundboard,
-the dampers and the pedals, in real time. Each instrument's parameters were measured from freely
-licensed recordings of a real one, so the instruments ship as numbers, without any audio. The aim is
-an instrument that plays well (a continuous response to velocity, fast repetition, half pedaling,
-sympathetic resonance, low latency) and has a character of its own. It is named after Jan Ladislav
-Dussek (1760–1812), the pianist who had the piano's keyboard extended to five and a half octaves.
+A physically modeled piano, as an LV2, CLAP and VST3 plugin and a standalone. It is tested on Linux
+and Windows, in all four forms (where a host offers LV2 or CLAP, prefer them to VST3:
+[docs/plugin.md](docs/plugin.md)); the macOS build (Apple silicon) comes from CI and is untested:
+reports welcome. It plays nine grands, four uprights, six harpsichords, a clavichord, harps,
+guitars, zithers and percussion. None of them plays back a recording: the engine simulates the
+hammer (or plectrum, or mallet), stiff strings with coupled unisons, the soundboard, the dampers and
+the pedals, in real time. Each instrument's parameters were measured from freely licensed recordings
+of a real one, so the instruments ship as numbers, without any audio. The aim is an instrument that
+plays well (a continuous response to velocity, fast repetition, half pedaling, sympathetic
+resonance, low latency) and has a character of its own. It is named after Jan Ladislav Dussek
+(1760–1812), the pianist who had the piano's keyboard extended to five and a half octaves.
 
 <!-- a screenshot: docs/img/plugin-grand.png, the plugin on a grand, taken by a script -->
 

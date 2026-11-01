@@ -3445,3 +3445,24 @@ reads first no longer assumes a private repository or Linux alone: the README na
 tested platform and macOS (Apple silicon) and Windows as built by CI and untested, points at the CI
 test builds until the first release, and gives the clone's address; the workflows' comments drop
 the private repository's minutes.
+
+<a id="step-218"></a>
+## 218. The plugins tested on Linux and Windows
+
+The maintainer tried the CI's Windows build on Windows 11 with graphics acceleration: the
+standalone plays, and LV2, CLAP and VST3 load in a host, play, come back from a saved project,
+follow the host's parameters and automation both ways and show the diagnostics' telemetry. One
+gap stays: the shipped presets appear in the host's own preset menu for LV2 only. DPF hands VST3
+hosts the programs as a hidden program-change parameter without a program list, and CLAP hosts
+none (no preset-load or preset-discovery); the plugin's Preset menu reaches them in every format.
+On Linux CLAP and VST3 play in a host too. A host's generic controls for the VST3 list DPF's
+2080 hidden MIDI parameters ("MIDI Ch. 1 CC 64" …) before the plugin's own: VST3 carries a
+controller only as a parameter, and the sustain pedal reaches the plugin that way. In a host
+whose HiDPI scaling does not reach the plugin, the window is larger than the UI inside it, for
+every CLAP and VST3 plugin alike. The Analysis and Visualization panels stay empty in the VST3
+in two Linux hosts: with a UI, DPF's VST3 runs the sound and the editor as two objects, and the
+region's token (an output parameter) reaches the editor only through a host that forwards output
+parameters; one host passes no output list at all, and DPF then prints an assertion at every block.
+Both are DPF's and left as they are. The VST3 stays for hosts that load nothing else; the README,
+`docs/plugin.md` and `TRY-IT.txt` recommend LV2 or CLAP wherever a host offers them.
+The README, `docs/plugin.md`, `docs/architecture.md` and `TRY-IT.txt` say what is tested where.

@@ -221,8 +221,8 @@ loudness, ±1 dB (EBU R128) [173].
 
 ## The plugin
 
-`plugin/` is a DPF wrapper in C++17: LV2 and the JACK standalone are the targets; CLAP and VST3
-are built but untested.
+`plugin/` is a DPF wrapper in C++17: LV2 and the JACK standalone are the main targets; CLAP and
+VST3 are tested on Linux and Windows too.
 
 - **Parameters**: `Params.hpp` is the interface (indices, symbols, ranges, descriptions). One
   mapping from parameters to the engine's values (`EngineValues`) serves the DSP, the UI and

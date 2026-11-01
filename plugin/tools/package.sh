@@ -45,7 +45,9 @@ Dussek, a test build from commit $commit ($platform). Not a release.
    (make the folder if needed); the plugin and the standalone find the instruments there.
 2. The standalone: $run
 3. The plugins: copy the bundles you want to $plugins.
-   LV2 and the standalone are the tested targets; CLAP and VST3 are built but untested.
+   The standalone, LV2, CLAP and VST3 are tested on Linux and Windows; the macOS build is untested.
+   Where a host offers LV2 or CLAP, prefer them: the VST3 has limits (no presets in the host's
+   menu, no diagnostics panels in some hosts).
 
 $note
 The code is AGPL-3.0-or-later (LICENSE.txt); each instrument's license is in its folder.
