@@ -360,3 +360,66 @@ fn the_standalones_render_writes_what_midi2wav_writes() {
     assert_eq!(pe_cli(&[DIR, mid.to_str().unwrap(), b.to_str().unwrap(), "--rate", "fast"]), 2);
     assert_eq!(pe_cli(&["--version"]), 0);
 }
+
+/// A sine of `seconds` at `hz`, mono 16-bit at 44.1 kHz.
+fn sine_wav(path: &std::path::Path, hz: f32, seconds: f32) {
+    let spec = hound::WavSpec { channels: 1, sample_rate: 44100, bits_per_sample: 16, sample_format: hound::SampleFormat::Int };
+    let mut w = hound::WavWriter::create(path, spec).unwrap();
+    for i in 0..(seconds * 44100.0) as usize {
+        let s = (2.0 * std::f32::consts::PI * hz * i as f32 / 44100.0).sin() * 0.5;
+        w.write_sample((s * 32767.0) as i16).unwrap();
+    }
+    w.finalize().unwrap();
+}
+
+/// RMS in dBFS of the stereo samples between `a` and `b` seconds (32 kHz).
+fn rms_db(x: &[f32], a: f32, b: f32) -> f32 {
+    let w = &x[(a * 32000.0) as usize * 2..((b * 32000.0) as usize * 2).min(x.len())];
+    10.0 * (w.iter().map(|s| s * s).sum::<f32>() / w.len() as f32 + 1e-30).log10()
+}
+
+#[test]
+fn input_rings_the_strings() {
+    // `--input`: a sound file into the audio input, as the plugin's Audio input control takes it;
+    // only the pedal in the MIDI file (down for 3 s, no notes): after the sine stops (1 s) the free
+    // strings ring on with it, without it there is (next to) nothing
+    if !std::path::Path::new(DIR).exists() {
+        eprintln!("skipped: no instrument");
+        return;
+    }
+    let dir = std::path::PathBuf::from(env!("CARGO_TARGET_TMPDIR"));
+    let mid = dir.join("input_pedal.mid");
+    let cc = |value: u8| TrackEventKind::Midi {
+        channel: u4::new(0),
+        message: MidiMessage::Controller { controller: u7::new(64), value: u7::new(value) },
+    };
+    let track = vec![
+        TrackEvent { delta: u28::new(0), kind: cc(127) },
+        TrackEvent { delta: u28::new(3 * 960), kind: cc(0) },
+        TrackEvent { delta: u28::new(0), kind: TrackEventKind::Meta(MetaMessage::EndOfTrack) },
+    ];
+    Smf { header: Header::new(Format::SingleTrack, Timing::Metrical(u15::new(480))), tracks: vec![track] }.save(&mid).unwrap();
+    let wav = dir.join("input_sine.wav");
+    sine_wav(&wav, 220.0, 1.0);
+    let with = render(&mid, &dir.join("input_with.wav"), &["--input", wav.to_str().unwrap(), "--param", "input=1"]);
+    let without = render(&mid, &dir.join("input_without.wav"), &[]);
+    let (w, wo) = (rms_db(&with, 1.2, 2.8), rms_db(&without, 1.2, 2.8));
+    assert!(w > -70.0 && w > wo + 10.0, "the strings do not ring on: {w:.1} dB with the input, {wo:.1} dB without");
+}
+
+#[test]
+fn missing_input_names_the_file() {
+    if !std::path::Path::new(DIR).exists() {
+        eprintln!("skipped: no instrument");
+        return;
+    }
+    let dir = std::path::PathBuf::from(env!("CARGO_TARGET_TMPDIR"));
+    let mid = dir.join("input_missing.mid");
+    midi(&mid);
+    let out = Command::new(env!("CARGO_BIN_EXE_midi2wav"))
+        .args([DIR, mid.to_str().unwrap(), dir.join("x.wav").to_str().unwrap(), "--input", "/nonexistent/in.wav"])
+        .output()
+        .unwrap();
+    assert_eq!(out.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&out.stderr).contains("/nonexistent/in.wav"));
+}

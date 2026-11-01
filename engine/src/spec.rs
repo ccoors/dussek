@@ -52,6 +52,7 @@ pub const PARAM_KEYS: &[(&str, &str)] = &[
     ("mallet", "the mallet's index (the instrument's own mallets)"),
     ("bebung", "the clavichord's Bebung: the pitch rise at full pressure (cents)"),
     ("bend", "the pitch wheel's range (semitones, 0 … 12)"),
+    ("input", "the audio input's level (linear, 0 off … 16; --input names its file)"),
 ];
 
 /// The `--tuning` keys and what each sets (`midi2wav --help`; `tuning` takes every one, and the
@@ -257,6 +258,7 @@ pub fn params(mut p: Params, spec: &str) -> Result<Params> {
             "mallet" => p.mallet = x as u32,
             "bebung" => p.bebung = f,
             "bend" => p.bend_range = f,
+            "input" => p.input = f,
             "dynamics" => p.dynamics = f,
             _ => return Err(unknown("parameter", k, PARAM_KEYS.iter().map(|(k, _)| *k).collect())),
         }
@@ -307,6 +309,7 @@ pub fn format(p: &Params, curve: &crate::velocity::VelocityCurve, t: &Tuning, a4
         ("motor_depth", p.motor_depth, d.motor_depth),
         ("bebung", p.bebung, d.bebung),
         ("bend", p.bend_range, d.bend_range),
+        ("input", p.input, d.input),
         ("dynamics", p.dynamics, d.dynamics),
         ("variation", p.variation, d.variation),
         ("restrike", p.restrike, d.restrike),

@@ -39,6 +39,7 @@ struct Opts {
     stems: bool,
     morph: Vec<String>,
     felt: String,
+    input: Option<String>,
     video: Option<video::VideoOpts>,
 }
 
@@ -93,6 +94,13 @@ struct Cli {
     /// loudness kept (a few seconds).
     #[arg(long, value_name = "TEXT", value_parser = felt, help_heading = "Playing")]
     felt: Option<String>,
+    /// A sound file (WAV) into the audio input, from the start
+    ///
+    /// As the plugin's Audio input: its channels summed, at the level of --param input=… (1 drives the free strings
+    /// as hard as the instrument's own sound would; 0, the default, plays nothing). The render runs at least as long
+    /// as the file, in one segment.
+    #[arg(long, value_name = "FILE.wav", help_heading = "Playing")]
+    input: Option<String>,
 
     /// Compiled settings as key=value pairs, e.g. a4=442,temperament=3,mic=1
     #[arg(long, value_name = "KEY=VALUE,…", value_parser = tuning_spec, long_help = tuning_help(), help_heading = "Instrument and tuning")]
@@ -287,6 +295,11 @@ where
     if c.maxwarm < c.warmup {
         return fail(clap::error::ErrorKind::ValueValidation, "--maxwarm is shorter than --warmup");
     }
+    if let Some(path) = &c.input
+        && let Err(e) = std::fs::metadata(path)
+    {
+        return fail(clap::error::ErrorKind::ValueValidation, &format!("--input `{path}`: {e}"));
+    }
     let o = Opts {
         rate: c.rate,
         tail: c.tail,
@@ -306,6 +319,7 @@ where
         stems: c.stems,
         morph: c.morph,
         felt: c.felt.unwrap_or_default(),
+        input: c.input,
         video: c.video.map(|path| video::VideoOpts { path, width: c.size.0, height: c.size.1, fps: c.fps, ffmpeg: c.ffmpeg, transparent: c.transparent }),
     };
     Ok((c.instrument, c.midi, c.out, o))
@@ -328,6 +342,7 @@ fn render_segment(
     start: u64,
     from: u64,
     to: u64,
+    input: &[f32],
 ) -> Result<Vec<[f32; 2]>> {
     let mut engine = Engine::with_cache(inst.clone(), sr, tuning, &mut RadiationCache::default())?;
     engine.set_params(params);
@@ -395,7 +410,7 @@ fn render_segment(
     let lat = engine.latency() as u64;
     let n = (to - start + lat) as usize;
     let (mut l, mut r) = (vec![0.0f32; n], vec![0.0f32; n]);
-    engine.process(&mut l, &mut r);
+    engine.process_input(&input[(start as usize).min(input.len())..], &mut l, &mut r);
     let skip = (from - start + lat) as usize;
     Ok(l[skip..].iter().zip(&r[skip..]).map(|(&l, &r)| [l, r]).collect())
 }
@@ -437,6 +452,24 @@ fn instrument_dir(dir: &str, what: &str) -> Result<()> {
 }
 
 /// the folder a file goes into exists (checked before the render, not after it)
+/// A WAV file as the audio input: its channels summed, resampled to `sr`.
+fn read_input(path: &str, sr: f64) -> Result<Vec<f32>> {
+    let mut r = hound::WavReader::open(path).map_err(|e| format!("--input `{path}`: {e}"))?;
+    let spec = r.spec();
+    let scale = match spec.sample_format {
+        hound::SampleFormat::Float => 1.0,
+        hound::SampleFormat::Int => 1.0 / (1u64 << (spec.bits_per_sample - 1)) as f32,
+    };
+    let samples: Vec<f32> = match spec.sample_format {
+        hound::SampleFormat::Float => r.samples::<f32>().collect::<std::result::Result<_, _>>(),
+        hound::SampleFormat::Int => r.samples::<i32>().map(|s| s.map(|v| v as f32 * scale)).collect(),
+    }
+    .map_err(|e| format!("--input `{path}`: {e}"))?;
+    let ch = spec.channels.max(1) as usize;
+    let mono: Vec<f32> = samples.chunks(ch).map(|f| f.iter().sum()).collect();
+    Ok(if (spec.sample_rate as f64 - sr).abs() < 0.5 { mono } else { crate::resample::resample(&mono, spec.sample_rate as f64, sr) })
+}
+
 fn writable(path: &str, what: &str) -> Result<()> {
     match std::path::Path::new(path).parent().filter(|p| !p.as_os_str().is_empty()) {
         Some(folder) if !folder.is_dir() => Err(format!("{what} `{path}`: the folder `{}` does not exist", folder.display()).into()),
@@ -524,7 +557,12 @@ fn run(dir: &str, midi_path: &str, out_path: &str, o: Opts) -> Result<()> {
         .collect();
     drop(probe);
 
-    let total = ((score.length + o.tail) * sr) as u64;
+    // the audio input: its channels summed (the plugin's two inputs), at the render's rate
+    let input = match &o.input {
+        Some(path) => read_input(path, sr)?,
+        None => Vec::new(),
+    };
+    let total = ((score.length.max(input.len() as f64 / sr) + o.tail) * sr) as u64;
     let cores = std::thread::available_parallelism().map_or(1, |n| n.get());
     let (warm, max_warm) = ((o.warmup * sr) as u64, (o.maxwarm * sr) as u64);
     // moments when every damper is down: pedals up, no key held
@@ -555,7 +593,14 @@ fn run(dir: &str, midi_path: &str, out_path: &str, o: Opts) -> Result<()> {
         if q + max_warm >= from { q } else { from.saturating_sub(max_warm) }
     };
     // a segment is worth its warm-up only when it is much longer than it
-    let jobs = if o.jobs > 0 { o.jobs } else { cores.min((total / (3 * warm.max(1))).max(1) as usize) };
+    // the input excites the strings whether a damper is down or not: no quiet moment to cut at
+    let jobs = if !input.is_empty() {
+        1
+    } else if o.jobs > 0 {
+        o.jobs
+    } else {
+        cores.min((total / (3 * warm.max(1))).max(1) as usize)
+    };
     let t1 = Instant::now();
     let bounds: Vec<u64> = (0..=jobs).map(|j| total * j as u64 / jobs as u64).collect();
     // the same segments for every mix: the stems' sum is the full render's
@@ -563,11 +608,11 @@ fn run(dir: &str, midi_path: &str, out_path: &str, o: Opts) -> Result<()> {
         let parts: Vec<Result<Vec<[f32; 2]>>> = std::thread::scope(|s| {
             let handles: Vec<_> = (0..jobs)
                 .map(|j| {
-                    let (inst, events, start_for) = (&inst, &events, &start_for);
+                    let (inst, events, start_for, input) = (&inst, &events, &start_for, &input[..]);
                     let (from, to) = (bounds[j], bounds[j + 1]);
                     s.spawn(move || {
                         let start = start_for(from);
-                        render_segment(inst, tuning, params, mix, sr, events, start, from, to).map_err(|e| e.to_string())
+                        render_segment(inst, tuning, params, mix, sr, events, start, from, to, input).map_err(|e| e.to_string())
                     })
                 })
                 .collect();

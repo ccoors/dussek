@@ -87,3 +87,5 @@ tuning mic_x1
 tuning mic_pattern1
 tuning mic_x2
 tuning mic_wall
+option --input
+param input

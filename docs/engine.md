@@ -39,6 +39,7 @@ before anything renders; an unknown option or key gets the nearest known one as 
 | `--velocity-curve 1:1,64:80,127:127` | the Touch tab's curve, as in:out points |
 | `--latch` | the sustain pedal down throughout, as the plugin's Sustain latch |
 | `--felt TEXT` | the Felt tab's felt, as the plugin saves it (`s:21=6,60=0;p:;c:;d:`). On a hammer piano it and `--param hardness` go through the build, every key's loudness kept (a few seconds) |
+| `--input FILE.wav` | a sound file into the audio input from the start, its channels summed, at the level `--param input=…` sets (the plugin's Audio input; 0, the default, plays nothing); the render runs at least as long as the file, in one segment |
 | `--param room=0.5,pedal=1,pedal_ring=1,damper_fall=2,dynamics=45,…` | live parameters (`dynamics`: the pianos' level range in dB, 10–70). `prep`: 0 none, 1 plucked, 2 muted, 3 harmonic, 4 bolt, 5 paper; with `pluck_pos`, `pluck_bright`, `mute`, `harmonic`, `paper` |
 | `--tuning a4=442,stretch=1,mic=1,temperament=3,key=2,…` | compiled settings. `temperament` is the plugin's menu index (0 equal), `key` its key (0 C … 11 B); `stretch` is a tuner's stretch on top of the recording's own (1 adds it, −1 removes it, 0 as recorded); the bolt is `bolt=0.5,bolt_pos=0.31`; `lid` 0 closed … 1 open, 2 taken off; `pillow` 0 … 1 |
 | `--scl file.scl [--key N]` | a Scala scale (any note count) as the temperament, its first degree on pitch class N; a key map beside it (`file.kbm`) lays it on the keys |
