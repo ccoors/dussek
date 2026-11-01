@@ -238,6 +238,7 @@ def test_the_start_page_describes_the_software(site):
     assert data["offers"]["price"] == "0"
     assert {"Linux", "Windows", "macOS"} <= set(data["operatingSystem"].split(", "))
     assert data["license"].endswith("AGPL-3.0-or-later")
+    assert data["sameAs"] == ["https://github.com/ccoors/dussek", "https://ccoors.itch.io/dussek"]
 
 
 def test_llms_txt_lists_the_instruments_and_the_downloads(site):
@@ -251,6 +252,7 @@ def test_llms_txt_lists_the_instruments_and_the_downloads(site):
             assert menu["name"] in text, menu["name"]
     for f in (f"dussek-{v}-windows-setup.exe", f"dussek-{v}-macos.pkg", f"dussek-{v}-linux.tar.gz"):
         assert f"https://github.com/ccoors/dussek/releases/download/v{v}/{f}" in text
+    assert "(https://ccoors.itch.io/dussek)" in text
     for word in ("LV2", "CLAP", "VST3", "AGPL-3.0-or-later", "CC BY 4.0"):
         assert word in text, word
     for page in ("index.html", "credits.html"):
@@ -261,3 +263,11 @@ def test_the_sitemap_lists_the_pages(site):
     sitemap = open(f"{site}/sitemap.xml").read()
     for url in ("https://ccoors.github.io/dussek/", "https://ccoors.github.io/dussek/credits.html"):
         assert f"<loc>{url}</loc>" in sitemap
+
+
+def test_the_download_and_the_footer_link_to_itch(site):
+    page = open(f"{site}/index.html", encoding="utf-8").read()
+    download = page[page.index('<section id="download"'):]
+    assert 'href="https://ccoors.itch.io/dussek"' in download[:download.index("</section>")]
+    footer = page[page.index("<footer"):]
+    assert 'href="https://ccoors.itch.io/dussek"' in footer

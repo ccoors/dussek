@@ -56,6 +56,8 @@ Each installer puts the instruments in one place that the standalone and every p
 read. Where a host offers LV2 or CLAP, prefer them to the VST3 ([docs/plugin.md](docs/plugin.md)).
 The `-portable` archives hold the same files to copy by hand; between releases, the CI workflows'
 runs (the Actions tab, signed in to GitHub; kept 3 days) carry test builds of the same kind.
+The same files are on [itch.io](https://ccoors.itch.io/dussek), where the itch app keeps them up to
+date.
 
 ## Build from source
 

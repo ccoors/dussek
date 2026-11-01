@@ -24,6 +24,7 @@ REPO = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), 
 HERE = os.path.join(REPO, "site")
 GITHUB = "https://github.com/ccoors/dussek"
 SITE = "https://ccoors.github.io/dussek/"
+ITCH = "https://ccoors.itch.io/dussek"  # the same files, for the itch app (packaging/itch/README.md)
 DESCRIPTION = ("A free piano, harpsichord, harp and percussion instrument: every note simulated, none recorded. "
                "LV2, CLAP, VST3 and a standalone.")
 DOCS = f"{GITHUB}/tree/main/docs"
@@ -107,7 +108,7 @@ def structured(v):
             "applicationSubCategory": "Virtual instrument (LV2, CLAP, VST3 plugin and standalone)",
             "operatingSystem": "Linux, Windows, macOS", "softwareVersion": v,
             "downloadUrl": f"{GITHUB}/releases/tag/v{v}", "image": SITE + "social-preview.png",
-            "license": "https://spdx.org/licenses/AGPL-3.0-or-later", "sameAs": GITHUB,
+            "license": "https://spdx.org/licenses/AGPL-3.0-or-later", "sameAs": [GITHUB, ITCH],
             "author": {"@type": "Person", "name": "Christian Friedrich Coors"},
             "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"}}
     return '<script type="application/ld+json">' + json.dumps(data, ensure_ascii=False).replace("</", "<\\/") + "</script>"
@@ -125,7 +126,8 @@ def llms_txt(v):
     lines += [f"- {g}: {', '.join(sorted(names))}" for g, names in groups.items()]
     lines += ["", f"## Download (version {v})", ""]
     lines += [f"- [{name}]({GITHUB}/releases/download/v{v}/{f}): {note}" for _, name, f, note in installers(v)]
-    lines += [f"- [Release notes and the portable archives]({GITHUB}/releases/tag/v{v})", "",
+    lines += [f"- [Release notes and the portable archives]({GITHUB}/releases/tag/v{v})",
+              f"- [itch.io]({ITCH}): the same files, for the itch app's updates", "",
               "## Docs", "",
               f"- [Website]({SITE}): demos of every kind of instrument, the features, screenshots",
               f"- [README]({GITHUB}#readme): what it is, how to install and build it",
@@ -264,7 +266,8 @@ def index(clips, groups, ver):
   <div class="download-words">
     <h2 id="download-title">Download<br>Dussek</h2>
     <p>Version {v}, free: the standalone, LV2, CLAP and VST3, and every instrument. Where a host offers LV2 or CLAP,
-    prefer them to the VST3. <a href="{GITHUB}/releases/tag/v{v}">The release notes</a>.</p>
+    prefer them to the VST3. <a href="{GITHUB}/releases/tag/v{v}">The release notes</a>; the same files
+    <a href="{ITCH}">on itch.io</a>.</p>
   </div>
   <form class="installer" data-ui action="{GITHUB}/releases/download/v{v}/{assets[0][2]}" method="get">
     <p class="installer-title">Install Dussek {v}</p>
@@ -288,6 +291,7 @@ def footer(root):
     <ul>
       <li><a href="{GITHUB}">The source on GitHub</a></li>
       <li><a href="{GITHUB}/releases">Releases</a></li>
+      <li><a href="{ITCH}">On itch.io</a></li>
       <li><a href="{DOCS}">Docs</a></li>
       <li><a href="{root}credits.html">Credits</a></li>
       <li><a href="{GITHUB}/issues">Report a problem</a></li>
