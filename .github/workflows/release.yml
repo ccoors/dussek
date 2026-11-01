@@ -17,7 +17,114 @@ permissions:
   contents: read
 
 jobs:
+  version:
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: v
+        name: The version is the code's, and CHANGELOG.md has its section
+        env:
+          INPUT: ${{ inputs.version }}
+        run: |
+          case "$GITHUB_REF" in
+            refs/tags/v*) version=${GITHUB_REF_NAME#v} ;;
+            *) version=${INPUT:-$(sed -n 's/^project(dussek-plugin VERSION \([0-9.]*\).*/\1/p' plugin/CMakeLists.txt)} ;;
+          esac
+          packaging/check-release.sh "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+  linux:
+    needs: version
+    timeout-minutes: 60
+    runs-on: ubuntu-22.04   # the oldest LTS: glibc 2.35, so older systems run the build
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - name: System packages (DPF's)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build pkg-config \
+            libgl-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libdbus-1-dev \
+            libjack-jackd2-dev libasound2-dev libpulse-dev
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: just
+      - name: Build the plugin (and the engine)
+        run: just plugin
+      - name: The plugin's UI tests
+        run: plugin/build/ui_tests
+      - name: Only what every desktop has
+        run: |
+          # direct dependencies only (JACK is loaded at run time, when a server runs)
+          allowed='^(ld-linux-x86-64\.so\.2|lib(c|m|dl|pthread|rt|gcc_s|stdc\+\+|GL|X11|Xext|Xrandr|Xcursor|dbus-1|asound|pulse|pulse-simple)\.so\.[0-9.]+)$'
+          for f in plugin/build/bin/dussek plugin/build/bin/dussek.lv2/*.so plugin/build/bin/dussek.clap plugin/build/bin/dussek.vst3/Contents/x86_64-linux/*.so; do
+            objdump -p "$f" | awk '/NEEDED/{print $2}' | grep -Ev "$allowed" && { echo "$f needs more than every desktop has"; exit 1; }
+          done
+          echo ok
+      - name: The archive
+        run: |
+          out=$(plugin/tools/package.sh linux | tail -n 1)
+          echo "PORTABLE=$out" >> "$GITHUB_ENV"
+          tar -C dist -czf "$out.tar.gz" "$(basename "$out")"   # tar keeps the executables' mode
+          echo "ARCHIVE=$out.tar.gz" >> "$GITHUB_ENV"
+      - name: Installed, listed, uninstalled
+        run: packaging/linux/check-install.sh "$PORTABLE"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dussek-linux
+          path: ${{ env.ARCHIVE }}
+          archive: false
+          retention-days: 7
+
+  macos:
+    needs: version
+    timeout-minutes: 60
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: just
+      - name: Build the plugin (and the engine)
+        run: just plugin
+      - name: The plugin's UI tests
+        run: plugin/build/ui_tests
+      - name: The portable folder
+        run: echo "PORTABLE=$(plugin/tools/package.sh macos | tail -n 1)" >> "$GITHUB_ENV"
+      - name: The package
+        run: |
+          version=${PORTABLE#dist/dussek-}
+          echo "PKG=$(packaging/macos/build-pkg.sh "${version%-macos}" "$PORTABLE" | tail -n 1)" >> "$GITHUB_ENV"
+      - name: Installed, listed
+        run: packaging/macos/check-install.sh "$PKG" "$PORTABLE"
+      - name: The portable archive
+        run: |
+          tar -C dist -czf "${PORTABLE}-portable.tar.gz" "$(basename "$PORTABLE")"
+          echo "PORTABLE_ARCHIVE=${PORTABLE}-portable.tar.gz" >> "$GITHUB_ENV"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dussek-macos-pkg
+          path: ${{ env.PKG }}
+          archive: false
+          retention-days: 7
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dussek-macos-portable
+          path: ${{ env.PORTABLE_ARCHIVE }}
+          archive: false
+          retention-days: 7
+
   windows:
+    needs: version
+    timeout-minutes: 90
     runs-on: windows-2025
     defaults:
       run:
@@ -61,9 +168,40 @@ jobs:
           echo "SETUP=dist/dussek-$version-windows-setup.exe" >> "$GITHUB_ENV"
       - name: Installed, listed, uninstalled
         run: packaging/windows/check-install.sh "$SETUP" "$PORTABLE"
+      - name: The portable archive
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "$($env:PORTABLE)" -DestinationPath "$($env:PORTABLE)-portable.zip"
       - uses: actions/upload-artifact@v7
         with:
           name: dussek-windows-setup
           path: ${{ env.SETUP }}
           archive: false
           retention-days: 7
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dussek-windows-portable
+          path: ${{ env.PORTABLE }}-portable.zip
+          archive: false
+          retention-days: 7
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [version, linux, macos, windows]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write   # the release; everything else stays read-only
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v5
+        with:
+          path: assets
+          merge-multiple: true
+      - name: The release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          ls -l assets
+          packaging/release-notes.sh "$VERSION" > notes.md
+          gh release create "v$VERSION" assets/* --title "Dussek $VERSION" --notes-file notes.md --verify-tag
