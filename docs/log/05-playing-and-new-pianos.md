@@ -3783,3 +3783,66 @@ longer than either side from C3 up, and a pedaled phrase piles that up. The boar
 sides' statistics (step 115) drains the strings differently from either fitted board. By ear the
 level now matches its ends better, and a morph that rings a little longer is fine: kept so, its
 attacks at its sides' level.
+
+<a id="step-232"></a>
+## 232. The harpsichords and the harps morph
+
+The morph took the hammer-strung pianos only. It now takes three families, each among itself
+(`morph::family`, rules over the data; the report's `morph_family` 1, 2 and 3, by which the
+plugin offers partners): the hammer pianos as before; the harpsichords, strings plucked by quills on
+a keyboard instrument's body (registers, the buff and the lute allowed); the harps, plucked on a
+harp's body, one register. A mix across families is refused, naming the instrument
+(`harp: cannot morph with harpsichord: another kind of instrument`). The clavichord (a tangent),
+the guitars, the zithers and the bars stay out.
+
+- **The registers** are the main instrument's, with their stops, so the plugin's stops are the
+  main's. Each blends with each side's register of the same pitch: the same stop, else the 8′ and
+  the 8′ II stand in for each other; a 4′ pairs only with a 4′. The weights are those of the sides
+  that have a pair (as the dampers' tables); a register no side pairs with is the main's own (its
+  numbers, through the morphed board). Harpsichord B toward A: B's 8′ and 8′ II each blend with A's
+  8′, its 4′ stays B's; A toward B stays one register. E toward F: 8′ with 8′, 8′ II with 8′ II.
+- **A register's own transfer correction** follows the same pairs: where one of them has its own,
+  each pair's correction as it plays (its own, else its instrument's) is blended point by point;
+  else the register plays the morph's instrument correction, itself blended. E's and F's 8′ II
+  corrections blend; E toward A blends E's 8′ II correction with A's instrument's; B's 4′ keeps its
+  own.
+- **The buff and the lute** are the main's, blended with the sides' that have them on the paired
+  register (the pads' loss geometric, their place arithmetic; the lute's pluck points and level
+  arithmetic). The six harpsichords' buffs are one fit, so the blend changes nothing today; the lute
+  is Harpsichord B's alone.
+- **The quill** blends as the hammer does: its lowpass and force geometric, the pluck point, the
+  per-step laws and the order arithmetic; a bar's or a tangent's pluck only with its own kind.
+- **The knock's numbers** a side shares are kept exactly. Harpsichord B morphed with itself played
+  1.3·10⁻³ of its peak apart: the knock's burst is 10 · decay · rate samples long, truncated, and the
+  geometric mean of 0.016 s and 0.016 s came out an ulp short, one sample shorter and another noise.
+  No piano has a knock, so their morphs do not reach it: four piano mixes render bit for bit as
+  before.
+
+**The level.** Every key is leveled as for the pianos (step 231), measured with the default stops
+(the 8′) and its shift applied to every register; the harpsichords and harps store no per-key
+levels, so each side is measured as the morph builds. With one stop at a time (every third key, ff,
+0.2 s peak): B halfway to A, its 8′ within 0.00 dB of its sides' mean; its 8′ II +0.12 dB on average
+(rms 0.77 dB, the worst key +1.8 dB) against the mean of B's 8′ II and A's 8′; its 4′, B's own
+through the morphed board, 0.00 dB on average against B's 4′ (rms 1.59 dB, the worst +3.7 dB).
+E halfway to F: the 8′ II +0.55 dB (rms 1.61 dB, one key +5.3 dB). Leveling each register by its
+own stop would take each side's registers and the morph's measured one by one (B toward A: about
+twice the measuring).
+
+The website's phrases (`f-harpsichord`, `harp`; the engine's calibration):
+
+| Mix | Integrated loudness |
+|---|---|
+| Harpsichord A, C, A halfway to C | −29.9, −30.3, −30.2 LUFS |
+| Harpsichord E, F, E halfway to F | −30.3, −30.3, −30.2 LUFS |
+| Harpsichord B, B halfway to A (the 8′) | −30.2, −29.7 LUFS |
+| A, C and D at a third each (D alone −24.5) | −29.5 LUFS |
+| Harp A, Harp B, A halfway to B | −34.1, −34.5, −34.8 LUFS |
+
+Loading (16 threads, `Instrument::morph`): A with C 0.54–0.59 s, A with C and D 0.74–0.83 s, B with
+A 1.09–1.11 s, E with F 0.95–1.01 s, the harps 0.47–0.51 s, against a plain load of 0.10 s; Grand A
+with Grand B 0.27 s as before. Tests: a harpsichord (B) morphed with itself renders within 10⁻⁴ of
+its peak with every stop and the buff; A halfway to C keeps A's register, every quill and string
+value between the sides; B toward A and E toward F pair as above; the harps morph, the body the
+main's; a harpsichord with a harp, a piano or the clavichord is refused by name; every key of B
+three quarters toward A plays within 0.05 dB of its sides' mean; the plugin's partner list offers a
+harpsichord the other five and Harp A the lever harp.

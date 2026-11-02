@@ -158,7 +158,8 @@ What is open:
 ## Morphing
 
 Done (steps 115, 116): the weighted morph of the hammer-strung pianos, in the engine and in the
-plugin. An instrument file is ~120 000 numbers:
+plugin. Done (step 232): the harpsichords morph among themselves, and the harps; the chosen
+instrument keeps its registers and stops, each blended with the others' of the same pitch. An instrument file is ~120 000 numbers:
 
 - 96 000 are the two fitted radiation responses (the recording's fine structure);
 - 8 500 are the soundboard's 1 220 modes;
@@ -186,12 +187,13 @@ Which exports morph easily, by their structure (checked 2026-10-16; all span key
 - **grands with uprights**: the same hammer and strings. The uprights' boards have 844 modes
   (rank pairing takes 844), a few bass keys change string count, and the body (it places the
   microphones) comes from the chosen side;
-- **the harpsichords**: one body type, one plucked string per key. Harpsichord B has 3
-  registers, the others 1: morph the shared 8′, the others from B;
+- **the harpsichords** (done, step 232): one body type, one plucked string per key. Harpsichord B
+  has 3 registers, E and F 2, the others 1: the chosen one's registers, each with the others' of
+  its pitch;
 - **all plucked strings** (the harpsichords, the harps, the guitar, the strumstick, the
   psaltery, the đàn tranh): the same kind of note in the format, but their bodies differ
   (107–1 015 board modes). What one side has alone (measured polarizations, the bend) fades in
-  or out;
+  or out. The two harps morph with each other (step 232; 251 and 141 modes, paired by rank);
 - **the clavichord with them**: stored as a pluck, but two strings per key, its own body, the
   Bebung, a tangent that stays on the string;
 - **the percussion**: explicit modes and a mallet throughout, but 3 (vibraphone, xylophone) to 8

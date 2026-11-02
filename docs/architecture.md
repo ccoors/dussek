@@ -113,7 +113,11 @@ through the board and the room [126].
 The room's own level per band (`eq_db`, the pianos' cuts) sits on top of its unit energy; the
 partials get back what a cut takes from them through the per-note correction, and the other
 microphone positions match the board's level against the room before its cuts [123].
-A morph between instruments works between decode and build, on the parameters [115].
+A morph between instruments works between decode and build, on the parameters [115], within a
+family (the hammer pianos, the harpsichords, the harps: `morph::family`, which the report's
+`morph_family` carries to the plugin); the first instrument gives the body, the registers with
+their stops, the buff and the lute, each register blended with the others' of the same pitch
+[232].
 
 **Voices**: one per key, not per note-on. A re-strike acts on the string still vibrating, its
 contact started from rest and added to the running modes. With Live re-strike (the Touch tab, off

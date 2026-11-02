@@ -9,6 +9,8 @@ break is allowed but listed under "Breaking" (`docs/compatibility.md`).
 
 - "updating…" in the bottom bar while a change is still on its way into the sound (Hammer hardness,
   the felt, another instrument: up to about 2 s on a piano).
+- The Morph tab morphs the harpsichords among themselves and the two harps with each other: the
+  chosen harpsichord keeps its registers and stops, each mixed with the partners' of the same pitch.
 
 ### Breaking
 

@@ -141,11 +141,12 @@ The UI is NanoVG and scalable: the host's HiDPI factor × a zoom of 100–400 %.
   into the instrument; until it goes, the previous setting plays. It shows once the work has taken
   0.2 s and stays at least 0.5 s, so the quick rebuilds (the tuning, the condition, the
   microphones: 20–120 ms) show nothing. The slow ones: another instrument or a morph's point (about
-  0.2–0.3 s), and whatever measures a hammer piano's loudness again: Hammer hardness and the felt
-  (about 1 s, 2 s the first time on an instrument), and another instrument or point while either
-  is changed (about 2 s more, the quick build playing meanwhile). The Felt tab's "measuring…" and
-  the Morph tab's "building…" say the same where the change was made. With the keyboard open, a
-  window under 487 px has no room for it beside Visualization.
+  0.2–0.3 s; a harpsichord's or a harp's morph 0.5–1.1 s), and whatever measures a hammer piano's
+  loudness again: Hammer hardness and the felt (about 1 s, 2 s the first time on an instrument),
+  and another instrument or point while either is changed (about 2 s more, the quick build playing
+  meanwhile). The Felt tab's "measuring…" and the Morph tab's "building…" say the same where the
+  change was made. With the keyboard open, a window under 487 px has no room for it beside
+  Visualization.
 
 Using the controls:
 
@@ -211,8 +212,10 @@ parameter table only grows from release to release ([compatibility.md](compatibi
 ## Morph
 
 The Morph tab plays an instrument between the chosen one and up to four others, made from their
-files without fitting (the engine's morph, [engine.md](engine.md#morphing)). It covers the
-grands and uprights so far; on another instrument the tab says it does not morph.
+files without fitting (the engine's morph, [engine.md](engine.md#morphing)). Instruments morph
+within their family: the hammer-strung pianos (the grands and uprights), the harpsichords, the
+harps. Nothing morphs across families; the clavichord, the guitars, the zithers and the bars do not
+morph, and on them the tab says so.
 
 - **The list** starts with the chosen instrument. "+ Add" offers the ones that may join, and each
   partner row moves up, down or goes (×). Every row shows its share.
@@ -223,7 +226,9 @@ grands and uprights so far; on another instrument the tab says it does not morph
   - inside, every instrument has a share (generalized barycentric coordinates). With four or
     more, the order decides which pairs an edge mixes.
 - **Building**: drag or click the point. The instrument rebuilds in the background ("building…"
-  under the pad, about 0.3 s), and each build plays as it lands, so a drag is heard as it goes.
+  under the pad, about 0.3 s for the pianos, 0.5–1.1 s for the harpsichords and harps, whose
+  partners' loudness is measured at each build), and each build plays as it lands, so a drag is
+  heard as it goes.
 - **Notes across a build**: notes held across a build fade out over 30 ms. Another mix is
   another instrument, whose strings cannot take over the old ones' swing (a change of instrument
   fades the same way). Notes played after the build sound in the new mix.
@@ -235,6 +240,11 @@ grands and uprights so far; on another instrument the tab says it does not morph
 - **Display**: while partners play, the Instrument row reads e.g. "Grand A + 2 (morph)", and
   Copy CLI adds their `--morph` flags.
 - **The body** (where the microphones go, the lid) is always the chosen instrument's.
+- **Registers** (the harpsichords): the morph has the chosen instrument's registers, so the Sound
+  tab's stops are its own. Each register mixes with each partner's of the same pitch: an 8′ with
+  the 8′, a second 8′ with the partner's second 8′, or with its 8′ where it has none; a 4′ only with
+  a 4′, and where no partner has one it stays the chosen instrument's. The buff and the lute are the
+  chosen instrument's, mixed with a partner's where it has them on the same register.
 
 ## Touch
 

@@ -112,10 +112,17 @@ W, and the instrument given first keeps the rest (1 − ΣW):
 just midi2wav instruments/grand_a song.mid song.wav --morph instruments/grand_d=0.5
 ```
 
-This one is halfway between Grand A and Grand D. A morph takes the hammer-strung pianos, the
-grands and uprights in any mix, and refuses others. What it blends:
+This one is halfway between Grand A and Grand D. A morph takes the instruments of one family in
+any mix: the hammer-strung pianos (grands and uprights), the harpsichords, or the harps; it refuses
+a mix across families and the instruments of none (the clavichord, the guitars, the zithers, the
+bars). What it blends:
 
-- per key, the strings' and hammers' numbers are interpolated (scales geometrically);
+- per key, the strings' and the hammers' or quills' numbers are interpolated (scales
+  geometrically);
+- the registers and their stops are the first instrument's: each blends with the others' register
+  of the same pitch (a second 8′ with an 8′ where there is no second one), a 4′ only with a 4′
+  (none: the first's own); the buff and the lute stop are the first's, blended where another has
+  them on the same register;
 - the soundboards' modes are paired by relative rank;
 - the measured responses are mixed;
 - the noises and the room are interpolated.
@@ -132,7 +139,9 @@ just export <project>
 cargo run --release --manifest-path engine/Cargo.toml --bin level -- instruments/<dir>
 ```
 
-A morph takes about 0.25 s to build; a plain load takes 0.13 s.
+A morph of pianos takes about 0.3 s to build; a plain load takes 0.13 s. The harpsichords and
+harps store no per-key levels: a morph measures each of its instruments as it builds, 0.5 s for
+two harps or two one-register harpsichords, 1.0–1.1 s with Harpsichord B, E or F.
 
 ## Accuracy and cost
 
