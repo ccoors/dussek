@@ -541,12 +541,25 @@ fn across_families_is_refused_by_name() {
 
 #[test]
 fn every_key_of_a_harpsichord_morph_plays_at_its_sides_mean() {
-    // as for the pianos, measured with the default stops (the 8′), the shift on every register
-    let Ok(m) = Instrument::morph(&[(HARPSICHORD, 0.75), (HA, 0.25)]) else { return };
-    let (b, a) = (Instrument::load(HARPSICHORD).unwrap().key_ff_levels().unwrap(), Instrument::load(HA).unwrap().key_ff_levels().unwrap());
-    let lm = m.key_ff_levels().unwrap();
-    for k in 0..88 {
-        let want = 0.75 * b[k] + 0.25 * a[k];
-        assert!((lm[k] - want).abs() <= 0.05, "key {}: {:.2} dB, its sides' mean {want:.2} dB", 21 + k, lm[k]);
-    }
+    // every register with its own stop alone against its pairs' mean (bits: 1 the 8′, 2 the 4′, 4 the
+    // 8′ II): B ¾ toward A, B's 8′ and 8′ II with A's 8′, its 4′ its own; E halfway to F, like with like
+    let (Ok(a), Ok(b), Ok(e), Ok(f)) = (Instrument::load(HA), Instrument::load(HARPSICHORD), Instrument::load(HE), Instrument::load(HF)) else {
+        return;
+    };
+    let at = |i: &Instrument, stops: u32| i.stop_ff_levels(stops).unwrap();
+    let mix = |x: &[f64], wx: f64, y: &[f64]| x.iter().zip(y).map(|(p, q)| wx * p + (1.0 - wx) * q).collect::<Vec<f64>>();
+    let check = |m: &Instrument, stops: u32, want: &[f64], what: &str| {
+        let lm = at(m, stops);
+        for k in 0..88 {
+            assert!((lm[k] - want[k]).abs() <= 0.05, "{what}, key {}: {:.2} dB, its sides' mean {:.2} dB", 21 + k, lm[k], want[k]);
+        }
+    };
+    let m = Instrument::morph(&[(HARPSICHORD, 0.75), (HA, 0.25)]).unwrap();
+    let a8 = at(&a, 1);
+    check(&m, 1, &mix(&at(&b, 1), 0.75, &a8), "B toward A, the 8′");
+    check(&m, 2, &at(&b, 2), "B toward A, the 4′");
+    check(&m, 4, &mix(&at(&b, 4), 0.75, &a8), "B toward A, the 8′ II");
+    let m = Instrument::morph(&[(HE, 0.5), (HF, 0.5)]).unwrap();
+    check(&m, 1, &mix(&at(&e, 1), 0.5, &at(&f, 1)), "E toward F, the 8′");
+    check(&m, 4, &mix(&at(&e, 4), 0.5, &at(&f, 4)), "E toward F, the 8′ II");
 }

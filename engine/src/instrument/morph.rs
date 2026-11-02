@@ -118,20 +118,33 @@ fn paired(regs: &[Reg], s: u8) -> Option<usize> {
     })
 }
 
-/// The morph at its sides' level, key by key: each key's level correction (`Note::level_db`, every
-/// register's) shifted so that its ff level (`Instrument::key_ff_levels`) is the weighted mean of
-/// theirs (`side_levels`, dB per key). The morphed physics radiates unevenly across the keys: one
-/// gain from keys 48, 60 and 72 left Grand A halfway to Grand B 1.5–2.6 dB above its sides' mean in
-/// the bass and played a phrase 3.2 dB above A (design log step 231).
-pub(super) fn level_keys(inst: &mut Instrument, side_levels: &[Vec<f64>], w: &[f64]) -> Result<(), Error> {
-    let own = inst.key_ff_levels()?;
-    let nk = own.len();
-    if side_levels.iter().any(|l| l.len() != nk) {
-        return Err(err("morph: a side's levels are not every key's"));
+/// Per register of `main` (its stop) the stop of each side's register it pairs with (`paired`; None:
+/// none), as the morph blends them: what each register is leveled against (`level_keys`).
+pub(super) fn level_pairs(main: &RawInstrument, sides: &[&RawInstrument]) -> Vec<(u8, Vec<Option<u8>>)> {
+    let regs: Vec<Vec<Reg>> = sides.iter().map(|r| layout(r)).collect();
+    layout(main).iter().map(|m| (m.stop, regs.iter().map(|g| paired(g, m.stop).map(|j| g[j].stop)).collect())).collect()
+}
+
+/// The morph at its sides' level, key by key and register by register: each key's level correction
+/// (`Note::level_db`) in register r shifted so that its ff level with r's stop alone
+/// (`Instrument::stop_ff_levels`) is `targets[r]` (dB per key: the weighted mean of its pairs',
+/// `level_pairs`). The morphed physics radiates unevenly across the keys: one gain from keys 48, 60
+/// and 72 left Grand A halfway to Grand B 1.5–2.6 dB above its sides' mean in the bass and played a
+/// phrase 3.2 dB above A (design log step 231); the 8′'s shift on every register left a
+/// harpsichord's 4′ and 8′ II 1.6 dB rms off their pairs' (step 232).
+pub(super) fn level_keys(inst: &mut Instrument, targets: &[Vec<f64>]) -> Result<(), Error> {
+    if targets.len() != inst.registers() {
+        return Err(err("morph: not every register's levels"));
     }
-    for (k, o) in own.iter().enumerate() {
-        let shift = arith(&side_levels.iter().map(|l| l[k]).collect::<Vec<_>>(), w) - o;
-        for n in inst.notes.iter_mut().skip(k).step_by(nk) {
+    for (r, target) in targets.iter().enumerate() {
+        let own = inst.stop_ff_levels(1 << inst.register_stops[r])?;
+        let nk = own.len();
+        if target.len() != nk || nk != 88 {
+            return Err(err("morph: a side's levels are not every key's"));
+        }
+        for (k, o) in own.iter().enumerate() {
+            let shift = target[k] - o;
+            let n = &mut inst.notes[r * 88 + k];
             if n.level_db.is_empty() {
                 n.level_db.push([shift; 3]);
             } else {
@@ -811,6 +824,32 @@ mod tests {
         let m = morph(vec![(e.clone(), 0.25), (a.clone(), 0.75)], &e).unwrap();
         let ta = table(&a, a.raw.correction.as_ref().unwrap());
         assert!(own(&m).iter().zip(te.iter().zip(&ta)).all(|(m, (e, a))| (m - (0.25 * e + 0.75 * a)).abs() < 1e-12));
+    }
+
+    #[test]
+    fn a_side_s_levels_are_kept_by_its_content() {
+        // measured once per process for the bytes decoded: a changed file is another key
+        let (Some(_), Some(_)) = (decoded(HA), decoded(HB)) else { return };
+        let dir = std::env::temp_dir().join(format!("pe-side-levels-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        for f in ["instrument.json", "data.bin"] {
+            std::fs::copy(Path::new(HA).join(f), dir.join(f)).unwrap();
+        }
+        let content = |d: &Path| decode(d).unwrap().content;
+        let before = content(&dir);
+        let first = Instrument::morph(&[(dir.as_path(), 0.5), (Path::new(HB), 0.5)]).map(|_| ());
+        let kept = kept_side_levels(before, 0);
+        // the same text with a space more: another key, not measured yet
+        let json = std::fs::read_to_string(dir.join("instrument.json")).unwrap();
+        std::fs::write(dir.join("instrument.json"), format!("{json} ")).unwrap();
+        let after = content(&dir);
+        let unmeasured = kept_side_levels(after, 0);
+        let second = Instrument::morph(&[(dir.as_path(), 0.25), (Path::new(HB), 0.75)]).map(|_| ());
+        let _ = std::fs::remove_dir_all(&dir);
+        first.unwrap();
+        second.unwrap();
+        assert!(kept.is_some_and(|v| v.len() == 88) && after != before && unmeasured.is_none());
+        assert_eq!(kept_side_levels(after, 0), kept_side_levels(before, 0)); // the same physics
     }
 
     #[test]

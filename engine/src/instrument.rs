@@ -951,6 +951,47 @@ pub fn stored_dynamics(dir: &Path) -> Dynamics {
     read().unwrap_or_default()
 }
 
+/// The sides' measured per-key ff levels (`side_levels`) by (content, stop), for the process's
+/// lifetime: a morph's sides are measured once, not at every build of a dragged pad. The content is
+/// the fingerprint of the very bytes decoded (`decode`), so a changed file is another key; at most
+/// `SIDE_LEVELS_KEPT`.
+static SIDE_LEVELS: std::sync::Mutex<Vec<((u64, u8), Vec<f64>)>> = std::sync::Mutex::new(Vec::new());
+const SIDE_LEVELS_KEPT: usize = 256;
+
+/// The levels `SIDE_LEVELS` keeps for (content, stop), if any.
+pub(crate) fn kept_side_levels(content: u64, stop: u8) -> Option<Vec<f64>> {
+    let kept = SIDE_LEVELS.lock().unwrap_or_else(|e| e.into_inner());
+    kept.iter().find(|(k, _)| *k == (content, stop)).map(|(_, v)| v.clone())
+}
+
+/// Each key's ff level of `d` (in `dir`) with each stop of `stops` alone (`stop_ff_levels`): a
+/// piano's 8′ stored with it (`stored_key_levels`), else kept from an earlier measuring
+/// (`SIDE_LEVELS`), else built once and measured.
+fn side_levels(d: &Decoded, dir: &Path, stops: &[u8]) -> Result<Vec<(u8, Vec<f64>)>, Error> {
+    let mut out = Vec::with_capacity(stops.len());
+    let mut built: Option<Instrument> = None;
+    for &s in stops {
+        let known = if s == 0 { stored_key_levels(dir) } else { None }.or_else(|| kept_side_levels(d.content, s));
+        let v = match known {
+            Some(v) => v,
+            None => {
+                if built.is_none() {
+                    built = Some(build(d.clone())?);
+                }
+                let v = built.as_ref().unwrap().stop_ff_levels(1 << s)?;
+                let mut kept = SIDE_LEVELS.lock().unwrap_or_else(|e| e.into_inner());
+                if !kept.iter().any(|(k, _)| *k == (d.content, s)) {
+                    kept.insert(0, ((d.content, s), v.clone()));
+                    kept.truncate(SIDE_LEVELS_KEPT);
+                }
+                v
+            }
+        };
+        out.push((s, v));
+    }
+    Ok(out)
+}
+
 /// An instrument's files, parsed but not built (the morph works on these): instrument.json, data.bin,
 /// the directory's name (messages) and its full path (a morph's profile: "." or two folders of one
 /// name are told apart).
@@ -974,11 +1015,12 @@ fn fingerprint(json: &[u8], data: &[u8]) -> u64 {
 }
 
 fn decode(dir: &Path) -> Result<Decoded, Error> {
-    let raw = read_raw(dir)?;
+    // the fingerprint from the very bytes parsed (a side's measured levels are kept by it, `SIDE_LEVELS`)
+    let json = fs::read(dir.join("instrument.json")).map_err(|e| err(format!("instrument.json: {e}")))?;
+    let raw = parse_raw(&json)?;
     let data = Data(fs::read(dir.join("data.bin")).map_err(|e| err(format!("data.bin: {e}")))?);
     let full = fs::canonicalize(dir).unwrap_or_else(|_| dir.to_path_buf());
     let name = full.file_name().map_or_else(String::new, |n| n.to_string_lossy().into_owned());
-    let json = fs::read(dir.join("instrument.json")).map_err(|e| err(format!("instrument.json: {e}")))?;
     check_tie(raw.data.as_ref(), &data.0)?;
     let content = fingerprint(&json, &data.0);
     Ok(Decoded { raw, data, name, path: full.display().to_string(), content })
@@ -1001,8 +1043,12 @@ fn check_tie(tie: Option<&RawTie>, data: &[u8]) -> Result<(), Error> {
 
 /// instrument.json, parsed and checked (the format, the mallets), without data.bin
 fn read_raw(dir: &Path) -> Result<RawInstrument, Error> {
-    let json = fs::read_to_string(dir.join("instrument.json")).map_err(|e| err(format!("instrument.json: {e}")))?;
-    let raw: RawInstrument = serde_json::from_str(&json).map_err(|e| err(format!("instrument.json: {e}")))?;
+    parse_raw(&fs::read(dir.join("instrument.json")).map_err(|e| err(format!("instrument.json: {e}")))?)
+}
+
+/// instrument.json's text parsed and checked.
+fn parse_raw(json: &[u8]) -> Result<RawInstrument, Error> {
+    let raw: RawInstrument = serde_json::from_slice(json).map_err(|e| err(format!("instrument.json: {e}")))?;
     if raw.mallets.iter().any(|m| !(m.f_q > 0.0 && m.order > 0.0 && m.speed.iter().all(|&v| v > 0.0))) {
         return Err(err("instrument.json: a mallet without a lowpass or speeds"));
     }
@@ -1479,19 +1525,42 @@ impl Instrument {
             decoded.push((d, w / sum));
         }
         let w: Vec<f64> = decoded.iter().map(|d| d.1).collect();
-        // each side's own level per key: stored with it, else built and measured (in parallel)
-        let levels: Vec<Result<Vec<f64>, Error>> = std::thread::scope(|scope| {
-            let runs: Vec<_> = decoded
-                .iter()
-                .zip(&dirs)
-                .map(|((d, _), dir)| scope.spawn(move || stored_key_levels(dir).map_or_else(|| build(d.clone())?.key_ff_levels(), Ok)))
-                .collect();
-            runs.into_iter().map(|h| h.join().unwrap_or_else(|_| Err(err("morph: a side's build failed")))).collect()
+        // each of the main's registers leveled to its pairs' (`morph::level_pairs`): the stops each
+        // side's level is wanted at, and the main's own where no side pairs with a register
+        let pairs = morph::level_pairs(&main.raw, &decoded.iter().map(|d| &d.0.raw).collect::<Vec<_>>());
+        let wanted = |i: usize| -> Vec<u8> {
+            let mut s: Vec<u8> = pairs.iter().filter_map(|(_, p)| p[i]).collect();
+            s.sort_unstable();
+            s.dedup();
+            s
+        };
+        let own: Vec<u8> = pairs.iter().filter(|(_, p)| p.iter().all(Option::is_none)).map(|(s, _)| *s).collect();
+        // each side's per key (in parallel): stored with it, kept from an earlier build, else measured
+        let (levels, main_levels) = std::thread::scope(|scope| {
+            let runs: Vec<_> =
+                decoded.iter().zip(&dirs).enumerate().map(|(i, ((d, _), dir))| scope.spawn(move || side_levels(d, dir, &wanted(i)))).collect();
+            let main_run = (!own.is_empty()).then(|| scope.spawn(|| side_levels(&main, first, &own)));
+            let failed = || Err(err("morph: a side's build failed"));
+            let levels: Vec<Result<Vec<(u8, Vec<f64>)>, Error>> = runs.into_iter().map(|h| h.join().unwrap_or_else(|_| failed())).collect();
+            (levels, main_run.map(|h| h.join().unwrap_or_else(|_| failed())))
         });
         let levels = levels.into_iter().collect::<Result<Vec<_>, _>>()?;
+        let main_levels = main_levels.transpose()?.unwrap_or_default();
+        let at = |l: &[(u8, Vec<f64>)], s: u8| l.iter().find(|(t, _)| *t == s).map(|(_, v)| v.clone()).unwrap_or_default();
+        let targets: Vec<Vec<f64>> = pairs
+            .iter()
+            .map(|(s, p)| {
+                let (idx, wr): (Vec<usize>, Vec<f64>) = (0..p.len()).filter(|&i| p[i].is_some()).map(|i| (i, w[i])).unzip();
+                if idx.is_empty() {
+                    return at(&main_levels, *s);
+                }
+                let side: Vec<Vec<f64>> = idx.iter().map(|&i| at(&levels[i], p[i].unwrap())).collect();
+                (0..LEVEL_TABLE_KEYS.len()).map(|k| morph::arith(&side.iter().map(|l| l.get(k).copied().unwrap_or(f64::NAN)).collect::<Vec<_>>(), &wr)).collect()
+            })
+            .collect();
         let tables: Vec<(Dynamics, f64)> = decoded.iter().zip(&dirs).map(|((d, _), dir)| (stored_dynamics(dir), d.raw.velocity.speed[2])).collect();
         let mut inst = build(morph::morph(decoded, &main)?)?;
-        morph::level_keys(&mut inst, &levels, &w)?;
+        morph::level_keys(&mut inst, &targets)?;
         inst.dynamics = morph::morph_dynamics(&tables, &w, inst.velocity_speed[2]);
         Ok(inst)
     }
@@ -1618,7 +1687,7 @@ impl Instrument {
         let speeds: Vec<f64> = LEVEL_SPEEDS.map(|k| ff * 2f64.powf(k as f64 / 2.0)).to_vec();
         let (nk, ns) = (LEVEL_TABLE_KEYS.len(), speeds.len());
         let jobs: Vec<(u8, f64)> = (0..nk * ns).map(|i| (LEVEL_TABLE_KEYS[i / ns], speeds[i % ns])).collect();
-        let found = self.strike_peaks(&jobs)?;
+        let found = self.strike_peaks(&jobs, crate::Params::default().stops)?;
         let mut db: Vec<Vec<f64>> = found.chunks(ns).map(<[f64]>::to_vec).collect();
         let at_ff = LEVEL_SPEEDS.iter().position(|&k| k == 0).unwrap();
         let key_ff: Vec<f64> = db.iter().map(|row| row[at_ff]).collect();
@@ -1633,15 +1702,21 @@ impl Instrument {
     /// recording's position, as `level_rows` measures it): every key of `LEVEL_TABLE_KEYS`, any
     /// instrument (a morph levels its keys by these, `Instrument::morph`).
     pub fn key_ff_levels(&self) -> Result<Vec<f64>, Error> {
+        self.stop_ff_levels(crate::Params::default().stops)
+    }
+
+    /// `key_ff_levels` with the registers of `stops` playing (bits of `Params::stops`; the default:
+    /// the 8′): a morph levels each register by its own stop.
+    pub fn stop_ff_levels(&self, stops: u32) -> Result<Vec<f64>, Error> {
         let ff = self.velocity_speed[2].max(1e-3);
-        self.strike_peaks(&LEVEL_TABLE_KEYS.map(|k| (k, ff)))
+        self.strike_peaks(&LEVEL_TABLE_KEYS.map(|k| (k, ff)), stops)
     }
 
     /// The peak (dB) of each (key, speed) struck alone over `LEVEL_WINDOW_S`, without the action's
     /// knock (at soft strikes it sets the peak: Knight's C7 at −32 dB re ff, its string at −68 dB)
     /// and as fitted, without a strike's own variation; rendered over the build threads, each
     /// through its own radiation cache.
-    fn strike_peaks(&self, jobs: &[(u8, f64)]) -> Result<Vec<f64>, Error> {
+    fn strike_peaks(&self, jobs: &[(u8, f64)], stops: u32) -> Result<Vec<f64>, Error> {
         let (inst, sr) = (self, self.reference_sr);
         let next = std::sync::atomic::AtomicUsize::new(0);
         let threads = crate::threads::build_threads();
@@ -1656,7 +1731,7 @@ impl Instrument {
                             let i = next.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
                             let Some(&(key, speed)) = jobs.get(i) else { return Ok(out) };
                             let mut e = crate::Engine::for_window(inst.clone(), sr, Tuning::default(), &mut cache, LEVEL_WINDOW_S)?;
-                            e.set_params(crate::Params { knock: 0.0, variation: 0.0, ..crate::Params::default() });
+                            e.set_params(crate::Params { knock: 0.0, variation: 0.0, stops, ..crate::Params::default() });
                             e.queue(0, crate::Event::NoteOn { key, speed });
                             let (mut l, mut r) = (vec![0.0; 256], vec![0.0; 256]);
                             let mut peak = 0.0f32;
