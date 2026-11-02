@@ -46,6 +46,9 @@ public:
     void retire(T* old) { fRetired.store(old); }
     /// audio thread: whether the worker freed the last engine given back (another may go)
     bool idle() const { return fRetired.load() == nullptr; }
+    /// audio thread: an engine offered or a drop asked for that poll has not handed over yet (the
+    /// worker has not freed the last one given back)
+    bool waiting() const { return fNext.load() != nullptr || fDrop.load(); }
 
 private:
     std::atomic<T*> fNext { nullptr };    // worker → audio

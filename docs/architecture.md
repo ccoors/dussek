@@ -235,10 +235,13 @@ VST3 are tested on Linux and Windows too.
 - **Threads**: a worker builds engines and hands them to the audio thread through single-writer
   atomic slots; it runs at nice 10, its builds on the physical cores but one
   (`pe_set_build_threads`), and builds nothing before the host's first `activate()` (DPF's VST3
-  editor side is a second instance that never plays). The audio thread swaps them and calls `adopt`. The UI and the DSP talk through
-  parameters and a shared telemetry region: notes, the velocity history, values set by MIDI, and
-  while a bottom panel is open, 30 frames a second of the voices' partials and each key's strings,
-  damper and last strike (the Analysis and Visualization panels).
+  editor side is a second instance that never plays). The audio thread swaps them and calls `adopt`.
+  A change waits for its engine from the request until the audio thread takes it (a quick build's
+  felt still to be measured included); the DSP says so on an output parameter (`diag_working`,
+  `Working.hpp`), which the bottom bar shows as "updating…" once it has lasted 0.2 s [229]. The UI
+  and the DSP talk through parameters and a shared telemetry region: notes, the velocity history,
+  values set by MIDI, and while a bottom panel is open, 30 frames a second of the voices' partials
+  and each key's strings, damper and last strike (the Analysis and Visualization panels).
 - **State**: `instrument`, `velocity_curve`, `morph` (the partners), `felt` (the player's bends),
   `scale_file` (the Scala file's path), and `ui` (the tab, the zoom, the bottom panel).
   MIDI learn's ties live outside the session in `~/.config/dussek/midi-map.txt` [111].

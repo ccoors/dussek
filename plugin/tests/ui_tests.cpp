@@ -35,6 +35,7 @@
 #include "Tooltip.hpp"
 #include "UiState.hpp"
 #include "WorkerPriority.hpp"
+#include "Working.hpp"
 #include "dussek.h"
 #include "DistrhoPluginInfo.h"
 #include "StateVersion.hpp"
@@ -1442,6 +1443,73 @@ TEST(panic_and_the_menu_sit_in_a_row_at_the_right)
     }
 }
 
+TEST(updating_has_its_place_in_the_bottom_bar)
+{
+    // beside the Keyboard tab (the strip shut) or the Visualization toggle (open), on their row, clear
+    // of the pedals' names over their columns; the tabs where they always were
+    for (float w : { kMinWidth, 480.0f, 487.0f, 520.0f, kBreakpoint, kDefaultWidth, 1600.0f })
+        for (bool open : { false, true }) {
+            const float y = 500;
+            const StripGeometry g = computeStrip({ 0, y + 24, w, 46 });
+            const DiagBar b = diagBar(w, y, 24, open, g);
+            CHECK(b.keyboard.x == 8 && b.analysis.x == 112 && b.viz.x == 204 && b.viz.x + b.viz.w == 312);
+            if (b.working.w == 0) { // only with the strip open, in a window under 487 px
+                CHECK(open && w < 487);
+                continue;
+            }
+            CHECK(b.working.y == b.keyboard.y && b.working.h == b.keyboard.h);
+            CHECK(b.working.w >= textWidth(kWorkingLabel));
+            CHECK(!b.working.overlaps(b.keyboard) && b.working.x + b.working.w <= w - 8);
+            if (open) {
+                CHECK(!b.working.overlaps(b.analysis) && !b.working.overlaps(b.viz));
+                for (const Rect& c : { g.soft, g.sostenuto, g.pedal }) // the names, centered over these, at most 5 characters
+                    CHECK(b.working.x + b.working.w <= c.x + c.w / 2 - textWidth("sost.") / 2);
+            }
+        }
+}
+
+TEST(updating_shows_only_for_work_that_lasts)
+{
+    // the DSP's flag: a request not built yet, a felt still to measure, an engine not taken yet
+    CHECK(!workPending(5, 5, false, false));
+    CHECK(workPending(6, 5, false, false) && workPending(5, 5, true, false) && workPending(5, 5, false, true));
+    EngineHandoff<int> h;
+    int a = 1, b = 2;
+    int* next = nullptr;
+    CHECK(!h.waiting());
+    h.offer(&a);
+    CHECK(h.waiting());
+    CHECK(h.poll(next) == EngineHandoff<int>::Change::Next && !h.waiting());
+    h.retire(&b); // the worker has not freed the last one: the next waits
+    h.drop();
+    CHECK(h.poll(next) == EngineHandoff<int>::Change::None && h.waiting());
+    CHECK(h.retired() == &b && h.poll(next) == EngineHandoff<int>::Change::Drop && !h.waiting());
+
+    // the UI: a quick change shows nothing
+    WorkingIndicator q;
+    CHECK(!q.update(true, 1000) && !q.visible());
+    CHECK(!q.update(true, 1000 + kWorkingDelayMs - 1) && !q.update(false, 1000 + kWorkingDelayMs));
+    CHECK(!q.update(false, 5000) && !q.visible());
+    // a slow one shows after the delay and goes when it is done
+    WorkingIndicator s;
+    s.update(true, 1000);
+    CHECK(s.update(true, 1000 + kWorkingDelayMs) && s.visible());
+    CHECK(!s.update(true, 4000) && s.visible());
+    CHECK(s.update(false, 4001) && !s.visible());
+    // shown, it stays its hold even when the work ends at once: no flash
+    WorkingIndicator f;
+    f.update(true, 0);
+    CHECK(f.update(true, kWorkingDelayMs) && f.visible());
+    CHECK(!f.update(false, kWorkingDelayMs + 10) && f.visible());
+    CHECK(!f.update(false, kWorkingDelayMs + kWorkingHoldMs - 1) && f.visible());
+    CHECK(f.update(false, kWorkingDelayMs + kWorkingHoldMs) && !f.visible());
+    // a pause in the work restarts the delay (a drag's steps: shown once it lasts again)
+    f.update(true, 10000);
+    f.update(false, 10150);
+    CHECK(!f.update(true, 10250) && !f.visible());
+    CHECK(f.update(true, 10250 + kWorkingDelayMs) && f.visible());
+}
+
 TEST(the_menu_holds_zoom_copy_and_reset)
 {
     const std::vector<std::string> m = menuItems(150, false);
@@ -1671,7 +1739,7 @@ TEST(diagnostic_parameters_extend_the_table)
 {
     CHECK(kParamCount == 78); // the user-visible table (diagnostics come after it)
     CHECK((uint32_t)kDiagPedalIn == (uint32_t)kParamCount);
-    CHECK((uint32_t)kTotalParams == (uint32_t)kParamCount + 24);
+    CHECK((uint32_t)kTotalParams == (uint32_t)kParamCount + 25);
     for (uint32_t i = kParamCount; i < kTotalParams; ++i) {
         const ParamInfo& p = diagInfo(i);
         CHECK(p.name != nullptr && p.symbol != nullptr);
@@ -1690,6 +1758,9 @@ TEST(diagnostic_parameters_extend_the_table)
     CHECK(diagInfo(kDiagLearnIn).max >= (float)kTargetCount && diagInfo(kDiagLearnedOut).max >= (float)packLearned(15, 127, true));
     // the Felt tab's Original toggle: an input, 0 or 1
     CHECK(!diagIsOutput(kDiagFeltOriginalIn) && diagInfo(kDiagFeltOriginalIn).max == 1.0f && diagInfo(kDiagFeltOriginalIn).integer);
+    // the header's "updating…": an output, 0 or 1, described (a host may show it)
+    CHECK(diagIsOutput(kDiagWorkingOut) && diagInfo(kDiagWorkingOut).max == 1.0f && diagInfo(kDiagWorkingOut).integer);
+    CHECK(diagInfo(kDiagWorkingOut).description != nullptr && !diagInfo(kDiagWorkingOut).automatable);
 }
 
 TEST(reset_leaves_the_diagnostics_alone)

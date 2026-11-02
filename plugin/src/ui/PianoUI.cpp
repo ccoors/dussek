@@ -33,6 +33,7 @@
 #include "StateVersion.hpp"
 #include "UiState.hpp"
 #include "Widgets.hpp"
+#include "Working.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -590,6 +591,7 @@ private:
     int fHotRow = -1;
     int fHotTab = -1;
     TooltipTimer fTip;
+    WorkingIndicator fWorking; // the bottom bar's "updating…" (kDiagWorkingOut)
     int fTipShown = -1; // the row whose tooltip is drawn (uiIdle repaints when it changes)
     bool fPressInContent = false; // the press (or the pointer, without a drag) is over the content area
     float fPointerX = -1e9f, fPointerY = -1e9f; // window-logical, at the last motion
@@ -1390,6 +1392,10 @@ private:
         }
         if (fPanicShown != panicLit()) {
             fPanicShown = panicLit();
+            repaint();
+        }
+        if (fWorking.update(fValues[kDiagWorkingOut] >= 0.5f, nowMs())) { // shown after a moment, held a moment
+            fDiag.setWorking(fWorking.visible()); // in the bottom bar
             repaint();
         }
         if (fCopiedShown != copiedNote()) {

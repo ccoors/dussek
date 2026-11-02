@@ -469,6 +469,10 @@ struct DiagTable {
         set(kDiagInstrumentOut, "MIDI instrument", "diag_instrument", 0.0f, 16777215.0f, true);
         set(kDiagBuildingOut, "Building", "diag_building", 0.0f, 1.0f, true);
         set(kDiagFeltOriginalOut, "Felt original", "diag_felt_original", 0.0f, 1.0f, true);
+        set(kDiagWorkingOut, "Working", "diag_working", 0.0f, 1.0f, true);
+        p[kDiagWorkingOut - kFirst].description = "1 while a change (the instrument, the tuning, the microphones, the felt, "
+                                                  "Hammer hardness on a piano, the morph) is on its way to the sound: the "
+                                                  "worker builds an engine for it, or the audio thread has yet to take it.";
     }
 };
 } // namespace

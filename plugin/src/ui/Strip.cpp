@@ -1,4 +1,5 @@
 #include "Strip.hpp"
+#include "Working.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -16,6 +17,21 @@ bool isBlackKey(int key)
     case 1: case 3: case 6: case 8: case 10: return true;
     default: return false;
     }
+}
+
+DiagBar diagBar(float width, float y, float h, bool open, const StripGeometry& strip)
+{
+    DiagBar b;
+    b.keyboard = { 8, y + 3, 96, h - 6 };
+    b.analysis = { 112, y + 3, 84, h - 6 };
+    b.viz = { 204, y + 3, 108, h - 6 };
+    const Rect& last = open ? b.viz : b.keyboard;
+    const float x = last.x + last.w + 8, w = textWidth(kWorkingLabel) + 8;
+    // the pedals' names are centered over their columns, the soft pedal's leftmost: clear of its column
+    const float end = open ? std::min({ strip.soft.x, strip.sostenuto.x, strip.pedal.x }) - 8 : width - 8;
+    if (x + w <= end)
+        b.working = { x, y + 3, w, h - 6 };
+    return b;
 }
 
 StripGeometry computeStrip(const Rect& area)

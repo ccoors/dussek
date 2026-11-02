@@ -137,6 +137,15 @@ The UI is NanoVG and scalable: the host's HiDPI factor × a zoom of 100–400 %.
   Both panels read what the sound side shares with the window. In VST3 that needs a host that
   passes the plugin's output values on to its editor (DPF runs the two as separate objects); where
   the host does not, the panels stay empty and the sound is unaffected.
+- **"updating…"**, in the bottom bar beside its tabs, shows while a change is still being built
+  into the instrument; until it goes, the previous setting plays. It shows once the work has taken
+  0.2 s and stays at least 0.5 s, so the quick rebuilds (the tuning, the condition, the
+  microphones: 20–120 ms) show nothing. The slow ones: another instrument or a morph's point (about
+  0.2–0.3 s), and whatever measures a hammer piano's loudness again: Hammer hardness and the felt
+  (about 1 s, 2 s the first time on an instrument), and another instrument or point while either
+  is changed (about 2 s more, the quick build playing meanwhile). The Felt tab's "measuring…" and
+  the Morph tab's "building…" say the same where the change was made. With the keyboard open, a
+  window under 487 px has no room for it beside Visualization.
 
 Using the controls:
 

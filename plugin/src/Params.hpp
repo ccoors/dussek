@@ -68,6 +68,7 @@ enum DiagParam : uint32_t {
     kDiagInstrumentOut, // output: an instrument MIDI chose, 1 + its menu position + 1024 × a count (0: none yet)
     kDiagBuildingOut,   // output: 1 while the worker builds an engine (the Morph tab's "building…")
     kDiagFeltOriginalOut, // output: 1 while the shipped felt plays (the Original toggle shows it)
+    kDiagWorkingOut,    // output: 1 while a change is on its way to the sound (Working.hpp; the bottom bar's "updating…")
     kDiagEnd
 };
 constexpr uint32_t kTotalParams = kDiagEnd;

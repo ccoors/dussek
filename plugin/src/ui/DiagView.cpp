@@ -1,5 +1,6 @@
 #include "DiagView.hpp"
 #include "Theme.hpp"
+#include "Working.hpp"
 
 #include <algorithm>
 
@@ -75,10 +76,12 @@ void DiagView::layout(float width, float windowHeight)
     fTop = windowHeight - height();
     // the panel on top, then the header, then the strip
     const float header = fTop + (fLevel >= 2 ? kPanelH : 0.0f);
-    fKeyboardTab = { 8, header + 3, 96, kHeaderH - 6 };
-    fAnalysisTab = { 112, header + 3, 84, kHeaderH - 6 };
-    fVizTab = { 204, header + 3, 108, kHeaderH - 6 };
     fStrip = computeStrip({ 0, header + kHeaderH, width, kStripH });
+    const DiagBar bar = diagBar(width, header, kHeaderH, fLevel >= 1, fStrip);
+    fKeyboardTab = bar.keyboard;
+    fAnalysisTab = bar.analysis;
+    fVizTab = bar.viz;
+    fWorkingRect = bar.working;
     fInput.setLayout({ fTop, kPanelH, fKeyboardTab, fAnalysisTab, fVizTab, fStrip });
     fPanel.layout({ 0, fTop, width, kPanelH }, fStrip);
     fViz.layout({ 0, fTop, width, kPanelH }, fStrip);
@@ -150,6 +153,11 @@ void DiagView::draw(NanoVG& vg)
     vg.fontSize(theme::smallFont);
     // the Analysis and Visualization toggles exist only on the open strip
     drawTab(vg, fKeyboardTab, fLevel >= 1 ? "Keyboard  \xE2\x96\xBE" : "Keyboard  \xE2\x96\xB8", fLevel >= 1);
+    if (fWorking && fWorkingRect.w > 0) { // a change on its way to the sound (Working.hpp)
+        vg.fillColor(theme::accentText);
+        vg.textAlign(NanoVG::Align(NanoVG::ALIGN_LEFT | NanoVG::ALIGN_MIDDLE));
+        vg.text(fWorkingRect.x + 4, fWorkingRect.y + fWorkingRect.h / 2, kWorkingLabel, nullptr);
+    }
     if (fLevel < 1) return;
     drawTab(vg, fAnalysisTab, fLevel == 2 ? "Analysis  \xE2\x96\xBE" : "Analysis  \xE2\x96\xB8", fLevel == 2);
     drawTab(vg, fVizTab, fLevel == 3 ? "Visualization  \xE2\x96\xBE" : "Visualization  \xE2\x96\xB8", fLevel == 3);

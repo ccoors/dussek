@@ -38,6 +38,7 @@
 #include "StateVersion.hpp"
 #include "TuningWatch.hpp"
 #include "UiState.hpp"
+#include "Working.hpp"
 #include "dussek.h"
 
 #include <atomic>
@@ -145,6 +146,8 @@ protected:
                 | (d.automatable ? kParameterIsAutomatable : 0);
             p.name = d.name;
             p.symbol = d.symbol;
+            if (d.description != nullptr)
+                p.description = d.description;
             p.ranges = ParameterRanges(d.def, d.min, d.max);
             return;
         }
@@ -425,6 +428,13 @@ protected:
         fValues[kDiagInstrumentOut] = (float)fInstrumentOut.load(std::memory_order_relaxed);
         fValues[kDiagBuildingOut] = fBuilding.load(std::memory_order_relaxed) ? 1.0f : 0.0f;
         fValues[kDiagFeltOriginalOut] = fOriginalShared.load(std::memory_order_relaxed) ? 1.0f : 0.0f;
+        {
+            // in this order: the worker offers before it settles, so a settled request read here finds
+            // its engine taken (swapIn above) or still offered, never neither
+            const uint64_t requested = fRequest.load(), settled = fSettled.load();
+            const bool refineDue = fRefineDue.load();
+            fValues[kDiagWorkingOut] = workPending(requested, settled, refineDue, fHandoff.waiting()) ? 1.0f : 0.0f;
+        }
         if (fEngine == nullptr) {
             std::fill(left, left + frames, 0.0f);
             std::fill(right, right + frames, 0.0f);
@@ -844,6 +854,10 @@ private:
             // the new engine replaces one the audio thread has not taken yet; none (the instrument
             // does not load): the engine playing goes, not on with the previous instrument
             pe_destroy(engine != nullptr ? fHandoff.offer(engine) : fHandoff.drop());
+            // settled after the offer (run() reads them the other way round): kDiagWorkingOut never
+            // drops between the build and the audio thread taking it
+            fRefineDue.store(refineDue);
+            fSettled.store(request);
         }
         pe_cache_free(cache);
     }
@@ -881,6 +895,8 @@ private:
     std::string fMorph;      // the "morph" state: the partners' ids, comma-separated (under fInstrumentMutex)
     std::string fScaleFile;  // the "scale_file" state: a Scala file's path (under fInstrumentMutex)
     std::atomic<bool> fBuilding { false }; // kDiagBuildingOut: the worker builds an engine
+    std::atomic<uint64_t> fSettled { 0 };  // kDiagWorkingOut: the last request whose engine the worker offered (or dropped)
+    std::atomic<bool> fRefineDue { false }; // and that engine's felt leveling still to be measured (the worker's)
     FeltState fFelt;                          // the "felt" state (under fInstrumentMutex)
     OriginalToggle fOriginal;                 // kDiagFeltOriginalIn (audio thread)
     std::atomic<bool> fOriginalShared { false }; // its value, for the worker

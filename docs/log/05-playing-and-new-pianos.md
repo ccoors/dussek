@@ -3703,3 +3703,40 @@ Looked at on the website's screenshots and on Upright D, Harp A, the kalimba, th
 and the tongue drum: nothing else ran into anything (the harp's side view shows its pair edge on, its
 R beside the neck).
 
+<a id="step-229"></a>
+## 229. "updating…" while a change is on its way
+
+The Felt tab said "measuring…" and the Morph tab "building…" while the worker built, but Hammer
+hardness, which on a hammer piano goes through the same build (step 145), gave no sign: the slider
+moved, the sound changed a second later. Every slow change is an engine the worker builds and the
+audio thread adopts; measured in the standalone on Grand A (8 cores, the builds on 7, the machine
+otherwise lightly loaded):
+
+| Change | Build |
+|---|---|
+| Sustain, Bass, Condition, the felt's Original (cached) | 19–22 ms |
+| microphone distance or spacing | 114–117 ms |
+| another instrument (the first load 0.28–0.42 s) | 0.18–0.30 s |
+| Hammer hardness on a hammer piano | 0.96–1.02 s; the first move on an instrument 1.9–2.4 s; back to 0 dB 31 ms |
+| a felt point | 0.98 s |
+| a morph's point or another instrument, Hammer hardness or the felt changed | 0.18–0.35 s at the leveling last measured, then 1.9 s measured |
+
+The DSP now says when a change is pending, on an output parameter (`diag_working`, after the
+other diagnostics; not locked, described, never automatable): a request the worker has not built
+and offered yet, a quick build's felt still to be measured, or an engine offered that the audio
+thread has not taken (`EngineHandoff::waiting`). The worker settles a request after it offers its
+engine and `run()` reads the two the other way round, so the flag never drops between the build and
+the swap; a tuning change counts once the worker sees it (its 50 ms poll). It reaches the UI as the
+other outputs do (LV2's output ports, the standalone in one process). The bottom bar shows
+"updating…" beside its tabs (Keyboard, or with the strip open Visualization) once the flag has
+lasted 200 ms and for 500 ms at least (`WorkingIndicator`, `Working.hpp`, tested in `ui_tests`),
+so the 20–120 ms rebuilds never show and a build just over the delay does not flash. First it
+stood in the header left of Panic, its place kept free so the header would not move; that took
+77 px from Volume and put the most crowded headers on two rows sooner (Harpsichord B's below about
+1000 px instead of 900), so it went to the bottom bar's free middle, which is there on every tab
+and costs the controls nothing (`diagBar`: clear of the pedals' names; with the strip open a window
+under 487 px has no room for it). Checked on a virtual display at 900 and 520 px, the strip shut
+and open: a Hammer hardness drag shows it from 0.2 s until about 2.2 s after the release (the
+first move on Grand A); Sustain and the microphone distance, captured every 0.1 s, never showed it;
+Harpsichord B's header keeps one row at 900 px.
+

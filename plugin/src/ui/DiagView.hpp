@@ -42,6 +42,7 @@ public:
     void setBars(bool bars) { fViz.setBars(bars); } // the visualization draws bars, not strings
     void setRecorded(int lo, int hi); // the instrument's recorded keys (MIDI): the others are tinted as extrapolated
     void setReversedKeys(bool on);    // dark naturals and light sharps (many harpsichords)
+    void setWorking(bool on) { fWorking = on; } // "updating…" in the bar (the caller repaints)
     void draw(DGL_NAMESPACE::NanoVG& vg);
     bool mouse(bool press, float x, float y); // true: the event is ours
     bool motion(float x, float y);
@@ -56,7 +57,8 @@ private:
     DiagHost fHost;
     int fLevel = 0;
     float fWidth = 0, fTop = 0;
-    Rect fKeyboardTab, fAnalysisTab, fVizTab;
+    Rect fKeyboardTab, fAnalysisTab, fVizTab, fWorkingRect;
+    bool fWorking = false;
     StripGeometry fStrip;
     float fWords[8] = {};
     float fPedal = 0;     // the engine's pedal depth (kDiagPedalOut)

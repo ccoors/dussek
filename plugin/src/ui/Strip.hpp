@@ -23,6 +23,13 @@ struct StripGeometry {
 };
 StripGeometry computeStrip(const Rect& area);
 
+/// The bottom bar's row (window-logical; its top at `y`, `h` high, `width` wide): the Keyboard tab,
+/// with the strip open the Analysis and Visualization toggles, then "updating…" (Working.hpp) beside
+/// the last one shown. With the strip open the pedals' names stand in the row above their columns
+/// (`strip`): where "updating…" would reach them (a window under 487 px), its w is 0.
+struct DiagBar { Rect keyboard, analysis, viz, working; };
+DiagBar diagBar(float width, float y, float h, bool open, const StripGeometry& strip);
+
 /// the key under (x, y), or -1; `velocity` 1…127: softer at the top of a key, harder at the bottom
 int hitKey(const StripGeometry& g, float x, float y, int& velocity);
 /// 0 (top of the pedal slot) … 1 (bottom), clamped
