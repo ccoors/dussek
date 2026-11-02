@@ -3,7 +3,7 @@
 What each release changes for a player. From 1.0 on a break needs a major version; before it, a
 break is allowed but listed under "Breaking" (`docs/compatibility.md`).
 
-## Unreleased
+## 0.3.2 — 2026-11-02
 
 ### New
 
@@ -11,6 +11,7 @@ break is allowed but listed under "Breaking" (`docs/compatibility.md`).
   the felt, another instrument: up to about 2 s on a piano).
 - The Morph tab morphs the harpsichords among themselves and the two harps with each other: the
   chosen harpsichord keeps its registers and stops, each mixed with the partners' of the same pitch.
+- Dussek is on itch.io too (https://ccoors.itch.io/dussek), where the itch app keeps it up to date.
 
 ### Breaking
 
