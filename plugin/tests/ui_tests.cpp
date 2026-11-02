@@ -5554,6 +5554,33 @@ TEST(morph_partners_parse_and_validate)
     CHECK(validPartners({ "grand_b" }, c, "nonesuch").empty());
 }
 
+TEST(the_harpsichords_and_the_harps_morph_among_themselves)
+{
+    // the plus button's list (`openMorphMenu`): every instrument of the menu that may join the chosen one
+    const Catalog& c = committed();
+    const auto offered = [&c](const std::string& main) {
+        std::vector<std::string> out;
+        for (const InstrumentEntry* e : c.menu())
+            if (validPartners({ e->id }, c, main).size() == 1)
+                out.push_back(e->id);
+        std::sort(out.begin(), out.end());
+        return out;
+    };
+    const std::vector<std::string> harpsichords { "flemish", "french", "harpsichord", "harpsichord_e", "harpsichord_f", "italian" };
+    for (const std::string& main : harpsichords) {
+        std::vector<std::string> others;
+        for (const std::string& h : harpsichords)
+            if (h != main)
+                others.push_back(h);
+        CHECK(offered(main) == others);
+    }
+    CHECK(offered("harp") == (std::vector<std::string> { "leverharp" }));
+    CHECK(offered("leverharp") == (std::vector<std::string> { "harp" }));
+    for (const char* none : { "clavichord", "guitar", "psaltery", "marimba" })
+        CHECK(offered(none).empty());
+    CHECK(validPartners({ "harp", "grand_a", "harpsichord_e" }, c, "harpsichord") == (std::vector<std::string> { "harpsichord_e" }));
+}
+
 TEST(a_superseded_morph_build_is_offered_only_for_the_same_instruments)
 {
     const MorphKey a { "grand_a", { "grand_d" }, 48000 }, b = a, c { "grand_a", { "upright_a" }, 48000 },
@@ -5596,8 +5623,14 @@ TEST(the_morph_tab_lays_out_its_list_and_pad)
                 CHECK(!r.rect.overlaps(l.morphPad) && r.rect.x + r.rect.w <= l.content.x + l.content.w + 0.5f);
             CHECK(l.morphPad.x + l.morphPad.w <= l.content.x + l.content.w + 0.5f);
         }
-    const Layout h = computeLayout(kDefaultWidth, kDefaultHeight, kTabMorph, ctxOf(kHarpB, 1, 0));
-    CHECK(h.morphNote.w > 0 && h.morphRows.empty() && h.morphPad.w == 0 && h.morphPlus.w == 0);
+    for (uint32_t p : { kCla, kGui, kMar }) { // the clavichord, the guitar and the bars do not morph
+        const Layout h = computeLayout(kDefaultWidth, kDefaultHeight, kTabMorph, ctxOf(p, 1, 0));
+        CHECK(h.morphNote.w > 0 && h.morphRows.empty() && h.morphPad.w == 0 && h.morphPlus.w == 0);
+    }
+    for (uint32_t p : { kHarpB, kHarp }) { // the harpsichords and the harps do
+        const Layout h = computeLayout(kDefaultWidth, kDefaultHeight, kTabMorph, ctxOf(p, 1, 0));
+        CHECK(h.morphNote.w == 0 && h.morphPad.w > 0 && h.morphPlus.w > 0);
+    }
 }
 
 TEST(the_tab_bar_fits_with_the_morph_tab)

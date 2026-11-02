@@ -93,11 +93,12 @@ const char* const kMorphPadTitle = "Morph";
 const char* const kMorphPadDescription = "The point picks the mix: a corner is that instrument alone, an edge mixes its "
                                          "two ends, inside every instrument has a share (with four or more, the list's "
                                          "order decides which pairs an edge mixes). A move rebuilds the instrument in "
-                                         "the background (about 0.3 s); notes held across a rebuild fade out.";
+                                         "the background (about 0.3 s, up to about 1 s for a harpsichord); notes held "
+                                         "across a rebuild fade out.";
 const char* const kMorphPadGestures = "Drag or click to move the point · Right-click: MIDI learn of Morph X and Y";
 const char* const kMorphMainDescription = "The chosen instrument: the pad's top corner, its body (where the microphones "
-                                          "go). Change it with the instrument menu; the partners that can mix with "
-                                          "the new one stay.";
+                                          "go), its registers and stops. Change it with the instrument menu; the "
+                                          "partners that can mix with the new one stay.";
 const char* const kMorphShareDescription = "This instrument's share of the morph, from where the point is on the pad.";
 const char* const kMorphUpDescription = "Moves the instrument one place up the list: its corner moves on the pad, and "
                                         "with it the mix where the point stays.";
