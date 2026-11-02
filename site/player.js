@@ -1,7 +1,6 @@
-// Dussek's website: one player for the page (a play button, a piece's name, a feature's step), the
-// features' A/B (a step switched while playing keeps its place), the demos' cards travelling across
-// the held picture, the download's system, the entrances. Without it the page still works: each play
-// control is a link the browser plays, and the video and the download links are plain.
+// Dussek's website: one player for the page (a play button, a piece's name, a feature's step), its
+// bar with the position to seek, the download's system, the entrances. Without it the page still
+// works: each play control is a link the browser plays, and the video and the download links are plain.
 (function () {
   "use strict";
   document.documentElement.classList.add("js");
@@ -15,32 +14,30 @@
   bar.className = "now";
   bar.setAttribute("role", "region");
   bar.setAttribute("aria-label", "Now playing");
-  bar.innerHTML = '<span class="now-title"></span><span class="now-time">0:00</span><button type="button">Pause</button>';
+  bar.innerHTML = '<span class="now-title"></span>' +
+    '<input class="now-seek" type="range" min="0" max="0" step="0.1" value="0" aria-label="Position" disabled>' +
+    '<span class="now-time">0:00</span><button type="button">Pause</button>';
   document.body.appendChild(bar);
   var barTitle = bar.querySelector(".now-title");
+  var barSeek = bar.querySelector(".now-seek");
   var barTime = bar.querySelector(".now-time");
   var barButton = bar.querySelector("button");
   // out of the tab order and the reading until it first shows
   bar.inert = true;
   bar.setAttribute("aria-hidden", "true");
   barButton.tabIndex = -1;
+  barSeek.tabIndex = -1;
   function showBar() {
     if (bar.classList.contains("on")) return;
     bar.classList.add("on");
     bar.inert = false;
     bar.removeAttribute("aria-hidden");
     barButton.removeAttribute("tabindex");
+    barSeek.removeAttribute("tabindex");
     // the page's end clear of it (the footer's links on a phone)
     document.documentElement.style.setProperty("--now-h", bar.offsetHeight + 16 + "px");
     document.documentElement.classList.add("playing");
   }
-  // a step switched while playing seeks the new file once it loads: one pending time, so a quick
-  // second choice does not inherit the first one's
-  var seekTo = 0;
-  audio.addEventListener("loadedmetadata", function () {
-    if (seekTo > 0) audio.currentTime = Math.min(seekTo, Math.max(0, audio.duration - 0.05));
-    seekTo = 0;
-  });
 
   function mark(control, on) {
     if (control) control.setAttribute("aria-pressed", on ? "true" : "false");
@@ -49,19 +46,24 @@
     t = Math.max(0, Math.floor(t || 0));
     return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0");
   }
-  function play(control, keepTime) {
+  // another control (a feature's other step among them) plays its clip from the start; the same
+  // one pauses, and resumes where it paused
+  function play(control) {
     if (!canOpus) { current = control; cannot("This browser cannot play the clips (Ogg Opus): a newer one can."); return; }
     var src = control.getAttribute("data-src");
-    var at = keepTime ? audio.currentTime : 0;
     if (current === control && !audio.paused) {
       audio.pause();
       return;
     }
-    if (current && current !== control) mark(current, false);
-    current = control;
-    if (audio.getAttribute("src") !== src) {
-      seekTo = at;
-      audio.src = src;
+    if (current !== control) {
+      if (current) mark(current, false);
+      current = control;
+      if (audio.getAttribute("src") !== src) {
+        audio.src = src;
+        showTime(0, NaN);
+      } else {
+        audio.currentTime = 0;
+      }
     }
     barTitle.textContent = control.getAttribute("data-title");
     showBar();
@@ -70,9 +72,39 @@
   audio.addEventListener("play", function () { mark(current, true); barButton.textContent = "Pause"; });
   audio.addEventListener("pause", function () { mark(current, false); barButton.textContent = "Play"; });
   audio.addEventListener("ended", function () { mark(current, false); barButton.textContent = "Play"; });
-  // the length once known (a server that does not say a file's size leaves it unknown while it streams)
-  audio.addEventListener("timeupdate", function () {
-    barTime.textContent = clock(audio.currentTime) + (isFinite(audio.duration) ? " / " + clock(audio.duration) : "");
+
+  // the position: the time, and the slider that seeks (drag, click, the arrow keys); the length once
+  // known (a server that does not say a file's size leaves it unknown while it streams, the slider off)
+  var dragging = false;
+  function showTime(t, d) {
+    var known = isFinite(d) && d > 0;
+    barTime.textContent = clock(t) + (known ? " / " + clock(d) : "");
+    barSeek.disabled = !known;
+    barSeek.max = known ? d : 0;
+    if (!dragging) barSeek.value = known ? Math.min(t, d) : 0;
+    barSeek.style.setProperty("--p", (known ? Math.min(100, (100 * t) / d) : 0) + "%");
+    barSeek.setAttribute("aria-valuetext", clock(t) + (known ? " of " + clock(d) : ""));
+  }
+  ["timeupdate", "durationchange", "loadedmetadata", "seeked"].forEach(function (name) {
+    audio.addEventListener(name, function () { showTime(audio.currentTime, audio.duration); });
+  });
+  function seek(t) {
+    if (!isFinite(audio.duration)) return;
+    t = Math.min(Math.max(0, t), audio.duration);
+    audio.currentTime = t;
+    showTime(t, audio.duration);
+  }
+  barSeek.addEventListener("pointerdown", function () { dragging = true; });
+  ["pointerup", "pointercancel", "change"].forEach(function (name) {
+    barSeek.addEventListener(name, function () { dragging = false; });
+  });
+  barSeek.addEventListener("input", function () { seek(parseFloat(barSeek.value)); });
+  // the arrow keys step 5 s (Page Up and Down 30 s), not the slider's 0.1 s; Home and End as they are
+  barSeek.addEventListener("keydown", function (e) {
+    var by = { ArrowLeft: -5, ArrowDown: -5, ArrowRight: 5, ArrowUp: 5, PageDown: -30, PageUp: 30 }[e.key];
+    if (by === undefined) return;
+    e.preventDefault();
+    seek(audio.currentTime + by);
   });
   // a browser without Ogg Opus (older Safari) says so instead of seeming to play
   var canOpus = audio.canPlayType('audio/ogg; codecs="opus"') !== "";
@@ -94,10 +126,7 @@
     var b = e.target.closest("[data-src]");
     if (!b) return;
     e.preventDefault();
-    // a feature's steps: the same phrase, so switching keeps the time
-    var same = b.classList.contains("step") && current && current.classList.contains("step") &&
-      current.closest(".feature") === b.closest(".feature") && current !== b && !audio.paused;
-    play(b, same);
+    play(b);
   });
   // the links to the clips become toggle buttons: pressed while theirs plays, Space plays as Enter does
   document.querySelectorAll("[data-src]").forEach(function (b) {
@@ -116,42 +145,6 @@
   audio.addEventListener("play", function () {
     document.querySelectorAll("video").forEach(function (v) { v.pause(); });
   });
-
-  // ---- the demos' cards across the held picture (desktop, motion allowed)
-  var showcase = document.querySelector(".showcase");
-  var track = showcase && showcase.querySelector(".cards");
-  var wide = window.matchMedia("(min-width: 761px)");
-  var focused = -1;
-  function travel() {
-    if (!track) return;
-    if (reduce || !wide.matches) { track.style.removeProperty("--shift"); return; }
-    // two whole cards in view at a time, stepping one card on as the page scrolls
-    var r = showcase.getBoundingClientRect();
-    var run = showcase.offsetHeight - window.innerHeight;
-    var p = Math.min(1, Math.max(0, -r.top / Math.max(1, run)));
-    var cards = track.children;
-    if (cards.length < 3) return;
-    var step = cards[1].offsetLeft - cards[0].offsetLeft;
-    // the keyboard's card, while the focus is on one; else the scroll's
-    var index = focused >= 0 ? Math.min(focused, cards.length - 2) : Math.round(p * (cards.length - 2));
-    track.style.setProperty("--shift", (-index * step) + "px");
-  }
-  window.addEventListener("scroll", travel, { passive: true });
-  window.addEventListener("resize", travel);
-  travel();
-  // a card reached by the keyboard comes into view, two whole cards as at rest; the focus scrolls the
-  // clipped window by itself, so that scroll is taken back and the travel follows the focus instead
-  if (track) {
-    var win = track.parentElement;
-    win.addEventListener("scroll", function () { if (win.scrollLeft !== 0) win.scrollLeft = 0; });
-    track.addEventListener("focusin", function (e) {
-      focused = Array.prototype.indexOf.call(track.children, e.target.closest(".card"));
-      travel();
-    });
-    track.addEventListener("focusout", function (e) {
-      if (!track.contains(e.relatedTarget)) { focused = -1; travel(); }
-    });
-  }
 
   // ---- the download: the visitor's system first
   var form = document.querySelector(".installer");

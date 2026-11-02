@@ -271,3 +271,30 @@ def test_the_download_and_the_footer_link_to_itch(site):
     assert 'href="https://ccoors.itch.io/dussek"' in download[:download.index("</section>")]
     footer = page[page.index("<footer"):]
     assert 'href="https://ccoors.itch.io/dussek"' in footer
+
+
+def test_the_demos_are_one_grid_of_cards(site):
+    # every demo's card in one list, each whole in itself: its picture, its group, its names, its play
+    # control; no scrolled window around them (the cards are all shown at once)
+    page = open(f"{site}/index.html", encoding="utf-8").read()
+    showcase = page[page.index('<section id="listen"'):]
+    showcase = showcase[:showcase.index("</section>")]
+    assert "cards-window" not in showcase and showcase.count('<ol class="cards">') == 1
+    cards = showcase.split('<li class="card">')[1:]
+    clips = tomllib.load(open(f"{P.REPO}/site/clips.toml", "rb"))["clip"]
+    demos = [c for c in clips if c["section"] == "demo"]
+    assert len(cards) == len(demos)
+    for c, card in zip(demos, cards):
+        assert f'src="frames/{c["id"]}.jpg"' in card, c["id"]
+        assert "<h3>" in card and "<p>" in card, c["id"]
+        assert f'class="play" href="audio/{c["id"]}.ogg"' in card, c["id"]
+
+
+def test_the_download_choices_sit_under_their_legend(site):
+    # the dialog's lines share one left edge: the legend over the choices, not beside a panel
+    page = open(f"{site}/index.html", encoding="utf-8").read()
+    form = page[page.index('<form class="installer"'):]
+    form = form[:form.index("</form>")]
+    fieldset = form[form.index("<fieldset>"):form.index("</fieldset>")]
+    assert fieldset.index("<legend>") < fieldset.index('<div class="os-choices">')
+    assert fieldset.count('type="radio" name="os"') == 3

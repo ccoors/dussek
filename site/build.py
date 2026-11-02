@@ -194,8 +194,8 @@ def index(clips, groups, ver):
   <div class="showcase-stage">
     <img class="showcase-ground" src="screenshots/grand-visualization.png" alt="" width="1800" height="1248">
     <h2 id="listen-title" class="showcase-title">{count(len(cards)).capitalize()} kinds of instrument</h2>
-    <div class="cards-window"><ol class="cards">{"".join(cards)}
-    </ol></div>
+    <ol class="cards">{"".join(cards)}
+    </ol>
   </div>
 </section>'''
 
@@ -241,7 +241,7 @@ def index(clips, groups, ver):
 <section id="features" class="field field-green features" aria-labelledby="features-title">
   <ul class="feature-list">
     <li class="feature feature-head"><h2 id="features-title">What it plays</h2>
-      <div class="feature-body"><p>Each one the same phrase, plain and then with it. Switch while it plays: it keeps its place.</p></div></li>{"".join(rows)}
+      <div class="feature-body"><p>Each one the same phrase, plain and then with it; each step plays from its start.</p></div></li>{"".join(rows)}
   </ul>
 </section>'''
 
@@ -271,7 +271,7 @@ def index(clips, groups, ver):
   </div>
   <form class="installer" data-ui action="{GITHUB}/releases/download/v{v}/{assets[0][2]}" method="get">
     <p class="installer-title">Install Dussek {v}</p>
-    <fieldset><legend>Your system</legend>{choices}</fieldset>
+    <fieldset><legend>Your system</legend><div class="os-choices">{choices}</div></fieldset>
     <p class="installer-note" aria-live="polite">{esc(assets[0][3])}</p>
     <a class="button button-large installer-go" href="{GITHUB}/releases/download/v{v}/{assets[0][2]}">Download for Windows</a>
     <ul class="installer-files">{files}</ul>

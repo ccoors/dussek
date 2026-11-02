@@ -75,20 +75,21 @@ button { font: inherit; color: inherit; }
 .hero-lead { position: absolute; left: 50%; transform: translateX(-50%); top: calc(100svh - 80px - 56px - 4.6em); width: min(36ch, 90vw);
   text-align: center; font-size: var(--step-lead); line-height: 1.35; color: var(--field-ink); }
 
-/* the demos: cards crossing the held Visualization */
+/* the demos: every card at once, over the dimmed Visualization */
 .showcase { position: relative; background: var(--bg); }
 .showcase-stage { position: relative; padding: var(--gap) var(--margin); overflow: hidden; }
 .showcase-ground { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(0.45); }
 .showcase-title { position: relative; font-size: var(--step-head); max-width: 12ch; margin-bottom: 48px; }
-.cards-window { position: relative; }
-.js .cards-window { overflow: hidden; }
-.cards { position: relative; list-style: none; margin: 0; padding: 0; display: flex; gap: 40px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 16px; }
-.card { flex: 0 0 min(720px, 78vw); scroll-snap-align: start; background: var(--surface); display: grid; grid-template-rows: auto auto; }
-.card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; height: auto; }
-.card-panel { padding: 24px 28px 28px; display: grid; grid-template-columns: 1fr auto; gap: 8px 24px; align-items: end; color: var(--field-ink); }
-.card-panel h3 { grid-column: 1; font-size: var(--step-head); }
-.card-panel p { grid-column: 1; font-size: var(--step-body); }
-.card-panel .play { grid-column: 2; grid-row: 1 / 3; }
+.cards { position: relative; list-style: none; margin: 0; padding: 0; display: grid; gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); }
+@media (min-width: 1100px) { .cards { grid-template-columns: repeat(3, 1fr); } }
+.card { background: var(--surface); display: grid; grid-template-rows: auto 1fr; }
+.card img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; height: auto; }
+/* the panel: the group, the names, the play button at its foot (level across a row) */
+.card-panel { padding: 18px 20px 20px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; color: var(--field-ink); }
+.card-panel h3 { font-size: var(--step-lead); }
+.card-panel p { font-size: var(--step-small); line-height: 1.4; margin-bottom: 10px; }
+.card-panel .play { margin-top: auto; }
 .card:nth-child(9n + 1) .card-panel { background: var(--field-orange); }
 .card:nth-child(9n + 2) .card-panel { background: #ffbe6a; }
 .card:nth-child(9n + 3) .card-panel { background: var(--field-yellow); }
@@ -98,12 +99,6 @@ button { font: inherit; color: inherit; }
 .card:nth-child(9n + 7) .card-panel { background: var(--field-cyan); }
 .card:nth-child(9n + 8) .card-panel { background: #8ec8f2; }
 .card:nth-child(9n + 9) .card-panel { background: var(--field-blue); }
-/* with the script: the stage held for three screens, the cards travelling across it */
-.js .showcase { height: 250svh; }
-.js .showcase-stage { position: sticky; top: 0; height: 100svh; display: flex; flex-direction: column; justify-content: center; padding-block: 0; }
-.js .cards { overflow: visible; transform: translateX(var(--shift, 0px)); transition: transform 520ms var(--ease); will-change: transform; }
-.js .card { flex-basis: calc((100% - 40px) / 2); }
-.js .card img { aspect-ratio: auto; height: min(380px, 42svh); }
 
 /* play buttons */
 .play { display: inline-flex; align-items: center; gap: 10px; background: var(--field-ink); color: #fff; border: 0; border-radius: 999px; text-decoration: none;
@@ -138,7 +133,8 @@ button { font: inherit; color: inherit; }
 /* the ensemble */
 .ensemble { display: grid; gap: 40px; align-content: center; }
 .ensemble figure { margin: 0; }
-.ensemble video { width: 100%; aspect-ratio: 16 / 9; background: #000; }
+/* within the screen's height: the heading, the video and its controls in view at once */
+.ensemble video { width: min(100%, 68vh * 16 / 9); width: min(100%, 68svh * 16 / 9); aspect-ratio: 16 / 9; background: #000; }
 .ensemble figcaption { margin-top: 16px; font-size: var(--step-body); max-width: 70ch; }
 
 /* the features: a list at poster size */
@@ -168,23 +164,25 @@ button { font: inherit; color: inherit; }
 .print-3 { left: 12%; bottom: 0; width: 48%; transform: rotate(-2deg); }
 .print:hover, .print:focus-visible { transform: rotate(0deg) scale(1.02); z-index: 2; }
 
-/* the download */
-.download { display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: end; }
-.download-words { grid-column: 1 / 7; display: grid; gap: 24px; padding-bottom: 40px; }
+/* the download: the words and the dialog side by side, their middles level */
+.download { display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: center; }
+.download-words { grid-column: 1 / 7; display: grid; gap: 24px; }
 .download-words h2 { font-size: var(--step-display); }
-.installer { grid-column: 8 / 12; align-self: center; background: var(--ui-bg); color: var(--ui-text); border-radius: 6px; padding: 28px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35); /* taste-skill-ignore: the plugin's own dialog (data-ui) */ display: grid; gap: 18px; font-family: var(--display); }
-.installer-title { font-weight: 700; font-size: var(--step-lead); }
-.installer fieldset { border: 0; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; background: var(--ui-panel); border-radius: 4px; padding: 4px; }
-.installer legend { padding: 0 0 8px; font-size: var(--step-small); color: #aab0bb; }
+/* the dialog: one left edge for every line in it, the button as wide as the choices */
+.installer { grid-column: 8 / 13; justify-self: end; width: 100%; max-width: 480px; background: var(--ui-bg); color: var(--ui-text); border-radius: 6px; padding: 28px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35); /* taste-skill-ignore: the plugin's own dialog (data-ui) */ display: grid; gap: 20px; font-family: var(--display); }
+.installer-title { font-weight: 700; font-size: var(--step-lead); line-height: 1.2; }
+.installer fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.installer legend { float: left; width: 100%; padding: 0; margin: 0 0 8px; font-size: var(--step-small); line-height: 1.3; color: #aab0bb; }
+.os-choices { clear: both; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; background: var(--ui-panel); border-radius: 4px; padding: 4px; }
 .os { position: relative; }
 .os input { position: absolute; opacity: 0; }
-.os span { display: block; text-align: center; padding: 10px 6px; border-radius: 3px; font-weight: 600; cursor: pointer; }
+.os span { display: block; text-align: center; padding: 10px 6px; border-radius: 3px; font-weight: 600; line-height: 1.2; cursor: pointer; }
 .os input:checked + span { background: var(--ui-blue); color: #fff; }
 .os input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 2px; }
-.installer-note { font-family: var(--text); font-size: var(--step-small); color: #c9ced8; }
-.installer-go { text-align: center; }
-.installer-files { list-style: none; margin: 0; padding: 0; font-size: var(--step-small); display: grid; gap: 4px; color: #c9ced8; }
+.installer-note { font-family: var(--text); font-size: var(--step-small); line-height: 1.45; color: #c9ced8; }
+.installer-go { display: block; text-align: center; line-height: 1.2; }
+.installer-files { list-style: none; margin: 0; padding: 0; font-size: var(--step-small); line-height: 1.3; display: grid; gap: 6px; color: #c9ced8; }
 
 /* the footer: the name again */
 .footer { padding: var(--gap) var(--margin) 48px; }
@@ -198,9 +196,21 @@ button { font: inherit; color: inherit; }
   background: var(--surface); color: var(--ink); padding: 12px 16px; font: 600 var(--step-small)/1.3 var(--display);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45); /* taste-skill-ignore: a sticky overlay */ transform: translateY(140%); transition: transform 240ms var(--ease); }
 .now.on { transform: none; }
-.now-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.now-time { font-variant-numeric: tabular-nums; color: var(--muted); }
+.now-title { flex: 1 1 12em; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.now-time { font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
 .now button { min-height: 44px; background: var(--accent); color: var(--accent-ink); border: 0; padding: 8px 16px; font: inherit; cursor: pointer; }
+/* the position: a native slider (arrow keys, touch, a screen reader's slider), drawn as a thin track
+   filled to the time (--p), its hit area 44 px tall */
+.now-seek { flex: 3 1 12em; min-width: 0; height: 44px; margin: 0; background: none; cursor: pointer; -webkit-appearance: none; appearance: none;
+  --track: linear-gradient(to right, var(--accent) var(--p, 0%), #3b4150 var(--p, 0%)); }
+.now-seek:disabled { cursor: default; opacity: 0.5; }
+.now-seek::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: var(--track); }
+.now-seek::-moz-range-track { height: 6px; border-radius: 3px; background: var(--track); }
+.now-seek::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; margin-top: -6px; border: 0; border-radius: 50%; background: var(--ink); }
+.now-seek::-moz-range-thumb { width: 18px; height: 18px; border: 0; border-radius: 50%; background: var(--ink); }
+.now-seek:disabled::-webkit-slider-thumb { visibility: hidden; }
+.now-seek:disabled::-moz-range-thumb { visibility: hidden; }
+.now-seek:focus-visible { outline-offset: 0; }
 .playing .footer { padding-bottom: calc(48px + var(--now-h, 80px)); }
 
 /* entrances: present without the script, risen in with it */
@@ -228,15 +238,16 @@ button { font: inherit; color: inherit; }
   .hero-fields::before { height: calc(46svh - 70px); }
   .hero-title { top: calc(46svh - 70px); font-size: 12vw; width: 94vw; }
   .hero-lead { top: auto; bottom: calc(30svh + 40px); font-size: 1rem; width: min(28ch, 88vw); }
-  .js .showcase { height: auto; }
-  .js .showcase-stage { position: relative; height: auto; display: block; padding: var(--gap) 16px; }
-  .showcase-ground { position: relative; inset: auto; height: auto; aspect-ratio: 4 / 5; margin: 0 -16px 32px; width: calc(100% + 32px); }
-  .js .cards, .cards { transform: none; flex-direction: column; gap: 24px; overflow: visible; }
-  .card, .js .card { flex-basis: auto; }
-  .js .card img, .card img { height: auto; aspect-ratio: 4 / 3; }
-  .card-panel { grid-template-columns: 1fr; }
-  .card-panel .play { grid-column: 1; grid-row: auto; justify-self: start; }
-  .card-panel h3 { font-size: 1.625rem; }
+  .showcase-stage { padding: var(--gap) 16px; }
+  .showcase-ground { position: relative; inset: auto; height: auto; aspect-ratio: 4 / 5; margin: 0 -16px 32px; width: calc(100% + 32px); max-width: none; }
+  .cards { gap: 12px; }
+  /* a phone: each card a row, its picture beside its panel */
+  .card { grid-template-columns: 38% 1fr; grid-template-rows: auto; }
+  .card img { align-self: stretch; height: auto; aspect-ratio: auto; min-height: 120px; }
+  .card-panel { padding: 14px 16px 16px; }
+  .card-panel p { margin-bottom: 6px; }
+  .card-panel .play { padding: 10px 16px 10px 14px; }
+  .card-panel h3 { font-size: 1.25rem; }
   .names { font-size: 1.5rem; }
   .field { min-height: 0; padding-block: 88px; }
   .footer { padding-top: 88px; }
@@ -255,12 +266,13 @@ button { font: inherit; color: inherit; }
   .installer-go { padding-block: 16px; }
   .footer-cols { grid-template-columns: 1fr; row-gap: 32px; }
   .footer-cols p, .footer-cols ul { grid-column: 1; }
+  /* the player: the title, the time and the button on a line, the position across the bar below */
+  .now { flex-wrap: wrap; row-gap: 0; column-gap: 12px; left: 8px; right: 8px; bottom: 8px; padding: 10px 12px 4px; }
+  .now-title { flex: 1 1 0; }
+  .now-seek { order: 3; flex: 1 1 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
   .js .rise { opacity: 1; transform: none; }
-  .js .showcase { height: auto; }
-  .js .showcase-stage { position: relative; height: auto; display: block; padding-block: var(--gap); }
-  .js .cards { transform: none; overflow-x: auto; }
 }
