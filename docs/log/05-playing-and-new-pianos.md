@@ -3740,3 +3740,18 @@ and open: a Hammer hardness drag shows it from 0.2 s until about 2.2 s after the
 first move on Grand A); Sustain and the microphone distance, captured every 0.1 s, never showed it;
 Harpsichord B's header keeps one row at 900 px.
 
+
+<a id="step-230"></a>
+## 230. Harder hammers, a quieter release
+
+Two wishes from playing. Hammer hardness reaches +24 dB (was +12 dB): the felt's own limit is
++24 dB in all (`LIMITS.stiffness_db`, a curve's bend included), the C interface clamps the factor
+at 20 (+26 dB), and a contact that would diverge is backed off (`stable_hardness`). A chord phrase
+rendered at 0, +12 and +24 dB on Grand A, Upright D, the harpsichord, the marimba and the harp stays
+finite; on the hammer pianos its level moves by 0.4–1.9 dB (the build keeps every key's loudness),
+on the others by under 1 dB. The Release noise starts at −10 dB, as the Pedal ring does (chosen by
+ear); `dussek render` still plays it as fitted, so the Copy CLI line of the defaults names
+`release=0.31622776`. Both rows of the parameter lock change on purpose (docs/compatibility.md): the
+new range moves VST3 and CLAP automation of the hardness recorded before (those hosts store a share
+of the range), named under Breaking. Upright D's release, already 10 dB under its recordings by ear
+(step 224), is now 20 dB under at the default; kept so by ear.

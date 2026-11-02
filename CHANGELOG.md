@@ -5,6 +5,11 @@ break is allowed but listed under "Breaking" (`docs/compatibility.md`).
 
 ## Unreleased
 
+### New
+
+- "updating…" in the bottom bar while a change is still on its way into the sound (Hammer hardness,
+  the felt, another instrument: up to about 2 s on a piano).
+
 ### Breaking
 
 - Hammer hardness reaches +24 dB (was +12 dB). Its automation recorded in a VST3 or CLAP host
