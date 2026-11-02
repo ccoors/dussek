@@ -3780,6 +3780,6 @@ way −32.3 (1.1 above), halfway between Grand A and Grand D −32.9 (1.3 above,
 remains is the sustain: held notes at velocity 100 drop 11.6, 12.7 and 22.5 dB over three seconds on
 C3, G3 and G4 where Grand A drops 14.3, 16.2 and 28.9 and Grand B 12.9, 13.4 and 26.1. The morph rings
 longer than either side from C3 up, and a pedaled phrase piles that up. The board drawn from the
-sides' statistics (step 115) drains the strings differently from either fitted board; left for the
-ear: a longer ring is part of a morph's character, or a loudness leveling over a longer window, or
-the board's draw itself.
+sides' statistics (step 115) drains the strings differently from either fitted board. By ear the
+level now matches its ends better, and a morph that rings a little longer is fine: kept so, its
+attacks at its sides' level.
