@@ -3,6 +3,19 @@
 What each release changes for a player. From 1.0 on a break needs a major version; before it, a
 break is allowed but listed under "Breaking" (`docs/compatibility.md`).
 
+## Unreleased
+
+### Breaking
+
+- Hammer hardness reaches +24 dB (was +12 dB). Its automation recorded in a VST3 or CLAP host
+  before maps to other values (those hosts store it as a share of the range); LV2 sessions and
+  presets keep theirs.
+
+### Changed
+
+- Release noise starts at −10 dB, as the Pedal ring does (chosen by ear); saved sessions and
+  presets keep their own value.
+
 ## 0.3.1 — 2026-11-01
 
 ### New

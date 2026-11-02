@@ -346,7 +346,8 @@ these sets is embedded in or distributed with the engine.
   - The upper octave's tongues lie 10–30 dB under the lower's at one dynamic (D5, E5 at mf −55 … −50
     dB, D4, E4 −27 … −24)
   - The noise floor −86 … −85 dBFS (5 ms, 30 Hz up); ff peaks −0.1 … −8 dBFS
-- No project yet
+- Project `tongue_drum` (Tongue drum): the SFZ the splitter writes, seq_position 1 (the more even
+  take); the other tongues ringing along measured as a halo
 
 ## Ivy Audio Piano in 162 (SFZ)
 

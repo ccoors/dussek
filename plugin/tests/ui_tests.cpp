@@ -518,7 +518,7 @@ TEST(param_table_is_complete)
     CHECK(paramInfo(kBuff).def == 0.0f && paramInfo(kBuff).boolean);
     CHECK(paramInfo(kStop8b).def == 0.0f && paramInfo(kStop8b).boolean && std::string(paramInfo(kStop8b).symbol) == "stop_8b");
     // soft old felt: down to -24 dB (the engine clamps at 0.05 = -26 dB); hard felt is the hammer wear's
-    CHECK(paramInfo(kHammerHardness).min == -24.0f && paramInfo(kHammerHardness).max == 12.0f);
+    CHECK(paramInfo(kHammerHardness).min == -24.0f && paramInfo(kHammerHardness).max == 24.0f);
     CHECK(std::pow(10.0f, paramInfo(kHammerHardness).min / 20.0f) >= 0.05f);
     CHECK(paramInfo(kLute).def == 0.0f && paramInfo(kLute).boolean && std::string(paramInfo(kLute).symbol) == "lute");
     CHECK(exclusiveStop(kStop8b) == kLute && exclusiveStop(kLute) == kStop8b && exclusiveStop(kStop8) == kParamCount);
@@ -4318,17 +4318,18 @@ TEST(the_pedal_ring_is_a_control_of_its_own)
 
 TEST(the_default_settings_copy_as_a_short_command_line)
 {
-    // the plugin's defaults differ from the engine's (midi2wav's) in five: the Condition's Normal
-    // zone (the voicing's wear 0.05; midi2wav plays the export mint), the Pedal noise at −20 dB and
-    // the Pedal ring at −10 dB (midi2wav plays them as fitted), the motor on (the vibraphone's), the wear's variant 1
-    const std::string tail = " in.mid out.wav --rate 48000 --param pedal=0.1,pedal_ring=0.31622776,voicing=0.05,motor=1 --tuning seed=1";
+    // the plugin's defaults differ from the engine's (midi2wav's) in six: the Condition's Normal
+    // zone (the voicing's wear 0.05; midi2wav plays the export mint), the Release noise and the Pedal
+    // ring at −10 dB and the Pedal noise at −20 dB (midi2wav plays them as fitted), the motor on (the
+    // vibraphone's), the wear's variant 1
+    const std::string tail = " in.mid out.wav --rate 48000 --param release=0.31622776,pedal=0.1,pedal_ring=0.31622776,voicing=0.05,motor=1 --tuning seed=1";
     const std::string line = cliLine(defaults(0, 0, 0));
     CHECK(line == "dussek render /i/grand_a" + tail);
     // a directory that needs quoting, the latch, a rate that is no whole number
     std::vector<float> v = defaults(0, 0, 0);
     v[kSustainLatch] = 1;
     CHECK(midi2wavLine(v.data(), "/a b/it's", 44100.5)
-        == "dussek render '/a b/it'\\''s' in.mid out.wav --rate 44100.5 --param pedal=0.1,pedal_ring=0.31622776,voicing=0.05,motor=1 --tuning seed=1 --latch");
+        == "dussek render '/a b/it'\\''s' in.mid out.wav --rate 44100.5 --param release=0.31622776,pedal=0.1,pedal_ring=0.31622776,voicing=0.05,motor=1 --tuning seed=1 --latch");
 }
 
 TEST(touch_tab_has_a_graph_and_no_empty_note)
@@ -4507,7 +4508,7 @@ TEST(a_bent_velocity_curve_copies_into_the_command_line)
     const std::vector<float> v = defaults(0, 0, 0);
     CHECK(midi2wavLine(v.data(), "/i/grand_a", 48000, &c)
         == "dussek render /i/grand_a in.mid out.wav --rate 48000 --velocity-curve 1:1,64:100,127:127 "
-           "--param pedal=0.1,pedal_ring=0.31622776,voicing=0.05,motor=1 --tuning seed=1");
+           "--param release=0.31622776,pedal=0.1,pedal_ring=0.31622776,voicing=0.05,motor=1 --tuning seed=1");
     CHECK(midi2wavLine(v.data(), "/i/grand_a", 48000, nullptr) == cliLine(v));
 }
 

@@ -71,7 +71,7 @@ ParamInfo make(uint32_t i)
         p.description = "The mechanism's noise at each note (a piano's key and hammer thump, a jack's knock), against "
                         "the recording. The left end is off.";
         break;
-    case kRelease: set("Release noise", "release", "dB", 0, kOffDb, 24);
+    case kRelease: set("Release noise", "release", "dB", -10, kOffDb, 24);
         p.description = "The noise when a key is let go (a damper landing, a jack falling back), against the recording. "
                         "The left end is off.";
         break;
@@ -214,7 +214,7 @@ ParamInfo make(uint32_t i)
                         "loudest notes stay as recorded, less brings the soft ones up (struck harder, so also brighter), "
                         "more takes them down. 45 dB as a recorded piano's sample set plays its layers. Pianos only.";
         break;
-    case kHammerHardness: set("Hammer hardness", "hammer_hardness", "dB", 0, -24, 12);
+    case kHammerHardness: set("Hammer hardness", "hammer_hardness", "dB", 0, -24, 24);
         p.description = "How hard what strikes or plucks the string is (the hammer's felt, a mallet, a quill, a finger), "
                         "from the next note: up brighter, down softer and rounder. 0 dB as recorded. On the pianos "
                         "every key keeps its loudness: the felt is measured again in the background (a few seconds).";

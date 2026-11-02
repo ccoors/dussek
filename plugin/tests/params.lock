@@ -8,7 +8,7 @@
 5 motor 0 1 1 - aib
 6 sustain_latch 0 1 0 - aib
 7 volume -40 24 0 dB a
-8 hammer_hardness -24 12 0 dB a
+8 hammer_hardness -24 24 0 dB a
 9 motor_speed 1 12 7 Hz a
 10 motor_depth 0 100 70 % a
 11 mallet 0 7 0 - ai
@@ -49,7 +49,7 @@
 46 stretch -1 10 0 - -
 47 unison_width 0 400 100 % -
 48 knock -40 12 0 dB a
-49 release -40 24 0 dB a
+49 release -40 24 -10 dB a
 50 pedal_noise -40 12 -20 dB a
 51 pedal_ring -40 12 -10 dB a
 52 sympathetic 0 300 100 % a
