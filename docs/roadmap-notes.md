@@ -501,3 +501,18 @@ Licenses checked 2026-10-10:
 - VSCO 2 CE's two uprights are Upright B and Upright A from other sessions: nothing new.
 
 A clavichord was the one place for aftertouch (done: the Bebung).
+
+<a id="key-range"></a>
+## The key range: 88 keys
+
+Decided 2026-11-02: every instrument keeps 88 keys (A0–C8). Considered and declined:
+
+- 108 keys (C0–B8, as one maker's nine-octave grand): above C8 (4.2 kHz) pitch is hard to hear (beyond
+  about 5 kHz), no music is written for those keys, and the model would play B8 with two partials,
+  MIDI 127 with one (a sine and the thump).
+- All 128 MIDI notes: strings no piano has (MIDI 0 at 8 Hz: a 2.9 m string, a growl).
+- The bass to C0 (97 keys, as one maker's largest concert grand; Busoni's Bach transcriptions reach G0)
+  is the one extension with a use. If it is wanted: a menu entry per grand as an export choice
+  (the extra strings ring along under the pedal and change the 88's sound), the bridge extended a
+  few centimeters past A0 so the 88 keep their places. "88 keys" is assumed in about 350 places
+  (the engine, its C interface, the fits, the UI, the editor): about two weeks.
