@@ -141,10 +141,10 @@ The UI is NanoVG and scalable: the host's HiDPI factor × a zoom of 100–400 %.
   into the instrument; until it goes, the previous setting plays. It shows once the work has taken
   0.2 s and stays at least 0.5 s, so the quick rebuilds (the tuning, the condition, the
   microphones: 20–120 ms) show nothing. The slow ones: another instrument or a morph's point (about
-  0.2–0.3 s; a harpsichord's or a harp's morph 0.5–1.1 s), and whatever measures a hammer piano's
-  loudness again: Hammer hardness and the felt (about 1 s, 2 s the first time on an instrument),
-  and another instrument or point while either is changed (about 2 s more, the quick build playing
-  meanwhile). The Felt tab's "measuring…" and the Morph tab's "building…" say the same where the
+  0.2–0.3 s; a harpsichord's or a harp's morph 0.2–1.1 s, the first 0.5–2 s), and whatever
+  measures a hammer piano's loudness again: Hammer hardness and the felt (about 1 s, 2 s the first
+  time on an instrument), and another instrument or point while either is changed (about 2 s more,
+  the quick build playing meanwhile). The Felt tab's "measuring…" and the Morph tab's "building…" say the same where the
   change was made. With the keyboard open, a window under 487 px has no room for it beside
   Visualization.
 
@@ -226,9 +226,9 @@ morph, and on them the tab says so.
   - inside, every instrument has a share (generalized barycentric coordinates). With four or
     more, the order decides which pairs an edge mixes.
 - **Building**: drag or click the point. The instrument rebuilds in the background ("building…"
-  under the pad, about 0.3 s for the pianos, 0.5–1.1 s for the harpsichords and harps, whose
-  partners' loudness is measured at each build), and each build plays as it lands, so a drag is
-  heard as it goes.
+  under the pad, about 0.3 s for the pianos, 0.2–1.1 s for the harpsichords and harps, whose
+  partners' loudness is measured the first time, 0.5–2 s), and each build plays as it lands, so a
+  drag is heard as it goes.
 - **Notes across a build**: notes held across a build fade out over 30 ms. Another mix is
   another instrument, whose strings cannot take over the old ones' swing (a change of instrument
   fades the same way). Notes played after the build sound in the new mix.

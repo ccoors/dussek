@@ -22,9 +22,8 @@ Nothing in progress; the next item comes from below.
   bars' mallets at the relative speed (step 171). Left: a re-pluck for the plucked strings (the
   plucker takes the old motion at its point, then releases: mostly the guitars' tremolo).
 - **Morphing beyond the pianos.** The harpsichords and the harps morph among themselves (step
-  232). Left: the other plucked strings (guitars, zithers), the percussion, then across families;
-  the registers leveled one by one (each is leveled with the 8′'s shift today, its keys within
-  about 1.6 dB rms of their pairs' mean). [Notes](docs/roadmap-notes.md#morphing)
+  232). Left: the other plucked strings (guitars, zithers), the percussion, then across families.
+  [Notes](docs/roadmap-notes.md#morphing)
 - **Presets, the rest.** Microphone presets per body type and full presets, shipped and saved
   (step 175), the first two shipped full presets, also in LV2 hosts' preset menus (step 179). Left: shipped
   mic setups for the other bodies; snapshots and a morph between two settings.

@@ -3818,15 +3818,21 @@ the guitars, the zithers and the bars stay out.
   No piano has a knock, so their morphs do not reach it: four piano mixes render bit for bit as
   before.
 
-**The level.** Every key is leveled as for the pianos (step 231), measured with the default stops
-(the 8′) and its shift applied to every register; the harpsichords and harps store no per-key
-levels, so each side is measured as the morph builds. With one stop at a time (every third key, ff,
-0.2 s peak): B halfway to A, its 8′ within 0.00 dB of its sides' mean; its 8′ II +0.12 dB on average
-(rms 0.77 dB, the worst key +1.8 dB) against the mean of B's 8′ II and A's 8′; its 4′, B's own
-through the morphed board, 0.00 dB on average against B's 4′ (rms 1.59 dB, the worst +3.7 dB).
-E halfway to F: the 8′ II +0.55 dB (rms 1.61 dB, one key +5.3 dB). Leveling each register by its
-own stop would take each side's registers and the morph's measured one by one (B toward A: about
-twice the measuring).
+**The level.** Every key of every register is leveled as for the pianos (step 231), each register
+with its own stop alone (`Instrument::stop_ff_levels`): against the weighted mean of its pairs' at
+their stops (the same pairs as the blend), a register no side pairs with against the main's own.
+First the 8′'s shift went on every register, measured with the default stops; with one stop at a
+time (every third key, ff, 0.2 s peak) that left B halfway to A's 8′ II +0.12 dB on average (rms
+0.77 dB, the worst key +1.8 dB) against the mean of B's 8′ II and A's 8′, its 4′ (B's own through the
+morphed board) 0.00 dB on average but rms 1.59 dB (the worst +3.7 dB) against B's, and E halfway to
+F's 8′ II +0.55 dB (rms 1.61 dB, one key +5.3 dB). Register by register, every one of them on all 88
+keys is within 0.001 dB (test: every register of B ¾ toward A and of E halfway to F within 0.05 dB).
+
+The harpsichords and harps store no per-key levels, so a morph measures its sides. A process keeps
+what it measured (`SIDE_LEVELS`, by the side's fingerprint and the stop; at most 256): the fingerprint
+is of the very bytes decoded (`decode` parses instrument.json from the bytes it hashes), so a changed
+file is another key and never meets a stale level. A dragged pad measures the sides once, then only
+the morph itself; a piano reads its stored levels as before.
 
 The website's phrases (`f-harpsichord`, `harp`; the engine's calibration):
 
@@ -3838,11 +3844,16 @@ The website's phrases (`f-harpsichord`, `harp`; the engine's calibration):
 | A, C and D at a third each (D alone −24.5) | −29.5 LUFS |
 | Harp A, Harp B, A halfway to B | −34.1, −34.5, −34.8 LUFS |
 
-Loading (16 threads, `Instrument::morph`): A with C 0.54–0.59 s, A with C and D 0.74–0.83 s, B with
-A 1.09–1.11 s, E with F 0.95–1.01 s, the harps 0.47–0.51 s, against a plain load of 0.10 s; Grand A
-with Grand B 0.27 s as before. Tests: a harpsichord (B) morphed with itself renders within 10⁻⁴ of
+Loading (16 threads, `Instrument::morph`; the first build, then another weight with the sides kept):
+A with C 0.58–0.59 s, then 0.20–0.22 s; B with A 1.63–1.66 s, then 0.85–0.95 s (its three registers
+measured one by one); E with F 1.40–1.56 s, then 0.48–0.51 s; the harps 0.48–0.50 s, then 0.16–0.17 s;
+a plain load 0.10 s; Grand A with Grand B 0.29–0.30 s as before. The plugin's worker (its 7 build
+threads, one cache, the pad's point moved 8 times): B with A 2.1 s, then 1.0–1.1 s a move; A with C
+0.44 s, then 0.23–0.25 s; E with F 1.4 s, then 0.56–0.60 s; the harps 0.49 s, then 0.18–0.22 s; the
+grands 0.31–0.34 s. Tests: a harpsichord (B) morphed with itself renders within 10⁻⁴ of
 its peak with every stop and the buff; A halfway to C keeps A's register, every quill and string
 value between the sides; B toward A and E toward F pair as above; the harps morph, the body the
-main's; a harpsichord with a harp, a piano or the clavichord is refused by name; every key of B
-three quarters toward A plays within 0.05 dB of its sides' mean; the plugin's partner list offers a
+main's; a harpsichord with a harp, a piano or the clavichord is refused by name; every key of every
+register of B three quarters toward A and of E halfway to F plays within 0.05 dB of its pairs' mean;
+a side's kept levels follow its files' content; the plugin's partner list offers a
 harpsichord the other five and Harp A the lever harp.

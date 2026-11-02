@@ -140,8 +140,10 @@ cargo run --release --manifest-path engine/Cargo.toml --bin level -- instruments
 ```
 
 A morph of pianos takes about 0.3 s to build; a plain load takes 0.13 s. The harpsichords and
-harps store no per-key levels: a morph measures each of its instruments as it builds, 0.5 s for
-two harps or two one-register harpsichords, 1.0–1.1 s with Harpsichord B, E or F.
+harps store no per-key levels: a morph measures each of its instruments, each register by its own
+stop, the first time (0.5–0.6 s for two harps or two one-register harpsichords, 1.4–1.7 s with
+Harpsichord B, E or F), and the process keeps what it measured, so another mix of them takes
+0.2–0.9 s.
 
 ## Accuracy and cost
 
