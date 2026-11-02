@@ -10,6 +10,7 @@ use dussek::{Engine, Event, Instrument, RadiationCache, Tuning};
 
 const A: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_a");
 const E: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_d");
+const B: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_b");
 const C: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_f");
 const UPRIGHT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/upright_a");
 const HARPSICHORD: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/flemish");
@@ -135,8 +136,11 @@ fn level_corrections_blend_with_none() {
     let m = Instrument::morph(&[(A, 0.5), (none.to_str().unwrap(), 0.5)]);
     let _ = std::fs::remove_dir_all(&none);
     let m = m.unwrap();
-    let k = a.notes.iter().position(|n| n.level_db.first().is_some_and(|t| t[0].abs() > 1.0)).expect("a correction at pp");
-    assert!((m.notes[k].level_db[0][0] - 0.5 * a.notes[k].level_db[0][0]).abs() < 1e-9);
+    // the morph's own leveling (`every_key_plays_at_its_ends_mean`) shifts a key's whole row: the
+    // blend shows in the row's shape, pp re ff
+    let k = a.notes.iter().position(|n| n.level_db.first().is_some_and(|t| (t[0] - t[2]).abs() > 0.1)).expect("a correction at pp re ff");
+    let shape = |t: &[f64; 3]| t[0] - t[2];
+    assert!((shape(&m.notes[k].level_db[0]) - 0.5 * shape(&a.notes[k].level_db[0])).abs() < 1e-9);
 }
 
 /// the board's modes reordered by frequency (an export's are not guaranteed sorted)
@@ -239,6 +243,20 @@ fn halfway_plays_as_loud_as_its_ends() {
     // 1.5 dB before the rooms' cuts (design log step 123): a morph averages the sides' cuts and their
     // compensations apart, and at Player across these keys halfway now sits ~1 dB lower than it did
     assert!((l[2] - 0.5 * (l[0] + l[1])).abs() <= 2.5, "A {:.1} E {:.1} halfway {:.1} dB", l[0], l[1], l[2]);
+}
+
+#[test]
+fn every_key_plays_at_its_ends_mean() {
+    // each key's ff level the weighted mean of its sides' (dB): one gain from keys 48, 60 and 72 left
+    // the morphed physics' own unevenness, Grand A halfway to Grand B played a phrase 3.2 dB above A
+    // and 1.4 dB above B, its bass 1.5–2.6 dB above their mean
+    let Ok(m) = Instrument::morph(&[(A, 0.75), (B, 0.25)]) else { return };
+    let (a, b) = (Instrument::load(A).unwrap().key_ff_levels().unwrap(), Instrument::load(B).unwrap().key_ff_levels().unwrap());
+    let lm = m.key_ff_levels().unwrap();
+    for k in 0..88 {
+        let want = 0.75 * a[k] + 0.25 * b[k];
+        assert!((lm[k] - want).abs() <= 0.05, "key {}: {:.2} dB, its sides' mean {want:.2} dB", 21 + k, lm[k]);
+    }
 }
 
 #[test]

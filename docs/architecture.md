@@ -31,8 +31,9 @@ An instrument is a directory under `instruments/` (or any search path of the plu
   gain, the body (which geometry places the microphones), the registers (each with the stop that plays
   it: a recorded second 8′ sits on the 8′ II's), the recorded range and
   the menu entry (`[menu]` in the project: name, group, labels, the strip's key colors); `level`,
-  the engine's measured ff level, for morphing at matched loudness [116], and a piano's level over
-  its hammer speed on every key, which maps its velocity [124]; `data`, the size and SHA-256 of the
+  the engine's measured ff level [116], and a piano's level over its hammer speed on every key,
+  which maps its velocity [124], with each key's own ff level, which a morph levels its keys to
+  [231]; `data`, the size and SHA-256 of the
   `data.bin` it was written with (another, or a cut one, is refused) [214].
 - `data.bin`: the arrays the JSON points into (little-endian), among them the two fitted radiation
   responses (the recording's fine structure), the board's modes and the per-note correction.

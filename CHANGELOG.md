@@ -18,6 +18,8 @@ break is allowed but listed under "Breaking" (`docs/compatibility.md`).
 
 ### Changed
 
+- A morph plays each key at the mean of its partners' levels: halfway between Grand A and Grand B
+  had a bass up to 2.6 dB louder than either.
 - Release noise starts at −10 dB, as the Pedal ring does (chosen by ear); saved sessions and
   presets keep their own value.
 

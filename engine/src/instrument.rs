@@ -934,6 +934,13 @@ pub fn stored_level(dir: &Path) -> Option<f64> {
     (keys == LEVEL_KEYS.map(u64::from)).then(|| v.get("ff_db")?.as_f64()).flatten().filter(|x| x.is_finite())
 }
 
+/// Each key's ff level stored with the instrument in `dir` (its level's `key_ff_db`, a hammer
+/// piano's: `Instrument::key_ff_levels`): None when absent, unreadable or not every key's.
+pub fn stored_key_levels(dir: &Path) -> Option<Vec<f64>> {
+    let v: Vec<f64> = stored(dir)?.get("key_ff_db")?.as_array()?.iter().map(|x| x.as_f64()).collect::<Option<_>>()?;
+    (v.len() == LEVEL_TABLE_KEYS.len() && v.iter().all(|x| x.is_finite())).then_some(v)
+}
+
 /// The level table stored with the instrument in `dir` (its level's `speed_db`,
 /// `Dynamics::to_json`): empty when absent or unreadable.
 pub fn stored_dynamics(dir: &Path) -> Dynamics {
@@ -1468,19 +1475,19 @@ impl Instrument {
             decoded.push((d, w / sum));
         }
         let w: Vec<f64> = decoded.iter().map(|d| d.1).collect();
-        // each side's own level: stored with it, else built and measured (in parallel)
-        let levels: Vec<Result<f64, Error>> = std::thread::scope(|scope| {
+        // each side's own level per key: stored with it, else built and measured (in parallel)
+        let levels: Vec<Result<Vec<f64>, Error>> = std::thread::scope(|scope| {
             let runs: Vec<_> = decoded
                 .iter()
                 .zip(&dirs)
-                .map(|((d, _), dir)| scope.spawn(move || stored_level(dir).map_or_else(|| build(d.clone())?.ff_level(), Ok)))
+                .map(|((d, _), dir)| scope.spawn(move || stored_key_levels(dir).map_or_else(|| build(d.clone())?.key_ff_levels(), Ok)))
                 .collect();
             runs.into_iter().map(|h| h.join().unwrap_or_else(|_| Err(err("morph: a side's build failed")))).collect()
         });
         let levels = levels.into_iter().collect::<Result<Vec<_>, _>>()?;
         let tables: Vec<(Dynamics, f64)> = decoded.iter().zip(&dirs).map(|((d, _), dir)| (stored_dynamics(dir), d.raw.velocity.speed[2])).collect();
         let mut inst = build(morph::morph(decoded, &main)?)?;
-        morph::morph_level(&mut inst, &levels, &w)?;
+        morph::level_keys(&mut inst, &levels, &w)?;
         inst.dynamics = morph::morph_dynamics(&tables, &w, inst.velocity_speed[2]);
         Ok(inst)
     }
@@ -1603,53 +1610,12 @@ impl Instrument {
         if !self.is_hammer_piano() {
             return Ok((Dynamics::default(), Vec::new()));
         }
-        let (inst, sr) = (self, self.reference_sr);
         let ff = self.velocity_speed[2].max(1e-3);
         let speeds: Vec<f64> = LEVEL_SPEEDS.map(|k| ff * 2f64.powf(k as f64 / 2.0)).to_vec();
         let (nk, ns) = (LEVEL_TABLE_KEYS.len(), speeds.len());
-        let next = std::sync::atomic::AtomicUsize::new(0);
-        let threads = crate::threads::build_threads();
-        // each thread its renders (key, speed index, peak dB) through its own radiation cache
-        let found: Vec<Result<Vec<(usize, usize, f64)>, Error>> = std::thread::scope(|scope| {
-            let runs: Vec<_> = (0..threads)
-                .map(|_| {
-                    let (speeds, next) = (&speeds, &next);
-                    scope.spawn(move || -> Result<Vec<(usize, usize, f64)>, Error> {
-                        let mut cache = crate::RadiationCache::default();
-                        let mut out = Vec::new();
-                        loop {
-                            let i = next.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                            if i >= nk * ns {
-                                return Ok(out);
-                            }
-                            let (k, j) = (i / ns, i % ns);
-                            let key = LEVEL_TABLE_KEYS[k];
-                            let mut e = crate::Engine::for_window(inst.clone(), sr, Tuning::default(), &mut cache, LEVEL_WINDOW_S)?;
-                            // the note without the action's knock: at soft strikes the knock sets the
-                            // peak (Knight's C7 at −32 dB re ff, its string at −68 dB); and as fitted,
-                            // without a strike's own variation
-                            e.set_params(crate::Params { knock: 0.0, variation: 0.0, ..crate::Params::default() });
-                            e.queue(0, crate::Event::NoteOn { key, speed: speeds[j] });
-                            let (mut l, mut r) = (vec![0.0; 256], vec![0.0; 256]);
-                            let mut peak = 0.0f32;
-                            for _ in 0..(LEVEL_WINDOW_S * sr / 256.0).ceil() as usize {
-                                e.process(&mut l, &mut r);
-                                peak = l.iter().chain(&r).fold(peak, |m, x| m.max(x.abs()));
-                            }
-                            if !(peak > 0.0) {
-                                return Err(err(format!("level: key {key} is silent at {:.3} m/s", speeds[j])));
-                            }
-                            out.push((k, j, 20.0 * (peak as f64).log10()));
-                        }
-                    })
-                })
-                .collect();
-            runs.into_iter().map(|h| h.join().unwrap_or_else(|_| Err(err("level: a render failed")))).collect()
-        });
-        let mut db = vec![vec![0.0; ns]; nk];
-        for (k, j, d) in found.into_iter().collect::<Result<Vec<_>, _>>()?.into_iter().flatten() {
-            db[k][j] = d;
-        }
+        let jobs: Vec<(u8, f64)> = (0..nk * ns).map(|i| (LEVEL_TABLE_KEYS[i / ns], speeds[i % ns])).collect();
+        let found = self.strike_peaks(&jobs)?;
+        let mut db: Vec<Vec<f64>> = found.chunks(ns).map(<[f64]>::to_vec).collect();
         let at_ff = LEVEL_SPEEDS.iter().position(|&k| k == 0).unwrap();
         let key_ff: Vec<f64> = db.iter().map(|row| row[at_ff]).collect();
         for row in &mut db {
@@ -1657,6 +1623,58 @@ impl Instrument {
             row.iter_mut().for_each(|d| *d -= f);
         }
         Ok((Dynamics { keys: LEVEL_TABLE_KEYS.to_vec(), ln_speed: speeds.iter().map(|s| s.ln()).collect(), db }, key_ff))
+    }
+
+    /// Each key's own level at the ff anchor's speed (dB, the peak over `LEVEL_WINDOW_S` at the
+    /// recording's position, as `level_rows` measures it): every key of `LEVEL_TABLE_KEYS`, any
+    /// instrument (a morph levels its keys by these, `Instrument::morph`).
+    pub fn key_ff_levels(&self) -> Result<Vec<f64>, Error> {
+        let ff = self.velocity_speed[2].max(1e-3);
+        self.strike_peaks(&LEVEL_TABLE_KEYS.map(|k| (k, ff)))
+    }
+
+    /// The peak (dB) of each (key, speed) struck alone over `LEVEL_WINDOW_S`, without the action's
+    /// knock (at soft strikes it sets the peak: Knight's C7 at −32 dB re ff, its string at −68 dB)
+    /// and as fitted, without a strike's own variation; rendered over the build threads, each
+    /// through its own radiation cache.
+    fn strike_peaks(&self, jobs: &[(u8, f64)]) -> Result<Vec<f64>, Error> {
+        let (inst, sr) = (self, self.reference_sr);
+        let next = std::sync::atomic::AtomicUsize::new(0);
+        let threads = crate::threads::build_threads();
+        let found: Vec<Result<Vec<(usize, f64)>, Error>> = std::thread::scope(|scope| {
+            let runs: Vec<_> = (0..threads)
+                .map(|_| {
+                    let next = &next;
+                    scope.spawn(move || -> Result<Vec<(usize, f64)>, Error> {
+                        let mut cache = crate::RadiationCache::default();
+                        let mut out = Vec::new();
+                        loop {
+                            let i = next.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                            let Some(&(key, speed)) = jobs.get(i) else { return Ok(out) };
+                            let mut e = crate::Engine::for_window(inst.clone(), sr, Tuning::default(), &mut cache, LEVEL_WINDOW_S)?;
+                            e.set_params(crate::Params { knock: 0.0, variation: 0.0, ..crate::Params::default() });
+                            e.queue(0, crate::Event::NoteOn { key, speed });
+                            let (mut l, mut r) = (vec![0.0; 256], vec![0.0; 256]);
+                            let mut peak = 0.0f32;
+                            for _ in 0..(LEVEL_WINDOW_S * sr / 256.0).ceil() as usize {
+                                e.process(&mut l, &mut r);
+                                peak = l.iter().chain(&r).fold(peak, |m, x| m.max(x.abs()));
+                            }
+                            if !(peak > 0.0) {
+                                return Err(err(format!("level: key {key} is silent at {speed:.3} m/s")));
+                            }
+                            out.push((i, 20.0 * (peak as f64).log10()));
+                        }
+                    })
+                })
+                .collect();
+            runs.into_iter().map(|h| h.join().unwrap_or_else(|_| Err(err("level: a render failed")))).collect()
+        });
+        let mut db = vec![0.0; jobs.len()];
+        for (i, d) in found.into_iter().collect::<Result<Vec<_>, _>>()?.into_iter().flatten() {
+            db[i] = d;
+        }
+        Ok(db)
     }
 
     /// The instrument's ff level: `LEVEL_KEYS` each struck at its ff anchor's speed at the recording's

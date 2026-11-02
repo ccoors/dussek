@@ -3755,3 +3755,31 @@ ear); `dussek render` still plays it as fitted, so the Copy CLI line of the defa
 new range moves VST3 and CLAP automation of the hardness recorded before (those hosts store a share
 of the range), named under Breaking. Upright D's release, already 10 dB under its recordings by ear
 (step 224), is now 20 dB under at the default; kept so by ear.
+
+<a id="step-231"></a>
+## 231. The morph's level, key by key
+
+Grand A halfway to Grand B played the website's phrase (`f-piano`, its own calibration) at −30.7
+LUFS, Grand A at −33.9 and Grand B at −32.1: 2.3 dB above their mean. The morph took one gain, the
+peak of keys 48, 60 and 72 at ff matched to the sides' mean; key by key (every third key, ff) it lay
+±3 dB around that mean, 1.5–2.6 dB above it from C1 to A3 and as far below it in the treble, and the
+three measured keys happened to average to 0 dB (+1.0, +0.6, −1.6). The morphed physics radiates
+unevenly across the keys; the stored per-key level corrections, which the morph blends, are the
+sides' own and do not know it.
+
+Now each key is leveled: the morph measures each key's own ff peak (`Instrument::key_ff_levels`, the
+level table's measure: 0.2 s, no knock, no strike variation; `level_rows` shares its renders) and
+shifts the key's level correction (`level_db`, every register's) to the weighted mean of its sides'
+(their `key_ff_db`, stored with every hammer piano; measured for a side without). Every key's ff
+level then sits within 0.05 dB of the mean (test `every_key_plays_at_its_ends_mean`, ¾ A and ¼ B); at
+velocities 40, 64 and 90 the mean over eleven keys is −0.3, −0.2 and −0.1 dB, single keys within
+±2 dB at velocity 40. Loading a morph takes 0.31–0.33 s instead of 0.26 s.
+
+The phrase moved less than the keys: halfway A–B −31.0 LUFS (2.0 dB above the mean), a quarter of the
+way −32.3 (1.1 above), halfway between Grand A and Grand D −32.9 (1.3 above, the mean −34.2). What
+remains is the sustain: held notes at velocity 100 drop 11.6, 12.7 and 22.5 dB over three seconds on
+C3, G3 and G4 where Grand A drops 14.3, 16.2 and 28.9 and Grand B 12.9, 13.4 and 26.1. The morph rings
+longer than either side from C3 up, and a pedaled phrase piles that up. The board drawn from the
+sides' statistics (step 115) drains the strings differently from either fitted board; left for the
+ear: a longer ring is part of a morph's character, or a loudness leveling over a longer window, or
+the board's draw itself.

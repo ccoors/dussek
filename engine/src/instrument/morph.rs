@@ -64,15 +64,27 @@ pub(super) fn refusal(r: &RawInstrument) -> Option<&'static str> {
     }
 }
 
-/// The morph at its sides' level: every key's peaks scaled so that its ff level (`Instrument::ff_level`) is
-/// the weighted mean of theirs (`side_levels`, dB). The stored peaks are per-key means and miss
-/// what the morphed physics radiates (halfway between Grand A and Grand D played 3 dB above both),
-/// and the calibration level itself is no reference: the pianos sit up to 3 dB off it, so a morph
-/// of a piano with itself would jump.
-pub(super) fn morph_level(inst: &mut Instrument, side_levels: &[f64], w: &[f64]) -> Result<(), Error> {
-    let off = inst.ff_level()? - arith(side_levels, w);
-    let f = 10f64.powf(off / 20.0);
-    inst.notes.iter_mut().for_each(|n| n.release.peak.iter_mut().for_each(|p| *p *= f));
+/// The morph at its sides' level, key by key: each key's level correction (`Note::level_db`, every
+/// register's) shifted so that its ff level (`Instrument::key_ff_levels`) is the weighted mean of
+/// theirs (`side_levels`, dB per key). The morphed physics radiates unevenly across the keys: one
+/// gain from keys 48, 60 and 72 left Grand A halfway to Grand B 1.5–2.6 dB above its sides' mean in
+/// the bass and played a phrase 3.2 dB above A (design log step 231).
+pub(super) fn level_keys(inst: &mut Instrument, side_levels: &[Vec<f64>], w: &[f64]) -> Result<(), Error> {
+    let own = inst.key_ff_levels()?;
+    let nk = own.len();
+    if side_levels.iter().any(|l| l.len() != nk) {
+        return Err(err("morph: a side's levels are not every key's"));
+    }
+    for (k, o) in own.iter().enumerate() {
+        let shift = arith(&side_levels.iter().map(|l| l[k]).collect::<Vec<_>>(), w) - o;
+        for n in inst.notes.iter_mut().skip(k).step_by(nk) {
+            if n.level_db.is_empty() {
+                n.level_db.push([shift; 3]);
+            } else {
+                n.level_db.iter_mut().for_each(|row| row.iter_mut().for_each(|d| *d += shift));
+            }
+        }
+    }
     Ok(())
 }
 
