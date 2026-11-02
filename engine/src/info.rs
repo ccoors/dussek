@@ -108,7 +108,8 @@ pub struct Menu {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Info {
     pub body: Body,
-    /// which instruments morph together (equal and nonzero; 1: the hammer-strung pianos)
+    /// which instruments morph together (equal and nonzero; 1 the hammer-strung pianos, 2 the
+    /// harpsichords, 3 the harps)
     pub morph_family: u32,
     /// a hammer piano (`Instrument::is_hammer_piano`'s rule): its felt bends at the build
     pub hammer_piano: bool,

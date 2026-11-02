@@ -1,5 +1,5 @@
 //! An instrument between instruments: several decoded instruments and their weights in, one
-//! decoded instrument out (`Instrument::morph`; design log step 115).
+//! decoded instrument out (`Instrument::morph`; design log steps 115, 232).
 
 use super::*;
 
@@ -38,30 +38,84 @@ pub(crate) fn scale(x: &[f64], w: &[f64]) -> f64 {
     }
 }
 
-/// Whether `d` is a piano the morph knows: one register of hammer-struck strings, no stops,
-/// mallets, motor, membrane, bend or measured board modes.
-pub(super) fn check(d: &Decoded) -> Result<(), Error> {
-    refusal(&d.raw).map_or(Ok(()), |w| Err(err(format!("{}: cannot morph: {w}", d.name))))
+/// The morph's families: which instruments morph together (`Facts::morph_family`; nothing across
+/// them).
+pub(crate) const PIANOS: u32 = 1;
+pub(crate) const HARPSICHORDS: u32 = 2;
+pub(crate) const HARPS: u32 = 3;
+
+/// The family of `d` (`family`), or an error naming it.
+pub(super) fn check(d: &Decoded) -> Result<u32, Error> {
+    family(&d.raw).map_err(|w| err(format!("{}: cannot morph: {w}", d.name)))
 }
 
-/// Why the instrument in `r` cannot morph (None: it can; `Facts::morph_family` reads this too, so the
-/// plugin's report and the morph agree).
-pub(super) fn refusal(r: &RawInstrument) -> Option<&'static str> {
-    if r.format == 6 || r.notes.is_empty() {
-        Some("not one register of notes")
-    } else if r.notes.len() != 88 || r.notes.iter().enumerate().any(|(i, n)| n.note as usize != 21 + i) {
-        Some("not the 88 keys 21 … 108 in order") // the notes pair by position
-    } else if r.notes.iter().any(|n| !matches!((&n.excitation, &n.hammer), (Some(RawExcitation::Hammer(_)), _) | (None, Some(_)))) {
-        Some("a note not struck by a hammer")
-    } else if r.notes.iter().any(|n| n.string.modes.is_some()) {
-        Some("a note of explicit modes")
-    } else if !r.mallets.is_empty() || r.membrane.is_some() || r.motor || r.bend || r.buff.is_some() || r.lute.is_some() {
-        Some("mallets, a membrane, a motor, a bend or a stop")
+/// The family of the instrument in `r` (`Facts::morph_family` reads this too, so the plugin's report
+/// and the morph agree), or why it cannot morph. Every register 88 keys of strings without explicit
+/// modes, no mallets, membrane, motor, bend or measured board modes; then the hammer-strung pianos
+/// (one register, no stops), the harpsichords (strings plucked by quills on a keyboard instrument's
+/// body: registers, the buff and the lute allowed) and the harps (plucked on a harp's body, one
+/// register, no stops). The clavichord's tangent, the bars and the other plucked bodies do not morph.
+pub(super) fn family(r: &RawInstrument) -> Result<u32, &'static str> {
+    let regs = layout(r);
+    let notes = || regs.iter().flat_map(|g| g.notes.iter());
+    if regs.iter().any(|g| g.notes.is_empty()) || regs.is_empty() {
+        Err("no notes")
+    } else if regs.iter().any(|g| g.notes.len() != 88 || g.notes.iter().enumerate().any(|(i, n)| n.note as usize != 21 + i)) {
+        Err("not the 88 keys 21 … 108 in order") // the notes pair by position
+    } else if notes().any(|n| n.string.modes.is_some()) {
+        Err("a note of explicit modes")
+    } else if !r.mallets.is_empty() || r.membrane.is_some() || r.motor || r.bend {
+        Err("mallets, a membrane, a motor or a bend")
     } else if r.board.measured_from.is_some_and(|m| m < r.board.f.n) {
-        Some("measured board modes")
+        Err("measured board modes")
+    } else if register_stops(r).is_err() {
+        Err("registers without distinct stops")
+    } else if notes().all(|n| hammer_of(n).is_some()) {
+        if r.format == 6 || r.buff.is_some() || r.lute.is_some() { Err("a piano of registers or stops") } else { Ok(PIANOS) }
+    } else if notes().all(|n| pluck_of(n).is_some_and(|p| !p.bar && !p.tangent)) {
+        let body = crate::mic::Body::from_name(r.body.as_deref());
+        if body.is_harp() {
+            if r.format == 6 || r.buff.is_some() || r.lute.is_some() { Err("a harp of registers or stops") } else { Ok(HARPS) }
+        } else if body == crate::mic::Body::Grand {
+            Ok(HARPSICHORDS)
+        } else {
+            Err("plucked strings on another body")
+        }
     } else {
-        None
+        Err("a note neither struck by a hammer nor plucked by a quill")
     }
+}
+
+/// One register as the morph pairs it: its stop (`register_stops`), its notes, its own transfer
+/// correction (a register after the first; the first plays the instrument's).
+struct Reg<'a> {
+    stop: u8,
+    notes: &'a [RawNote],
+    own: Option<&'a RawCorrection>,
+}
+
+/// The registers of `r`: format 6 lists them, the others are one (the top-level notes, the 8′).
+fn layout(r: &RawInstrument) -> Vec<Reg<'_>> {
+    if r.format == 6 {
+        r.registers
+            .iter()
+            .enumerate()
+            .map(|(i, g)| Reg { stop: g.stop.unwrap_or(i as u8), notes: &g.notes, own: g.correction.as_ref().filter(|_| i > 0) })
+            .collect()
+    } else {
+        vec![Reg { stop: 0, notes: &r.notes, own: None }]
+    }
+}
+
+/// The register of `regs` that pairs with stop `s`: the same stop, else one of the same pitch (the 8′
+/// and the 8′ II, stops 0 and 2); a 4′ only with a 4′. None: no register of that pitch.
+fn paired(regs: &[Reg], s: u8) -> Option<usize> {
+    let at = |t: u8| regs.iter().position(|g| g.stop == t);
+    at(s).or_else(|| match s {
+        0 => at(2),
+        2 => at(0),
+        _ => None,
+    })
 }
 
 /// The morph at its sides' level, key by key: each key's level correction (`Note::level_db`, every
@@ -124,6 +178,13 @@ fn over<T>(idx: &[usize], f: impl Fn(usize) -> T) -> Vec<T> {
 fn hammer_of(n: &RawNote) -> Option<&RawHammer> {
     match (&n.excitation, &n.hammer) {
         (Some(RawExcitation::Hammer(h)), _) | (None, Some(h)) => Some(h),
+        _ => None,
+    }
+}
+
+fn pluck_of(n: &RawNote) -> Option<&RawPluck> {
+    match &n.excitation {
+        Some(RawExcitation::Pluck(p)) => Some(p),
         _ => None,
     }
 }
@@ -263,28 +324,33 @@ fn mix_responses(irs: &[&[f32]], w: &[f64]) -> Vec<f32> {
     y.iter().map(|x| (x * g) as f32).collect()
 }
 
-/// The morph of `sides` (checked, weights > 0 summing to 1); its body (the microphones' geometry) from
-/// `main`, the instrument chosen first (its weight may be 0).
-pub(super) fn morph(sides: Vec<(Decoded, f64)>, main: &Decoded) -> Result<Decoded, Error> {
-    let w: Vec<f64> = sides.iter().map(|s| s.1).collect();
-    let h = heaviest(&w);
-    if sides.iter().any(|(d, _)| d.raw.reference_sr != sides[h].0.raw.reference_sr) {
-        return Err(err("morph: the instruments' reference rates differ"));
-    }
-    let raws: Vec<&RawInstrument> = sides.iter().map(|s| &s.0.raw).collect();
-    let datas: Vec<&Data> = sides.iter().map(|s| &s.0.data).collect();
-    let all: Vec<usize> = (0..sides.len()).collect();
-    let mut out = raws[h].clone();
-    out.body = main.raw.body.clone();
-    let mut data = Data(Vec::new());
-    out.profile = format!("morph:{}", sides.iter().map(|(d, w)| format!("{}={w:.4}", d.path)).collect::<Vec<_>>().join(","));
-    out.menu = None;
-    let sc = |f: &dyn Fn(usize) -> f64| scale(&over(&all, f), &w);
-    let ar = |f: &dyn Fn(usize) -> f64| arith(&over(&all, f), &w);
+/// Transfer corrections blended per point where every one has the heaviest's (`h`) grid, else the
+/// heaviest's; its table into `data`. None when the heaviest has none.
+fn blend_correction(cs: &[Option<&RawCorrection>], datas: &[&Data], w: &[f64], h: usize, data: &mut Data) -> Result<Option<RawCorrection>, Error> {
+    let Some(c) = cs[h] else { return Ok(None) };
+    let all: Vec<usize> = (0..cs.len()).collect();
+    let same = cs.iter().all(|o| o.is_some_and(|o| o.notes == c.notes && o.grid_hz == c.grid_hz && o.c_db.n == c.c_db.n));
+    let rows = if same {
+        let t = all.iter().map(|&i| datas[i].f64(&cs[i].unwrap().c_db)).collect::<Result<Vec<_>, _>>()?;
+        (0..c.c_db.n).map(|j| arith(&over(&all, |i| t[i][j]), w)).collect()
+    } else {
+        datas[h].f64(&c.c_db)?
+    };
+    Ok(Some(RawCorrection { c_db: data.push_f64(&rows), ..c.clone() }))
+}
 
-    // per key: the strings, the hammers, the dampers, the noises
-    for (k, n) in out.notes.iter_mut().enumerate() {
-        let ns: Vec<&RawNote> = raws.iter().map(|r| &r.notes[k]).collect();
+/// One register's notes morphed key by key: `regs[i]` side i's notes for it (the sides that have
+/// it), `raws` and `datas` theirs, at weights `w`; the heaviest of them gives each key's structure
+/// (the string count, the damper, the knock). The dampers' tables go into `data`.
+fn morph_notes(regs: &[&[RawNote]], raws: &[&RawInstrument], datas: &[&Data], w: &[f64], data: &mut Data) -> Result<Vec<RawNote>, Error> {
+    let h = heaviest(w);
+    let all: Vec<usize> = (0..regs.len()).collect();
+    let sc = |f: &dyn Fn(usize) -> f64| scale(&over(&all, f), w);
+    let ar = |f: &dyn Fn(usize) -> f64| arith(&over(&all, f), w);
+    let mut out = regs[h].to_vec();
+    // per key: the strings, the hammers or quills, the dampers, the noises
+    for (k, n) in out.iter_mut().enumerate() {
+        let ns: Vec<&RawNote> = regs.iter().map(|r| &r[k]).collect();
         let st = &mut n.string;
         st.f0 = sc(&|i| ns[i].string.f0);
         st.b = sc(&|i| ns[i].string.b);
@@ -302,32 +368,51 @@ pub(super) fn morph(sides: Vec<(Decoded, f64)>, main: &Decoded) -> Result<Decode
         st.kappa_reactive = ar(&|i| ns[i].string.kappa_reactive);
         st.horiz_detune_cents = ar(&|i| ns[i].string.horiz_detune_cents);
         // the string count from the heaviest; the detunings over the sides with that count
-        let (same, ws) = having(&w, |i| ns[i].string.s == st.s && ns[i].string.detune_cents.len() == st.s);
+        let (same, ws) = having(w, |i| ns[i].string.s == st.s && ns[i].string.detune_cents.len() == st.s);
         st.detune_cents = (0..st.s).map(|j| arith(&over(&same, |i| ns[i].string.detune_cents[j]), &ws)).collect();
         n.recorded_cents = ar(&|i| ns[i].recorded_cents);
         n.sustain = sc(&|i| ns[i].sustain);
 
-        let hs: Vec<&RawHammer> = ns.iter().map(|n| hammer_of(n)).collect::<Option<_>>().ok_or_else(|| err("morph: a note without a hammer"))?;
-        let balance = rows_arith(&over(&all, |i| hs[i].balance.as_slice()), &w, h);
-        // the felt's core: its stiffness arithmetic (a side without one counts 0), its depth
-        // weighted by each side's stiffness
-        let core_k = ar(&|i| hs[i].core_k);
-        let core_depth = if core_k > 0.0 { ar(&|i| hs[i].core_k * hs[i].core_depth) / core_k } else { 0.0 };
-        n.excitation = Some(RawExcitation::Hammer(RawHammer {
-            mass: sc(&|i| hs[i].mass),
-            felt_k: sc(&|i| hs[i].felt_k),
-            felt_p: ar(&|i| hs[i].felt_p),
-            balance,
-            strike_pos: ar(&|i| hs[i].strike_pos),
-            core_k,
-            core_depth,
-        }));
-        n.hammer = None;
+        if let Some(hs) = ns.iter().map(|n| hammer_of(n)).collect::<Option<Vec<&RawHammer>>>() {
+            let balance = rows_arith(&over(&all, |i| hs[i].balance.as_slice()), w, h);
+            // the felt's core: its stiffness arithmetic (a side without one counts 0), its depth
+            // weighted by each side's stiffness
+            let core_k = ar(&|i| hs[i].core_k);
+            let core_depth = if core_k > 0.0 { ar(&|i| hs[i].core_k * hs[i].core_depth) / core_k } else { 0.0 };
+            n.excitation = Some(RawExcitation::Hammer(RawHammer {
+                mass: sc(&|i| hs[i].mass),
+                felt_k: sc(&|i| hs[i].felt_k),
+                felt_p: ar(&|i| hs[i].felt_p),
+                balance,
+                strike_pos: ar(&|i| hs[i].strike_pos),
+                core_k,
+                core_depth,
+            }));
+            n.hammer = None;
+        } else if let Some(ps) = ns.iter().map(|n| pluck_of(n)).collect::<Option<Vec<&RawPluck>>>() {
+            // the quill as the hammer: its scales (the lowpass, the force) geometric, the pluck point
+            // and the per-step laws arithmetic; a bar's or a tangent's pluck only with its own kind
+            if ps.iter().any(|p| p.bar != ps[h].bar || p.tangent != ps[h].tangent) {
+                return Err(err("morph: plucks of different kinds (a bar, a tangent)"));
+            }
+            n.excitation = Some(RawExcitation::Pluck(RawPluck {
+                beta: ar(&|i| ps[i].beta),
+                f_q: sc(&|i| ps[i].f_q),
+                amp: sc(&|i| ps[i].amp),
+                gain_db_per_step: ar(&|i| ps[i].gain_db_per_step),
+                fq_oct_per_step: ar(&|i| ps[i].fq_oct_per_step),
+                bar: ps[h].bar,
+                order: ar(&|i| ps[i].order),
+                tangent: ps[h].tangent,
+            }));
+        } else {
+            return Err(err("morph: a note struck by a hammer and plucked"));
+        }
 
         // the damper's table over the sides with one of the heaviest's length
         n.damper_sigma = match (n.has_damper, &ns[h].damper_sigma) {
             (true, Some(r0)) => {
-                let (idx, wd) = having(&w, |i| ns[i].damper_sigma.as_ref().is_some_and(|r| r.n == r0.n));
+                let (idx, wd) = having(w, |i| ns[i].damper_sigma.as_ref().is_some_and(|r| r.n == r0.n));
                 let tables = idx.iter().map(|&i| datas[i].f64(ns[i].damper_sigma.as_ref().unwrap())).collect::<Result<Vec<_>, _>>()?;
                 let t: Vec<f64> = (0..r0.n).map(|j| scale(&over(&(0..tables.len()).collect::<Vec<_>>(), |t| tables[t][j]), &wd)).collect();
                 Some(data.push_f64(&t))
@@ -335,12 +420,12 @@ pub(super) fn morph(sides: Vec<(Decoded, f64)>, main: &Decoded) -> Result<Decode
             _ => None,
         };
         n.knock = ns[h].knock.as_ref().map(|_| {
-            let (idx, wk) = having(&w, |i| ns[i].knock.is_some());
+            let (idx, wk) = having(w, |i| ns[i].knock.is_some());
             RawKnock { knee: scale(&over(&idx, |i| ns[i].knock.as_ref().unwrap().knee), &wk) }
         });
         let rel = &mut n.release;
-        rel.impacts = impacts(&over(&all, |i| ns[i].release.impacts.as_slice()), &w);
-        rel.band_db = rows_arith(&over(&all, |i| ns[i].release.band_db.as_slice()), &w, h);
+        rel.impacts = impacts(&over(&all, |i| ns[i].release.impacts.as_slice()), w);
+        rel.band_db = rows_arith(&over(&all, |i| ns[i].release.band_db.as_slice()), w, h);
         rel.peak = std::array::from_fn(|j| sc(&|i| ns[i].release.peak[j]));
         // (ln speed, dB) per entry, both blended: each side's speeds are ln of its own anchors, so
         // the blended column is ln of the morph's (geometric-mean) anchors
@@ -353,9 +438,108 @@ pub(super) fn morph(sides: Vec<(Decoded, f64)>, main: &Decoded) -> Result<Decode
         let len = ns.iter().map(|n| n.level_db.len()).max().unwrap_or(0);
         n.level_db = (0..len).map(|j| std::array::from_fn(|e| ar(&|i| ns[i].level_db.get(j).map_or(0.0, |t| t[e])))).collect();
         // the impact's trim (dB) over the sides with an impact, as its gain
-        let (idx, wi) = having(&w, |i| raws[i].impact.is_some());
+        let (idx, wi) = having(w, |i| raws[i].impact.is_some());
         n.impact_db = if idx.is_empty() { 0.0 } else { arith(&over(&idx, |i| ns[i].impact_db), &wi) };
     }
+    Ok(out)
+}
+
+/// The morph of `sides` (checked, of one family, weights > 0 summing to 1); its body (the microphones'
+/// geometry), its registers with their stops, its buff and its lute from `main`, the instrument chosen
+/// first (its weight may be 0); the rest from the heaviest side, blended.
+pub(super) fn morph(sides: Vec<(Decoded, f64)>, main: &Decoded) -> Result<Decoded, Error> {
+    let w: Vec<f64> = sides.iter().map(|s| s.1).collect();
+    let h = heaviest(&w);
+    if sides.iter().any(|(d, _)| d.raw.reference_sr != sides[h].0.raw.reference_sr) {
+        return Err(err("morph: the instruments' reference rates differ"));
+    }
+    let raws: Vec<&RawInstrument> = sides.iter().map(|s| &s.0.raw).collect();
+    let datas: Vec<&Data> = sides.iter().map(|s| &s.0.data).collect();
+    let all: Vec<usize> = (0..sides.len()).collect();
+    let mut out = raws[h].clone();
+    out.body = main.raw.body.clone();
+    let mut data = Data(Vec::new());
+    out.profile = format!("morph:{}", sides.iter().map(|(d, w)| format!("{}={w:.4}", d.path)).collect::<Vec<_>>().join(","));
+    out.menu = None;
+    let sc = |f: &dyn Fn(usize) -> f64| scale(&over(&all, f), &w);
+    let ar = |f: &dyn Fn(usize) -> f64| arith(&over(&all, f), &w);
+
+    // the registers: the main instrument's, each blended with its partners' of the same pitch
+    // (`paired`) at the weights of the sides that have one; one no side has stays the main's own
+    let main_regs = layout(&main.raw);
+    let side_regs: Vec<Vec<Reg>> = raws.iter().map(|r| layout(r)).collect();
+    let mut registers = Vec::with_capacity(main_regs.len());
+    for (ri, mr) in main_regs.iter().enumerate() {
+        let pair: Vec<Option<usize>> = side_regs.iter().map(|g| paired(g, mr.stop)).collect();
+        let (idx, wr) = having(&w, |i| pair[i].is_some());
+        let reg = |i: usize| &side_regs[i][pair[i].unwrap()];
+        let (notes, own) = if idx.is_empty() {
+            let notes = morph_notes(&[mr.notes], &[&main.raw], &[&main.data], &[1.0], &mut data)?;
+            (notes, mr.own.map(|c| blend_correction(&[Some(c)], &[&main.data], &[1.0], 0, &mut data)).transpose()?.flatten())
+        } else {
+            let notes = morph_notes(&over(&idx, |i| reg(i).notes), &over(&idx, |i| raws[i]), &over(&idx, |i| datas[i]), &wr, &mut data)?;
+            // a register's own transfer correction where one of its pairs has its own: each pair's
+            // as it plays (its own, else its instrument's) blended; else the morph's instrument's
+            let own = if ri > 0 && idx.iter().any(|&i| reg(i).own.is_some()) {
+                let plays = over(&idx, |i| reg(i).own.or(raws[i].correction.as_ref()));
+                blend_correction(&plays, &over(&idx, |i| datas[i]), &wr, heaviest(&wr), &mut data)?
+            } else {
+                None
+            };
+            (notes, own)
+        };
+        registers.push((notes, own));
+    }
+    if main.raw.format == 6 {
+        out.format = 6;
+        out.notes = Vec::new();
+        out.registers = main
+            .raw
+            .registers
+            .iter()
+            .zip(registers)
+            .map(|(g, (notes, correction))| RawRegister { name: g.name.clone(), notes, stop: g.stop, correction })
+            .collect();
+    } else {
+        if out.format == 6 {
+            out.format = 5;
+        }
+        out.registers = Vec::new();
+        out.notes = registers.swap_remove(0).0;
+    }
+    // the buff and the lute: the main's, blended with the sides' on the register paired with its
+    let stop_of = |register: usize| main_regs.get(register).map(|g| g.stop);
+    let on = |i: usize, s: Option<u8>, register: usize| s.is_some_and(|s| paired(&side_regs[i], s) == Some(register));
+    out.buff = main.raw.buff.as_ref().map(|b| {
+        let s = stop_of(b.register);
+        let (idx, wb) = having(&w, |i| raws[i].buff.as_ref().is_some_and(|o| on(i, s, o.register) && o.flat.len() == b.flat.len()));
+        let of = |i: usize| raws[i].buff.as_ref().unwrap();
+        if idx.is_empty() {
+            return b.clone();
+        }
+        // the pads' loss (a flat part and a strength, 1/s) geometric, their place arithmetic
+        let n = b.flat.len();
+        RawBuff {
+            register: b.register,
+            notes: b.notes.clone(),
+            flat: (0..n).map(|k| scale(&over(&idx, |i| of(i).flat[k]), &wb)).collect(),
+            gain: (0..n).map(|k| scale(&over(&idx, |i| of(i).gain[k]), &wb)).collect(),
+            pos: (0..n).map(|k| arith(&over(&idx, |i| of(i).pos[k]), &wb)).collect(),
+        }
+    });
+    out.lute = main.raw.lute.as_ref().map(|l| {
+        let s = stop_of(l.register);
+        let (idx, wl) = having(&w, |i| raws[i].lute.as_ref().is_some_and(|o| on(i, s, o.register) && o.beta.len() == l.beta.len()));
+        let of = |i: usize| raws[i].lute.as_ref().unwrap();
+        if idx.is_empty() {
+            return l.clone();
+        }
+        RawLute {
+            register: l.register,
+            beta: (0..l.beta.len()).map(|k| arith(&over(&idx, |i| of(i).beta[k]), &wl)).collect(),
+            gain_db: arith(&over(&idx, |i| of(i).gain_db), &wl),
+        }
+    });
 
     // the instrument's numbers
     out.velocity.speed = std::array::from_fn(|j| sc(&|i| raws[i].velocity.speed[j]));
@@ -369,11 +553,14 @@ pub(super) fn morph(sides: Vec<(Decoded, f64)>, main: &Decoded) -> Result<Decode
     if let Some(k) = out.knock.as_mut() {
         let (idx, wk) = having(&w, |i| raws[i].knock.is_some());
         let of = |i: usize| raws[i].knock.as_ref().unwrap();
-        k.amp = scale(&over(&idx, |i| of(i).amp), &wk);
-        k.q = scale(&over(&idx, |i| of(i).q), &wk);
-        k.decay_s = scale(&over(&idx, |i| of(i).decay_s), &wk);
-        k.cutoff_hz = scale(&over(&idx, |i| of(i).cutoff_hz), &wk);
-        k.rise_s = scale(&over(&idx, |i| of(i).rise_s), &wk);
+        // a value the sides share kept exactly: the burst's length truncates 10 · decay · rate, and
+        // an ulp under it is another noise (no piano has a knock: theirs never reach this)
+        let sc = |x: Vec<f64>| if x.iter().all(|v| *v == x[0]) { x[0] } else { scale(&x, &wk) };
+        k.amp = sc(over(&idx, |i| of(i).amp));
+        k.q = sc(over(&idx, |i| of(i).q));
+        k.decay_s = sc(over(&idx, |i| of(i).decay_s));
+        k.cutoff_hz = sc(over(&idx, |i| of(i).cutoff_hz));
+        k.rise_s = sc(over(&idx, |i| of(i).rise_s));
     }
     if let Some(m) = out.impact.as_mut() {
         // an open lowpass blends as 20 kHz; a blend from 16 kHz up is open again
@@ -405,15 +592,8 @@ pub(super) fn morph(sides: Vec<(Decoded, f64)>, main: &Decoded) -> Result<Decode
         }
     }
     // the per-note transfer correction: per point where every side has the same grid
-    if let Some(c) = out.correction.as_mut() {
-        let same = raws.iter().all(|r| r.correction.as_ref().is_some_and(|o| o.notes == c.notes && o.grid_hz == c.grid_hz && o.c_db.n == c.c_db.n));
-        let rows = if same {
-            let t = all.iter().map(|&i| datas[i].f64(&raws[i].correction.as_ref().unwrap().c_db)).collect::<Result<Vec<_>, _>>()?;
-            (0..c.c_db.n).map(|j| arith(&over(&all, |i| t[i][j]), &w)).collect()
-        } else {
-            datas[h].f64(&c.c_db)?
-        };
-        c.c_db = data.push_f64(&rows);
+    if out.correction.is_some() {
+        out.correction = blend_correction(&over(&all, |i| raws[i].correction.as_ref()), &datas, &w, h, &mut data)?;
     }
     // the room: the reverberation on every side's frequencies, its curve per point
     let room = &mut out.radiation.room;
@@ -563,13 +743,87 @@ mod tests {
     fn a_side_without_the_88_keys_is_refused() {
         // the morph pairs the notes by position: a side with a key missing or out of order cannot morph
         let Some(a) = decoded(A) else { return };
-        assert!(refusal(&a.raw).is_none());
+        assert_eq!(family(&a.raw), Ok(PIANOS));
         let mut short = a.clone();
         short.raw.notes.pop();
-        assert!(refusal(&short.raw).is_some());
+        assert!(family(&short.raw).is_err());
         let mut shuffled = a.clone();
         shuffled.raw.notes.swap(10, 11);
-        assert!(refusal(&shuffled.raw).is_some());
+        assert!(family(&shuffled.raw).is_err());
+    }
+
+    const HA: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/harpsichord");
+    const HB: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/flemish");
+    const HE: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/harpsichord_e");
+    const HF: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/harpsichord_f");
+
+    fn beta(n: &RawNote) -> f64 {
+        pluck_of(n).unwrap().beta
+    }
+
+    /// a correction's table
+    fn table(d: &Decoded, c: &RawCorrection) -> Vec<f64> {
+        d.data.f64(&c.c_db).unwrap()
+    }
+
+    #[test]
+    fn the_main_s_registers_pair_by_pitch() {
+        // Harpsichord B (8′, 4′, 8′ II) toward A (one 8′): its 8′ and 8′ II with A's 8′, its 4′ and
+        // its own correction as they were, its lute its own (A has none)
+        let (Some(a), Some(b)) = (decoded(HA), decoded(HB)) else { return };
+        let m = morph(vec![(b.clone(), 0.5), (a.clone(), 0.5)], &b).unwrap();
+        assert_eq!(m.raw.format, 6);
+        let stops = |d: &Decoded| d.raw.registers.iter().map(|g| (g.name.clone(), g.stop)).collect::<Vec<_>>();
+        assert_eq!(stops(&m), stops(&b));
+        let (r8, r4, r8b) = (&m.raw.registers[0], &m.raw.registers[1], &m.raw.registers[2]);
+        for k in [0, 40, 87] {
+            assert!((beta(&r8.notes[k]) - 0.5 * (beta(&b.raw.registers[0].notes[k]) + beta(&a.raw.notes[k]))).abs() < 1e-12);
+            assert!((beta(&r8b.notes[k]) - 0.5 * (beta(&b.raw.registers[2].notes[k]) + beta(&a.raw.notes[k]))).abs() < 1e-12);
+            assert!((beta(&r4.notes[k]) / beta(&b.raw.registers[1].notes[k]) - 1.0).abs() < 1e-12);
+            let f = |n: &RawNote| n.string.f0;
+            assert!((f(&r4.notes[k]) / f(&b.raw.registers[1].notes[k]) - 1.0).abs() < 1e-12);
+        }
+        let own = |d: &Decoded, r: usize| table(d, d.raw.registers[r].correction.as_ref().unwrap());
+        assert_eq!(own(&m, 1), own(&b, 1));
+        assert!(r8.correction.is_none() && r8b.correction.is_none());
+        let (lm, lb) = (m.raw.lute.as_ref().unwrap(), b.raw.lute.as_ref().unwrap());
+        assert!(lm.register == lb.register && lm.beta == lb.beta && lm.gain_db == lb.gain_db);
+        assert!(m.raw.buff.as_ref().is_some_and(|x| x.register == 0));
+        build(m).unwrap();
+        // A (main) toward B: one register, no lute
+        let m = morph(vec![(a.clone(), 0.5), (b.clone(), 0.5)], &a).unwrap();
+        assert!(m.raw.format != 6 && m.raw.registers.is_empty() && m.raw.notes.len() == 88);
+        assert!(m.raw.lute.is_none() && m.raw.buff.is_some());
+        build(m).unwrap();
+    }
+
+    #[test]
+    fn a_register_s_own_correction_blends_with_its_pair_s() {
+        // Harpsichords E and F: each 8′ II has its own correction, blended point by point
+        let (Some(e), Some(f)) = (decoded(HE), decoded(HF)) else { return };
+        let m = morph(vec![(e.clone(), 0.5), (f.clone(), 0.5)], &e).unwrap();
+        let own = |d: &Decoded| table(d, d.raw.registers[1].correction.as_ref().unwrap());
+        let (te, tf, tm) = (own(&e), own(&f), own(&m));
+        assert!(te != tf);
+        assert!(tm.iter().zip(te.iter().zip(&tf)).all(|(m, (e, f))| (m - 0.5 * (e + f)).abs() < 1e-12));
+        // E toward A, whose 8′ plays its instrument's correction: E's own with A's
+        let Some(a) = decoded(HA) else { return };
+        let m = morph(vec![(e.clone(), 0.25), (a.clone(), 0.75)], &e).unwrap();
+        let ta = table(&a, a.raw.correction.as_ref().unwrap());
+        assert!(own(&m).iter().zip(te.iter().zip(&ta)).all(|(m, (e, a))| (m - (0.25 * e + 0.75 * a)).abs() < 1e-12));
+    }
+
+    #[test]
+    fn plucks_of_different_kinds_are_refused() {
+        let Some(a) = decoded(HA) else { return };
+        let mut t = a.clone();
+        for n in &mut t.raw.notes {
+            if let Some(RawExcitation::Pluck(p)) = n.excitation.as_mut() {
+                p.tangent = true;
+            }
+        }
+        assert!(family(&t.raw).is_err());
+        assert!(morph(vec![(a.clone(), 0.5), (t, 0.5)], &a).is_err());
     }
 
     #[test]

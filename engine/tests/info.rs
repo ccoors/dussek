@@ -116,6 +116,14 @@ fn the_report_names_the_morph_family() {
     }
     assert!(seen.0 >= 10 && seen.1 >= 10, "{seen:?}");
     assert_eq!(info(format!("{ROOT}upright_a")).unwrap().morph_family, 1);
-    assert_eq!(info(format!("{ROOT}flemish")).unwrap().morph_family, 0);
-    assert_eq!(info(format!("{ROOT}marimba")).unwrap().morph_family, 0);
+    // the harpsichords together, the harps together; the clavichord, the guitars, the zithers and
+    // the bars by themselves
+    let family = |d: &str| info(format!("{ROOT}{d}")).unwrap().morph_family;
+    for d in ["harpsichord", "flemish", "french", "italian", "harpsichord_e", "harpsichord_f"] {
+        assert_eq!(family(d), 2, "{d}");
+    }
+    assert_eq!((family("harp"), family("leverharp")), (3, 3));
+    for d in ["clavichord", "guitar", "strumstick", "psaltery", "dantranh", "marimba", "registers_fixture"] {
+        assert_eq!(family(d), 0, "{d}");
+    }
 }

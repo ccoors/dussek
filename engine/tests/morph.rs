@@ -6,7 +6,7 @@
 mod common;
 use dussek::physics::Excitation;
 use dussek::mic::MicPosition;
-use dussek::{Engine, Event, Instrument, RadiationCache, Tuning};
+use dussek::{Engine, Event, Instrument, Params, RadiationCache, Tuning};
 
 const A: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_a");
 const E: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_d");
@@ -15,6 +15,13 @@ const C: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/grand_f");
 const UPRIGHT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/upright_a");
 const HARPSICHORD: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/flemish");
 const FIXTURE: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/registers_fixture");
+const HA: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/harpsichord");
+const HC: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/french");
+const HE: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/harpsichord_e");
+const HF: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/harpsichord_f");
+const HARP_A: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/harp");
+const HARP_B: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/leverharp");
+const CLAVICHORD: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/clavichord");
 
 /// key 60, then a chord with the pedal down; both channels appended
 fn render(inst: Instrument) -> Vec<f32> {
@@ -385,3 +392,161 @@ fn a_grand_upright_handover_never_panics() {
     }
 }
 
+/// key 60, then a chord, every register's stop pulled and the buff on for the chord; both channels
+/// appended
+fn render_stops(inst: Instrument) -> Vec<f32> {
+    let mut e = Engine::with_tuning(inst, 48000.0, Tuning::default()).expect("engine");
+    e.set_params(Params { stops: 7, ..Params::default() });
+    let (mut l, mut r) = (vec![0.0; 256], vec![0.0; 256]);
+    let (mut out_l, mut out_r) = (Vec::new(), Vec::new());
+    for block in 0..120 {
+        match block {
+            0 => e.queue(0, Event::NoteOn { key: 60, speed: 2.0 }),
+            20 => {
+                e.set_params(Params { stops: 7, buff: true, ..Params::default() });
+                e.queue(0, Event::NoteOn { key: 48, speed: 2.0 });
+                e.queue(0, Event::NoteOn { key: 64, speed: 2.0 });
+            }
+            _ => {}
+        }
+        e.process(&mut l, &mut r);
+        out_l.extend_from_slice(&l);
+        out_r.extend_from_slice(&r);
+    }
+    out_l.extend(out_r);
+    out_l
+}
+
+/// per note of every register its string and its quill: f0, B, T, the losses, the coupling, the
+/// pluck point and the quill's lowpass, force and laws
+fn plucked(i: &Instrument) -> Vec<f64> {
+    let mut v = Vec::new();
+    for n in &i.notes {
+        let s = &n.spec.string;
+        v.extend([s.f0, s.b, s.b1, s.b3, s.kappa, s.t]);
+        if let Excitation::Pluck(p) = &n.spec.excitation {
+            v.extend([p.beta, p.f_q, p.amp, p.gain_db_per_step, p.fq_oct_per_step, p.order]);
+        }
+    }
+    v
+}
+
+/// whether every entry of `m` lies between `a`'s and `b`'s
+fn between(m: &[f64], a: &[f64], b: &[f64]) -> bool {
+    m.len() == a.len()
+        && m.len() == b.len()
+        && m.iter().zip(a.iter().zip(b)).all(|(v, (x, y))| v.is_finite() && *v >= x.min(*y) - 1e-12 * x.abs().max(y.abs()) && *v <= x.max(*y) + 1e-12 * x.abs().max(y.abs()))
+}
+
+#[test]
+fn a_harpsichord_with_itself_gives_it_back() {
+    // Harpsichord B: three registers, the buff and the lute
+    let Ok(b) = Instrument::load(HARPSICHORD) else { return };
+    let m = Instrument::morph(&[(HARPSICHORD, 0.5), (HARPSICHORD, 0.5)]).unwrap();
+    let (bb, bm) = (sorted_by_f(&b.globals.board), &m.globals.board);
+    assert!(close(&bb.f, &bm.f) && close(&bb.sigma, &bm.sigma) && close(&bb.phi, &bm.phi));
+    assert!(close(&plucked(&b), &plucked(&m)));
+    assert_eq!((m.register_names.clone(), m.register_stops.clone()), (b.register_names.clone(), b.register_stops.clone()));
+    assert!(m.has_buff() && m.has_lute());
+    let (rb, rm) = (render_stops(b), render_stops(m));
+    let peak = rb.iter().fold(0.0f32, |p, x| p.max(x.abs()));
+    let worst = rb.iter().zip(&rm).fold(0.0f32, |w, (x, y)| w.max((x - y).abs()));
+    assert!(peak > 1e-3 && worst <= 1e-4 * peak, "worst {worst} against a peak of {peak}");
+}
+
+#[test]
+fn harpsichord_a_halfway_to_c_stays_a_s() {
+    let (Ok(a), Ok(c)) = (Instrument::load(HA), Instrument::load(HC)) else { return };
+    let m = Instrument::morph(&[(HA, 0.5), (HC, 0.5)]).unwrap();
+    assert_eq!((m.registers(), m.register_stops.clone()), (1, a.register_stops.clone()));
+    assert!(m.has_buff() && !m.has_lute());
+    let (pa, pc, pm) = (plucked(&a), plucked(&c), plucked(&m));
+    assert!(between(&pm, &pa, &pc));
+    assert!(pm.iter().zip(&pa).any(|(x, y)| x != y), "the pluck moved");
+    assert!(render(m).iter().all(|x| x.is_finite()));
+}
+
+#[test]
+fn harpsichord_b_keeps_its_registers_toward_a() {
+    // B (8′, 4′, 8′ II) toward A (one 8′): the 8′ and the 8′ II each between B's own and A's 8′, the
+    // 4′ B's (A has none)
+    let (Ok(a), Ok(b)) = (Instrument::load(HA), Instrument::load(HARPSICHORD)) else { return };
+    let m = Instrument::morph(&[(HARPSICHORD, 0.5), (HA, 0.5)]).unwrap();
+    assert_eq!((m.register_names.clone(), m.register_stops.clone()), (b.register_names.clone(), b.register_stops.clone()));
+    assert!(m.has_buff() && m.has_lute());
+    let reg = |i: &Instrument, r: usize| {
+        let mut x = i.clone();
+        x.notes = i.notes[r * 88..(r + 1) * 88].to_vec();
+        plucked(&x)
+    };
+    let a8 = reg(&a, 0);
+    for r in 0..3 {
+        if b.register_stops[r] == 1 {
+            assert!(close(&reg(&m, r), &reg(&b, r)), "the 4′ is B's");
+        } else {
+            assert!(between(&reg(&m, r), &reg(&b, r), &a8), "register {r}");
+            assert!(reg(&m, r) != reg(&b, r), "register {r} moved");
+        }
+    }
+    // A (main) toward B: one register
+    let m = Instrument::morph(&[(HA, 0.5), (HARPSICHORD, 0.5)]).unwrap();
+    assert_eq!((m.registers(), m.register_stops.clone()), (1, vec![0]));
+    assert!(!m.has_lute());
+    assert!(render_stops(m).iter().all(|x| x.is_finite()));
+}
+
+#[test]
+fn e_toward_f_pairs_like_with_like() {
+    // the 8′ with the 8′, the 8′ II with the 8′ II: each register's pluck point their mean
+    let (Ok(e), Ok(f)) = (Instrument::load(HE), Instrument::load(HF)) else { return };
+    let m = Instrument::morph(&[(HE, 0.5), (HF, 0.5)]).unwrap();
+    assert_eq!(m.register_stops, e.register_stops);
+    let beta = |i: &Instrument, j: usize| match &i.notes[j].spec.excitation {
+        Excitation::Pluck(p) => p.beta,
+        _ => panic!("not plucked"),
+    };
+    for j in [40, 88 + 40] {
+        assert!((beta(&m, j) - 0.5 * (beta(&e, j) + beta(&f, j))).abs() < 1e-12, "note {j}");
+    }
+}
+
+#[test]
+fn the_harps_morph_with_each_other() {
+    let (Ok(a), Ok(b)) = (Instrument::load(HARP_A), Instrument::load(HARP_B)) else { return };
+    let m = Instrument::morph(&[(HARP_A, 0.5), (HARP_B, 0.5)]).unwrap();
+    assert_eq!(m.body(), a.body());
+    assert_eq!(m.globals.board.f.len(), a.globals.board.f.len().max(b.globals.board.f.len()));
+    assert!(between(&plucked(&m), &plucked(&a), &plucked(&b)));
+    assert_eq!(Instrument::morph(&[(HARP_B, 0.5), (HARP_A, 0.5)]).unwrap().body(), b.body());
+    let out = render(m);
+    assert!(out.iter().all(|x| x.is_finite()) && out.iter().any(|x| x.abs() > 1e-4));
+}
+
+#[test]
+fn across_families_is_refused_by_name() {
+    if Instrument::load(HA).is_err() || Instrument::load(HARP_A).is_err() {
+        return;
+    }
+    for (main, other, why) in [
+        (HA, HARP_A, "harp: cannot morph"),
+        (HA, A, "grand_a: cannot morph"),
+        (HARP_A, HARPSICHORD, "flemish: cannot morph"),
+        (A, HA, "harpsichord: cannot morph"),
+        (HA, CLAVICHORD, "clavichord: cannot morph"),
+    ] {
+        let e = Instrument::morph(&[(main, 0.5), (other, 0.5)]).err().expect("refused").to_string();
+        assert!(e.contains(why), "{e}");
+    }
+}
+
+#[test]
+fn every_key_of_a_harpsichord_morph_plays_at_its_sides_mean() {
+    // as for the pianos, measured with the default stops (the 8′), the shift on every register
+    let Ok(m) = Instrument::morph(&[(HARPSICHORD, 0.75), (HA, 0.25)]) else { return };
+    let (b, a) = (Instrument::load(HARPSICHORD).unwrap().key_ff_levels().unwrap(), Instrument::load(HA).unwrap().key_ff_levels().unwrap());
+    let lm = m.key_ff_levels().unwrap();
+    for k in 0..88 {
+        let want = 0.75 * b[k] + 0.25 * a[k];
+        assert!((lm[k] - want).abs() <= 0.05, "key {}: {:.2} dB, its sides' mean {want:.2} dB", 21 + k, lm[k]);
+    }
+}

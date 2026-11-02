@@ -1034,7 +1034,8 @@ pub(crate) struct NoteFacts {
 /// What `info` reads of an instrument (instrument.json alone).
 pub(crate) struct Facts {
     pub body: crate::mic::Body,
-    /// 1: a hammer-strung piano the morph takes (`morph::refusal`); 0: none
+    /// the instruments it morphs with (`morph::family`: 1 the hammer-strung pianos, 2 the
+    /// harpsichords, 3 the harps); 0: none
     pub morph_family: u32,
     pub recorded: (u8, u8),
     pub registers: usize,
@@ -1085,7 +1086,7 @@ pub(crate) fn facts(dir: &Path) -> Result<Facts, Error> {
     };
     Ok(Facts {
         body: crate::mic::Body::from_name(raw.body.as_deref()),
-        morph_family: morph::refusal(&raw).is_none() as u32,
+        morph_family: morph::family(&raw).unwrap_or(0),
         recorded: raw.recorded.map_or((21, 108), |[lo, hi]| (lo, hi)),
         registers: if raw.format == 6 { raw.registers.len() } else { 1 },
         stops: if raw.format == 6 && raw.registers.len() > 1 {
@@ -1453,7 +1454,8 @@ impl Instrument {
 
     /// An instrument between the instruments in `sides` (directory, weight): the weights not
     /// negative, normalized; a single one left (the others 0) is that instrument as loaded.
-    /// Hammer-strung pianos only (`morph::check`).
+    /// The sides of one family only (`morph::family`: the hammer-strung pianos, the harpsichords, the
+    /// harps); the main instrument's registers and stops are the morph's (`morph::morph`).
     pub fn morph<P: AsRef<Path>>(sides: &[(P, f64)]) -> Result<Self, Error> {
         let w = morph::weights(&sides.iter().map(|s| s.1).collect::<Vec<_>>())?;
         let kept: Vec<(&Path, f64)> = sides.iter().zip(&w).filter(|(_, w)| **w > 0.0).map(|((p, _), w)| (p.as_ref(), *w)).collect();
@@ -1465,13 +1467,15 @@ impl Instrument {
         }
         // the main instrument gives the body (the microphones' geometry), at any weight
         let main = decode(first)?;
-        morph::check(&main)?;
+        let family = morph::check(&main)?;
         let sum: f64 = kept.iter().map(|k| k.1).sum();
         let dirs: Vec<&Path> = kept.iter().map(|k| k.0).collect();
         let mut decoded = Vec::with_capacity(kept.len());
         for (dir, w) in kept {
             let d = decode(dir)?;
-            morph::check(&d)?;
+            if morph::check(&d)? != family {
+                return Err(err(format!("{}: cannot morph with {}: another kind of instrument", d.name, main.name)));
+            }
             decoded.push((d, w / sum));
         }
         let w: Vec<f64> = decoded.iter().map(|d| d.1).collect();
