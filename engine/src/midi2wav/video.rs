@@ -12,6 +12,7 @@ use std::io::Write;
 use std::process::{Command, Stdio};
 use std::time::Instant;
 
+use crate::info::Info;
 use crate::telemetry::{KEY_DAMPER, KEY_HAMMER, KeyFrame, VIZ_PARTIALS};
 use crate::{Engine, Event, Instrument, Mix, Params, RadiationCache, Tuning};
 use tiny_skia::{
@@ -347,8 +348,8 @@ struct Painter {
     margin: f32,
     keys_y: f32,
     keys_bottom: f32,
-    /// the pedals' bars under the keys (an instrument with dampers)
-    pedals: bool,
+    /// the pedals with a bar under the keys: soft, sostenuto, sustain
+    shown: [bool; 3],
     front: f32,
     top: f32,
     bars: bool,
@@ -360,14 +361,23 @@ struct Painter {
     sines: Box<Sines>,
 }
 
+/// a pedal's bar under the keys and the gap between two, at 1080p
+const PEDAL_BAR: f32 = 150.0;
+const PEDAL_GAP: f32 = 40.0;
+
+/// The pedals that act (soft, sostenuto, sustain), the same rule as the plugin's strip
+/// (`engine/tests/no_effect.rs` checks it against renders).
+pub fn shown_pedals(i: &Info) -> [bool; 3] {
+    [i.soft_pedal, i.dampers, i.dampers]
+}
+
 impl Painter {
-    fn new(width: u32, height: u32, bars: bool, transparent: bool, first: &State) -> Self {
+    fn new(width: u32, height: u32, bars: bool, transparent: bool, shown: [bool; 3], first: &State) -> Self {
         let (w, h) = (width as f32, height as f32);
         let s = (h / 1080.0).min(w / 1920.0);
         let margin = 40.0 * s;
         let pitch = (w - 2.0 * margin) / 88.0;
-        let pedals = first.keys.iter().any(|k| k.flags & KEY_DAMPER != 0);
-        let keys_bottom = h - if pedals { 50.0 } else { 10.0 } * s;
+        let keys_bottom = h - if shown.contains(&true) { 50.0 } else { 10.0 } * s;
         let keys_y = keys_bottom - 120.0 * s;
         let hammers_shown = !bars && first.keys.iter().any(|k| k.flags & KEY_HAMMER != 0);
         let front = if hammers_shown { keys_y - 110.0 * s } else { keys_y - 30.0 * s };
@@ -388,7 +398,7 @@ impl Painter {
         } else {
             background.fill(Color::from_rgba8(12, 13, 24, 255));
         }
-        Painter { w, h, s, pitch, margin, keys_y, keys_bottom, pedals, front, top: 60.0 * s, bars, hammers_shown, longest, transparent, background, sines: sines() }
+        Painter { w, h, s, pitch, margin, keys_y, keys_bottom, shown, front, top: 60.0 * s, bars, hammers_shown, longest, transparent, background, sines: sines() }
     }
 
     fn x(&self, k: usize) -> f32 {
@@ -503,9 +513,7 @@ impl Painter {
             self.draw_hammers(hammers, t, fps, out);
         }
         self.draw_keys(hammers, t, out);
-        if self.pedals {
-            self.draw_pedals(st.pedals, out);
-        }
+        self.draw_pedals(st.pedals, out);
     }
 
     fn draw_hammers(&self, hammers: &Hammers, t: f64, fps: f64, out: &mut Pixmap) {
@@ -570,15 +578,22 @@ impl Painter {
         }
     }
 
-    /// the pedals under the middle of the keys, as on a piano: soft, sostenuto, sustain, each a bar
-    /// filled to its depth
+    /// each shown pedal's index in `State::pedals` and its bar's left edge: in their order, centered
+    fn pedal_bars(&self) -> Vec<(usize, f32)> {
+        let (w, gap) = (PEDAL_BAR * self.s, PEDAL_GAP * self.s);
+        let which: Vec<usize> = (0..3).filter(|&i| self.shown[i]).collect();
+        let n = which.len() as f32;
+        let left = self.w / 2.0 - (n * w + (n - 1.0) * gap) / 2.0;
+        which.into_iter().enumerate().map(|(j, i)| (i, left + j as f32 * (w + gap))).collect()
+    }
+
+    /// the pedals that act, under the middle of the keys, as on a piano: each a bar filled to its depth
     fn draw_pedals(&self, depth: [f32; 3], out: &mut Pixmap) {
         let s = self.s;
-        let (w, h, gap) = (150.0 * s, 10.0 * s, 40.0 * s);
+        let (w, h) = (PEDAL_BAR * s, 10.0 * s);
         let y = self.keys_bottom + 20.0 * s;
-        let left = self.w / 2.0 - 1.5 * w - gap;
-        for (i, d) in depth.into_iter().enumerate() {
-            let x = left + i as f32 * (w + gap);
+        for (i, x) in self.pedal_bars() {
+            let d = depth[i];
             if let Some(p) = rounded(x, y, w, h, h / 2.0) {
                 out.fill_path(&p, &solid(Color::from_rgba8(40, 42, 52, 255)), FillRule::Winding, Transform::identity(), None);
             }
@@ -600,7 +615,7 @@ fn radial(x: f32, y: f32, r: f32, c: Color, light: bool) -> Option<Shader<'stati
 
 /// Render the video of `events` (`total` output samples at `sr`) with `wav` as its sound.
 #[allow(clippy::too_many_arguments)]
-pub fn render(v: &VideoOpts, inst: &Instrument, tuning: Tuning, params: Params, sr: f64, events: &[(u64, Event)], total: u64, wav: &str) -> Result<()> {
+pub fn render(v: &VideoOpts, inst: &Instrument, shown: [bool; 3], tuning: Tuning, params: Params, sr: f64, events: &[(u64, Event)], total: u64, wav: &str) -> Result<()> {
     let t0 = Instant::now();
     let mut engine = Engine::with_cache(inst.clone(), sr, tuning, &mut RadiationCache::default())?;
     engine.set_params(params);
@@ -639,7 +654,7 @@ pub fn render(v: &VideoOpts, inst: &Instrument, tuning: Tuning, params: Params, 
         State { keys, pedals: [engine.soft_depth(), if engine.sostenuto_down() { 1.0 } else { 0.0 }, engine.pedal_depth()] }
     };
     let first = capture(0, &mut engine);
-    let painter = Painter::new(v.width, v.height, inst.body().is_bars(), v.transparent, &first);
+    let painter = Painter::new(v.width, v.height, inst.body().is_bars(), v.transparent, shown, &first);
     let cores = std::thread::available_parallelism().map_or(1, |n| n.get());
     let mut pixmaps: Vec<(Pixmap, Pixmap)> = (0..cores).map(|_| (Pixmap::new(v.width, v.height).unwrap(), Pixmap::new(v.width.div_ceil(4), v.height.div_ceil(4)).unwrap())).collect();
     // the writer feeds ffmpeg while the next batch is drawn
@@ -753,6 +768,47 @@ mod tests {
     }
 
     #[test]
+    fn the_report_picks_the_bars() {
+        // what the strip shows (`plugin/tests/visibility.txt`); no export here: return early, as the engine's tests do
+        for (name, want) in [("grand_a", [true; 3]), ("harpsichord", [false, true, true]), ("marimba", [false; 3])] {
+            let dir = format!("{}/../instruments/{name}", env!("CARGO_MANIFEST_DIR"));
+            let Ok(i) = crate::info::info(&dir) else { return };
+            assert_eq!(shown_pedals(&i), want, "{name}");
+        }
+    }
+
+    #[test]
+    fn the_bars_that_act_stand_centered_under_the_keys() {
+        let st = State { keys: empty_keys(), pedals: [1.0; 3] };
+        let painter = |shown| Painter::new(1920, 1080, false, false, shown, &st);
+        // all three: today's places, to the digit
+        assert_eq!(painter([true; 3]).pedal_bars(), vec![(0, 960.0 - 225.0 - 40.0), (1, 960.0 - 75.0), (2, 960.0 + 75.0 + 40.0)]);
+        // two: their order kept, around the middle
+        assert_eq!(painter([false, true, true]).pedal_bars(), vec![(1, 960.0 - 150.0 - 20.0), (2, 960.0 + 20.0)]);
+        // none: no bars, and the keys take the room under them
+        let none = painter([false; 3]);
+        assert!(none.pedal_bars().is_empty());
+        assert_eq!(none.keys_bottom, 1080.0 - 10.0);
+        assert_eq!(painter([false, true, true]).keys_bottom, 1080.0 - 50.0);
+    }
+
+    #[test]
+    fn a_frame_draws_only_the_bars_that_act() {
+        // the soft pedal down: its old place stays background, the sustain's bar is lit
+        let st = State { keys: empty_keys(), pedals: [1.0, 0.0, 1.0] };
+        let h = hammers(&[]);
+        let p = Painter::new(320, 180, false, false, [false, true, true], &st);
+        let (mut out, mut glow) = (Pixmap::new(320, 180).unwrap(), Pixmap::new(80, 45).unwrap());
+        p.draw(&st, &h, 1.0, 30.0, 30, &mut out, &mut glow);
+        let y = p.keys_bottom + 25.0 * p.s;
+        let bg = p.background.pixel(10, y as u32).unwrap();
+        let old_soft = p.w / 2.0 - (150.0 + 40.0) * p.s; // the middle of the left bar of three
+        assert_eq!(out.pixel(old_soft as u32, y as u32).unwrap(), bg);
+        let (_, sustain) = p.pedal_bars()[1];
+        assert_ne!(out.pixel((sustain + 75.0 * p.s) as u32, y as u32).unwrap(), bg);
+    }
+
+    #[test]
     fn a_frame_draws_its_strings_and_keys() {
         let mut st = State { keys: empty_keys(), pedals: [0.0, 1.0, 0.5] };
         for (k, key) in st.keys.iter_mut().enumerate() {
@@ -763,7 +819,7 @@ mod tests {
         st.keys[39].amp[0] = 2e-3;
         st.keys[39].engage = 0.0;
         let h = hammers(&[(0.9, Event::NoteOn { key: 60, speed: 3.0 })]);
-        let p = Painter::new(320, 180, false, false, &st);
+        let p = Painter::new(320, 180, false, false, [true; 3], &st);
         let (mut out, mut glow) = (Pixmap::new(320, 180).unwrap(), Pixmap::new(80, 45).unwrap());
         p.draw(&st, &h, 1.0, 30.0, 30, &mut out, &mut glow);
         let at = |x: f32, y: f32| {
@@ -774,7 +830,7 @@ mod tests {
         assert!(at(p.x(39), y) > 3 * at(p.x(20) + p.pitch * 0.5, y), "the sounding string glows");
         assert!(out.pixels().iter().all(|c| c.alpha() == 255), "opaque");
         // transparent: nothing where nothing is drawn, the sounding string as light, the keys solid
-        let p = Painter::new(320, 180, false, true, &st);
+        let p = Painter::new(320, 180, false, true, [true; 3], &st);
         p.draw(&st, &h, 1.0, 30.0, 30, &mut out, &mut glow);
         let alpha = |x: f32, y: f32| out.pixel(x as u32, y as u32).unwrap().alpha();
         assert_eq!(alpha(p.w - 2.0, 2.0), 0, "the corner is clear");
@@ -799,7 +855,7 @@ mod bench {
             for i in 0..VIZ_PARTIALS { key.amp[i] = 3e-4 / (i + 1) as f32; }
         }
         let h = Hammers::new(&[], 48000.0);
-        let p = Painter::new(1920, 1080, false, false, &st);
+        let p = Painter::new(1920, 1080, false, false, [true; 3], &st);
         let (mut out, mut glow) = (Pixmap::new(1920, 1080).unwrap(), Pixmap::new(480, 270).unwrap());
         let t = Instant::now();
         for i in 0..20 { p.draw(&st, &h, 1.0, 60.0, i, &mut out, &mut glow); }

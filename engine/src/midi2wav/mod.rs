@@ -678,7 +678,9 @@ fn run(dir: &str, midi_path: &str, out_path: &str, o: Opts) -> Result<()> {
         }
     }
     if let Some(v) = &o.video {
-        video::render(v, &inst, tuning, params, sr, &events, total, &out_path)?;
+        // the instrument named first, as the plugin reads its selected entry
+        let report = crate::info::info(dir).map_err(|e| format!("cannot load the instrument `{dir}`: {e}"))?;
+        video::render(v, &inst, video::shown_pedals(&report), tuning, params, sr, &events, total, &out_path)?;
     }
     Ok(())
 }
