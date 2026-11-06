@@ -37,7 +37,7 @@ Resting the pointer on any control says what it does; double-click resets it.
 
 - **Volume** (the header): the output level, off to +24 dB.
 - **The pedals**: sustain (CC64) is continuous, so half pedaling works; sostenuto (CC66); soft
-  (CC67, the pianos only). The Keyboard strip at the bottom has the three pedals on screen.
+  (CC67, the pianos only). The Keyboard strip at the bottom has the pedals that act on the instrument on screen.
   **Sustain latch** (the header) holds the sustain pedal down, for MIDI files without pedaling.
 - **The microphones** (the drawing, and the Mics tab): **Player** (the default) hears the
   instrument from the keyboard, close and wide. **Audience** hears it from 3.5 m in front of the

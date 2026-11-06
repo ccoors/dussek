@@ -116,7 +116,9 @@ The UI is NanoVG and scalable: the host's HiDPI factor × a zoom of 100–400 %.
     close positions.
   The drawing shows where the engine really puts the microphones, its limits included. The
   position, distance and spacing are under it.
-- **Ten tabs**: Sound, Morph, Touch, Felt, Mics, Tuning, Condition, Extras, MIDI, About. Only the controls
+- **Tabs**: Sound, Morph, Touch, Felt, Mics, Tuning, Condition, Extras, MIDI, About; those that do not
+  apply to the instrument are not shown (Felt: the hammer pianos; Morph: the instruments with
+  partners), and a saved choice comes back with an instrument it applies to. Only the controls
   that act on the instrument, at its microphone position and with its preparation, are shown
   (`engine/tests/no_effect.rs`).
 - **Layout**: wide windows put the drawing beside the panel and flow the panel into up to three
@@ -639,9 +641,10 @@ fortissimo bass note gets about 3–5 dB louder.
 | Any other CC | only through a MIDI learn tie |
 | Program change | only with its switch on (below) |
 
-The player strip has three pedal levers: soft, sostenuto and sustain, from left to right. They
-spring back when released and follow the MIDI pedals; the soft one is dead on every instrument
-but the pianos.
+The player strip has the pedal levers that act on the instrument: soft on the pianos, sostenuto
+and sustain where some note has a damper, from left to right; none on the marimba and its kin. The
+keys, Visualization and Analysis' partials take the width the others leave. The levers spring back
+when released and follow the MIDI pedals.
 Keys beyond the instrument's recorded range are tinted amber on the strip (extrapolated by the
 model). The harpsichords' strip has dark naturals and light sharps, as many harpsichords do.
 

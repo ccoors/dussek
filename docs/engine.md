@@ -83,8 +83,8 @@ each part is a render with the others muted where they join the mix (`Mix`); eac
 plugin's Visualization panel, frame by frame. Each key's strings from above, a sounding string a
 glowing band as wide as its partials move it (exaggerated; the strings ringing along drawn larger),
 a fresh snapshot of the string inside it every frame; the dampers on the strings; a piano's hammers
-from the front; the keys, held ones lit; under them the soft, sostenuto and sustain pedals as bars
-filled to their depth (where the instrument has dampers). A bar instrument shows its bars. The score is known ahead, so each hammer rises before its note at its own
+from the front; the keys, held ones lit; under them the bars of the pedals that act on the instrument
+(soft, sostenuto, sustain), filled to their depth. A bar instrument shows its bars. The score is known ahead, so each hammer rises before its note at its own
 speed (the plugin's cannot). Its state comes from a render of its own (one engine through the whole
 piece, the audio's state to the sample); the frames are drawn on every core and piped into ffmpeg.
 

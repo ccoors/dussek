@@ -3857,3 +3857,35 @@ main's; a harpsichord with a harp, a piano or the clavichord is refused by name;
 register of B three quarters toward A and of E halfway to F plays within 0.05 dB of its pairs' mean;
 a side's kept levels follow its files' content; the plugin's partner list offers a
 harpsichord the other five and Harp A the lever harp.
+
+<a id="step-233"></a>
+## 233. The tabs and the pedals that apply
+
+The window now shows what acts on the instrument, and only that. The maintainer's report: the soft
+lever was dimmed where it does nothing, while sostenuto and sustain stayed live on instruments
+without dampers; and Felt and Morph only showed a note on instruments they do not act on. It also
+prepares the window for instruments with far fewer controls.
+
+- The pedals: soft where some note is struck (`soft_pedal`), sostenuto and sustain where some note
+  has a damper (`dampers`). `engine/tests/no_effect.rs` now checks the two against renders: on all 42
+  exports both act exactly where `dampers` is true. A pedal that does nothing is absent, not dimmed;
+  a drag on one that goes with an instrument's change is released.
+- The width: the keys take what the pedals leave, and Visualization and Analysis' partials follow them.
+  In a 900 px window 808 px with all three, 836 px without the soft lever, 900 px with none. The
+  spectrogram spans the window as before.
+- The tabs: Felt on the hammer pianos, Morph where an instrument has partners, Tuning, Condition and
+  Extras where one of their rows is visible (all of them today). The stored tab stays what the player
+  chose, so a session saved on Felt opens on Sound on a marimba and a piano returns to Felt; the state's
+  format is unchanged. The drawing's share of the width is computed from all ten tabs, so it does not
+  move between instruments.
+- `midi2wav --video` draws the bars of the same pedals, from the same report, centered under the keys.
+  A piano's frames are unchanged.
+
+Of the 41 instruments in the menu (`plugin/tests/visibility.txt`):
+
+| Instruments | Tabs | Pedals on the strip |
+|---|---|---|
+| 13 | 10 | soft, sostenuto, sustain |
+| 8 | 9 (no Felt) | sostenuto, sustain |
+| 8 | 8 (no Felt, no Morph) | sostenuto, sustain |
+| 12 | 8 (no Felt, no Morph) | none |

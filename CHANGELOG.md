@@ -3,6 +3,13 @@
 What each release changes for a player. From 1.0 on a break needs a major version; before it, a
 break is allowed but listed under "Breaking" (`docs/compatibility.md`).
 
+## Unreleased
+
+### Changed
+
+- The window shows only the tabs and pedals that act on the instrument, and the keyboard and its panels
+  take the width. `midi2wav --video` draws the same pedals.
+
 ## 0.3.2 — 2026-11-02
 
 ### New

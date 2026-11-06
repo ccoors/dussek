@@ -253,8 +253,8 @@ VST3 are tested on Linux and Windows too.
 - **UI** (`src/ui/`, NanoVG): the layout, formatting and capabilities are pure logic in
   `pe_common`, tested by `plugin/tests/ui_tests.cpp`. The header carries the instrument, the
   stops, the motor, the sustain latch, Volume, Panic and the menu (zoom, Copy CLI, Reset). The
-  microphone drawing comes from the engine's geometry. Ten tabs hold the rest (Sound, Morph,
-  Touch, Felt, Mics, Tuning, Condition, Extras, MIDI, About) [47, 212]. The version is
+  microphone drawing comes from the engine's geometry. The tabs that apply hold the rest (Sound, Morph,
+  Touch, Felt, Mics, Tuning, Condition, Extras, MIDI, About) [47, 212, 233]. The version is
   `plugin/CMakeLists.txt`'s project version, the commit `plugin/cmake/BuildCommit.cmake`'s at every build.
 
 ## The editor
