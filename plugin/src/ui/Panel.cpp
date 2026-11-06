@@ -160,13 +160,6 @@ void drawMorphPad(NanoVG& vg, const Rect& pad, const std::vector<std::string>& l
         label(vg, pad.x + pad.w / 2, pad.y + pad.h + 11, "building…", theme::dim, NanoVG::ALIGN_CENTER | NanoVG::ALIGN_MIDDLE);
 }
 
-void drawMorphNote(NanoVG& vg, const Rect& r)
-{
-    vg.fontSize(theme::fontSize);
-    label(vg, r.x + 4, r.y + r.h / 2, "This instrument does not morph.", theme::dim,
-        NanoVG::ALIGN_LEFT | NanoVG::ALIGN_MIDDLE);
-}
-
 void drawAboutTab(NanoVG& vg, const Layout& l, bool hot)
 {
     vg.fontSize(theme::fontSize);

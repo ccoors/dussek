@@ -80,6 +80,7 @@ balafon mallets Traditional|Hard|Soft
 balafon pedals
 balafon preps 3 4
 balafon recorded 61 89
+balafon tabs Sound Touch Mics Tuning Condition Extras MIDI About
 balafon visible mic=0 prep=0 volume hammer_hardness mallet sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic condition wear_variant wear_hammers wear_voicing wear_action wear_tuning rattle phantom preparation
 balafon visible mic=0 prep=1 volume hammer_hardness mallet sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic condition wear_variant wear_hammers wear_voicing wear_action wear_tuning rattle phantom preparation
 balafon visible mic=0 prep=2 volume hammer_hardness mallet sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic condition wear_variant wear_hammers wear_voicing wear_action wear_tuning rattle phantom preparation
@@ -198,6 +199,7 @@ bells mallets Plastic|Brass
 bells pedals
 bells preps 3 4
 bells recorded 72 108
+bells tabs Sound Touch Mics Tuning Condition Extras MIDI About
 bells visible mic=0 prep=0 volume hammer_hardness mallet sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key condition wear_variant wear_hammers wear_voicing rattle phantom preparation
 bells visible mic=0 prep=1 volume hammer_hardness mallet sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key condition wear_variant wear_hammers wear_voicing rattle phantom preparation
 bells visible mic=0 prep=2 volume hammer_hardness mallet sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key condition wear_variant wear_hammers wear_voicing rattle phantom preparation
@@ -316,6 +318,7 @@ chimes mallets
 chimes pedals sostenuto sustain
 chimes preps 2 3 4 5
 chimes recorded 60 77
+chimes tabs Sound Touch Mics Tuning Condition Extras MIDI About
 chimes visible mic=0 prep=0 sustain_latch volume hammer_hardness sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key damper_fall condition wear_variant wear_hammers wear_voicing wear_dampers damper_buzz rattle phantom preparation
 chimes visible mic=0 prep=1 sustain_latch volume hammer_hardness sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key damper_fall condition wear_variant wear_hammers wear_voicing wear_dampers damper_buzz rattle phantom preparation
 chimes visible mic=0 prep=2 sustain_latch volume hammer_hardness sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key damper_fall condition wear_variant wear_hammers wear_voicing wear_dampers damper_buzz rattle phantom preparation mute
@@ -434,6 +437,7 @@ clavichord mallets
 clavichord pedals sostenuto sustain
 clavichord preps 2 3 4 5
 clavichord recorded 36 85
+clavichord tabs Sound Touch Mics Tuning Condition Extras MIDI About
 clavichord visible mic=0 prep=0 sustain_latch volume hammer_hardness bebung sustain mic_position pillow distance_level room concert_pitch temperament temperament_key unison_width knock release sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 clavichord visible mic=0 prep=1 sustain_latch volume hammer_hardness bebung sustain mic_position pillow distance_level room concert_pitch temperament temperament_key unison_width knock release sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 clavichord visible mic=0 prep=2 sustain_latch volume hammer_hardness bebung sustain mic_position pillow distance_level room concert_pitch temperament temperament_key unison_width knock release sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation mute
@@ -552,6 +556,7 @@ crotales mallets
 crotales pedals
 crotales preps 3 4 5
 crotales recorded 84 108
+crotales tabs Sound Touch Mics Tuning Condition Extras MIDI About
 crotales visible mic=0 prep=0 volume hammer_hardness sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key condition wear_variant wear_hammers wear_voicing rattle phantom preparation
 crotales visible mic=0 prep=1 volume hammer_hardness sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key condition wear_variant wear_hammers wear_voicing rattle phantom preparation
 crotales visible mic=0 prep=2 volume hammer_hardness sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key condition wear_variant wear_hammers wear_voicing rattle phantom preparation
@@ -670,6 +675,7 @@ dantranh mallets
 dantranh pedals sostenuto sustain
 dantranh preps 2 3 4 5
 dantranh recorded 47 83
+dantranh tabs Sound Touch Mics Tuning Condition Extras MIDI About
 dantranh visible mic=0 prep=0 sustain_latch volume hammer_hardness bend_range sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic audio_input damper_fall condition wear_variant wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 dantranh visible mic=0 prep=1 sustain_latch volume hammer_hardness bend_range sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic audio_input damper_fall condition wear_variant wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 dantranh visible mic=0 prep=2 sustain_latch volume hammer_hardness bend_range sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic audio_input damper_fall condition wear_variant wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation mute
@@ -788,6 +794,7 @@ flemish mallets
 flemish pedals sostenuto sustain
 flemish preps 2 3 4 5
 flemish recorded 30 84
+flemish tabs Sound Morph Touch Mics Tuning Condition Extras MIDI About
 flemish visible mic=0 prep=0 stop_8 stop_4 stop_8b lute buff sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock release sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 flemish visible mic=0 prep=1 stop_8 stop_4 stop_8b lute buff sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock release sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 flemish visible mic=0 prep=2 stop_8 stop_4 stop_8b lute buff sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock release sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation mute
@@ -906,6 +913,7 @@ french mallets
 french pedals sostenuto sustain
 french preps 2 3 4 5
 french recorded 26 84
+french tabs Sound Morph Touch Mics Tuning Condition Extras MIDI About
 french visible mic=0 prep=0 buff sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock release sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 french visible mic=0 prep=1 buff sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock release sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 french visible mic=0 prep=2 buff sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock release sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation mute
@@ -1024,6 +1032,7 @@ glockenspiel mallets
 glockenspiel pedals
 glockenspiel preps 3 4 5
 glockenspiel recorded 79 107
+glockenspiel tabs Sound Touch Mics Tuning Condition Extras MIDI About
 glockenspiel visible mic=0 prep=0 volume hammer_hardness sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key condition wear_variant wear_hammers wear_voicing rattle phantom preparation
 glockenspiel visible mic=0 prep=1 volume hammer_hardness sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key condition wear_variant wear_hammers wear_voicing rattle phantom preparation
 glockenspiel visible mic=0 prep=2 volume hammer_hardness sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key condition wear_variant wear_hammers wear_voicing rattle phantom preparation
@@ -1142,6 +1151,7 @@ glockenspiel_b mallets
 glockenspiel_b pedals
 glockenspiel_b preps 3 4 5
 glockenspiel_b recorded 79 108
+glockenspiel_b tabs Sound Touch Mics Tuning Condition Extras MIDI About
 glockenspiel_b visible mic=0 prep=0 volume hammer_hardness sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key condition wear_variant wear_hammers wear_voicing rattle phantom preparation
 glockenspiel_b visible mic=0 prep=1 volume hammer_hardness sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key condition wear_variant wear_hammers wear_voicing rattle phantom preparation
 glockenspiel_b visible mic=0 prep=2 volume hammer_hardness sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key condition wear_variant wear_hammers wear_voicing rattle phantom preparation
@@ -1260,6 +1270,7 @@ grand_a mallets
 grand_a pedals soft sostenuto sustain
 grand_a preps 1 2 3 4 5
 grand_a recorded 21 108
+grand_a tabs Sound Morph Touch Felt Mics Tuning Condition Extras MIDI About
 grand_a visible mic=0 prep=0 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation
 grand_a visible mic=0 prep=1 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation pluck_position pluck_brightness
 grand_a visible mic=0 prep=2 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation mute
@@ -1378,6 +1389,7 @@ grand_b mallets
 grand_b pedals soft sostenuto sustain
 grand_b preps 1 2 3 4 5
 grand_b recorded 22 104
+grand_b tabs Sound Morph Touch Felt Mics Tuning Condition Extras MIDI About
 grand_b visible mic=0 prep=0 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation
 grand_b visible mic=0 prep=1 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation pluck_position pluck_brightness
 grand_b visible mic=0 prep=2 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation mute
@@ -1496,6 +1508,7 @@ grand_c mallets
 grand_c pedals soft sostenuto sustain
 grand_c preps 1 2 3 4 5
 grand_c recorded 21 108
+grand_c tabs Sound Morph Touch Felt Mics Tuning Condition Extras MIDI About
 grand_c visible mic=0 prep=0 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation
 grand_c visible mic=0 prep=1 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation pluck_position pluck_brightness
 grand_c visible mic=0 prep=2 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation mute
@@ -1614,6 +1627,7 @@ grand_d mallets
 grand_d pedals soft sostenuto sustain
 grand_d preps 1 2 3 4 5
 grand_d recorded 21 106
+grand_d tabs Sound Morph Touch Felt Mics Tuning Condition Extras MIDI About
 grand_d visible mic=0 prep=0 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation
 grand_d visible mic=0 prep=1 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation pluck_position pluck_brightness
 grand_d visible mic=0 prep=2 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation mute
@@ -1732,6 +1746,7 @@ grand_e mallets
 grand_e pedals soft sostenuto sustain
 grand_e preps 1 2 3 4 5
 grand_e recorded 22 104
+grand_e tabs Sound Morph Touch Felt Mics Tuning Condition Extras MIDI About
 grand_e visible mic=0 prep=0 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation
 grand_e visible mic=0 prep=1 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation pluck_position pluck_brightness
 grand_e visible mic=0 prep=2 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation mute
@@ -1850,6 +1865,7 @@ grand_f mallets
 grand_f pedals soft sostenuto sustain
 grand_f preps 1 2 3 4 5
 grand_f recorded 24 108
+grand_f tabs Sound Morph Touch Felt Mics Tuning Condition Extras MIDI About
 grand_f visible mic=0 prep=0 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation
 grand_f visible mic=0 prep=1 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation pluck_position pluck_brightness
 grand_f visible mic=0 prep=2 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation mute
@@ -1968,6 +1984,7 @@ grand_g mallets
 grand_g pedals soft sostenuto sustain
 grand_g preps 1 2 3 4 5
 grand_g recorded 21 108
+grand_g tabs Sound Morph Touch Felt Mics Tuning Condition Extras MIDI About
 grand_g visible mic=0 prep=0 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation
 grand_g visible mic=0 prep=1 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation pluck_position pluck_brightness
 grand_g visible mic=0 prep=2 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation mute
@@ -2086,6 +2103,7 @@ grand_h mallets
 grand_h pedals soft sostenuto sustain
 grand_h preps 1 2 3 4 5
 grand_h recorded 21 106
+grand_h tabs Sound Morph Touch Felt Mics Tuning Condition Extras MIDI About
 grand_h visible mic=0 prep=0 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation
 grand_h visible mic=0 prep=1 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation pluck_position pluck_brightness
 grand_h visible mic=0 prep=2 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation mute
@@ -2204,6 +2222,7 @@ grand_i mallets
 grand_i pedals soft sostenuto sustain
 grand_i preps 1 2 3 4 5
 grand_i recorded 21 105
+grand_i tabs Sound Morph Touch Felt Mics Tuning Condition Extras MIDI About
 grand_i visible mic=0 prep=0 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation
 grand_i visible mic=0 prep=1 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation pluck_position pluck_brightness
 grand_i visible mic=0 prep=2 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation mute
@@ -2322,6 +2341,7 @@ guitar mallets
 guitar pedals sostenuto sustain
 guitar preps 2 3 4 5
 guitar recorded 40 83
+guitar tabs Sound Touch Mics Tuning Condition Extras MIDI About
 guitar visible mic=0 prep=0 sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic audio_input damper_fall condition wear_variant wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 guitar visible mic=0 prep=1 sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic audio_input damper_fall condition wear_variant wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 guitar visible mic=0 prep=2 sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic audio_input damper_fall condition wear_variant wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation mute
@@ -2440,6 +2460,7 @@ handchimes mallets
 handchimes pedals sostenuto sustain
 handchimes preps 2 3 4 5
 handchimes recorded 60 96
+handchimes tabs Sound Touch Mics Tuning Condition Extras MIDI About
 handchimes visible mic=0 prep=0 sustain_latch volume hammer_hardness sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key damper_fall condition wear_variant wear_hammers wear_voicing wear_dampers damper_buzz rattle phantom preparation
 handchimes visible mic=0 prep=1 sustain_latch volume hammer_hardness sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key damper_fall condition wear_variant wear_hammers wear_voicing wear_dampers damper_buzz rattle phantom preparation
 handchimes visible mic=0 prep=2 sustain_latch volume hammer_hardness sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key damper_fall condition wear_variant wear_hammers wear_voicing wear_dampers damper_buzz rattle phantom preparation mute
@@ -2558,6 +2579,7 @@ harp mallets
 harp pedals sostenuto sustain
 harp preps 2 3 4 5
 harp recorded 28 101
+harp tabs Sound Morph Touch Mics Tuning Condition Extras MIDI About
 harp visible mic=0 prep=0 sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic audio_input damper_fall condition wear_variant wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 harp visible mic=0 prep=1 sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic audio_input damper_fall condition wear_variant wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 harp visible mic=0 prep=2 sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic audio_input damper_fall condition wear_variant wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation mute
@@ -2676,6 +2698,7 @@ harpsichord mallets
 harpsichord pedals sostenuto sustain
 harpsichord preps 2 3 4 5
 harpsichord recorded 29 89
+harpsichord tabs Sound Morph Touch Mics Tuning Condition Extras MIDI About
 harpsichord visible mic=0 prep=0 buff sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock release sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 harpsichord visible mic=0 prep=1 buff sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock release sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 harpsichord visible mic=0 prep=2 buff sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock release sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation mute
@@ -2794,6 +2817,7 @@ harpsichord_e mallets
 harpsichord_e pedals sostenuto sustain
 harpsichord_e preps 2 3 4 5
 harpsichord_e recorded 29 89
+harpsichord_e tabs Sound Morph Touch Mics Tuning Condition Extras MIDI About
 harpsichord_e visible mic=0 prep=0 stop_8 stop_8b buff sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock release sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 harpsichord_e visible mic=0 prep=1 stop_8 stop_8b buff sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock release sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 harpsichord_e visible mic=0 prep=2 stop_8 stop_8b buff sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock release sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation mute
@@ -2912,6 +2936,7 @@ harpsichord_f mallets
 harpsichord_f pedals sostenuto sustain
 harpsichord_f preps 2 3 4 5
 harpsichord_f recorded 31 86
+harpsichord_f tabs Sound Morph Touch Mics Tuning Condition Extras MIDI About
 harpsichord_f visible mic=0 prep=0 stop_8 stop_8b buff sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock release sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 harpsichord_f visible mic=0 prep=1 stop_8 stop_8b buff sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock release sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 harpsichord_f visible mic=0 prep=2 stop_8 stop_8b buff sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock release sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation mute
@@ -3030,6 +3055,7 @@ italian mallets
 italian pedals sostenuto sustain
 italian preps 2 3 4 5
 italian recorded 30 83
+italian tabs Sound Morph Touch Mics Tuning Condition Extras MIDI About
 italian visible mic=0 prep=0 buff sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock release sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 italian visible mic=0 prep=1 buff sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock release sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 italian visible mic=0 prep=2 buff sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock release sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation mute
@@ -3148,6 +3174,7 @@ kalimba mallets
 kalimba pedals
 kalimba preps 3 4 5
 kalimba recorded 43 97
+kalimba tabs Sound Touch Mics Tuning Condition Extras MIDI About
 kalimba visible mic=0 prep=0 volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic condition wear_variant wear_voicing wear_action wear_tuning rattle phantom preparation
 kalimba visible mic=0 prep=1 volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic condition wear_variant wear_voicing wear_action wear_tuning rattle phantom preparation
 kalimba visible mic=0 prep=2 volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic condition wear_variant wear_voicing wear_action wear_tuning rattle phantom preparation
@@ -3266,6 +3293,7 @@ leverharp mallets
 leverharp pedals sostenuto sustain
 leverharp preps 2 3 4 5
 leverharp recorded 36 93
+leverharp tabs Sound Morph Touch Mics Tuning Condition Extras MIDI About
 leverharp visible mic=0 prep=0 sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic audio_input damper_fall condition wear_variant wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 leverharp visible mic=0 prep=1 sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic audio_input damper_fall condition wear_variant wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 leverharp visible mic=0 prep=2 sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic audio_input damper_fall condition wear_variant wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation mute
@@ -3384,6 +3412,7 @@ marimba mallets Yarn|Cord|Rubber
 marimba pedals
 marimba preps 3 4
 marimba recorded 36 96
+marimba tabs Sound Touch Mics Tuning Condition Extras MIDI About
 marimba visible mic=0 prep=0 volume hammer_hardness mallet sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key condition wear_variant wear_hammers wear_voicing wear_tuning rattle phantom preparation
 marimba visible mic=0 prep=1 volume hammer_hardness mallet sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key condition wear_variant wear_hammers wear_voicing wear_tuning rattle phantom preparation
 marimba visible mic=0 prep=2 volume hammer_hardness mallet sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key condition wear_variant wear_hammers wear_voicing wear_tuning rattle phantom preparation
@@ -3502,6 +3531,7 @@ mavembe mallets
 mavembe pedals
 mavembe preps 3 4 5
 mavembe recorded 46 81
+mavembe tabs Sound Touch Mics Tuning Condition Extras MIDI About
 mavembe visible mic=0 prep=0 volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic condition wear_variant wear_voicing wear_action wear_tuning rattle phantom preparation
 mavembe visible mic=0 prep=1 volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic condition wear_variant wear_voicing wear_action wear_tuning rattle phantom preparation
 mavembe visible mic=0 prep=2 volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic condition wear_variant wear_voicing wear_action wear_tuning rattle phantom preparation
@@ -3620,6 +3650,7 @@ mbira mallets
 mbira pedals
 mbira preps 3 4 5
 mbira recorded 47 85
+mbira tabs Sound Touch Mics Tuning Condition Extras MIDI About
 mbira visible mic=0 prep=0 volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic condition wear_variant wear_voicing wear_action wear_tuning rattle phantom preparation
 mbira visible mic=0 prep=1 volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic condition wear_variant wear_voicing wear_action wear_tuning rattle phantom preparation
 mbira visible mic=0 prep=2 volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic condition wear_variant wear_voicing wear_action wear_tuning rattle phantom preparation
@@ -3779,6 +3810,7 @@ nyunga mallets
 nyunga pedals
 nyunga preps 3 4 5
 nyunga recorded 53 77
+nyunga tabs Sound Touch Mics Tuning Condition Extras MIDI About
 nyunga visible mic=0 prep=0 volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic condition wear_variant wear_voicing wear_action wear_tuning rattle phantom preparation
 nyunga visible mic=0 prep=1 volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic condition wear_variant wear_voicing wear_action wear_tuning rattle phantom preparation
 nyunga visible mic=0 prep=2 volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic condition wear_variant wear_voicing wear_action wear_tuning rattle phantom preparation
@@ -3897,6 +3929,7 @@ psaltery mallets
 psaltery pedals sostenuto sustain
 psaltery preps 2 3 4 5
 psaltery recorded 70 90
+psaltery tabs Sound Touch Mics Tuning Condition Extras MIDI About
 psaltery visible mic=0 prep=0 sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic audio_input damper_fall condition wear_variant wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 psaltery visible mic=0 prep=1 sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic audio_input damper_fall condition wear_variant wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 psaltery visible mic=0 prep=2 sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic audio_input damper_fall condition wear_variant wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation mute
@@ -4015,6 +4048,7 @@ strumstick mallets
 strumstick pedals sostenuto sustain
 strumstick preps 2 3 4 5
 strumstick recorded 50 81
+strumstick tabs Sound Touch Mics Tuning Condition Extras MIDI About
 strumstick visible mic=0 prep=0 sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic audio_input damper_fall condition wear_variant wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 strumstick visible mic=0 prep=1 sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic audio_input damper_fall condition wear_variant wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation
 strumstick visible mic=0 prep=2 sustain_latch volume hammer_hardness sustain mic_position pillow distance_level room concert_pitch temperament temperament_key knock sympathetic audio_input damper_fall condition wear_variant wear_voicing wear_action wear_dampers wear_tuning wear_false_beats wear_strings wear_soundboard damper_buzz rattle phantom preparation mute
@@ -4133,6 +4167,7 @@ tongue_drum mallets
 tongue_drum pedals
 tongue_drum preps 3 4 5
 tongue_drum recorded 52 76
+tongue_drum tabs Sound Touch Mics Tuning Condition Extras MIDI About
 tongue_drum visible mic=0 prep=0 volume hammer_hardness sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation
 tongue_drum visible mic=0 prep=1 volume hammer_hardness sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation
 tongue_drum visible mic=0 prep=2 volume hammer_hardness sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key sympathetic condition wear_variant wear_hammers wear_voicing rattle phantom preparation
@@ -4251,6 +4286,7 @@ upright_a mallets
 upright_a pedals soft sostenuto sustain
 upright_a preps 1 2 3 4 5
 upright_a recorded 21 105
+upright_a tabs Sound Morph Touch Felt Mics Tuning Condition Extras MIDI About
 upright_a visible mic=0 prep=0 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation
 upright_a visible mic=0 prep=1 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation pluck_position pluck_brightness
 upright_a visible mic=0 prep=2 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation mute
@@ -4369,6 +4405,7 @@ upright_b mallets
 upright_b pedals soft sostenuto sustain
 upright_b preps 1 2 3 4 5
 upright_b recorded 22 103
+upright_b tabs Sound Morph Touch Felt Mics Tuning Condition Extras MIDI About
 upright_b visible mic=0 prep=0 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation
 upright_b visible mic=0 prep=1 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation pluck_position pluck_brightness
 upright_b visible mic=0 prep=2 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation mute
@@ -4487,6 +4524,7 @@ upright_c mallets
 upright_c pedals soft sostenuto sustain
 upright_c preps 1 2 3 4 5
 upright_c recorded 22 102
+upright_c tabs Sound Morph Touch Felt Mics Tuning Condition Extras MIDI About
 upright_c visible mic=0 prep=0 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation
 upright_c visible mic=0 prep=1 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation pluck_position pluck_brightness
 upright_c visible mic=0 prep=2 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation mute
@@ -4605,6 +4643,7 @@ upright_d mallets
 upright_d pedals soft sostenuto sustain
 upright_d preps 1 2 3 4 5
 upright_d recorded 21 108
+upright_d tabs Sound Morph Touch Felt Mics Tuning Condition Extras MIDI About
 upright_d visible mic=0 prep=0 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation
 upright_d visible mic=0 prep=1 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation pluck_position pluck_brightness
 upright_d visible mic=0 prep=2 sustain_latch volume hammer_hardness dynamics sustain board_bass variation restrike mic_position pillow distance_level room concert_pitch temperament temperament_key stretch unison_width knock release pedal_noise pedal_ring sympathetic audio_input damper_fall condition wear_variant wear_hammers wear_voicing wear_action wear_dampers wear_unisons wear_tuning wear_false_beats wear_strings wear_soundboard hammer_grooves damper_buzz rattle phantom preparation mute
@@ -4723,6 +4762,7 @@ vibraphone mallets
 vibraphone pedals sostenuto sustain
 vibraphone preps 2 3 4 5
 vibraphone recorded 48 89
+vibraphone tabs Sound Touch Mics Tuning Condition Extras MIDI About
 vibraphone visible mic=0 prep=0 motor sustain_latch volume hammer_hardness motor_speed motor_depth sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key damper_fall condition wear_variant wear_hammers wear_voicing wear_dampers damper_buzz rattle phantom preparation
 vibraphone visible mic=0 prep=1 motor sustain_latch volume hammer_hardness motor_speed motor_depth sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key damper_fall condition wear_variant wear_hammers wear_voicing wear_dampers damper_buzz rattle phantom preparation
 vibraphone visible mic=0 prep=2 motor sustain_latch volume hammer_hardness motor_speed motor_depth sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key damper_fall condition wear_variant wear_hammers wear_voicing wear_dampers damper_buzz rattle phantom preparation mute
@@ -4841,6 +4881,7 @@ xylophone mallets Rosewood|Hard rubber
 xylophone pedals
 xylophone preps 3 4
 xylophone recorded 65 108
+xylophone tabs Sound Touch Mics Tuning Condition Extras MIDI About
 xylophone visible mic=0 prep=0 volume hammer_hardness mallet sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key condition wear_variant wear_hammers wear_voicing wear_tuning rattle phantom preparation
 xylophone visible mic=0 prep=1 volume hammer_hardness mallet sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key condition wear_variant wear_hammers wear_voicing wear_tuning rattle phantom preparation
 xylophone visible mic=0 prep=2 volume hammer_hardness mallet sustain restrike mic_position pillow distance_level room concert_pitch temperament temperament_key condition wear_variant wear_hammers wear_voicing wear_tuning rattle phantom preparation

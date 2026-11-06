@@ -634,7 +634,8 @@ private:
         const char* const bundle = getBundlePath();
         return bundle != nullptr ? getResourcePath(bundle) : nullptr;
     }
-    Tab tab() const { return (Tab)std::min<uint32_t>(fState.tab, kTabCount - 1); }
+    /// the tab on screen (the chosen one, `fState.tab`, where it applies), set by `relayout`
+    Tab tab() const { return fShownTab; }
     UiContext ctx() const
     {
         UiContext c { fChoice.entry, micPosition(), prepMode() };
@@ -798,7 +799,8 @@ private:
         fDiag.setRecorded(lo, hi);
         fDiag.setReversedKeys(entry().info.reversed_keys);
         fDiag.setBars(entry().info.bars);
-        fLayout = computeLayout(getWidth() / s, viewHeight(), tab(), ctx());
+        fShownTab = shownTab((Tab)std::min<uint32_t>(fState.tab, kTabCount - 1), ctx());
+        fLayout = computeLayout(getWidth() / s, viewHeight(), fShownTab, ctx());
         fScroll = std::min(fScroll, maxScroll(fLayout));
         fDiag.layout(getWidth() / s, getHeight() / s);
         fHotRow = fHotTab = -1; // row indices change with the layout
@@ -874,7 +876,7 @@ private:
 
     void selectTab(Tab t)
     {
-        if (t == tab())
+        if (t == (Tab)fState.tab) // the stored choice: a click on Sound while a hidden Felt is stored chooses Sound
             return;
         fState.tab = t;
         fScroll = 0;
@@ -1990,7 +1992,8 @@ private:
     /// morph's point dragged asks again; the newest request wins)
     void askShippedFelt()
     {
-        if (tab() != kTabFelt || fChoice.entry == nullptr)
+        // not `tab()`: an instrument's change asks before its relayout
+        if (shownTab((Tab)std::min<uint32_t>(fState.tab, kTabCount - 1), ctx()) != kTabFelt || fChoice.entry == nullptr)
             return;
         std::vector<std::string> dirs { fChoice.entry->dir };
         const std::vector<std::string> ps = partners();
@@ -2152,12 +2155,10 @@ private:
     {
         const Rect& n = fLayout.feltNote;
         fontSize(theme::smallFont);
-        if (fLayout.feltGraph.w <= 0 || !fFelt.applies()) {
+        if (!fFelt.applies()) {
             fillColor(theme::dim);
             textAlign(ALIGN_LEFT | ALIGN_MIDDLE);
-            text(n.x, n.y + n.h / 2, fLayout.feltGraph.w <= 0 ? "The felt applies to the pianos' hammers."
-                    : fFeltLoaded                     ? "reading the felt…"
-                                                      : "The felt could not be read.", nullptr);
+            text(n.x, n.y + n.h / 2, fFeltLoaded ? "reading the felt…" : "The felt could not be read.", nullptr);
             return;
         }
         static const char* const chips[4] = { "Stiffness", "Exponent", "Core force", "Core depth" };
@@ -2290,6 +2291,7 @@ private:
 
     // ---- the MIDI tab (layout coordinates)
     int fHotMidi = -1;
+    Tab fShownTab = kTabSound;
     int fHotSwitch = 0; // the MIDI tab's switch under the pointer: 1 program change, 2 soft takeover
 
     uint32_t midiTarget(const MidiRow& r) const
@@ -2431,10 +2433,6 @@ private:
 
     void drawMorphTab()
     {
-        if (fLayout.morphNote.w > 0) {
-            drawMorphNote(*this, fLayout.morphNote);
-            return;
-        }
         const std::vector<std::string> names = morphNames();
         const uint32_t n = (uint32_t)names.size();
         const std::vector<float> w = morphWeights(n, fValues[kMorphX], fValues[kMorphY]);

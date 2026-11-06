@@ -58,14 +58,14 @@ struct Layout {
     Rect bufferChips[4], rescanMidi, rescanButton;
     // the Morph tab (empty on the others), in layout coordinates: a row per instrument, the plus
     // button under them (`morphFull`: the list holds kMorphMax, it adds none), the pad (a line under
-    // it for "building…"); `morphNote` instead where the instrument does not morph
+    // it for "building…")
     std::vector<MorphRow> morphRows;
-    Rect morphPlus, morphPad, morphNote;
+    Rect morphPlus, morphPad;
     bool morphFull = false;
     // the Felt tab (w == 0 on the others), in layout coordinates: the quantities' chips, Original and
     // Reset in their row (or the next), the selected quantity's graph (its labels in the margins:
     // kFeltLabelW to the left, kLineH below), the other three small under it; `feltNote` a line
-    // under the graph ("measuring…"), or alone where the felt does not apply
+    // under the graph ("measuring…")
     Rect feltChips[4], feltOriginal, feltReset, feltGraph, feltSmall[3], feltNote;
     // the About tab (empty on the others), in layout coordinates: its lines (the plugin's name and
     // version, commit and license; the instrument's name, folder and LICENSE.md, wrapped to the
@@ -121,6 +121,11 @@ Kind paramKind(uint32_t param);
 const char* tabName(Tab t);
 /// the tab's groups in order; with the header's and the drawing's controls every parameter is in exactly one
 const std::vector<TabGroup>& tabGroups(Tab t);
+/// the tab applies to the instrument: Morph where it has partners, Felt on the hammer pianos, a tab
+/// of rows (Tuning, Condition, Extras) where one of them is visible; the others always
+bool tabShown(Tab t, const UiContext& c);
+/// the chosen tab if shown, else Sound: the choice itself stays, so a piano returns to its Felt
+Tab shownTab(Tab chosen, const UiContext& c);
 /// the header's controls, in order
 const std::vector<uint32_t>& headerParams();
 /// the three rows under the drawing

@@ -3829,10 +3829,62 @@ TEST(felt_tab_layout)
     CHECK(computeLayout(kDefaultWidth, kDefaultHeight, kTabSound, ctxOf(0, 1, 0)).feltGraph.w == 0);
 }
 
-TEST(felt_tab_on_a_harp_shows_the_note_only)
+static std::vector<Tab> tabsOf(const Layout& l)
 {
-    const Layout l = computeLayout(kDefaultWidth, kDefaultHeight, kTabFelt, ctxOf(kHarp, 1, 0));
-    CHECK(l.feltGraph.w == 0 && l.feltNote.w > 0 && l.feltOriginal.w == 0 && l.feltReset.w == 0);
+    std::vector<Tab> v;
+    for (const TabButton& t : l.tabs) v.push_back(t.tab);
+    return v;
+}
+
+TEST(tabs_follow_the_report)
+{
+    for (uint32_t p = 0; p < kProfileCount; ++p) {
+        const UiContext c = ctxOf(p, 1, 0);
+        CHECK(tabShown(kTabFelt, c) == c.inst->info.hammer_piano);
+        CHECK(tabShown(kTabMorph, c) == (c.inst->info.morph_family != 0));
+        for (Tab t : { kTabSound, kTabTouch, kTabMics, kTabTuning, kTabMidi, kTabAbout }) CHECK(tabShown(t, c));
+    }
+    CHECK(tabsOf(computeLayout(kDefaultWidth, kDefaultHeight, kTabSound, ctxOf(0, 1, 0))).size() == kTabCount);
+    const std::vector<Tab> m = tabsOf(computeLayout(kDefaultWidth, kDefaultHeight, kTabSound, ctxOf(kMar, 1, 0)));
+    CHECK(std::find(m.begin(), m.end(), kTabFelt) == m.end() && std::find(m.begin(), m.end(), kTabMorph) == m.end());
+}
+
+TEST(shown_tab_keeps_what_was_chosen)
+{
+    CHECK(shownTab(kTabFelt, ctxOf(kMar, 1, 0)) == kTabSound);
+    CHECK(shownTab(kTabFelt, ctxOf(0, 1, 0)) == kTabFelt);
+    CHECK(shownTab(kTabMorph, ctxOf(kHarp, 1, 0)) == kTabMorph); // the harps morph
+    CHECK(shownTab(kTabFelt, ctxOf(kHarp, 1, 0)) == kTabSound);
+    // asked for a hidden tab, the layout is the Sound tab's
+    const Layout a = computeLayout(kDefaultWidth, kDefaultHeight, kTabFelt, ctxOf(kMar, 1, 0));
+    const Layout b = computeLayout(kDefaultWidth, kDefaultHeight, kTabSound, ctxOf(kMar, 1, 0));
+    CHECK(a.rows.size() == b.rows.size() && a.feltGraph.w == 0);
+}
+
+TEST(tabs_of_a_missing_instrument)
+{
+    UiContext c;
+    CHECK(!tabShown(kTabFelt, c) && !tabShown(kTabMorph, c) && tabShown(kTabSound, c));
+    const Layout l = computeLayout(kDefaultWidth, kDefaultHeight, kTabMorph, c);
+    CHECK(l.morphPad.w == 0 && !l.tabs.empty());
+}
+
+TEST(a_click_finds_the_tab_after_hidden_ones)
+{
+    for (float w : { (float)kDefaultWidth, 480.0f }) {
+        const Layout l = computeLayout(w, kDefaultHeight, kTabSound, ctxOf(kMar, 1, 0));
+        for (const TabButton& t : l.tabs)
+            CHECK(tabAt(l, t.rect.x + t.rect.w / 2, t.rect.y + t.rect.h / 2) == t.tab);
+        for (size_t i = 1; i < l.tabs.size(); ++i)
+            CHECK(!l.tabs[i].rect.overlaps(l.tabs[i - 1].rect));
+    }
+}
+
+TEST(the_drawing_stays_put_between_instruments)
+{
+    const Layout a = computeLayout(kDefaultWidth, kDefaultHeight, kTabSound, ctxOf(0, 1, 0));
+    const Layout b = computeLayout(kDefaultWidth, kDefaultHeight, kTabSound, ctxOf(kMar, 1, 0));
+    CHECK(a.topView.x == b.topView.x && a.topView.w == b.topView.w && a.content.x == b.content.x);
 }
 
 TEST(ten_tabs_fit_two_rows)
@@ -4084,6 +4136,7 @@ TEST(every_visible_control_appears_exactly_once)
                     const UiContext c = ctxOf(p, mic, prep);
                     std::vector<int> inTabs(kParamCount, 0);
                     for (uint32_t t = 0; t < kTabCount; ++t) {
+                        if (!tabShown((Tab)t, c)) continue; // a hidden tab draws Sound
                         const Layout l = computeLayout(w, kDefaultHeight, (Tab)t, c);
                         std::vector<int> seen(kParamCount, 0);
                         for (const Row& r : l.rows)
@@ -4747,6 +4800,10 @@ static std::vector<std::string> uiTable()
             if (i == kMallet) continue;
             t.push_back(id + " label " + paramInfo(i).symbol + " " + pe::displayName(i, *e) + "|" + pe::displayDescription(i, *e));
         }
+        std::string tabs = id + " tabs";
+        for (uint32_t i = 0; i < kTabCount; ++i)
+            if (tabShown((Tab)i, UiContext { e, 1, 0 })) tabs += std::string(" ") + tabName((Tab)i);
+        t.push_back(tabs);
         for (uint32_t mic = 0; mic < 6; ++mic)
             for (uint32_t prep = 0; prep < 6; ++prep) {
                 std::string line = id + " visible mic=" + std::to_string(mic) + " prep=" + std::to_string(prep);
@@ -5661,7 +5718,7 @@ TEST(the_morph_tab_lays_out_its_list_and_pad)
             c.partners = partners;
             const Layout l = computeLayout(w, kDefaultHeight, kTabMorph, c);
             CHECK(l.morphRows.size() == 1 + partners);
-            CHECK(l.morphPad.w > 0 && l.morphPad.h > 0 && l.morphPlus.w > 0 && l.morphNote.w == 0);
+            CHECK(l.morphPad.w > 0 && l.morphPad.h > 0 && l.morphPlus.w > 0);
             CHECK(l.morphFull == (partners + 1 >= kMorphMax));
             CHECK(l.morphRows[0].remove.w == 0 && l.morphRows[0].up.w == 0); // the main row: no buttons
             for (size_t i = 1; i < l.morphRows.size(); ++i)
@@ -5670,13 +5727,9 @@ TEST(the_morph_tab_lays_out_its_list_and_pad)
                 CHECK(!r.rect.overlaps(l.morphPad) && r.rect.x + r.rect.w <= l.content.x + l.content.w + 0.5f);
             CHECK(l.morphPad.x + l.morphPad.w <= l.content.x + l.content.w + 0.5f);
         }
-    for (uint32_t p : { kCla, kGui, kMar }) { // the clavichord, the guitar and the bars do not morph
-        const Layout h = computeLayout(kDefaultWidth, kDefaultHeight, kTabMorph, ctxOf(p, 1, 0));
-        CHECK(h.morphNote.w > 0 && h.morphRows.empty() && h.morphPad.w == 0 && h.morphPlus.w == 0);
-    }
     for (uint32_t p : { kHarpB, kHarp }) { // the harpsichords and the harps do
         const Layout h = computeLayout(kDefaultWidth, kDefaultHeight, kTabMorph, ctxOf(p, 1, 0));
-        CHECK(h.morphNote.w == 0 && h.morphPad.w > 0 && h.morphPlus.w > 0);
+        CHECK(h.morphPad.w > 0 && h.morphPlus.w > 0);
     }
 }
 

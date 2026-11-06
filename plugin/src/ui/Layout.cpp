@@ -234,11 +234,34 @@ Row compactRow(uint32_t p, float x, float y, float w, float labelW, float valueW
 }
 } // namespace
 
+bool tabShown(Tab t, const UiContext& c)
+{
+    switch (t) {
+    case kTabMorph:
+        return c.inst != nullptr && c.inst->info.morph_family != 0;
+    case kTabFelt:
+        return c.inst != nullptr && c.inst->info.hammer_piano;
+    case kTabTuning:
+    case kTabCondition:
+    case kTabExtras: // tabs of rows only
+        for (const TabGroup& g : tabGroups(t))
+            for (uint32_t p : g.params)
+                if (paramVisible(p, c))
+                    return true;
+        return false;
+    default:
+        return true;
+    }
+}
+
+Tab shownTab(Tab chosen, const UiContext& c) { return tabShown(chosen, c) ? chosen : kTabSound; }
+
 Layout computeLayout(float width, float height, Tab tab, const UiContext& ctx)
 {
     Layout l;
     if (tab >= kTabCount)
         tab = kTabSound;
+    tab = shownTab(tab, ctx);
     const float w = std::max(width, 1.0f), h = std::max(height, 1.0f);
     l.wide = width >= kBreakpoint;
     const float pad = std::min(kPad, w / 20), inner = w - 2 * pad;
@@ -319,7 +342,8 @@ Layout computeLayout(float width, float height, Tab tab, const UiContext& ctx)
     const std::vector<uint32_t> mic = visibleOf(drawingParams(), ctx);
     const float line = kLineH + kLineGap;
     float panelX = pad, panelW = inner;
-    // the tab bar's width on one row
+    // the tab bar's width on one row, with every tab: the drawing's share does not change between
+    // instruments
     float tabsW = 0;
     for (uint32_t t = 0; t < kTabCount; ++t)
         tabsW += textWidth(tabName((Tab)t)) + 4 + (t > 0 ? 2 : 0);
@@ -346,6 +370,8 @@ Layout computeLayout(float width, float height, Tab tab, const UiContext& ctx)
     // the tab bar (wraps where the five do not fit)
     float tx = panelX, ty = y;
     for (uint32_t t = 0; t < kTabCount; ++t) {
+        if (!tabShown((Tab)t, ctx))
+            continue;
         const float bw = std::max(1.0f, std::min(textWidth(tabName((Tab)t)) + 4, panelW)); // ten fit one row at the default width
         if (tx > panelX && tx + bw > panelX + panelW) {
             tx = panelX;
@@ -446,64 +472,54 @@ Layout computeLayout(float width, float height, Tab tab, const UiContext& ctx)
         bottom = y;
     } else if (tab == kTabMorph) {
         const float x = panelX, w = std::max(panelW, 1.0f);
-        if (ctx.inst == nullptr || ctx.inst->info.morph_family == 0) {
-            l.morphNote = { x, cy, w, kLineH };
-            bottom = cy + line;
-        } else {
-            const bool beside = w >= 520; // the list left of the pad, else above it
-            const float listW = beside ? std::min(280.0f, w * 0.45f) : w;
-            const uint32_t n = 1 + std::min(ctx.partners, kMorphMax - 1);
-            float y = cy;
-            for (uint32_t i = 0; i < n; ++i) {
-                MorphRow r { (int)i, { x, y, listW, kLineH }, {}, {}, {} };
-                if (i > 0) {
-                    r.remove = { x + listW - kLineH, y, kLineH, kLineH };
-                    r.down = { r.remove.x - kLineH, y, kLineH, kLineH };
-                    r.up = { r.down.x - kLineH, y, kLineH, kLineH };
-                }
-                l.morphRows.push_back(r);
-                y += line;
+        const bool beside = w >= 520; // the list left of the pad, else above it
+        const float listW = beside ? std::min(280.0f, w * 0.45f) : w;
+        const uint32_t n = 1 + std::min(ctx.partners, kMorphMax - 1);
+        float y = cy;
+        for (uint32_t i = 0; i < n; ++i) {
+            MorphRow r { (int)i, { x, y, listW, kLineH }, {}, {}, {} };
+            if (i > 0) {
+                r.remove = { x + listW - kLineH, y, kLineH, kLineH };
+                r.down = { r.remove.x - kLineH, y, kLineH, kLineH };
+                r.up = { r.down.x - kLineH, y, kLineH, kLineH };
             }
-            l.morphFull = n >= kMorphMax;
-            l.morphPlus = { x, y + kGap, std::min(listW, 140.0f), kLineH };
-            const float listBottom = l.morphPlus.y + kLineH + kLineGap;
-            const float side = beside ? std::max(160.0f, std::min({ 320.0f, w - listW - 2 * kPad, l.content.h - 2 * line }))
-                                      : std::min(w, 300.0f);
-            l.morphPad = beside ? Rect { x + w - side, cy, side, side } : Rect { x, listBottom + kGap, side, side };
-            bottom = std::max(listBottom, l.morphPad.y + side + line); // and a line under the pad
+            l.morphRows.push_back(r);
+            y += line;
         }
+        l.morphFull = n >= kMorphMax;
+        l.morphPlus = { x, y + kGap, std::min(listW, 140.0f), kLineH };
+        const float listBottom = l.morphPlus.y + kLineH + kLineGap;
+        const float side = beside ? std::max(160.0f, std::min({ 320.0f, w - listW - 2 * kPad, l.content.h - 2 * line }))
+                                  : std::min(w, 300.0f);
+        l.morphPad = beside ? Rect { x + w - side, cy, side, side } : Rect { x, listBottom + kGap, side, side };
+        bottom = std::max(listBottom, l.morphPad.y + side + line); // and a line under the pad
     } else if (tab == kTabFelt) {
         const float x = panelX, w = std::max(panelW, 1.0f);
-        if (ctx.inst == nullptr || !ctx.inst->info.hammer_piano) {
-            l.feltNote = { x, cy, w, kLineH };
-            bottom = cy + line;
-        } else {
-            static const char* const chips[4] = { "Stiffness", "Exponent", "Core force", "Core depth" };
-            float cx = x;
-            for (int i = 0; i < 4; ++i) {
-                const float cw = std::min(textWidth(chips[i]) + 16, w);
-                l.feltChips[i] = { cx, cy, cw, kLineH };
-                cx += cw + kGap;
-            }
-            const float ow = textWidth("Original") + 20, rw = textWidth("Reset") + 20;
-            float by = cy; // Original and Reset right of the chips, or on the next row where they do not fit
-            if (cx + ow + kGap + rw > x + w)
-                by = cy + line;
-            l.feltReset = { x + w - rw, by, rw, kLineH };
-            l.feltOriginal = { l.feltReset.x - kGap - ow, by, ow, kLineH };
-            const float gy = by + kLineH + kGap, gx = x + kFeltLabelW, gw = std::max(w - kFeltLabelW, 1.0f);
-            const float smallH = 70;
-            const bool across = gw >= 3 * 160 + 2 * kGap; // the small graphs side by side, else stacked
-            const float smallsH = across ? smallH : 3 * smallH + 2 * kGap;
-            const float gh = std::max(160.0f, std::min(0.5f * gw, l.content.h - (gy - cy) - 2 * kLineH - smallsH - 2 * kGap));
-            l.feltGraph = { gx, gy, gw, gh };
-            l.feltNote = { gx, gy + gh + kLineH, gw, kLineH }; // under the graph's key labels
-            const float sy = l.feltNote.y + kLineH + kGap;
-            const float sw = across ? (gw - 2 * kGap) / 3 : gw;
-            for (int i = 0; i < 3; ++i)
-                l.feltSmall[i] = across ? Rect { gx + i * (sw + kGap), sy, sw, smallH } : Rect { gx, sy + i * (smallH + kGap), sw, smallH };
-            bottom = l.feltSmall[2].y + smallH + kLineGap;
+        static const char* const chips[4] = { "Stiffness", "Exponent", "Core force", "Core depth" };
+        float cx = x;
+        for (int i = 0; i < 4; ++i) {
+            const float cw = std::min(textWidth(chips[i]) + 16, w);
+            l.feltChips[i] = { cx, cy, cw, kLineH };
+            cx += cw + kGap;
         }
+        const float ow = textWidth("Original") + 20, rw = textWidth("Reset") + 20;
+        float by = cy; // Original and Reset right of the chips, or on the next row where they do not fit
+        if (cx + ow + kGap + rw > x + w)
+            by = cy + line;
+        l.feltReset = { x + w - rw, by, rw, kLineH };
+        l.feltOriginal = { l.feltReset.x - kGap - ow, by, ow, kLineH };
+        const float gy = by + kLineH + kGap, gx = x + kFeltLabelW, gw = std::max(w - kFeltLabelW, 1.0f);
+        const float smallH = 70;
+        const bool across = gw >= 3 * 160 + 2 * kGap; // the small graphs side by side, else stacked
+        const float smallsH = across ? smallH : 3 * smallH + 2 * kGap;
+        const float gh = std::max(160.0f, std::min(0.5f * gw, l.content.h - (gy - cy) - 2 * kLineH - smallsH - 2 * kGap));
+        l.feltGraph = { gx, gy, gw, gh };
+        l.feltNote = { gx, gy + gh + kLineH, gw, kLineH }; // under the graph's key labels
+        const float sy = l.feltNote.y + kLineH + kGap;
+        const float sw = across ? (gw - 2 * kGap) / 3 : gw;
+        for (int i = 0; i < 3; ++i)
+            l.feltSmall[i] = across ? Rect { gx + i * (sw + kGap), sy, sw, smallH } : Rect { gx, sy + i * (smallH + kGap), sw, smallH };
+        bottom = l.feltSmall[2].y + smallH + kLineGap;
     } else if (tab == kTabAbout) {
         const float x = panelX, w = std::max(panelW, 1.0f), tw = std::max(w - 8, 1.0f); // the text 4 px in from each side
         float y = cy;
