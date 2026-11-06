@@ -25,8 +25,10 @@ std::string malletLabel(const InstrumentEntry& e, uint32_t i);
 uint32_t effectiveMallet(const InstrumentEntry& e, uint32_t value);
 /// the lowest and highest recorded key (MIDI): the strip tints the keys beyond as extrapolated
 void entryRecorded(const InstrumentEntry& e, int& lo, int& hi);
-/// the soft pedal acts (some note is struck: the engine ignores it on plucked notes)
-bool entrySoftPedal(const InstrumentEntry& e);
+/// the pedals that act: soft where some note is struck, sostenuto and sustain where some note has
+/// a damper (`engine/tests/no_effect.rs` checks both against renders)
+struct Pedals { bool soft = true, sostenuto = true, sustain = true; };
+Pedals entryPedals(const InstrumentEntry& e);
 /// the label the UI shows (the instrument's own words, the exciter's; wear aspects without the "Wear: " prefix)
 const char* displayName(uint32_t param, const InstrumentEntry& e);
 /// The tooltip's text for param on this instrument (its own where the generic one does not fit).

@@ -2822,19 +2822,65 @@ TEST(strip_interaction_soft_drag_brackets_follows_the_pointer_and_springs_back)
     CHECK(r.fake.sounding.empty() && r.fake.brackets == 0 && r.fake.sostenutoBrackets == 0);
 }
 
-TEST(strip_interaction_a_dead_soft_lever_is_ours_but_does_nothing)
+TEST(strip_all_pedals_is_as_before)
+{
+    const StripGeometry a = computeStrip({ 0, 0, 900, 44 }), b = computeStrip({ 0, 0, 900, 44 }, Pedals {});
+    CHECK_NEAR(b.pedal.x, 900 - kPedalWidth + 4, 1e-4);
+    CHECK_NEAR(b.keysArea.w, 900 - kPedalWidth - kSostenutoWidth - kSoftWidth, 1e-4);
+    CHECK(a.soft.x == b.soft.x && a.sostenuto.x == b.sostenuto.x);
+}
+
+TEST(strip_without_the_soft_pedal_gives_its_width_to_the_keys)
+{
+    const StripGeometry g = computeStrip({ 0, 0, 900, 44 }, Pedals { false, true, true });
+    CHECK(g.soft.w == 0);
+    CHECK_NEAR(g.pedal.x, 900 - kPedalWidth + 4, 1e-4); // the sustain stays rightmost
+    CHECK_NEAR(g.keysArea.w, 900 - kPedalWidth - kSostenutoWidth, 1e-4);
+    CHECK(g.keys[87].r.x + g.keys[87].r.w <= g.sostenuto.x + 0.01f);
+}
+
+TEST(strip_without_pedals_is_all_keys)
+{
+    const StripGeometry g = computeStrip({ 0, 0, 900, 44 }, Pedals { false, false, false });
+    CHECK(g.soft.w == 0 && g.sostenuto.w == 0 && g.pedal.w == 0);
+    CHECK_NEAR(g.keysArea.w, 900, 1e-4);
+    CHECK(!g.pedal.contains(899, 20) && !g.soft.contains(899, 20));
+}
+
+TEST(diag_bar_without_pedals_reaches_the_edge)
+{
+    const StripGeometry g = computeStrip({ 0, 40, 900, 44 }, Pedals { false, false, false });
+    CHECK(diagBar(900, 10, 24, true, g).working.w > 0);
+}
+
+TEST(strip_interaction_a_missing_pedal_is_a_key)
 {
     StripRig r;
-    r.in.setSoftEnabled(false);
-    const Point2 p = r.soft(0.5f);
-    CHECK(r.in.press(p.x, p.y) == StripInteraction::Press::Ours); // still no click-through to the controls
-    CHECK(!r.in.softDragging() && !r.in.dragging() && r.fake.log.empty());
-    r.in.setSoftEnabled(true);
-    r.in.press(p.x, p.y);
-    CHECK(r.in.softDragging());
-    r.in.cancel(); // lost focus: closed exactly once
+    r.l.strip = computeStrip(r.l.strip.area, Pedals { false, false, false });
+    r.in.setLayout(r.l);
+    r.in.press(r.l.strip.keysArea.x + r.l.strip.keysArea.w - 1, r.l.strip.area.y + 10);
+    CHECK(!r.in.pedalDragging() && !r.in.softDragging() && !r.in.sostenutoDragging());
+    CHECK(!r.fake.sounding.empty());
     r.in.cancel();
-    CHECK(r.fake.softBrackets == 0 && r.fake.lastSoft == 0.0f && !r.in.dragging());
+}
+
+TEST(strip_interaction_a_dragged_pedal_gone_is_released)
+{
+    StripRig r;
+    const Rect p = r.l.strip.pedal;
+    r.in.press(p.x + p.w / 2, p.y + p.h / 2);
+    CHECK(r.in.pedalDragging());
+    r.l.strip = computeStrip(r.l.strip.area, Pedals { false, false, false });
+    r.in.setLayout(r.l);
+    CHECK(!r.in.pedalDragging() && r.fake.brackets == 0); // begun and ended once
+}
+
+TEST(pedals_follow_the_report)
+{
+    for (const InstrumentEntry* e : committed().menu()) {
+        const Pedals p = entryPedals(*e);
+        CHECK(p.soft == e->info.soft_pedal && p.sostenuto == e->info.dampers && p.sustain == e->info.dampers);
+    }
 }
 
 TEST(soft_pedal_is_inactive_on_the_harpsichords_only)
@@ -4688,7 +4734,8 @@ static std::vector<std::string> uiTable()
         int lo = 0, hi = 0;
         entryRecorded(*e, lo, hi);
         t.push_back(id + " recorded " + std::to_string(lo) + " " + std::to_string(hi));
-        t.push_back(id + " soft " + std::string(entrySoftPedal(*e) ? "1" : "0"));
+        const Pedals pedals = entryPedals(*e);
+        t.push_back(id + " pedals" + (pedals.soft ? " soft" : "") + (pedals.sostenuto ? " sostenuto" : "") + (pedals.sustain ? " sustain" : ""));
         uint32_t v[5];
         std::string preps = id + " preps";
         for (uint32_t i = 0, n = entryPreparations(*e, v); i < n; ++i) preps += " " + std::to_string(v[i]);

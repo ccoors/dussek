@@ -46,7 +46,7 @@ void entryRecorded(const InstrumentEntry& e, int& lo, int& hi)
     }
 }
 
-bool entrySoftPedal(const InstrumentEntry& e) { return e.info.soft_pedal; }
+Pedals entryPedals(const InstrumentEntry& e) { return { e.info.soft_pedal, e.info.dampers, e.info.dampers }; }
 
 namespace {
 

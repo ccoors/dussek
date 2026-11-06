@@ -42,7 +42,8 @@ public:
     explicit StripInteraction(StripHost host);
     StripInteraction(const StripInteraction&) = delete; // fPlayer's callbacks capture this
     StripInteraction& operator=(const StripInteraction&) = delete;
-    void setLayout(const StripLayout& layout) { fLayout = layout; }
+    /// a pedal being dragged that the new layout no longer has is released
+    void setLayout(const StripLayout& layout);
     void setLevel(int level) { fLevel = level; } // 0 collapsed, 1 strip, 2 strip + analysis, 3 strip + visualization
     Press press(float x, float y);
     /// true only if a strip drag was really active (a release that is not ours goes on to the controls)
@@ -57,8 +58,6 @@ public:
     bool sostenutoDragging() const { return fSostenutoDrag; }
     bool softDragging() const { return fSoftDrag; }
     float softSent() const { return fSoftSent; }
-    /// the soft pedal does nothing on some instruments (the harpsichords): its lever is dead
-    void setSoftEnabled(bool on) { fSoftEnabled = on; }
 
 private:
     void endPedal();
@@ -70,7 +69,7 @@ private:
     StripPlayer fPlayer;
     bool fPedalDrag = false;
     bool fSostenutoDrag = false;
-    bool fSoftDrag = false, fSoftEnabled = true;
+    bool fSoftDrag = false;
     float fSoftSent = 0;
     bool fKeyDrag = false; // pressed on the keys: moving plays (also back onto the keys after leaving them)
     float fPedalSent = 0;

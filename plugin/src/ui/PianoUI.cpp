@@ -792,7 +792,7 @@ private:
     void relayout()
     {
         const float s = uiScale();
-        fDiag.setSoftEnabled(entrySoftPedal(entry())); // plucked strings: the soft pedal does nothing
+        fDiag.setPedals(entryPedals(entry()));
         int lo = 21, hi = 108;
         entryRecorded(entry(), lo, hi);
         fDiag.setRecorded(lo, hi);

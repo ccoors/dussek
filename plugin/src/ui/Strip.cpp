@@ -34,14 +34,24 @@ DiagBar diagBar(float width, float y, float h, bool open, const StripGeometry& s
     return b;
 }
 
-StripGeometry computeStrip(const Rect& area)
+StripGeometry computeStrip(const Rect& area, Pedals pedals)
 {
     StripGeometry g;
     g.area = area;
-    g.pedal = { area.x + area.w - kPedalWidth + 4, area.y + 2, kPedalWidth - 8, area.h - 4 };
-    g.sostenuto = { g.pedal.x - kSostenutoWidth, area.y + 2, kSostenutoWidth - 8, area.h - 4 };
-    g.soft = { g.sostenuto.x - kSoftWidth, area.y + 2, kSoftWidth - 8, area.h - 4 };
-    g.keysArea = { area.x, area.y, area.w - kPedalWidth - kSostenutoWidth - kSoftWidth, area.h };
+    // from the right edge: each pedal present takes its slot
+    float right = area.x + area.w;
+    const auto slot = [&](bool present, float width) {
+        if (!present) return Rect { right, area.y + 2, 0, area.h - 4 };
+        right -= width;
+        return Rect { right + 4, area.y + 2, width - 8, area.h - 4 };
+    };
+    g.pedal = slot(pedals.sustain, kPedalWidth);
+    g.sostenuto = slot(pedals.sostenuto, kSostenutoWidth);
+    g.soft = slot(pedals.soft, kSoftWidth);
+    // a pedal missing right of the others stands at the keys' edge too
+    for (Rect* r : { &g.pedal, &g.sostenuto, &g.soft })
+        if (r->w == 0) r->x = right;
+    g.keysArea = { area.x, area.y, right - area.x, area.h };
     int whites = 0;
     for (int k = 0; k < kKeys; ++k) whites += !isBlackKey(k);
     const float w = g.keysArea.w / (float)whites;

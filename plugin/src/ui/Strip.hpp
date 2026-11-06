@@ -21,7 +21,9 @@ struct StripGeometry {
     Rect area, keysArea, pedal, sostenuto, soft;
     std::vector<KeyShape> keys;
 };
-StripGeometry computeStrip(const Rect& area);
+/// A missing pedal takes no width: those to its left close up towards the right edge and the keys
+/// take the rest. Its rect has w = 0, at the keys' right edge.
+StripGeometry computeStrip(const Rect& area, Pedals pedals = {});
 
 /// The bottom bar's row (window-logical; its top at `y`, `h` high, `width` wide): the Keyboard tab,
 /// with the strip open the Analysis and Visualization toggles, then "updating…" (Working.hpp) beside

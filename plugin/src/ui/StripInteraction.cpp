@@ -8,6 +8,14 @@ StripInteraction::StripInteraction(StripHost host)
 {
 }
 
+void StripInteraction::setLayout(const StripLayout& layout)
+{
+    fLayout = layout;
+    if (layout.strip.pedal.w <= 0) endPedal();
+    if (layout.strip.sostenuto.w <= 0) endSostenuto();
+    if (layout.strip.soft.w <= 0) endSoft();
+}
+
 void StripInteraction::endPedal()
 {
     // the lever springs back: the UI pedal is only down while dragged (never left on, never saved on)
@@ -65,11 +73,9 @@ StripInteraction::Press StripInteraction::press(float x, float y)
         return Press::Ours;
     }
     if (fLevel >= 1 && l.strip.soft.contains(x, y)) {
-        if (fSoftEnabled) {
-            fSoftDrag = true;
-            fSoftSent = softDepthAt(l.strip, y);
-            fHost.soft(fSoftSent, true, false);
-        }
+        fSoftDrag = true;
+        fSoftSent = softDepthAt(l.strip, y);
+        fHost.soft(fSoftSent, true, false);
         return Press::Ours;
     }
     if (fLevel >= 1 && l.strip.sostenuto.contains(x, y)) {

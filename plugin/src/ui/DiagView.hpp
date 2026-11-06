@@ -38,7 +38,7 @@ public:
     void setPedal(float depth); // the engine's pedal depth (shown when the lever is not dragged)
     void setSostenuto(bool down); // the engine's sostenuto state (CC66 or the lever)
     void setSoft(float depth);    // the engine's soft pedal depth (CC67 or the lever)
-    void setSoftEnabled(bool on); // false: the instrument has no soft pedal (the lever is dim and dead)
+    void setPedals(Pedals p);     // the pedals on the strip; `layout` places them
     void setBars(bool bars) { fViz.setBars(bars); } // the visualization draws bars, not strings
     void setRecorded(int lo, int hi); // the instrument's recorded keys (MIDI): the others are tinted as extrapolated
     void setReversedKeys(bool on);    // dark naturals and light sharps (many harpsichords)
@@ -63,7 +63,7 @@ private:
     float fWords[8] = {};
     float fPedal = 0;     // the engine's pedal depth (kDiagPedalOut)
     float fSoft = 0;      // the engine's soft pedal depth (kDiagSoftOut)
-    bool fSoftEnabled = true;
+    Pedals fPedals;
     int fRecordedLo = 21, fRecordedHi = 108; // MIDI
     bool fReversedKeys = false;
     bool fSostenuto = false; // the engine's sostenuto state (kDiagSostenutoOut)

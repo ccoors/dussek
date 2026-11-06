@@ -76,7 +76,7 @@ void DiagView::layout(float width, float windowHeight)
     fTop = windowHeight - height();
     // the panel on top, then the header, then the strip
     const float header = fTop + (fLevel >= 2 ? kPanelH : 0.0f);
-    fStrip = computeStrip({ 0, header + kHeaderH, width, kStripH });
+    fStrip = computeStrip({ 0, header + kHeaderH, width, kStripH }, fPedals);
     const DiagBar bar = diagBar(width, header, kHeaderH, fLevel >= 1, fStrip);
     fKeyboardTab = bar.keyboard;
     fAnalysisTab = bar.analysis;
@@ -117,12 +117,10 @@ void DiagView::setSoft(float depth)
     if (fLevel >= 1) fHost.repaint();
 }
 
-void DiagView::setSoftEnabled(bool on)
+void DiagView::setPedals(Pedals p)
 {
-    if (on == fSoftEnabled) return;
-    fSoftEnabled = on;
-    if (!on) fInput.cancel();
-    fInput.setSoftEnabled(on);
+    if (p.soft == fPedals.soft && p.sostenuto == fPedals.sostenuto && p.sustain == fPedals.sustain) return;
+    fPedals = p;
     if (fLevel >= 1) fHost.repaint();
 }
 
@@ -180,34 +178,22 @@ void DiagView::draw(NanoVG& vg)
             vg.beginPath(); vg.rect(s.r.x + 0.5f, s.r.y, std::max(0.5f, s.r.w - 1.0f), s.r.h - 1.0f);
             vg.fillColor(c); vg.fill();
         }
-    // the pedal: a slot with a lever at the current depth
-    const Rect& p = fStrip.pedal;
-    vg.beginPath(); vg.roundedRect(p.x + p.w / 2 - 3, p.y, 6, p.h, 3); vg.fillColor(theme::line); vg.fill();
+    // a pedal that acts: a slot with a lever at its depth, its name in the header row above
+    const auto lever = [&](const Rect& r, float depth, const char* name) {
+        if (r.w <= 0) return;
+        vg.beginPath(); vg.roundedRect(r.x + r.w / 2 - 3, r.y, 6, r.h, 3); vg.fillColor(theme::line); vg.fill();
+        const float y = r.y + 6 + (r.h - 12) * depth;
+        vg.beginPath(); vg.roundedRect(r.x, y - 6, r.w, 12, 3);
+        vg.fillColor(depth > 0.02f ? theme::accent : theme::marker); vg.fill();
+        vg.fillColor(theme::dim);
+        vg.textAlign(NanoVG::Align(NanoVG::ALIGN_CENTER | NanoVG::ALIGN_MIDDLE));
+        vg.text(r.x + r.w / 2, fKeyboardTab.y + fKeyboardTab.h / 2, name, nullptr);
+    };
     // while dragged: the lever's own depth (the engine's output lags behind); otherwise the engine's
-    const float depth = fInput.pedalDragging() ? fInput.pedalSent() : fPedal;
-    const float y = p.y + 6 + (p.h - 12) * depth;
-    vg.beginPath(); vg.roundedRect(p.x, y - 6, p.w, 12, 3);
-    vg.fillColor(depth > 0.02f ? theme::accent : theme::marker); vg.fill();
-    // the sostenuto: the same slot, two positions (up / down), as the engine has it
-    const Rect& s = fStrip.sostenuto;
-    vg.beginPath(); vg.roundedRect(s.x + s.w / 2 - 3, s.y, 6, s.h, 3); vg.fillColor(theme::line); vg.fill();
-    const bool sdown = fInput.sostenutoDragging() || fSostenuto;
-    const float sy = s.y + 6 + (s.h - 12) * (sdown ? 1.0f : 0.0f);
-    vg.beginPath(); vg.roundedRect(s.x, sy - 6, s.w, 12, 3);
-    vg.fillColor(sdown ? theme::accent : theme::marker); vg.fill();
-    // the soft pedal: depth like the sustain; dim and without accent where the instrument has none
-    const Rect& u = fStrip.soft;
-    vg.beginPath(); vg.roundedRect(u.x + u.w / 2 - 3, u.y, 6, u.h, 3); vg.fillColor(theme::line); vg.fill();
-    const float udepth = fInput.softDragging() ? fInput.softSent() : fSoft;
-    const float uy = u.y + 6 + (u.h - 12) * udepth;
-    vg.beginPath(); vg.roundedRect(u.x, uy - 6, u.w, 12, 3);
-    vg.fillColor(!fSoftEnabled ? theme::line : udepth > 0.02f ? theme::accent : theme::marker); vg.fill();
-    // their names in the header row above
-    vg.fillColor(theme::dim);
-    vg.textAlign(NanoVG::Align(NanoVG::ALIGN_CENTER | NanoVG::ALIGN_MIDDLE));
-    vg.text(s.x + s.w / 2, fKeyboardTab.y + fKeyboardTab.h / 2, "sost.", nullptr);
-    vg.text(u.x + u.w / 2, fKeyboardTab.y + fKeyboardTab.h / 2, "soft", nullptr);
-    vg.text(p.x + p.w / 2, fKeyboardTab.y + fKeyboardTab.h / 2, "sust.", nullptr);
+    lever(fStrip.pedal, fInput.pedalDragging() ? fInput.pedalSent() : fPedal, "sust.");
+    // the sostenuto: two positions (up / down), as the engine has it
+    lever(fStrip.sostenuto, fInput.sostenutoDragging() || fSostenuto ? 1.0f : 0.0f, "sost.");
+    lever(fStrip.soft, fInput.softDragging() ? fInput.softSent() : fSoft, "soft");
 }
 
 bool DiagView::mouse(bool press, float x, float y)
