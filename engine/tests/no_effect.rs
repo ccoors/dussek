@@ -235,6 +235,53 @@ fn the_report_says_where_the_soft_pedal_acts() {
     assert!(wrong.is_empty(), "{}", wrong.join("\n"));
 }
 
+/// A phrase with no pedal of its own, for the pedals' tests: two keys held and released, a third
+/// struck later, `extra` on top.
+fn render_pedal(name: &str, extra: &[(u64, Event)]) -> Option<Vec<f32>> {
+    let inst = load(name)?;
+    let mut e = Engine::with_tuning(inst, SR, Tuning::default()).expect("engine");
+    e.set_params(Params { stops: 3, ..Params::default() });
+    let speed = |e: &Engine, key| e.hammer_speed(key, 90.0);
+    let (a, b, c) = (speed(&e, 60), speed(&e, 76), speed(&e, 64));
+    let events = [
+        (0, Event::NoteOn { key: 60, speed: a }),
+        (0, Event::NoteOn { key: 76, speed: b }),
+        (24000, Event::KeyUp { key: 60 }),
+        (24000, Event::KeyUp { key: 76 }),
+        (40000, Event::NoteOn { key: 64, speed: c }),
+        (50000, Event::KeyUp { key: 64 }),
+    ];
+    for (t, ev) in events.into_iter().chain(extra.iter().copied()) {
+        e.queue(t, ev);
+    }
+    let n = 84000;
+    let (mut l, mut r) = (vec![0.0; n], vec![0.0; n]);
+    for (cl, cr) in l.chunks_mut(256).zip(r.chunks_mut(256)) {
+        e.process(cl, cr);
+    }
+    l.extend(r);
+    Some(l)
+}
+
+/// The sustain and sostenuto pedals: the report's `dampers` where they act.
+#[test]
+fn the_report_says_where_the_sustain_pedal_acts() {
+    let down = [(9600, Event::PedalDown), (60000, Event::PedalUp)];
+    for (name, acts) in acting(|n| render_pedal(n, &[]), |n| render_pedal(n, &down)) {
+        let Some(i) = report(&name) else { continue };
+        assert_eq!(acts, i.dampers, "{name}");
+    }
+}
+
+#[test]
+fn the_report_says_where_the_sostenuto_pedal_acts() {
+    let down = [(9600, Event::SostenutoDown), (60000, Event::SostenutoUp)];
+    for (name, acts) in acting(|n| render_pedal(n, &[]), |n| render_pedal(n, &down)) {
+        let Some(i) = report(&name) else { continue };
+        assert_eq!(acts, i.dampers, "{name}");
+    }
+}
+
 /// The Bebung: the report's `bebung` where it acts (the tangents).
 #[test]
 fn the_report_says_where_the_bebung_acts() {

@@ -124,7 +124,7 @@ pub struct Info {
     pub motor: bool,
     pub bend: bool,
     pub bebung: bool,
-    /// some note has a damper (the damper fall, the pedal's latch)
+    /// some note has a damper (the damper fall, the pedal's latch, the sustain and sostenuto pedals)
     pub dampers: bool,
     /// bars on a frame
     pub bars: bool,
