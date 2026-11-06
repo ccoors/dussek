@@ -634,7 +634,9 @@ private:
         const char* const bundle = getBundlePath();
         return bundle != nullptr ? getResourcePath(bundle) : nullptr;
     }
-    /// the tab on screen (the chosen one, `fState.tab`, where it applies), set by `relayout`
+    /// the tab the player chose (kept where it does not apply)
+    Tab chosenTab() const { return (Tab)std::min<uint32_t>(fState.tab, kTabCount - 1); }
+    /// the tab on screen (the chosen one, where it applies), set by `relayout`
     Tab tab() const { return fShownTab; }
     UiContext ctx() const
     {
@@ -799,7 +801,7 @@ private:
         fDiag.setRecorded(lo, hi);
         fDiag.setReversedKeys(entry().info.reversed_keys);
         fDiag.setBars(entry().info.bars);
-        fShownTab = shownTab((Tab)std::min<uint32_t>(fState.tab, kTabCount - 1), ctx());
+        fShownTab = shownTab(chosenTab(), ctx());
         fLayout = computeLayout(getWidth() / s, viewHeight(), fShownTab, ctx());
         fScroll = std::min(fScroll, maxScroll(fLayout));
         fDiag.layout(getWidth() / s, getHeight() / s);
@@ -1993,7 +1995,7 @@ private:
     void askShippedFelt()
     {
         // not `tab()`: an instrument's change asks before its relayout
-        if (shownTab((Tab)std::min<uint32_t>(fState.tab, kTabCount - 1), ctx()) != kTabFelt || fChoice.entry == nullptr)
+        if (shownTab(chosenTab(), ctx()) != kTabFelt || fChoice.entry == nullptr)
             return;
         std::vector<std::string> dirs { fChoice.entry->dir };
         const std::vector<std::string> ps = partners();

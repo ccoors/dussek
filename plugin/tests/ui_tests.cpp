@@ -2853,6 +2853,14 @@ TEST(diag_bar_without_pedals_reaches_the_edge)
     CHECK(diagBar(900, 10, 24, true, g).working.w > 0);
 }
 
+TEST(diag_bar_stops_at_the_leftmost_pedal_present)
+{
+    // the sostenuto at W - 60 once the soft lever is gone: "updating…" fits up to 8 px before it
+    const float e = [] { const Rect r = diagBar(2000, 10, 24, true, computeStrip({ 0, 40, 2000, 44 })).working; return r.x + r.w; }();
+    const float w = e + 8 + 60 + 2;
+    CHECK(diagBar(w, 10, 24, true, computeStrip({ 0, 40, w, 44 }, Pedals { false, true, true })).working.w > 0);
+}
+
 TEST(strip_interaction_a_missing_pedal_is_a_key)
 {
     StripRig r;

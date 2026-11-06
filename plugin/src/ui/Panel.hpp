@@ -28,7 +28,6 @@ void drawPlainButton(DGL_NAMESPACE::NanoVG& vg, const Rect& b, const char* text,
 /// corner's label, the point; "building…" under it while the worker builds
 void drawMorphPad(DGL_NAMESPACE::NanoVG& vg, const Rect& pad, const std::vector<std::string>& labels, float x, float y,
     bool building, bool hot);
-/// where the instrument does not morph
 /// the About tab: its lines, the project's link and its Copy link button (`hot`: under the pointer)
 void drawAboutTab(DGL_NAMESPACE::NanoVG& vg, const Layout& l, bool hot);
 /// the tooltip's height at `width`: the title, the wrapped description (may be empty) and the gestures

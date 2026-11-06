@@ -27,8 +27,13 @@ DiagBar diagBar(float width, float y, float h, bool open, const StripGeometry& s
     b.viz = { 204, y + 3, 108, h - 6 };
     const Rect& last = open ? b.viz : b.keyboard;
     const float x = last.x + last.w + 8, w = textWidth(kWorkingLabel) + 8;
-    // the pedals' names are centered over their columns, the soft pedal's leftmost: clear of its column
-    const float end = open ? std::min({ strip.soft.x, strip.sostenuto.x, strip.pedal.x }) - 8 : width - 8;
+    // the pedals' names are centered over their columns: clear of the leftmost pedal's
+    float end = width;
+    if (open)
+        for (const Rect* r : { &strip.soft, &strip.sostenuto, &strip.pedal })
+            if (r->w > 0)
+                end = std::min(end, r->x);
+    end -= 8;
     if (x + w <= end)
         b.working = { x, y + 3, w, h - 6 };
     return b;
