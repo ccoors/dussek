@@ -769,10 +769,10 @@ mod tests {
 
     #[test]
     fn the_report_picks_the_bars() {
-        // what the strip shows (`plugin/tests/visibility.txt`); no export here: return early, as the engine's tests do
+        // what the strip shows (`plugin/tests/visibility.txt`); an export that is not here is skipped
         for (name, want) in [("grand_a", [true; 3]), ("harpsichord", [false, true, true]), ("marimba", [false; 3])] {
             let dir = format!("{}/../instruments/{name}", env!("CARGO_MANIFEST_DIR"));
-            let Ok(i) = crate::info::info(&dir) else { return };
+            let Ok(i) = crate::info::info(&dir) else { continue };
             assert_eq!(shown_pedals(&i), want, "{name}");
         }
     }
