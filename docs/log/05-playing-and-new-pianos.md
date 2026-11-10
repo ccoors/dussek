@@ -4501,3 +4501,20 @@ host's icon). `packaging/icon/render.sh` now also writes `plugin/src/ui/WindowIc
 which `PianoUI.cpp` defines the array from; on Windows each standalone carries `dussek.ico` as resource 1 (the exe's icon in
 Explorer too). Both plugins show Dussek's icon: Weidinger has none of its own yet. Checked under Xvfb: the window's
 `_NET_WM_ICON` holds the three sizes; the Windows resource is first built in the release workflow.
+
+<a id="step-252"></a>
+## 252. The first CI run on main: two fixes
+
+The squashed brass branch's first run on GitHub failed twice.
+
+- Windows, `an_instrument_of_the_other_plugin_is_not_loaded`: `Catalog::outside` cut a folder opened by its path at the last
+  separator and `entryAt` joined it again with `/`, so a backslash path came back mixed (`D:\a\…\instruments/trumpet`). Loading
+  worked; the entry's directory is now the path as given, the same string as its id.
+- Linux, `just check`: "nothing checked: the 2 built here lack their recordings in data/". Two of `test_brass_chain.py`'s slurs
+  play through the brass player, which builds the horn's and the trumpet's tables memo (`tables_open.pkl`) from the committed
+  fits; the check after the suite took the memo for a step run here, and with no recordings on the runner judged nothing. A
+  fresh clone running `just test`, then `just check`, failed the same way. `_built_here` now passes over the memos
+  (`tables_*.pkl`); `test_build.py` checks a project with only its memo is not built here.
+
+The macOS build's `ranlib` warning (`libdussek.a`, `libweidinger.a`: "the table of contents is empty") is DPF's: an empty
+`FILES_COMMON` becomes a placeholder source with no symbols. v0.3.2 had it for Dussek; it stays.

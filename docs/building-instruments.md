@@ -197,7 +197,8 @@ just reproduce [grand_a …]   # each export made again into a scratch folder an
 ```
 
 `just check` is `build.py status --check --all`: it passes over a project never built in this
-checkout (no cache file git does not track). One built here whose recordings are not in `data/` is
+checkout (no cache file git does not track; the brass tables' memos, `tables_*.pkl`, built from the committed
+fits by whatever plays the brass, do not count). One built here whose recordings are not in `data/` is
 named and passed over too; if that leaves nothing checked (a disk with the sets not mounted), the
 check fails. A build whose lender is taken as committed fails before its first step when git lacks
 a cache it reads of that lender, naming the read (`uses.<role>:cache.<name>`), and

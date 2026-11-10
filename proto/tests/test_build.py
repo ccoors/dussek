@@ -304,6 +304,17 @@ def test_status_check_of_all_passes_over_a_project_with_only_its_committed_cache
     assert run("status", "--check", "--all").returncode == 1
 
 
+def test_status_check_of_all_passes_over_a_project_with_only_its_table_memos(toy):
+    # the brass player builds its tables from the committed fits when they are missing (the prototype's suite
+    # plays through it): a memo is no step run here, and the CI's check after the suite judged nothing and failed
+    setup, run, fit, ledger = toy
+    memo = ledger.path.parent / "cache" / "p" / "tables_open.pkl"
+    memo.parent.mkdir(parents=True)
+    memo.write_bytes(b"")
+    r = run("status", "--check", "--all")
+    assert r.returncode == 0 and "not built here" in r.stdout
+
+
 def test_a_step_whose_outputs_are_all_gone_is_stale(toy):
     setup, run, fit, ledger = toy
     run("build", "p")

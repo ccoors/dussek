@@ -479,9 +479,11 @@ def _lends_as_committed(name):
 @lru_cache(maxsize=None)
 def _built_here(name):
     """Whether a step ran on the project in this checkout: its cache holds a file git does not track
-    (the tracked ones, what it lends, come with a clone)."""
+    (the tracked ones, what it lends, come with a clone). The brass tables' memos (`tables_*.pkl`,
+    proto/brass/spec.py's tables_path) do not count: whoever needs one builds it from the committed fits."""
     cache = os.path.join(P.project_dir(name), "cache")
-    files = [os.path.realpath(os.path.join(d, f)) for d, _, fs in os.walk(cache) for f in fs]
+    files = [os.path.realpath(os.path.join(d, f)) for d, _, fs in os.walk(cache) for f in fs
+             if not (f.startswith("tables_") and f.endswith(".pkl"))]
     if not files:
         return False
     r = subprocess.run(["git", "ls-files", "-z"], cwd=cache, capture_output=True, text=True)
