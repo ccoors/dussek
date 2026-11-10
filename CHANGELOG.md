@@ -3,7 +3,7 @@
 What each release changes for a player. From 1.0 on a break needs a major version; before it, a
 break is allowed but listed under "Breaking" (`docs/compatibility.md`).
 
-## Unreleased
+## 0.4.0 — 2026-11-10
 
 ### New
 
@@ -12,6 +12,7 @@ break is allowed but listed under "Breaking" (`docs/compatibility.md`).
   installer and the macOS package offer it as a component that can be left out.
 - Analysis and Visualization open with or without the keyboard strip.
 - An instrument folder that is no instrument, or a file that is no Scala scale, says why in the window.
+- The standalone's window has Dussek's icon on Linux and Windows (it had the system's default).
 
 ### Changed
 
