@@ -40,21 +40,20 @@ Tongued notes and slurs from below land on all of them.
 `~/.config/dussek/weidinger-midi-map.txt`, apart from Dussek's); each shows its tag on its control and is learned again or forgotten
 like any other:
 
-| CC | Plays |
+| Controller | Plays |
 |---|---|
-| 1 (the mod wheel) | Air added |
-| 11 | Air (a breath controller: learn Air on CC2) |
-| 70 | Vibrato |
-| 21, 23 | Growl, Flutter |
-| 4 | Plunger |
-| 65 | Glide held |
-| 5 | Glide time |
+| CC 1 (the mod wheel) | Air added |
+| CC 11 | Air (a breath controller: learn Air on CC 2) |
+| CC 70 | Vibrato |
+| CC 21, 23 | Growl, Flutter |
+| CC 4 | Plunger |
+| CC 65 | Glide held |
+| CC 5 | Glide time |
+| aftertouch | growl or flutter (Aftertouch to), built in |
+| the pitch wheel | ±2 semitones, built in |
 
 Air and Plunger moved from MIDI switch on their "by hand" switch and take over from the keys; until then soft takeover does not
 hold them back, since their slider is not heard. The switch gives them back.
-
-| aftertouch | growl or flutter (Aftertouch to), built in |
-| the pitch wheel | ±2 semitones, built in |
 
 **Microphones.** The bell has the positions of the other instruments, in its own places: Audience (the default, 6 m out,
 centered on the bell, at the player's height), Player at the player's ears, Close 1 30 cm on the axis, Close 2 30 cm well off it, a custom pair, and Recording, the
