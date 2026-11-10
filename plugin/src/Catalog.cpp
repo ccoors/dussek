@@ -237,6 +237,7 @@ const InstrumentEntry* Catalog::outside(const std::string& id)
         return nullptr;
     }
     e.id = dir; // the state names it by its path
+    e.dir = dir; // as given: entryAt joins with "/", which on Windows mixes it with the path's backslashes
     e.group = "Opened";
     return (kept[dir] = std::make_unique<InstrumentEntry>(e)).get();
 }
