@@ -5,6 +5,7 @@
 //! resonance, soundboard/room radiation, action knock and release noise.
 
 pub mod board_bass;
+pub mod brass;
 pub mod convolution;
 pub mod engine;
 pub mod felt;

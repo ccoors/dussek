@@ -27,3 +27,16 @@ fn output_gain_scales_the_whole_instrument() {
     let ratio = peak(quiet) / peak(inst);
     assert!((ratio - 10f32.powf(-6.0 / 20.0)).abs() < 1e-3, "ratio {ratio}");
 }
+
+/// A brass export's `output_gain_db` scales it as a piano's (the brass bypass the ff calibration).
+#[test]
+fn output_gain_scales_a_brass_instrument() {
+    let dir = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/trumpet");
+    let Ok(inst) = Instrument::load(dir) else { return };
+    let mut loud = inst.clone();
+    loud.output_gain_db = 0.0;
+    let mut quiet = inst;
+    quiet.output_gain_db = -6.0;
+    let ratio = peak(quiet) / peak(loud);
+    assert!((ratio - 10f32.powf(-6.0 / 20.0)).abs() < 1e-3, "ratio {ratio}");
+}

@@ -19,6 +19,7 @@
 
 #include "DistrhoPlugin.hpp"
 #include "DistrhoPluginUtils.hpp"
+#include "PluginTarget.hpp"
 #include "About.hpp"
 #include "Catalog.hpp"
 #include "FileWatch.hpp"
@@ -28,6 +29,7 @@
 #include "FeltWatch.hpp"
 #include "WorkerPriority.hpp"
 #include "Params.hpp"
+#include "Ports.hpp"
 #include "Presets.hpp"
 #include "Instruments.hpp"
 #include "MidiMap.hpp"
@@ -65,10 +67,11 @@ class PianoPlugin : public Plugin
 {
 public:
     PianoPlugin()
-        : Plugin(kTotalParams, (uint32_t)shippedFullPresets().size(), 7)
+        : Plugin(hostCount(kKind), (uint32_t)shippedFullPresets(kKind).size(), 7)
     {
+        setMessagesPlugin(kKind); // the catalog's lines name this plugin
         for (uint32_t i = 0; i < kParamCount; ++i)
-            fValues[i] = paramInfo(i).def;
+            fValues[i] = defaultOf(kKind, i);
         for (uint32_t i = kParamCount; i < kTotalParams; ++i)
             fValues[i] = diagInfo(i).def;
         for (uint32_t i = 0; i < kParamCount; ++i)
@@ -96,7 +99,7 @@ public:
             // anything in the setup (the sweep, the region) can throw: go on without diagnostics (the token stays 0)
             fRegion.reset();
             fValues[kDiagToken] = 0.0f;
-            d_stderr2("Dussek: diagnostics region unavailable (the strip and the sound are unaffected)");
+            d_stderr2(DISTRHO_PLUGIN_NAME ": diagnostics region unavailable (the strip and the sound are unaffected)");
         }
         fRequestRate = getSampleRate();
         fRequest.fetch_add(1);
@@ -120,15 +123,9 @@ public:
     }
 
 protected:
-    const char* getLabel() const override { return "Dussek"; }
-    const char* getDescription() const override
-    {
-        return "Physically modeled pianos, harpsichords, a clavichord, harps, guitars, zithers and "
-               "percussion, played in real time: no samples, each instrument measured from recordings "
-               "of a real one. Strings with hammer, plectrum or mallet, soundboard, room, dampers, "
-               "pedals and sympathetic resonance.";
-    }
-    const char* getMaker() const override { return "Christian Friedrich Coors"; }
+    const char* getLabel() const override { return pe::identity(pe::kKind).name; }
+    const char* getDescription() const override { return pe::identity(pe::kKind).description; }
+    const char* getMaker() const override { return pe::kPluginBrand; }
     const char* getHomePage() const override { return kProjectUrl; }
     const char* getLicense() const override { return "AGPL-3.0-or-later"; }
     uint32_t getVersion() const override
@@ -137,8 +134,13 @@ protected:
         return d_version(v.major, v.minor, v.patch);
     }
 
-    void initParameter(uint32_t index, Parameter& p) override
+    // the host's indices are the plugin's ports (Ports.hpp): converted here, at DPF's boundary, and in
+    // getParameterValue / setParameterValue / requestParameterValueChange; inside, the table's indices
+    void initParameter(uint32_t host, Parameter& p) override
     {
+        const uint32_t index = toInternal(kKind, host);
+        if (index == kNoPort)
+            return;
         if (index >= kParamCount) {
             const ParamInfo& d = diagInfo(index);
             // never automatable (ui_tests no_diagnostic_is_automatable): they move when the table grows
@@ -154,20 +156,19 @@ protected:
         const ParamInfo& d = paramInfo(index);
         p.hints = (d.automatable ? kParameterIsAutomatable : 0) | (d.integer ? kParameterIsInteger : 0)
             | (d.boolean ? kParameterIsBoolean : 0);
-        p.groupId = d.group;
-        p.name = d.name;
+        p.groupId = hostGroup(kKind, d.group); // dense per plugin (Ports.hpp)
+        p.name = nameOf(kKind, index);
         p.symbol = d.symbol;
         if (d.unit != nullptr)
             p.unit = d.unit;
-        if (d.description != nullptr)
-            p.description = d.description;
-        p.ranges = ParameterRanges(d.def, d.min, d.max);
+        p.description = descriptionOf(kKind, index);
+        p.ranges = ParameterRanges(defaultOf(kKind, index), d.min, d.max);
         if (const uint32_t n = paramLabelCount(index)) {
             p.enumValues.count = n;
             p.enumValues.restrictedMode = true;
             p.enumValues.values = new ParameterEnumerationValue[n];
             for (uint32_t i = 0; i < n; ++i)
-                p.enumValues.values[i] = ParameterEnumerationValue(i, paramLabel(index, i));
+                p.enumValues.values[i] = ParameterEnumerationValue(i, labelOf(kKind, index, i));
         }
     }
 
@@ -176,13 +177,15 @@ protected:
         // one per Group (Params.hpp), in its order: a missing one left the group's symbol empty, which
         // DPF's LV2 export asserted on and skipped (the Preparation group, added later)
         static const char* const names[] = { "Instrument", "Microphones", "Tuning", "Noises & resonance",
-            "Condition", "Defects", "Preparation" };
+            "Condition", "Defects", "Preparation", "Brass" };
         static const char* const symbols[] = { "group_instrument", "group_microphones", "group_tuning",
-            "group_noises", "group_condition", "group_defects", "group_preparation" };
+            "group_noises", "group_condition", "group_defects", "group_preparation", "group_brass" };
         static_assert(std::size(names) == kGroupCount && std::size(symbols) == kGroupCount, "a name and a symbol per Group");
-        if (groupId < kGroupCount) {
-            g.name = names[groupId];
-            g.symbol = symbols[groupId];
+        // the host's id is the group's place among the plugin's (hostGroup): Weidinger's Brass is its fourth
+        if (groupId < portGroups(kKind).size()) {
+            const uint32_t group = portGroups(kKind)[groupId];
+            g.name = names[group];
+            g.symbol = symbols[group];
         }
     }
 
@@ -191,7 +194,7 @@ protected:
     // bundle's presets.ttl at the build, every parameter and state)
     void initProgramName(uint32_t index, String& name) override
     {
-        const std::vector<const Preset*> p = shippedFullPresets();
+        const std::vector<const Preset*> p = shippedFullPresets(kKind);
         if (index < p.size())
             name = p[index]->name.c_str();
     }
@@ -204,11 +207,11 @@ protected:
     {
         if (std::this_thread::get_id() == fAudioThread.load(std::memory_order_relaxed))
             return;
-        const std::vector<const Preset*> p = shippedFullPresets();
+        const std::vector<const Preset*> p = shippedFullPresets(kKind);
         if (index >= p.size())
             return;
-        for (const auto& [i, v] : presetParams(*p[index]))
-            setParameterValue(i, v);
+        for (const auto& [i, v] : presetParams(kKind, *p[index]))
+            setValue(i, v);
         for (const auto& [k, v] : presetStates(*p[index]))
             setState(k.c_str(), v.c_str());
     }
@@ -342,15 +345,18 @@ protected:
         fUiState = value;
     }
 
-    float getParameterValue(uint32_t index) const override
+    float getParameterValue(uint32_t host) const override
     {
+        const uint32_t index = toInternal(kKind, host);
         return index < kTotalParams ? fValues[index] : 0.0f;
     }
 
-    // may be called from the audio thread: only stores values and raises a request
-    void setParameterValue(uint32_t index, float value) override
+    void setParameterValue(uint32_t host, float value) override { setValue(toInternal(kKind, host), value); }
+
+    // a value by the table's index; may be called from the audio thread: only stores values and raises a request
+    void setValue(uint32_t index, float value)
     {
-        if (index >= kTotalParams || diagIsOutput(index))
+        if (index >= kTotalParams || diagIsOutput(index) || (index < kParamCount && !hasPort(kKind, index)))
             return;
         fValues[index] = value;
         if (index == kDiagMapSeqIn)
@@ -413,11 +419,15 @@ protected:
         swapIn();
         // the audio input, the two channels summed: read before the outputs are written (they may share memory)
         const float* input = nullptr;
+#if DISTRHO_PLUGIN_NUM_INPUTS == 2
         if (fValues[kAudioInput] > kOffDb && frames <= fInput.size()) {
             for (uint32_t i = 0; i < frames; ++i)
                 fInput[i] = inputs[0][i] + inputs[1][i];
             input = fInput.data();
         }
+#else
+        (void)inputs; // Weidinger: no input (a bell has no strings to hear it)
+#endif
         float* const left = outputs[0];
         float* const right = outputs[1];
         if (fValues[kDiagLearnIn] != fLearnSeen) { // another control waits (or none): nothing caught for it yet
@@ -433,7 +443,8 @@ protected:
             // its engine taken (swapIn above) or still offered, never neither
             const uint64_t requested = fRequest.load(), settled = fSettled.load();
             const bool refineDue = fRefineDue.load();
-            fValues[kDiagWorkingOut] = workPending(requested, settled, refineDue, fHandoff.waiting()) ? 1.0f : 0.0f;
+            const bool pending = workPending(requested, settled, refineDue, fHandoff.waiting());
+            fValues[kDiagWorkingOut] = pending ? 1.0f : 0.0f;
         }
         if (fEngine == nullptr) {
             std::fill(left, left + frames, 0.0f);
@@ -547,9 +558,14 @@ private:
             fValues[kDiagLearnedOut] = (float)a.learned;
             break;
         case MidiRouter::Action::Set:
-            if (!fTies.softTakeover() || fTakeover.accept(a.param, a.value, fValues[a.param]))
+        {
+            // a control the keys play until moved by hand (Air, Plunger): its slider is not heard yet, so nothing jumps
+            const uint32_t hand = byHandSwitch(a.param);
+            const bool unheard = hand < kParamCount && fValues[hand] < 0.5f;
+            if (fTakeover.accept(a.param, a.value, fValues[a.param]) || !fTies.softTakeover() || unheard)
                 applyMidiValue(a.param, a.value);
             break;
+        }
         case MidiRouter::Action::Flip:
             applyMidiValue(a.param, fValues[a.param] >= 0.5f ? 0.0f : 1.0f);
             break;
@@ -578,15 +594,18 @@ private:
     /// exclude each other as in the UI
     void applyMidiValue(uint32_t i, float v)
     {
-        if (i >= kParamCount || v == fValues[i])
+        if (i >= kParamCount || !hasPort(kKind, i) || v == fValues[i])
             return;
-        setParameterValue(i, v);
-        const bool told = canRequestParameterValueChanges() && requestParameterValueChange(i, v);
+        setValue(i, v);
+        const bool told = canRequestParameterValueChanges() && requestParameterValueChange(toHost(kKind, i), v);
         if (!told && fRegion)
             pe_telemetry_set_value(fRegion->data(), fRegion->size(), i, v);
         const uint32_t other = exclusiveStop(i);
         if (other < kParamCount && v >= 0.5f)
             applyMidiValue(other, 0.0f);
+        const uint32_t hand = byHandSwitch(i); // moved, it takes over from the keys
+        if (hand < kParamCount)
+            applyMidiValue(hand, 1.0f);
     }
 
     /// every key and pedal released; with `silence` (the Panic button, CC120) the engine's sound
@@ -684,7 +703,7 @@ private:
     void chooseByMidi(int step, int program, const char* resources)
     {
         const CatalogPtr catalog = sharedCatalog(resources);
-        const std::vector<const InstrumentEntry*> menu = catalog->menu();
+        const std::vector<const InstrumentEntry*> menu = catalog->menu(kKind);
         if (menu.empty())
             return;
         const int n = (int)menu.size();
@@ -750,7 +769,7 @@ private:
             if (const uint64_t map = fMapRequest.load(); map != mapDone) { // the MIDI map: at start, after the UI wrote it
                 mapDone = map;
                 lock.unlock();
-                fTies.load(MidiMap::load(midiMapPath()));
+                fTies.load(MidiMap::load(midiMapPath(kKind), kKind));
                 lock.lock();
                 continue;
             }
@@ -796,7 +815,7 @@ private:
                 std::lock_guard<std::mutex> il(fInstrumentMutex);
                 const CatalogPtr catalog = sharedCatalog(resources);
                 if (fInstrument.empty()) { // the default: the menu's first (saved by its name from now on)
-                    if (const InstrumentEntry* first = catalog->first())
+                    if (const InstrumentEntry* first = catalog->first(kKind))
                         fInstrument = first->id;
                 }
                 id = fInstrument;
@@ -806,28 +825,32 @@ private:
             }
             {
                 const CatalogPtr catalog = sharedCatalog(resources);
-                const InstrumentEntry* e = catalog->find(id);
+                const InstrumentEntry* e = catalog->find(id, kKind);
                 fLists.publish(e != nullptr ? *e : noInstrument()); // the Mallet and Preparation CC bands
             }
             // the main instrument first, then each partner at its weight from the pad's point
-            std::vector<std::string> dirs { id.empty() ? std::string() : instrumentDir(resources, id.c_str()) };
+            std::vector<std::string> dirs { id.empty() ? std::string() : instrumentDir(resources, id.c_str(), kKind) };
             for (const std::string& p : key.partners)
-                dirs.push_back(instrumentDir(resources, p.c_str()));
+                dirs.push_back(instrumentDir(resources, p.c_str(), kKind));
             const std::vector<float> weights = morphWeights((uint32_t)dirs.size(), values[kMorphX], values[kMorphY]);
             PeEngine* engine = nullptr;
             char err[512] = {};
             // the files' stamps before they are read: a change while building is seen afterwards
             reload.loaded(dirs, statStamp, seconds());
             fBuilding.store(true, std::memory_order_relaxed);
-            if (std::find(dirs.begin(), dirs.end(), std::string()) != dirs.end())
-                d_stderr2("Dussek: instrument '%s' not found (set DUSSEK_INSTRUMENTS)", id.c_str());
+            if (std::find(dirs.begin(), dirs.end(), std::string()) != dirs.end()) {
+                if (const std::string other = otherPluginOf(*sharedCatalog(resources), id, kKind); !other.empty())
+                    d_stderr2(DISTRHO_PLUGIN_NAME ": instrument '%s' is %s's: open it there", id.c_str(), other.c_str());
+                else
+                    d_stderr2(DISTRHO_PLUGIN_NAME ": instrument '%s' not found (set DUSSEK_INSTRUMENTS)", id.c_str());
+            }
             else {
                 std::vector<const char*> ptrs;
                 for (const std::string& d : dirs)
                     ptrs.push_back(d.c_str());
                 pe_cache_set_quick(cache, !refine); // a felt measured in seconds: first as last measured
                 if ((engine = pe_create_morph(ptrs.data(), weights.data(), (uint32_t)ptrs.size(), rate, &tuning, &felt, cache, err, sizeof(err))) == nullptr)
-                    d_stderr2("Dussek: %s", err);
+                    d_stderr2(DISTRHO_PLUGIN_NAME ": %s", err);
             }
             refineDue = engine != nullptr && pe_cache_provisional(cache);
             lock.lock();

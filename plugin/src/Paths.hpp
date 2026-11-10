@@ -1,4 +1,5 @@
 #pragma once
+#include "PluginKind.hpp"
 #include <functional>
 #include <string>
 #include <vector>
@@ -39,20 +40,20 @@ std::vector<std::string> systemDataDirs();
 /// up (VST3's Contents/<arch>, a macOS bundle's Contents/MacOS), then in `installed` (the folders an
 /// installer puts it in: installedProgramDirs), then in the folders of `path` (the PATH variable;
 /// null: none). Empty: none found.
-std::string standaloneExecutable(const std::string& self, bool selfIsStandalone, const char* path,
+std::string standaloneExecutable(PluginKind k, const std::string& self, bool selfIsStandalone, const char* path,
     const std::vector<std::string>& installed = {});
 
 /// the running program's path (the standalone's, or the host's for a plugin); empty: unknown
 std::string executablePath();
 
-/// an unpacked archive's folder, when `exe` is the standalone (named dussek or dussek.exe, any case;
-/// on macOS inside Dussek.app/Contents/MacOS: the folder holding the app); empty for any other
+/// an unpacked archive's folder, when `exe` is a standalone (named dussek or weidinger, .exe on Windows, any
+/// case; on macOS inside Dussek.app/Contents/MacOS: the folder holding the app); empty for any other
 /// program (a host running the plugin). Splits at `/` and `\`.
 std::string portableFolder(const std::string& exe);
 
 /// where the installers put the standalone: Windows %PROGRAMFILES%\Dussek, macOS /Applications
 /// (Linux: on PATH)
-std::vector<std::string> installedProgramDirs();
+std::vector<std::string> installedProgramDirs(PluginKind k);
 
 /// The folder a file lies in (a file browser's answer): up to its last separator, `/` (on Windows
 /// also `\`); a root kept ("/", "C:\"); empty for a bare name.

@@ -1,6 +1,6 @@
-// The diagnostics view at the window's bottom: at level 2 the analysis panel (DiagPanel), at
-// level 3 the visualization (VizPanel) in its place, a header row ("Keyboard" tab, and with the
-// strip open the "Analysis" and "Visualization" toggles) and the player strip (keys and pedal).
+// The diagnostics view at the window's bottom: the analysis panel (DiagPanel) or the visualization
+// (VizPanel) in its place, a header row (the "Keyboard", "Analysis" and "Visualization" toggles) and
+// the player strip (keys and pedal); the panels open with or without the strip (diagStrip, diagPanel).
 // Coordinates are window-logical (not scrolled).
 #pragma once
 #include "DiagPanel.hpp"
@@ -31,7 +31,7 @@ public:
     explicit DiagView(DiagHost host);
     /// logical height of the diagnostics area shown; it occupies the bottom and reduces the controls viewport
     float height() const;
-    void setLevel(int level); // 0 collapsed, 1 strip, 2 strip + analysis, 3 strip + visualization
+    void setLevel(int level); // StripInteraction.hpp: 0 collapsed, 1 strip, 2 and 3 with a panel, 4 and 5 a panel alone
     int level() const { return fLevel; }
     void layout(float width, float windowHeight);
     void setKeyWords(const float words[8]);
@@ -41,6 +41,9 @@ public:
     void setPedals(Pedals p);     // the pedals on the strip; `layout` places them
     void setBars(bool bars) { fViz.setBars(bars); } // the visualization draws bars, not strings
     void setRecorded(int lo, int hi); // the instrument's recorded keys (MIDI): the others are tinted as extrapolated
+    void setPlays(int lo, int hi); // the keys that play (MIDI): the others gray
+    void setVizOffered(bool on); // the Visualization toggle (none on a bell)
+    void setPartialsOffered(bool on) { fPanel.setPartialsOffered(on); } // the Analysis panel's Partials and voices (none on a bell)
     void setReversedKeys(bool on);    // dark naturals and light sharps (many harpsichords)
     void setWorking(bool on) { fWorking = on; } // "updating…" in the bar (the caller repaints)
     void draw(DGL_NAMESPACE::NanoVG& vg);
@@ -65,11 +68,13 @@ private:
     float fSoft = 0;      // the engine's soft pedal depth (kDiagSoftOut)
     Pedals fPedals;
     int fRecordedLo = 21, fRecordedHi = 108; // MIDI
+    int fPlaysLo = 21, fPlaysHi = 108; // MIDI
+    bool fVizOffered = true;
     bool fReversedKeys = false;
     bool fSostenuto = false; // the engine's sostenuto state (kDiagSostenutoOut)
     StripInteraction fInput; // the pointer state machine (pure); this class draws and delegates
-    DiagPanel fPanel; // open (telemetry on) exactly at level 2
-    VizPanel fViz;    // and this one at level 3
+    DiagPanel fPanel; // open (telemetry on) exactly while it shows
+    VizPanel fViz;    // and this one
 };
 
 } // namespace pe

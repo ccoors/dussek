@@ -718,6 +718,16 @@ const Y_AXIS: [f64; 3] = [0.0, 1.0, 0.0];
 const Z_AXIS: [f64; 3] = [0.0, 0.0, 1.0];
 const FRONT: [f64; 3] = [0.0, -1.0, 0.0];
 
+/// A bell's positions, each the pair's center and its widest spacing (the spacing is in meters, as on every body; a
+/// wider setting stops there). Player at the player's ears (`BellPose::ears`), a head wide; Audience 6 m in front of the
+/// bell, centered on it, at the player's height, as wide as set; Close 1 and Close 2 in the bell's own frame (across,
+/// along its axis, above it), turning with it: 30 cm on the axis, 30 cm well off it, 10 cm wide at most.
+const BELL_PLAYER: f64 = 0.18;
+const BELL_AUDIENCE: f64 = 6.0;
+const BELL_CLOSE: [([f64; 3], f64); 2] = [([0.05, 0.3, 0.0], 0.1), ([0.3, 0.02, 0.0], 0.1)];
+/// Where a bell's floor is, m below its player's ears.
+const BELL_FLOOR: f64 = 1.2;
+
 /// The wall's y for a position.
 fn u_wall(pos: MicPosition) -> f64 {
     if pos == MicPosition::Tail { U_WALL_BACK } else { U_WALL }
@@ -831,13 +841,118 @@ pub enum Body {
     Strumstick,
     /// a steel tongue drum: tongues cut into a round shell on the floor (`TONGUE_DRUM`)
     TongueDrum,
+    /// a brass instrument's bell: a small source with a beam, where it points as played (`brass::bell`)
+    Bell(BellPose),
+}
+
+/// Where a bell points and where its player's ears are, from the bell's mouth (an export's `pose`): whole degrees and
+/// centimeters, so a `Body` stays `Eq`. x across (the player's right +), y the player's front, z up.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct BellPose {
+    /// degrees from the player's front toward the right
+    pub azimuth: i16,
+    /// degrees above level
+    pub elevation: i16,
+    /// cm, the player's ears from the bell's mouth
+    pub ears: [i16; 3],
+    /// the bell's radius, mm (the drawing's; the beam reads the tables')
+    pub radius_mm: u16,
+}
+
+impl BellPose {
+    /// Forward and held a little down, 14 degrees over a listener in front at the player's height (Audience as the ear
+    /// judged it), the ears 45 cm behind it: what an export without a pose plays.
+    pub const DEFAULT: BellPose = BellPose { azimuth: 0, elevation: -14, ears: [15, -45, 0], radius_mm: 90 };
+
+    fn dirs(&self) -> ([f64; 3], [f64; 3], [f64; 3]) {
+        let (az, el) = (f64::from(self.azimuth).to_radians(), f64::from(self.elevation).to_radians());
+        let h = [az.sin(), az.cos(), 0.0];
+        let along = [h[0] * el.cos(), h[1] * el.cos(), el.sin()];
+        let across = [az.cos(), -az.sin(), 0.0];
+        let up = [-h[0] * el.sin(), -h[1] * el.sin(), el.cos()];
+        (across, along, up)
+    }
+
+    /// The axis, a unit vector.
+    pub fn axis(&self) -> [f64; 3] {
+        self.dirs().1
+    }
+
+    /// The player's ears, m.
+    pub fn ears_m(&self) -> [f64; 3] {
+        self.ears.map(|c| f64::from(c) / 100.0)
+    }
+
+    /// The bell's radius, m.
+    pub fn radius(&self) -> f64 {
+        f64::from(self.radius_mm) / 1000.0
+    }
+
+    /// A point given across, along the axis and above it, m.
+    fn local(&self, p: [f64; 3]) -> [f64; 3] {
+        let (a, u, w) = self.dirs();
+        [0, 1, 2].map(|i| p[0] * a[i] + p[1] * u[i] + p[2] * w[i])
+    }
+}
+
+impl Default for BellPose {
+    fn default() -> Self {
+        BellPose::DEFAULT
+    }
+}
+
+/// The bell's profile: (along its axis, radius), × its radius over 9 cm: the flare and the tube behind it.
+const BELL_PROFILE: [(f64, f64); 6] = [(0.0, 0.09), (-0.05, 0.05), (-0.12, 0.02), (-0.22, 0.012), (-0.45, 0.012), (-0.45, 0.0)];
+
+/// A bell from above (x, y) and from the front (x, z), each a closed outline: a solid of revolution seen along a view's
+/// normal is its rings, each an ellipse centered on the axis's projection, so its half-width at a point of that projection
+/// is the widest ring there.
+fn bell_outlines(pose: BellPose) -> (Vec<[f64; 2]>, Vec<[f64; 2]>) {
+    let k = pose.radius() / 0.09;
+    let u = pose.axis();
+    let view = |a: usize, b: usize, n: usize, points: usize| {
+        let (pu, l) = ([u[a], u[b]], (u[a] * u[a] + u[b] * u[b]).sqrt());
+        let e = if l > 1e-6 { [pu[0] / l, pu[1] / l] } else { [0.0, 1.0] };
+        let side = [-e[1], e[0]];
+        let squash = u[n].abs(); // a ring's extent along the projected axis, over its radius
+        // the rings, finely along the profile: (center along the projection, radius)
+        let mut rings = Vec::new();
+        for w in BELL_PROFILE.windows(2) {
+            for i in 0..20 {
+                let t = i as f64 / 20.0;
+                rings.push(((w[0].0 + t * (w[1].0 - w[0].0)) * k * l, (w[0].1 + t * (w[1].1 - w[0].1)) * k));
+            }
+        }
+        let lo = rings.iter().map(|r| r.0 - r.1 * squash).fold(f64::MAX, f64::min);
+        let hi = rings.iter().map(|r| r.0 + r.1 * squash).fold(f64::MIN, f64::max);
+        let n_at = points / 2;
+        let step = (hi - lo) / (n_at - 1) as f64;
+        let half: Vec<(f64, f64)> = (0..n_at)
+            .map(|i| {
+                let s = lo + step * i as f64;
+                // a ring seen nearly edge-on reaches at least a step along the axis: else the samples fall
+                // between the rings and the tube comes out a wave
+                let w = rings
+                    .iter()
+                    .map(|&(c, r)| {
+                        let q = 1.0 - ((s - c) / (r * squash).max(step).max(1e-9)).powi(2);
+                        if q >= 0.0 { r * q.sqrt() } else { 0.0 }
+                    })
+                    .fold(0.0, f64::max);
+                (s, w.max(0.004))
+            })
+            .collect();
+        let at = |s: f64, w: f64| [s * e[0] + w * side[0], s * e[1] + w * side[1]];
+        half.iter().map(|&(s, w)| at(s, w)).chain(half.iter().rev().map(|&(s, w)| at(s, -w))).collect::<Vec<_>>()
+    };
+    (view(0, 1, 2, 24), view(0, 2, 1, 32))
 }
 
 /// The bodies by the C interface's number (`dussek.h` pe_mic_geometry): 0 grand, 1 upright,
 /// 2 harp, 3 lever harp, 4 vibraphone, 5 marimba, 6 xylophone, 7 bells, 8 crotales, 9 guitar,
 /// 10 chimes, 11 hand chimes, 12 kalimba, 13 balafon, 14 psaltery, 15 đàn tranh, 16 strumstick,
-/// 17 tongue drum.
-pub const BODIES: [Body; 18] = [
+/// 17 tongue drum, 18 a brass instrument's bell.
+pub const BODIES: [Body; 19] = [
     Body::Grand,
     Body::Upright,
     Body::Harp,
@@ -856,12 +971,14 @@ pub const BODIES: [Body; 18] = [
     Body::DanTranh,
     Body::Strumstick,
     Body::TongueDrum,
+    Body::Bell(BellPose::DEFAULT),
 ];
 
 impl Body {
     /// the C interface's number for this body (its place in `BODIES`)
     pub fn index(self) -> u32 {
-        BODIES.iter().position(|&b| b == self).unwrap_or(0) as u32
+        // a bell by its kind: its pose is the export's
+        BODIES.iter().position(|&b| std::mem::discriminant(&b) == std::mem::discriminant(&self)).unwrap_or(0) as u32
     }
 }
 
@@ -886,6 +1003,7 @@ impl Body {
             Some("dantranh") => Body::DanTranh,
             Some("strumstick") => Body::Strumstick,
             Some("tonguedrum") => Body::TongueDrum,
+            Some("bell") => Body::Bell(BellPose::DEFAULT),
             _ => Body::Grand,
         }
     }
@@ -949,7 +1067,7 @@ impl Body {
             Body::Grand => bridge_point(note),
             Body::Upright => u_bridge_point(note),
             Body::Harp | Body::LeverHarp => (hp.bridge_s(note), 0.0),
-            bar_bodies!() => self.frame().bar_point(note),
+            bar_bodies!() | Body::Bell(_) => self.frame().bar_point(note),
             Body::Guitar | Body::Strumstick => (0.0, self.guitar_dims().bridge_z(note)),
             Body::Psaltery | Body::DanTranh => self.zither_dims().bridge_point(note),
         }
@@ -999,6 +1117,7 @@ impl Body {
                     },
                 ]
             }
+            Body::Bell(pose) => vec![Source { pos: [0.0; 3], normal: pose.axis(), gain: 1.0, lowpass_hz: None, one_sided: false, through_lid: false }],
             bar_bodies!() => {
                 let fr = self.frame();
                 let (x, y) = fr.bar_point(note);
@@ -1095,6 +1214,7 @@ impl Body {
                 // a narrow instrument: nothing over the floor's reflection point to speak of
                 shielded_by_case: false,
             }],
+            Body::Bell(_) => Vec::new(),
             bar_bodies!() => vec![Reflector {
                 origin: [0.0, 0.0, -self.frame().height],
                 normal: [0.0, 0.0, 1.0],
@@ -1128,7 +1248,7 @@ impl Body {
         match self {
             Body::Grand => !self.over_case(mic),
             Body::Upright => true,
-            Body::Harp | Body::LeverHarp | bar_bodies!() | Body::Guitar | Body::Psaltery | Body::DanTranh | Body::Strumstick => false, // no lid
+            Body::Harp | Body::LeverHarp | bar_bodies!() | Body::Bell(_) | Body::Guitar | Body::Psaltery | Body::DanTranh | Body::Strumstick => false, // no lid
         }
     }
 
@@ -1137,14 +1257,14 @@ impl Body {
         match self {
             Body::Grand => (CASE_X.0..=CASE_X.1).contains(&p[0]) && (CASE_Y.0..=CASE_Y.1).contains(&p[1]),
             Body::Upright => (U_CASE_X.0..=U_CASE_X.1).contains(&p[0]) && (U_CASE_Y.0..=U_CASE_Y.1).contains(&p[1]),
-            Body::Harp | Body::LeverHarp | bar_bodies!() | Body::Guitar | Body::Psaltery | Body::DanTranh | Body::Strumstick => false,
+            Body::Harp | Body::LeverHarp | bar_bodies!() | Body::Bell(_) | Body::Guitar | Body::Psaltery | Body::DanTranh | Body::Strumstick => false,
         }
     }
 
     /// The wall's y a preset puts behind the upright (the grand ignores it).
     pub fn wall_of(self, pos: MicPosition) -> f64 {
         match self {
-            Body::Grand | Body::Harp | Body::LeverHarp | bar_bodies!() | Body::Guitar | Body::Psaltery | Body::DanTranh | Body::Strumstick => U_WALL,
+            Body::Grand | Body::Harp | Body::LeverHarp | bar_bodies!() | Body::Bell(_) | Body::Guitar | Body::Psaltery | Body::DanTranh | Body::Strumstick => U_WALL,
             Body::Upright => u_wall(pos),
         }
     }
@@ -1168,6 +1288,7 @@ impl Body {
             Body::Grand => pos.grand_placement(spacing, distance, lid),
             Body::Upright => pos.upright_placement(spacing, distance, lid),
             Body::Harp | Body::LeverHarp => pos.harp_placement(self.harp_dims(), spacing, distance),
+            Body::Bell(pose) => pos.bell_placement(pose, spacing, distance),
             bar_bodies!() => pos.bars_placement(self.frame(), spacing, distance),
             Body::Guitar | Body::Strumstick => pos.guitar_placement(self.guitar_dims(), spacing, distance),
             Body::Psaltery | Body::DanTranh => pos.bars_placement(self.zither_dims().frame, spacing, distance),
@@ -1420,6 +1541,39 @@ impl MicPosition {
         }
     }
 
+    /// A bell's (left, right) microphones: the bell at the origin, its axis along +y, the pair across x. Each position's center
+    /// (`BELL_POSITIONS`) as the ear judged it; the distance slides it along its line to the bell, the spacing scales the
+    /// position's own pair (at 0.5 m: 18 cm, 1 m, 10 cm).
+    fn bell_placement(self, pose: BellPose, spacing: f64, distance: f64) -> Option<Placement> {
+        let ears = pose.ears_m();
+        let (center, widest, spread) = match self {
+            MicPosition::Recording | MicPosition::Custom => return None,
+            MicPosition::Player => (ears, BELL_PLAYER, X_AXIS),
+            MicPosition::Audience => ([0.0, BELL_AUDIENCE, ears[2]], MAX_SPACING, X_AXIS),
+            MicPosition::Hammers | MicPosition::Tail => {
+                let (c, widest) = BELL_CLOSE[(self == MicPosition::Tail) as usize];
+                (pose.local(c), widest, pose.local([1.0, 0.0, 0.0]))
+            }
+        };
+        let far = dist(center, [0.0; 3]);
+        let range = (0.1, MAX_DISTANCE);
+        let d = if distance > 0.0 { distance.clamp(range.0, range.1) } else { far };
+        let axis = center.map(|x| x / far);
+        let c = axis.map(|x| x * d);
+        let h = spacing.clamp(0.0, widest) / 2.0;
+        Some(Placement {
+            mics: [[0, 1, 2].map(|i| c[i] - h * spread[i]), [0, 1, 2].map(|i| c[i] + h * spread[i])],
+            axis,
+            origin: [0.0; 3],
+            distance: d,
+            range,
+            spread,
+            spacing: 2.0 * h,
+            spacing_max: widest,
+            height: false,
+        })
+    }
+
     /// The guitar's (left, right) microphones (`G_*`): player at the guitarist's ears, above the
     /// upper bout and behind the top (distance back from the top, default 0.3 m, at least 0.15),
     /// audience in front (default 3.5 m, at least 1, at a seated listener's height), close 1 in
@@ -1537,6 +1691,7 @@ impl Body {
             Body::Grand => -BOARD_HEIGHT,
             Body::Upright => -U_BOARD_HEIGHT,
             Body::Harp | Body::LeverHarp => -hp.board_height(),
+            Body::Bell(pose) => pose.ears_m()[2] - BELL_FLOOR,
             bar_bodies!() => -self.frame().height,
             Body::Guitar | Body::Strumstick => -G_HEIGHT,
             Body::Psaltery | Body::DanTranh => -self.zither_dims().frame.height,
@@ -1590,6 +1745,7 @@ impl Body {
                     q = [q[0] + (to - t) * n[0], q[1] + (to - t) * n[1], q[2] + (to - t) * n[2]];
                 }
             }
+            Body::Bell(_) => {}
             bar_bodies!() | Body::Psaltery | Body::DanTranh => {
                 // not among the bars and tubes (in the zither's box): out through the nearest face
                 // (top, front, back, the ends)
@@ -1629,7 +1785,7 @@ impl Body {
         let f = |v: f64, d: f64| if v.is_finite() { v } else { d };
         // the grand ignores the wall: one value, so it never changes the radiation cache key
         let wall = match self {
-            Body::Grand | Body::Harp | Body::LeverHarp | bar_bodies!() | Body::Guitar | Body::Psaltery | Body::DanTranh | Body::Strumstick => U_WALL,
+            Body::Grand | Body::Harp | Body::LeverHarp | bar_bodies!() | Body::Bell(_) | Body::Guitar | Body::Psaltery | Body::DanTranh | Body::Strumstick => U_WALL,
             Body::Upright => f(s.wall, d.wall).clamp(U_WALL, MAX_WALL),
         };
         // … and the harp and the vibraphone the lid (they have none)
@@ -1726,6 +1882,25 @@ impl Body {
                         [0.30, hp.top_z() - 0.10], [top[1] - 0.05, top[2] + 0.12], [top[1], top[2]],
                         [top[1] + 0.06, top[2] + 0.02], [0.30, hp.top_z() - 0.18], [hp.column_y(), hp.top_z() - 0.10],
                     ],
+                }
+            }
+            Body::Bell(pose) => {
+                let (top, front) = bell_outlines(pose);
+                let (lo, hi) = front.iter().fold(([f64::MAX; 2], [f64::MIN; 2]), |(lo, hi), p| {
+                    ([lo[0].min(p[0]), lo[1].min(p[1])], [hi[0].max(p[0]), hi[1].max(p[1])])
+                });
+                let nan = [f64::NAN; 2];
+                Drawing {
+                    case_top: top,
+                    keys_top: [f64::NAN; 4],
+                    case_front: [lo[0], lo[1], hi[0], hi[1]],
+                    keys_front: [f64::NAN; 4],
+                    lid_front: [nan, nan],
+                    floor_z: pose.ears_m()[2] - BELL_FLOOR,
+                    wall_y: None,
+                    markers,
+                    front_axis: 0,
+                    outline_front: front,
                 }
             }
             bar_bodies!() => {
@@ -2243,6 +2418,7 @@ impl Body {
         match self {
             Body::Grand | Body::Upright => None,
             Body::Harp | Body::LeverHarp => Some(self.harp_dims().notes),
+            Body::Bell(_) => None,
             bar_bodies!() => Some(self.frame().notes),
             Body::Guitar | Body::Strumstick => Some(self.guitar_dims().notes),
             Body::Psaltery | Body::DanTranh => Some(self.zither_dims().notes),

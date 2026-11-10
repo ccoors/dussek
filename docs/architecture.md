@@ -63,7 +63,8 @@ went stale and why [76, 107]. The steps fall into four kinds:
 - **Analysis** (`analysis/`): partial frequencies, inharmonicity, decays and tuning per take
   (`analyze.py`); bars' modes by peak picking (`modes.py`); the noises and decays between the
   partials: release, dampers, pedal, body, attack (`release_noise.py`, `damper_decay.py`,
-  `pedal_noise.py`, `body_decay.py`, `attack_noise.py`); runs split into notes (`split_runs.py`).
+  `pedal_noise.py`, `body_decay.py`, `attack_noise.py`); runs split into notes (`split_runs.py`, the brass's
+  `split_brass.py`).
 - **Fits** (`proto/`): each one fits the prototype's model to the analysis.
   - the hammer felt and the hammer speeds per dynamic;
   - the soundboard: the transfer H, a synthetic modal board, and a radiation draw that puts no
@@ -84,7 +85,12 @@ went stale and why [76, 107]. The steps fall into four kinds:
   - measured body modes [49];
   - for bars, the modes, mallets and harmonics [40–45]; a mallet's lowpass cuts a bar's
     fundamental at mf by at most 3 dB [191].
-- **Export** (`proto/export.py`, `proto/export_bars.py`): writes `instruments/<name>/`.
+  - for the brass (`proto/brass/`), a model rather than notes: the bore's modes, the lips, the bell and the mutes, per key a
+    grid over the lips and the air, then the tuning, the speech, the harmonics, the mutes, the slurs and the level [234].
+    The fits render through a player of their own (`live.py` with the virtual player `auto_player.py`): a fit judges a
+    played note, its attack and its slur, so the player is part of the model. The engine's brass players are its port,
+    held to it by `port_check.py` [235].
+- **Export** (`proto/export.py`, `proto/export_bars.py`, `proto/export_brass.py`): writes `instruments/<name>/`.
 - **Roll** (`engine/src/roll`, the `roll` binary): a rolled piano is made from other pianos'
   exports instead of recordings. Its strings are blended from three grands, its body comes from
   two knobs measured on the real pianos' responses, and a realism check tests the result
@@ -220,6 +226,20 @@ calibrated so that the median ff note peaks at −15 dBFS, with an output gain p
 (`output_gain_db`, the project's `[export]`) that puts a phrase in its middle register at the grands'
 loudness, ±1 dB (EBU R128) [173].
 
+**Brass** [235]: `engine/src/brass/` is `proto/brass/rt.c`, `live.py` and `auto_player.py` in Rust, at the fits' own 44.1 kHz.
+An export is an instrument directory without notes (the engine reads one with a `brass` block and none: its note paths skip), and a `brass` block
+with 32-bit tables per mute, key and dynamics. `Engine` holds one `brass::Family`: it takes the key events, and at each block's end runs the
+`Section` (one to six `Live` players, a control step of 1.5 ms), the soft limit on the sum per channel, each channel through its own
+microphone's filter (`bell.rs`; none at Recording), a streaming sinc to the engine's rate (`rate.rs`; a wire at 44.1 kHz), and writes the
+direct sound past the body and the room's feed into the block, at the fit's own level times the export's `output_gain_db` (step 173's phrase at the
+grands' loudness) [243]. The strings idle. The players read one table of noise each from its own
+place, made once per instrument. `proto/brass/port_check.py` holds the players to `live.py` on Python's random numbers (-122 to -136 dB) and
+on their own (octave bands, holding counts). The microphone body is the bell as played (`mic::BellPose`, from the project's `[pose]`: the
+axis's azimuth and elevation, the player's ears from the mouth): Player and Audience stay with the player, the close positions turn with
+the bell, and the drawing is the bell's solid of revolution seen from above and from the front. The Mute's value names a kind
+(`brass::family::MUTE_KINDS`), so a switch keeps a wah a wah; the reported latency adds the resampler's half and the fifo's mean hold
+at a rate not 44.1 kHz [238].
+
 **Cost**: about 12 % of one laptop core (Ryzen 7 7840HS) for a heavily pedaled ff passage of
 88 voices at the Recording position. The other positions cost more, about 16 % at a close one
 [16]. Building an engine takes 0.1 s at a microphone position and ~20 ms for a tuning change.
@@ -227,7 +247,14 @@ loudness, ±1 dB (EBU R128) [173].
 ## The plugin
 
 `plugin/` is a DPF wrapper in C++17: LV2 and the JACK standalone are the main targets; CLAP and
-VST3 are tested on Linux and Windows too.
+VST3 are tested on Linux and Windows too. The same sources build two plugins [239]: Dussek (the
+keyboard instruments) and Weidinger (the brass; a preview, in the same releases). Each target's
+`src/plugins/<name>/DistrhoPluginInfo.h` defines `PE_PLUGIN_KIND`; `PluginKind.hpp` holds what tells
+them apart (names, IDs, the MIDI map's and the presets' files, the standalone), and `pe_common` takes
+the kind as a value. One internal parameter table serves both; `Ports.hpp` decides which of its
+parameters a host sees, in which order and at which default (Dussek's the first 78 rows, as v0.3.2
+released them). The catalog, the MIDI map, the presets and the UI's rows go by the kind: an
+instrument with a `brass` block is Weidinger's, every other Dussek's.
 
 - **Parameters**: `Params.hpp` is the interface (indices, symbols, ranges, descriptions). One
   mapping from parameters to the engine's values (`EngineValues`) serves the DSP, the UI and
@@ -249,7 +276,8 @@ VST3 are tested on Linux and Windows too.
   and each key's strings, damper and last strike (the Analysis and Visualization panels).
 - **State**: `instrument`, `velocity_curve`, `morph` (the partners), `felt` (the player's bends),
   `scale_file` (the Scala file's path), and `ui` (the tab, the zoom, the bottom panel).
-  MIDI learn's ties live outside the session in `~/.config/dussek/midi-map.txt` [111].
+  MIDI learn's ties live outside the session in `~/.config/dussek/midi-map.txt` [111]
+  (Weidinger's in `weidinger-midi-map.txt`).
 - **UI** (`src/ui/`, NanoVG): the layout, formatting and capabilities are pure logic in
   `pe_common`, tested by `plugin/tests/ui_tests.cpp`. The header carries the instrument, the
   stops, the motor, the sustain latch, Volume, Panic and the menu (zoom, Copy CLI, Reset). The
@@ -284,7 +312,8 @@ engine.
   measure (`engine/tests/no_effect.rs`). The stored level must match the engine within 0.1 dB, its
   level table within 0.2 dB (`engine/tests/level_files.rs`).
 - The plugin's UI per instrument, position and preparation is recorded in
-  `plugin/tests/visibility.txt` (`PE_WRITE_UI_TABLE=1` rewrites it; read its diff).
+  `plugin/tests/visibility.txt` (Dussek) and `visibility-weidinger.txt` (`PE_WRITE_UI_TABLE=1`
+  rewrites both; read their diff).
 - The editor's mapper against Python's, the rule model and the suggestion against every committed
   source, and Compare's and the take checks' flags under ceilings.
 - `proto/tests`: the prototype, the exports, the radiation's notches, borrowed reads, and that no

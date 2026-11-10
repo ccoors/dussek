@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Dussek's macOS package: the standalone and each plugin format as choices, the instruments
-     always (build-pkg.sh). -->
+     always; Weidinger (the brass, a preview) a choice with its standalone and formats under it, its
+     instruments with it, installed after Dussek's (whose package empties the folder first) (build-pkg.sh). -->
 <installer-gui-script minSpecVersion="2">
     <title>Dussek</title>
     <welcome file="welcome.txt"/>
@@ -12,6 +13,12 @@
         <line choice="clap"/>
         <line choice="vst3"/>
         <line choice="instruments"/>
+        <line choice="weidinger">
+            <line choice="weidinger-app"/>
+            <line choice="weidinger-lv2"/>
+            <line choice="weidinger-clap"/>
+            <line choice="weidinger-vst3"/>
+        </line>
     </choices-outline>
     <choice id="app" title="The standalone" description="Dussek in Applications.">
         <pkg-ref id="de.ccoors.dussek.app"/>
@@ -28,9 +35,29 @@
     <choice id="instruments" title="The instruments" description="In /Library/Application Support/Dussek: the standalone and every plugin format play them." enabled="false" selected="true">
         <pkg-ref id="de.ccoors.dussek.instruments"/>
     </choice>
+    <choice id="weidinger" title="Weidinger (a preview)" description="The brass: trumpet, horn, tenor and bass trombone, tuba, physically modeled from the same sources. Its instruments go beside Dussek's.">
+        <pkg-ref id="de.ccoors.dussek.brass"/>
+    </choice>
+    <choice id="weidinger-app" title="Weidinger's standalone" description="Weidinger in Applications.">
+        <pkg-ref id="de.ccoors.dussek.weidinger-app"/>
+    </choice>
+    <choice id="weidinger-lv2" title="Weidinger's LV2 plugin" description="In /Library/Audio/Plug-Ins/LV2.">
+        <pkg-ref id="de.ccoors.dussek.weidinger-lv2"/>
+    </choice>
+    <choice id="weidinger-clap" title="Weidinger's CLAP plugin" description="In /Library/Audio/Plug-Ins/CLAP.">
+        <pkg-ref id="de.ccoors.dussek.weidinger-clap"/>
+    </choice>
+    <choice id="weidinger-vst3" title="Weidinger's VST3 plugin" description="In /Library/Audio/Plug-Ins/VST3.">
+        <pkg-ref id="de.ccoors.dussek.weidinger-vst3"/>
+    </choice>
     <pkg-ref id="de.ccoors.dussek.app">app.pkg</pkg-ref>
     <pkg-ref id="de.ccoors.dussek.lv2">lv2.pkg</pkg-ref>
     <pkg-ref id="de.ccoors.dussek.clap">clap.pkg</pkg-ref>
     <pkg-ref id="de.ccoors.dussek.vst3">vst3.pkg</pkg-ref>
     <pkg-ref id="de.ccoors.dussek.instruments">instruments.pkg</pkg-ref>
+    <pkg-ref id="de.ccoors.dussek.brass">brass.pkg</pkg-ref>
+    <pkg-ref id="de.ccoors.dussek.weidinger-app">weidinger-app.pkg</pkg-ref>
+    <pkg-ref id="de.ccoors.dussek.weidinger-lv2">weidinger-lv2.pkg</pkg-ref>
+    <pkg-ref id="de.ccoors.dussek.weidinger-clap">weidinger-clap.pkg</pkg-ref>
+    <pkg-ref id="de.ccoors.dussek.weidinger-vst3">weidinger-vst3.pkg</pkg-ref>
 </installer-gui-script>

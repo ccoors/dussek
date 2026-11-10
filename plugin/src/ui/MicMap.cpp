@@ -32,12 +32,18 @@ ViewTransform fitView(const PeMicGeometry& g, View v, const Rect& r)
         for (uint32_t i = 0; i < g.case_top_count; ++i)
             box.add(g.case_top[i][0], g.case_top[i][1]);
         box.add(g.keys_top[0], g.keys_top[1]);
-        for (int i = 1; i < 5; ++i)
-            box.add(g.markers[i][0], g.markers[i][1]);
         if (g.has_pair)
             for (int i = 0; i < 2; ++i)
                 box.add(g.mics[i][0], g.mics[i][1]);
         box.add(0, g.wall_y);
+        // the other positions' markers within 5 m of the instrument and its microphones (every keyboard instrument's
+        // Audience is within 4 m); one farther off (a bell's Audience, 6 m) would shrink the rest to a few pixels, so it
+        // waits pinned at the edge (markerScreen)
+        const double ca = (box.a0 + box.a1) / 2, cb = (box.b0 + box.b1) / 2;
+        constexpr double reach = 5.0;
+        for (int i = 1; i < 5; ++i)
+            if (std::hypot(g.markers[i][0] - ca, g.markers[i][1] - cb) <= reach)
+                box.add(g.markers[i][0], g.markers[i][1]);
     } else {
         if (g.outline_front_count > 0) {
             for (uint32_t i = 0; i < g.outline_front_count && i < 32; ++i)
@@ -63,6 +69,7 @@ ViewTransform fitView(const PeMicGeometry& g, View v, const Rect& r)
     const double ca = (box.a0 + box.a1) / 2, cb = (box.b0 + box.b1) / 2;
     t.ox = (float)(r.x + r.w / 2 - ca * t.scale);
     t.oy = (float)(t.flip ? r.y + h / 2 + cb * t.scale : r.y + h / 2 - cb * t.scale);
+    t.bounds = r;
     return t;
 }
 
@@ -87,11 +94,38 @@ int hitMarker(const PeMicGeometry& g, const ViewTransform& t, Point2 p, float ra
     for (int i = 1; i < 5; ++i) {
         if ((uint32_t)i == current)
             continue;
-        const Point2 s = t.toScreen(g.markers[i][0], g.markers[i][1]);
+        const Point2 s = markerScreen(g, t, i);
         if (std::hypot(s.x - p.x, s.y - p.y) <= radius)
             return i;
     }
     return 0;
+}
+
+Point2 markerScreen(const PeMicGeometry& g, const ViewTransform& t, int i)
+{
+    const Point2 s = t.toScreen(g.markers[i][0], g.markers[i][1]);
+    const Rect& r = t.bounds;
+    constexpr float inset = 10;
+    const float x0 = r.x + inset, x1 = r.x + r.w - inset, y0 = r.y + inset, y1 = r.y + std::max(r.h - kCaptionBand, 2 * inset) - inset;
+    if (r.w <= 2 * inset || (s.x >= r.x && s.x <= r.x + r.w && s.y >= r.y && s.y <= r.y + r.h - kCaptionBand))
+        return s; // in the view: where it is
+    // along the line from the view's middle toward it, to the first edge
+    const float cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, dx = s.x - cx, dy = s.y - cy;
+    float k = 1;
+    if (std::fabs(dx) > 1e-6f) k = std::min(k, (dx > 0 ? x1 - cx : x0 - cx) / dx);
+    if (std::fabs(dy) > 1e-6f) k = std::min(k, (dy > 0 ? y1 - cy : y0 - cy) / dy);
+    return { cx + k * dx, cy + k * dy };
+}
+
+MicLabel micLabel(Point2 dot, int which, const Rect& view)
+{
+    constexpr float gap = 10, letter = 8; // the letter's offset from its dot's center, about its width (the small font)
+    const int side = which == 0 ? -1 : 1;
+    const float x = dot.x + side * gap;
+    const bool fits = side < 0 ? x - letter >= view.x : x + letter <= view.x + view.w;
+    if (fits)
+        return { { x, dot.y }, side };
+    return { { std::min(std::max(dot.x, view.x + letter / 2), view.x + view.w - letter / 2), dot.y + gap + 2 }, 0 };
 }
 
 bool MicDrag::begin(const PeMicGeometry& g, View v, int which, double a, double b)

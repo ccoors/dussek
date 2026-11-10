@@ -18,6 +18,7 @@ pub enum Exciter {
     Tangent = 4,
     Mallet = 5,
     Thumb = 6,
+    Breath = 7,
 }
 
 /// The controls of `engine/tests/no_effect.rs` CONTROLS, in that order (their bit in `Info::inert`).
@@ -98,15 +99,38 @@ pub struct Menu {
     pub hidden: bool,
     /// the keyboard's colors reversed: dark naturals, light sharps (the plugin's strip)
     pub reversed_keys: bool,
+    /// a new kind of instrument, gaps allowed: the plugin marks it in the menu
+    pub experimental: bool,
+    /// the plugin's default choice among its instruments (a fresh instance, the Default preset), its place in the menu kept
+    pub first: bool,
     /// the mallets' display names, in the file's order (empty: none given)
     pub mallets: Vec<String>,
     /// by parameter symbol, sorted
     pub labels: Vec<(String, Label)>,
 }
 
+/// What a brass instrument's window shows.
+#[derive(Clone, Debug, PartialEq)]
+pub struct BrassInfo {
+    /// the lowest and highest key that plays (past them gray and silent)
+    pub low: u8,
+    pub high: u8,
+    /// its mutes, "open" first, in the project's order
+    pub mutes: Vec<String>,
+    /// it has the plunger
+    pub plunger: bool,
+    /// it glides on a slide
+    pub slide: bool,
+    pub experimental: bool,
+    /// where its bell points as played
+    pub pose: crate::mic::BellPose,
+}
+
 /// An instrument's report.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Info {
+    /// a brass instrument's own (its sound is its players')
+    pub brass: Option<BrassInfo>,
     pub body: Body,
     /// which instruments morph together (equal and nonzero; 1 the hammer-strung pianos, 2 the
     /// harpsichords, 3 the harps)
@@ -164,6 +188,10 @@ struct RawMenu {
     #[serde(default)]
     reversed_keys: bool,
     #[serde(default)]
+    experimental: bool,
+    #[serde(default)]
+    first: bool,
+    #[serde(default)]
     labels: std::collections::BTreeMap<String, RawLabel>,
     #[serde(default)]
     mallets: Vec<String>,
@@ -188,6 +216,8 @@ pub fn info(dir: impl AsRef<Path>) -> Result<Info, Error> {
                 group: m.group,
                 hidden: m.hidden,
                 reversed_keys: m.reversed_keys,
+                experimental: m.experimental,
+                first: m.first,
                 mallets: m.mallets,
                 labels: m.labels.into_iter().map(|(s, l)| (s, Label { name: l.name, description: l.description })).collect(),
             })
@@ -217,6 +247,7 @@ fn report(f: &Facts, menu: Option<Menu>) -> Info {
     } else {
         Exciter::Quill
     };
+    let exciter = if f.brass.is_some() { Exciter::Breath } else { exciter };
     let mut preparations = Vec::new();
     if hammer {
         preparations.push(1);
@@ -268,12 +299,18 @@ fn report(f: &Facts, menu: Option<Menu>) -> Info {
     set(Control::Restrike, !(any(&|n| n.hammer) || exciter == Exciter::Mallet));
     set(Control::Dynamics, !(f.level_table && all(&|n| n.hammer && !n.tangent) && f.mallets.is_empty() && !f.body.is_bars()));
     // the board's bass is a hammer piano's alone (`Instrument::is_hammer_piano`)
-    let hammer_piano = all(&|n| n.hammer && !n.tangent) && f.mallets.is_empty() && !f.body.is_bars();
+    let hammer_piano = !f.notes.is_empty() && all(&|n| n.hammer && !n.tangent) && f.mallets.is_empty() && !f.body.is_bars();
     set(Control::BoardBass, !hammer_piano);
-    let body = f.body;
+    let body = match (&f.brass, f.body) { (Some(b), Body::Bell(_)) => Body::Bell(b.pose), (_, body) => body };
+    // a bell's players: of all this only the Dynamics and the variation act, the strings are silent
+    if f.brass.is_some() {
+        preparations.clear();
+        inert = u32::MAX & !(1 << Control::Dynamics as u32) & !(1 << Control::Variation as u32);
+    }
     Info {
+        brass: f.brass.clone().map(|b| BrassInfo { experimental: menu.as_ref().is_some_and(|m| m.experimental), ..b }),
         body,
-        morph_family: f.morph_family,
+        morph_family: if f.brass.is_some() { 0 } else { f.morph_family },
         hammer_piano,
         exciter,
         recorded: f.recorded,
@@ -287,7 +324,7 @@ fn report(f: &Facts, menu: Option<Menu>) -> Info {
         dampers,
         bars: body.is_bars(),
         spread: body.own_range().is_some(),
-        lid: !(body.is_bars() || body.is_harp() || matches!(body, Body::Guitar | Body::Strumstick) || body.is_zither()),
+        lid: !(body.is_bars() || body.is_harp() || matches!(body, Body::Guitar | Body::Strumstick | Body::Bell(_)) || body.is_zither()),
         soft_pedal: hammer,
         mallets: f.mallets.clone(),
         preparations,

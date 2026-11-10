@@ -1,0 +1,111 @@
+# Iowa MIS trumpet, no vibrato (anechoic): the first brass instrument. Its mutes' shapes and their
+# correction are measured here and lent to the others ([uses] mutes)
+[project]
+# recorded anechoic (Iowa MIS), as the Compare page renders it
+recorded_dry = true
+family = "brass_lender"
+
+[menu]
+name = "Trumpet"
+group = "Brass"
+experimental = true
+# Weidinger's default choice (a fresh instance, the Default preset): the brass's most played
+first = true
+
+# Weidinger has these two texts built in since step 248: drop both labels at the next rebuild
+[menu.labels.variation]
+name = "Player's variation"
+description = "How much each note differs from the last in the virtual player's hands: its air, vibrato and intonation. 100 % as it was fitted, 0 every note alike. From the next note."
+
+[menu.labels.dynamics]
+name = "Dynamics"
+description = "How the velocity maps to the air: less brings the soft notes up, with more air, so also brighter; more takes them down. 45 dB plays the velocity as it comes."
+
+[pose]
+# the bell as played: forward and a little down, the bell 45 cm in front of the ears and a little to
+# their left; azimuth clockwise from the player's front and elevation up, degrees; the ears from the
+# bell's mouth (right, front, up), m (the microphones' Player, the Audience at their height)
+azimuth = 0
+elevation = -14
+ears = [0.15, -0.45, 0.0]
+
+[brass]
+# the attack (step 244): never under the note's pressure (a high note close to its threshold waited for it, 30-50 ms);
+# its rise stays 8 ms (a slower one slows its speech)
+attack_lean = false
+# a tongued note on a release still sounding (the strip's glissando) fades the release out and starts from rest
+# (step 247)
+attack_from_rest = true
+# the sizes are round numbers from the literature for an instrument of the usual kind, not
+# measurements of the recorded one
+# (length, radius in, radius out), m: cup, throat, backbore, leadpipe
+mouth = [[0.005, 0.008, 0.008], [0.006, 0.00183, 0.00183], [0.075, 0.00183, 0.0043], [0.26, 0.0045, 0.00583]]
+# (length, radius), m
+cyl = [0.485, 0.00583]
+# (length, radius at the mouth, flare)
+bell = [0.55, 0.0615, 0.65]
+# (up to this key, the open series' first mode in Hz, tube length, cylinder less)
+sides = [[127, 116.54, 1.42, 0.0]]
+width = 0.01
+mu = 1.5
+y0 = 0.00015
+nl = 1.0
+fmin = 40.0
+center = 67
+top_from = 86
+low = 54
+high = 86
+stem = "Trumpet.novib"
+hp = 70.0
+mutes = ["straight", "cup", "wah", "wah_stem", "bucket", "plunger"]
+plunger = true
+# the breath's level per band, dB, 0.5-1, 1-2, 2-4, 4-8, 8-16 kHz: the floor between the harmonics
+# 3 dB under the recordings'
+noise = [-3, -3, -5, -16, -16]
+# where the fit's gain starts: a loud note's peaks at about the output's soft limit
+gain_db = -5.0
+
+# the attack's slack lips, at most this share of the way to the next mode down
+scoop_span = 0.25
+# velocity to air: at these velocities (first row), this air (second)
+vel_air = [[1, 30, 64, 105, 127], [30, 48, 72, 112, 127]]
+
+# what the mutes are compared with: VSCO 2 CE's muted notes, a comparison, not notes to fit
+[brass.mute_recordings]
+root = "vsco-2-ce"
+folder = "Brass/Trumpet"
+# (the folder of a mute's notes, the mute, its notes)
+plan = [["straightM-sus", "straight", ["C3", "D3", "G3", "A#3", "D4", "F4", "A4"]],
+        ["harmonM-sus", "wah_stem", ["C3", "D#3", "G#3", "A#3", "D4", "F4", "A4"]]]
+
+[[part]]
+id = "trumpet"
+
+# Iowa's runs cut into notes by analysis/split_brass.py
+[[part.source]]
+id = "trumpet_iowa"
+role = "main"
+root = "iowa-mis-brass"
+dynamics = { pp = "pp", mf = "mf", ff = "ff" }
+levels = "recorded"
+
+[part.source.map]
+kind = "pattern"
+glob = "notes/Trumpet.novib/*/*.wav"
+match = "relpath"
+regex = 'notes/Trumpet\.novib/(?P<dynamic>pp|mf|ff)/(?P<midi>\d+)\.wav'
+note = { group = "midi", style = "midi" }
+layers = ["pp", "mf", "ff"]
+order = "layer"
+
+[export]
+# at the grands' loudness: step 173's phrase (an arpeggio at 80, four long notes at 95) at Audience
+# measured −13.1 LUFS against the grands' median −30.4 (step 243)
+output_gain_db = -17.5
+
+[license]
+set = "University of Iowa Musical Instrument Samples: Trumpet; the mutes compared with VSCO 2 CE (CC0)"
+author = "University of Iowa Electronic Music Studios"
+url = "https://theremin.music.uiowa.edu/MIS.html"
+terms = "\"Since 1997, these recordings have been freely available on this website and may be downloaded and used for any projects, without restrictions.\""
+source_license = "free-use"

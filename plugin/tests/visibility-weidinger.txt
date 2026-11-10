@@ -1,0 +1,405 @@
+bass_trombone body 18
+bass_trombone label aftertouch_to Aftertouch to|What pressing on a held key does.
+bass_trombone label air Air|How hard the air blows. Moving it (or its controller) takes over from the keys.
+bass_trombone label air_added Air added|Air on top of what the keys or the Air knob give, up to the top at 100 %. The mod wheel (CC 1) plays it.
+bass_trombone label air_set Air by hand|On: the Air knob sets the air. Off: the air comes from how hard the keys are struck.
+bass_trombone label brass_mute Mute|What goes in the bell. Takes effect from the next tongued note: the notes sounding and a slur keep theirs.
+bass_trombone label brass_solo Solo|Off (Auto): a line is one player, a chord a section of up to six. On: one player, the last key wins.
+bass_trombone label brass_vibrato Vibrato|Above 0 it replaces the virtual player's vibrato: the depth, at a fixed rate.
+bass_trombone label concert_pitch Concert pitch|The pitch of A4. The instrument is rebuilt in the background; the sounding notes take the new tuning.
+bass_trombone label distance_level Distance level|Total: the level stays the same as you move away (far positions change little, the room dominates). Direct sound: the direct sound stays the same and the room grows with the distance; for an external reverb, set Room to Off.
+bass_trombone label dynamics Dynamics|How the velocity maps to the air: less brings the soft notes up, with more air, so also brighter; more takes them down. 45 dB plays the velocity as it comes.
+bass_trombone label flutter Flutter|The tongue rolling: the air cut about 25 times a second.
+bass_trombone label glide_hold Glide held|On while held: every slur within a tritone goes by the slide (a pedal, or a knob past its middle).
+bass_trombone label glide_mode Glide|A slur on the slide. Auto: a soft key after a long note, close by, the way a player would. On: every slur within a tritone. Off: never.
+bass_trombone label glide_time Glide time|How long the slide takes over a minor third.
+bass_trombone label growl Growl|The throat's rough edge on the air: more breath and a rattle in the tone.
+bass_trombone label mic_distance Mic distance|0 = the position's default. Far positions (Audience) are mostly room: the distance changes little there.
+bass_trombone label mic_l_pattern Left mic pattern|0 omni, 50 cardioid, 75 hypercardioid, 100 figure-8. A pattern hears what it points at; omni ignores the aim.
+bass_trombone label mic_l_pitch Left mic tilt|Up or down from level, in degrees (positive: up). Omni ignores the aim.
+bass_trombone label mic_l_x Left mic x|From the bell's mouth: x to the player's right (+) or left (-), y to the player's front (+) or back (-), z up. Dragging a microphone in the drawing sets these.
+bass_trombone label mic_l_y Left mic y|Left microphone, y: to the player's front (+) or back (-) of the bell's mouth.
+bass_trombone label mic_l_yaw Left mic aim|Direction in the floor plane: 0 the way the player faces, positive towards the player's right.
+bass_trombone label mic_l_z Left mic z|Left microphone, z: the height above the bell's mouth.
+bass_trombone label mic_position Mic position|Where the two microphones stand: Recording (the recording's own sound, 1.5 m on the bell's axis), Player (at the player's ears), Audience (the default: 6 m in front, at the player's height), Close 1 (30 cm on the bell's axis), Close 2 (30 cm from the bell, well off its axis) or Custom (both placed freely). Click a marker in the drawing to choose one.
+bass_trombone label mic_r_pattern Right mic pattern|As for the left microphone.
+bass_trombone label mic_r_pitch Right mic tilt|As for the left microphone.
+bass_trombone label mic_r_x Right mic x|Right microphone, x: to the player's right (+) or left (-) of the bell's mouth. Dragging a microphone in the drawing sets x, y and z.
+bass_trombone label mic_r_y Right mic y|Right microphone, y: to the player's front (+) or back (-) of the bell's mouth.
+bass_trombone label mic_r_yaw Right mic aim|As for the left microphone.
+bass_trombone label mic_r_z Right mic z|Right microphone, z: the height above the bell's mouth.
+bass_trombone label mic_spacing Mic spacing|How far apart the two microphones stand, across the line of sight: 0 is mono, more widens the stereo image. Dragging the pair in the drawing sets it.
+bass_trombone label plunger Plunger|The hand over the plunger, 0 % shut, 100 % open. Moving it (or its controller) takes over from the virtual player's hand.
+bass_trombone label plunger_set Plunger by hand|On: the Plunger knob sets the hand. Off: the virtual player's hand follows how hard the key was struck, without a player half open.
+bass_trombone label room Room|The recording room's reverberation against the instrument's own sound. The left end is off: the dry instrument, for an external reverb.
+bass_trombone label temperament Temperament|Equal (every key alike) or a historical temperament: keys near the temperament key sound purer, far ones more colorful. As recorded: each recorded key at its own pitch, as the instrument was tuned in the recordings. Scala file: a scale from a .scl file, any number of notes (a .kbm key map of the same name beside it lays it on the keys). A stays at the concert pitch.
+bass_trombone label temperament_key Temperament key|The key a historical temperament or a Scala file's scale is centered on (its "C"). No effect with Equal temperament, As recorded or a Scala file with its own key map.
+bass_trombone label variation Player's variation|How much each note differs from the last in the virtual player's hands: its air, vibrato and intonation. 100 % as it was fitted, 0 every note alike. From the next note.
+bass_trombone label virtual_player Virtual player|On: the air's shape, vibrato and intonation made from the keys alone. Off, for wind controllers and DAWs: the air from velocity, nothing else.
+bass_trombone label volume Volume|The output level, after everything else. The left end is off.
+bass_trombone mallets 
+bass_trombone pedals
+bass_trombone preps
+bass_trombone recorded 28 65
+bass_trombone tabs Sound Touch Mics Tuning MIDI About Player
+bass_trombone visible mic=0 prep=0 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=0 prep=1 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=0 prep=2 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=0 prep=3 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=0 prep=4 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=0 prep=5 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=1 prep=0 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=1 prep=1 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=1 prep=2 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=1 prep=3 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=1 prep=4 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=1 prep=5 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=2 prep=0 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=2 prep=1 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=2 prep=2 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=2 prep=3 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=2 prep=4 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=2 prep=5 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=3 prep=0 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=3 prep=1 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=3 prep=2 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=3 prep=3 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=3 prep=4 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=3 prep=5 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=4 prep=0 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=4 prep=1 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=4 prep=2 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=4 prep=3 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=4 prep=4 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=4 prep=5 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=5 prep=0 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=5 prep=1 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=5 prep=2 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=5 prep=3 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=5 prep=4 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+bass_trombone visible mic=5 prep=5 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+horn body 18
+horn label aftertouch_to Aftertouch to|What pressing on a held key does.
+horn label air Air|How hard the air blows. Moving it (or its controller) takes over from the keys.
+horn label air_added Air added|Air on top of what the keys or the Air knob give, up to the top at 100 %. The mod wheel (CC 1) plays it.
+horn label air_set Air by hand|On: the Air knob sets the air. Off: the air comes from how hard the keys are struck.
+horn label brass_mute Mute|What goes in the bell. Takes effect from the next tongued note: the notes sounding and a slur keep theirs.
+horn label brass_solo Solo|Off (Auto): a line is one player, a chord a section of up to six. On: one player, the last key wins.
+horn label brass_vibrato Vibrato|Above 0 it replaces the virtual player's vibrato: the depth, at a fixed rate.
+horn label concert_pitch Concert pitch|The pitch of A4. The instrument is rebuilt in the background; the sounding notes take the new tuning.
+horn label distance_level Distance level|Total: the level stays the same as you move away (far positions change little, the room dominates). Direct sound: the direct sound stays the same and the room grows with the distance; for an external reverb, set Room to Off.
+horn label dynamics Dynamics|How the velocity maps to the air: less brings the soft notes up, with more air, so also brighter; more takes them down. 45 dB plays the velocity as it comes.
+horn label flutter Flutter|The tongue rolling: the air cut about 25 times a second.
+horn label glide_hold Glide held|On while held: every slur within a tritone goes by the slide (a pedal, or a knob past its middle).
+horn label glide_mode Glide|A slur on the slide. Auto: a soft key after a long note, close by, the way a player would. On: every slur within a tritone. Off: never.
+horn label glide_time Glide time|How long the slide takes over a minor third.
+horn label growl Growl|The throat's rough edge on the air: more breath and a rattle in the tone.
+horn label mic_distance Mic distance|0 = the position's default. Far positions (Audience) are mostly room: the distance changes little there.
+horn label mic_l_pattern Left mic pattern|0 omni, 50 cardioid, 75 hypercardioid, 100 figure-8. A pattern hears what it points at; omni ignores the aim.
+horn label mic_l_pitch Left mic tilt|Up or down from level, in degrees (positive: up). Omni ignores the aim.
+horn label mic_l_x Left mic x|From the bell's mouth: x to the player's right (+) or left (-), y to the player's front (+) or back (-), z up. Dragging a microphone in the drawing sets these.
+horn label mic_l_y Left mic y|Left microphone, y: to the player's front (+) or back (-) of the bell's mouth.
+horn label mic_l_yaw Left mic aim|Direction in the floor plane: 0 the way the player faces, positive towards the player's right.
+horn label mic_l_z Left mic z|Left microphone, z: the height above the bell's mouth.
+horn label mic_position Mic position|Where the two microphones stand: Recording (the recording's own sound, 1.5 m on the bell's axis), Player (at the player's ears), Audience (the default: 6 m in front, at the player's height), Close 1 (30 cm on the bell's axis), Close 2 (30 cm from the bell, well off its axis) or Custom (both placed freely). Click a marker in the drawing to choose one.
+horn label mic_r_pattern Right mic pattern|As for the left microphone.
+horn label mic_r_pitch Right mic tilt|As for the left microphone.
+horn label mic_r_x Right mic x|Right microphone, x: to the player's right (+) or left (-) of the bell's mouth. Dragging a microphone in the drawing sets x, y and z.
+horn label mic_r_y Right mic y|Right microphone, y: to the player's front (+) or back (-) of the bell's mouth.
+horn label mic_r_yaw Right mic aim|As for the left microphone.
+horn label mic_r_z Right mic z|Right microphone, z: the height above the bell's mouth.
+horn label mic_spacing Mic spacing|How far apart the two microphones stand, across the line of sight: 0 is mono, more widens the stereo image. Dragging the pair in the drawing sets it.
+horn label plunger Plunger|The hand over the plunger, 0 % shut, 100 % open. Moving it (or its controller) takes over from the virtual player's hand.
+horn label plunger_set Plunger by hand|On: the Plunger knob sets the hand. Off: the virtual player's hand follows how hard the key was struck, without a player half open.
+horn label room Room|The recording room's reverberation against the instrument's own sound. The left end is off: the dry instrument, for an external reverb.
+horn label temperament Temperament|Equal (every key alike) or a historical temperament: keys near the temperament key sound purer, far ones more colorful. As recorded: each recorded key at its own pitch, as the instrument was tuned in the recordings. Scala file: a scale from a .scl file, any number of notes (a .kbm key map of the same name beside it lays it on the keys). A stays at the concert pitch.
+horn label temperament_key Temperament key|The key a historical temperament or a Scala file's scale is centered on (its "C"). No effect with Equal temperament, As recorded or a Scala file with its own key map.
+horn label variation Player's variation|How much each note differs from the last in the virtual player's hands: its air, vibrato and intonation. 100 % as it was fitted, 0 every note alike. From the next note.
+horn label virtual_player Virtual player|On: the air's shape, vibrato and intonation made from the keys alone. Off, for wind controllers and DAWs: the air from velocity, nothing else.
+horn label volume Volume|The output level, after everything else. The left end is off.
+horn mallets 
+horn pedals
+horn preps
+horn recorded 38 77
+horn tabs Sound Touch Mics Tuning MIDI About Player
+horn visible mic=0 prep=0 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=0 prep=1 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=0 prep=2 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=0 prep=3 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=0 prep=4 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=0 prep=5 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=1 prep=0 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=1 prep=1 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=1 prep=2 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=1 prep=3 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=1 prep=4 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=1 prep=5 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=2 prep=0 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=2 prep=1 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=2 prep=2 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=2 prep=3 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=2 prep=4 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=2 prep=5 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=3 prep=0 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=3 prep=1 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=3 prep=2 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=3 prep=3 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=3 prep=4 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=3 prep=5 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=4 prep=0 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=4 prep=1 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=4 prep=2 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=4 prep=3 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=4 prep=4 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=4 prep=5 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=5 prep=0 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=5 prep=1 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=5 prep=2 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=5 prep=3 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=5 prep=4 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+horn visible mic=5 prep=5 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+menu 00 Brass|Bass Trombone (experimental)|bass_trombone
+menu 01 Brass|Horn (experimental)|horn
+menu 02 Brass|Tenor Trombone (experimental)|tenor_trombone
+menu 03 Brass|Trumpet (experimental)|trumpet
+menu 04 Brass|Tuba (experimental)|tuba
+tenor_trombone body 18
+tenor_trombone label aftertouch_to Aftertouch to|What pressing on a held key does.
+tenor_trombone label air Air|How hard the air blows. Moving it (or its controller) takes over from the keys.
+tenor_trombone label air_added Air added|Air on top of what the keys or the Air knob give, up to the top at 100 %. The mod wheel (CC 1) plays it.
+tenor_trombone label air_set Air by hand|On: the Air knob sets the air. Off: the air comes from how hard the keys are struck.
+tenor_trombone label brass_mute Mute|What goes in the bell. Takes effect from the next tongued note: the notes sounding and a slur keep theirs.
+tenor_trombone label brass_solo Solo|Off (Auto): a line is one player, a chord a section of up to six. On: one player, the last key wins.
+tenor_trombone label brass_vibrato Vibrato|Above 0 it replaces the virtual player's vibrato: the depth, at a fixed rate.
+tenor_trombone label concert_pitch Concert pitch|The pitch of A4. The instrument is rebuilt in the background; the sounding notes take the new tuning.
+tenor_trombone label distance_level Distance level|Total: the level stays the same as you move away (far positions change little, the room dominates). Direct sound: the direct sound stays the same and the room grows with the distance; for an external reverb, set Room to Off.
+tenor_trombone label dynamics Dynamics|How the velocity maps to the air: less brings the soft notes up, with more air, so also brighter; more takes them down. 45 dB plays the velocity as it comes.
+tenor_trombone label flutter Flutter|The tongue rolling: the air cut about 25 times a second.
+tenor_trombone label glide_hold Glide held|On while held: every slur within a tritone goes by the slide (a pedal, or a knob past its middle).
+tenor_trombone label glide_mode Glide|A slur on the slide. Auto: a soft key after a long note, close by, the way a player would. On: every slur within a tritone. Off: never.
+tenor_trombone label glide_time Glide time|How long the slide takes over a minor third.
+tenor_trombone label growl Growl|The throat's rough edge on the air: more breath and a rattle in the tone.
+tenor_trombone label mic_distance Mic distance|0 = the position's default. Far positions (Audience) are mostly room: the distance changes little there.
+tenor_trombone label mic_l_pattern Left mic pattern|0 omni, 50 cardioid, 75 hypercardioid, 100 figure-8. A pattern hears what it points at; omni ignores the aim.
+tenor_trombone label mic_l_pitch Left mic tilt|Up or down from level, in degrees (positive: up). Omni ignores the aim.
+tenor_trombone label mic_l_x Left mic x|From the bell's mouth: x to the player's right (+) or left (-), y to the player's front (+) or back (-), z up. Dragging a microphone in the drawing sets these.
+tenor_trombone label mic_l_y Left mic y|Left microphone, y: to the player's front (+) or back (-) of the bell's mouth.
+tenor_trombone label mic_l_yaw Left mic aim|Direction in the floor plane: 0 the way the player faces, positive towards the player's right.
+tenor_trombone label mic_l_z Left mic z|Left microphone, z: the height above the bell's mouth.
+tenor_trombone label mic_position Mic position|Where the two microphones stand: Recording (the recording's own sound, 1.5 m on the bell's axis), Player (at the player's ears), Audience (the default: 6 m in front, at the player's height), Close 1 (30 cm on the bell's axis), Close 2 (30 cm from the bell, well off its axis) or Custom (both placed freely). Click a marker in the drawing to choose one.
+tenor_trombone label mic_r_pattern Right mic pattern|As for the left microphone.
+tenor_trombone label mic_r_pitch Right mic tilt|As for the left microphone.
+tenor_trombone label mic_r_x Right mic x|Right microphone, x: to the player's right (+) or left (-) of the bell's mouth. Dragging a microphone in the drawing sets x, y and z.
+tenor_trombone label mic_r_y Right mic y|Right microphone, y: to the player's front (+) or back (-) of the bell's mouth.
+tenor_trombone label mic_r_yaw Right mic aim|As for the left microphone.
+tenor_trombone label mic_r_z Right mic z|Right microphone, z: the height above the bell's mouth.
+tenor_trombone label mic_spacing Mic spacing|How far apart the two microphones stand, across the line of sight: 0 is mono, more widens the stereo image. Dragging the pair in the drawing sets it.
+tenor_trombone label plunger Plunger|The hand over the plunger, 0 % shut, 100 % open. Moving it (or its controller) takes over from the virtual player's hand.
+tenor_trombone label plunger_set Plunger by hand|On: the Plunger knob sets the hand. Off: the virtual player's hand follows how hard the key was struck, without a player half open.
+tenor_trombone label room Room|The recording room's reverberation against the instrument's own sound. The left end is off: the dry instrument, for an external reverb.
+tenor_trombone label temperament Temperament|Equal (every key alike) or a historical temperament: keys near the temperament key sound purer, far ones more colorful. As recorded: each recorded key at its own pitch, as the instrument was tuned in the recordings. Scala file: a scale from a .scl file, any number of notes (a .kbm key map of the same name beside it lays it on the keys). A stays at the concert pitch.
+tenor_trombone label temperament_key Temperament key|The key a historical temperament or a Scala file's scale is centered on (its "C"). No effect with Equal temperament, As recorded or a Scala file with its own key map.
+tenor_trombone label variation Player's variation|How much each note differs from the last in the virtual player's hands: its air, vibrato and intonation. 100 % as it was fitted, 0 every note alike. From the next note.
+tenor_trombone label virtual_player Virtual player|On: the air's shape, vibrato and intonation made from the keys alone. Off, for wind controllers and DAWs: the air from velocity, nothing else.
+tenor_trombone label volume Volume|The output level, after everything else. The left end is off.
+tenor_trombone mallets 
+tenor_trombone pedals
+tenor_trombone preps
+tenor_trombone recorded 40 72
+tenor_trombone tabs Sound Touch Mics Tuning MIDI About Player
+tenor_trombone visible mic=0 prep=0 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=0 prep=1 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=0 prep=2 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=0 prep=3 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=0 prep=4 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=0 prep=5 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=1 prep=0 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=1 prep=1 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=1 prep=2 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=1 prep=3 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=1 prep=4 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=1 prep=5 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=2 prep=0 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=2 prep=1 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=2 prep=2 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=2 prep=3 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=2 prep=4 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=2 prep=5 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=3 prep=0 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=3 prep=1 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=3 prep=2 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=3 prep=3 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=3 prep=4 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=3 prep=5 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=4 prep=0 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=4 prep=1 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=4 prep=2 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=4 prep=3 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=4 prep=4 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=4 prep=5 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=5 prep=0 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=5 prep=1 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=5 prep=2 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=5 prep=3 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=5 prep=4 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+tenor_trombone visible mic=5 prep=5 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo glide_mode glide_hold glide_time aftertouch_to air_added
+trumpet body 18
+trumpet label aftertouch_to Aftertouch to|What pressing on a held key does.
+trumpet label air Air|How hard the air blows. Moving it (or its controller) takes over from the keys.
+trumpet label air_added Air added|Air on top of what the keys or the Air knob give, up to the top at 100 %. The mod wheel (CC 1) plays it.
+trumpet label air_set Air by hand|On: the Air knob sets the air. Off: the air comes from how hard the keys are struck.
+trumpet label brass_mute Mute|What goes in the bell. Takes effect from the next tongued note: the notes sounding and a slur keep theirs.
+trumpet label brass_solo Solo|Off (Auto): a line is one player, a chord a section of up to six. On: one player, the last key wins.
+trumpet label brass_vibrato Vibrato|Above 0 it replaces the virtual player's vibrato: the depth, at a fixed rate.
+trumpet label concert_pitch Concert pitch|The pitch of A4. The instrument is rebuilt in the background; the sounding notes take the new tuning.
+trumpet label distance_level Distance level|Total: the level stays the same as you move away (far positions change little, the room dominates). Direct sound: the direct sound stays the same and the room grows with the distance; for an external reverb, set Room to Off.
+trumpet label dynamics Dynamics|How the velocity maps to the air: less brings the soft notes up, with more air, so also brighter; more takes them down. 45 dB plays the velocity as it comes.
+trumpet label flutter Flutter|The tongue rolling: the air cut about 25 times a second.
+trumpet label glide_hold Glide held|On while held: every slur within a tritone goes by the slide (a pedal, or a knob past its middle).
+trumpet label glide_mode Glide|A slur on the slide. Auto: a soft key after a long note, close by, the way a player would. On: every slur within a tritone. Off: never.
+trumpet label glide_time Glide time|How long the slide takes over a minor third.
+trumpet label growl Growl|The throat's rough edge on the air: more breath and a rattle in the tone.
+trumpet label mic_distance Mic distance|0 = the position's default. Far positions (Audience) are mostly room: the distance changes little there.
+trumpet label mic_l_pattern Left mic pattern|0 omni, 50 cardioid, 75 hypercardioid, 100 figure-8. A pattern hears what it points at; omni ignores the aim.
+trumpet label mic_l_pitch Left mic tilt|Up or down from level, in degrees (positive: up). Omni ignores the aim.
+trumpet label mic_l_x Left mic x|From the bell's mouth: x to the player's right (+) or left (-), y to the player's front (+) or back (-), z up. Dragging a microphone in the drawing sets these.
+trumpet label mic_l_y Left mic y|Left microphone, y: to the player's front (+) or back (-) of the bell's mouth.
+trumpet label mic_l_yaw Left mic aim|Direction in the floor plane: 0 the way the player faces, positive towards the player's right.
+trumpet label mic_l_z Left mic z|Left microphone, z: the height above the bell's mouth.
+trumpet label mic_position Mic position|Where the two microphones stand: Recording (the recording's own sound, 1.5 m on the bell's axis), Player (at the player's ears), Audience (the default: 6 m in front, at the player's height), Close 1 (30 cm on the bell's axis), Close 2 (30 cm from the bell, well off its axis) or Custom (both placed freely). Click a marker in the drawing to choose one.
+trumpet label mic_r_pattern Right mic pattern|As for the left microphone.
+trumpet label mic_r_pitch Right mic tilt|As for the left microphone.
+trumpet label mic_r_x Right mic x|Right microphone, x: to the player's right (+) or left (-) of the bell's mouth. Dragging a microphone in the drawing sets x, y and z.
+trumpet label mic_r_y Right mic y|Right microphone, y: to the player's front (+) or back (-) of the bell's mouth.
+trumpet label mic_r_yaw Right mic aim|As for the left microphone.
+trumpet label mic_r_z Right mic z|Right microphone, z: the height above the bell's mouth.
+trumpet label mic_spacing Mic spacing|How far apart the two microphones stand, across the line of sight: 0 is mono, more widens the stereo image. Dragging the pair in the drawing sets it.
+trumpet label plunger Plunger|The hand over the plunger, 0 % shut, 100 % open. Moving it (or its controller) takes over from the virtual player's hand.
+trumpet label plunger_set Plunger by hand|On: the Plunger knob sets the hand. Off: the virtual player's hand follows how hard the key was struck, without a player half open.
+trumpet label room Room|The recording room's reverberation against the instrument's own sound. The left end is off: the dry instrument, for an external reverb.
+trumpet label temperament Temperament|Equal (every key alike) or a historical temperament: keys near the temperament key sound purer, far ones more colorful. As recorded: each recorded key at its own pitch, as the instrument was tuned in the recordings. Scala file: a scale from a .scl file, any number of notes (a .kbm key map of the same name beside it lays it on the keys). A stays at the concert pitch.
+trumpet label temperament_key Temperament key|The key a historical temperament or a Scala file's scale is centered on (its "C"). No effect with Equal temperament, As recorded or a Scala file with its own key map.
+trumpet label variation Player's variation|How much each note differs from the last in the virtual player's hands: its air, vibrato and intonation. 100 % as it was fitted, 0 every note alike. From the next note.
+trumpet label virtual_player Virtual player|On: the air's shape, vibrato and intonation made from the keys alone. Off, for wind controllers and DAWs: the air from velocity, nothing else.
+trumpet label volume Volume|The output level, after everything else. The left end is off.
+trumpet mallets 
+trumpet pedals
+trumpet preps
+trumpet recorded 54 86
+trumpet tabs Sound Touch Mics Tuning MIDI About Player
+trumpet visible mic=0 prep=0 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=0 prep=1 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=0 prep=2 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=0 prep=3 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=0 prep=4 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=0 prep=5 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=1 prep=0 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=1 prep=1 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=1 prep=2 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=1 prep=3 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=1 prep=4 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=1 prep=5 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=2 prep=0 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=2 prep=1 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=2 prep=2 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=2 prep=3 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=2 prep=4 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=2 prep=5 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=3 prep=0 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=3 prep=1 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=3 prep=2 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=3 prep=3 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=3 prep=4 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=3 prep=5 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=4 prep=0 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=4 prep=1 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=4 prep=2 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=4 prep=3 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=4 prep=4 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=4 prep=5 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=5 prep=0 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=5 prep=1 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=5 prep=2 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=5 prep=3 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=5 prep=4 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+trumpet visible mic=5 prep=5 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba body 18
+tuba label aftertouch_to Aftertouch to|What pressing on a held key does.
+tuba label air Air|How hard the air blows. Moving it (or its controller) takes over from the keys.
+tuba label air_added Air added|Air on top of what the keys or the Air knob give, up to the top at 100 %. The mod wheel (CC 1) plays it.
+tuba label air_set Air by hand|On: the Air knob sets the air. Off: the air comes from how hard the keys are struck.
+tuba label brass_mute Mute|What goes in the bell. Takes effect from the next tongued note: the notes sounding and a slur keep theirs.
+tuba label brass_solo Solo|Off (Auto): a line is one player, a chord a section of up to six. On: one player, the last key wins.
+tuba label brass_vibrato Vibrato|Above 0 it replaces the virtual player's vibrato: the depth, at a fixed rate.
+tuba label concert_pitch Concert pitch|The pitch of A4. The instrument is rebuilt in the background; the sounding notes take the new tuning.
+tuba label distance_level Distance level|Total: the level stays the same as you move away (far positions change little, the room dominates). Direct sound: the direct sound stays the same and the room grows with the distance; for an external reverb, set Room to Off.
+tuba label dynamics Dynamics|How the velocity maps to the air: less brings the soft notes up, with more air, so also brighter; more takes them down. 45 dB plays the velocity as it comes.
+tuba label flutter Flutter|The tongue rolling: the air cut about 25 times a second.
+tuba label glide_hold Glide held|On while held: every slur within a tritone goes by the slide (a pedal, or a knob past its middle).
+tuba label glide_mode Glide|A slur on the slide. Auto: a soft key after a long note, close by, the way a player would. On: every slur within a tritone. Off: never.
+tuba label glide_time Glide time|How long the slide takes over a minor third.
+tuba label growl Growl|The throat's rough edge on the air: more breath and a rattle in the tone.
+tuba label mic_distance Mic distance|0 = the position's default. Far positions (Audience) are mostly room: the distance changes little there.
+tuba label mic_l_pattern Left mic pattern|0 omni, 50 cardioid, 75 hypercardioid, 100 figure-8. A pattern hears what it points at; omni ignores the aim.
+tuba label mic_l_pitch Left mic tilt|Up or down from level, in degrees (positive: up). Omni ignores the aim.
+tuba label mic_l_x Left mic x|From the bell's mouth: x to the player's right (+) or left (-), y to the player's front (+) or back (-), z up. Dragging a microphone in the drawing sets these.
+tuba label mic_l_y Left mic y|Left microphone, y: to the player's front (+) or back (-) of the bell's mouth.
+tuba label mic_l_yaw Left mic aim|Direction in the floor plane: 0 the way the player faces, positive towards the player's right.
+tuba label mic_l_z Left mic z|Left microphone, z: the height above the bell's mouth.
+tuba label mic_position Mic position|Where the two microphones stand: Recording (the recording's own sound, 1.5 m on the bell's axis), Player (at the player's ears), Audience (the default: 6 m in front, at the player's height), Close 1 (30 cm on the bell's axis), Close 2 (30 cm from the bell, well off its axis) or Custom (both placed freely). Click a marker in the drawing to choose one.
+tuba label mic_r_pattern Right mic pattern|As for the left microphone.
+tuba label mic_r_pitch Right mic tilt|As for the left microphone.
+tuba label mic_r_x Right mic x|Right microphone, x: to the player's right (+) or left (-) of the bell's mouth. Dragging a microphone in the drawing sets x, y and z.
+tuba label mic_r_y Right mic y|Right microphone, y: to the player's front (+) or back (-) of the bell's mouth.
+tuba label mic_r_yaw Right mic aim|As for the left microphone.
+tuba label mic_r_z Right mic z|Right microphone, z: the height above the bell's mouth.
+tuba label mic_spacing Mic spacing|How far apart the two microphones stand, across the line of sight: 0 is mono, more widens the stereo image. Dragging the pair in the drawing sets it.
+tuba label plunger Plunger|The hand over the plunger, 0 % shut, 100 % open. Moving it (or its controller) takes over from the virtual player's hand.
+tuba label plunger_set Plunger by hand|On: the Plunger knob sets the hand. Off: the virtual player's hand follows how hard the key was struck, without a player half open.
+tuba label room Room|The recording room's reverberation against the instrument's own sound. The left end is off: the dry instrument, for an external reverb.
+tuba label temperament Temperament|Equal (every key alike) or a historical temperament: keys near the temperament key sound purer, far ones more colorful. As recorded: each recorded key at its own pitch, as the instrument was tuned in the recordings. Scala file: a scale from a .scl file, any number of notes (a .kbm key map of the same name beside it lays it on the keys). A stays at the concert pitch.
+tuba label temperament_key Temperament key|The key a historical temperament or a Scala file's scale is centered on (its "C"). No effect with Equal temperament, As recorded or a Scala file with its own key map.
+tuba label variation Player's variation|How much each note differs from the last in the virtual player's hands: its air, vibrato and intonation. 100 % as it was fitted, 0 every note alike. From the next note.
+tuba label virtual_player Virtual player|On: the air's shape, vibrato and intonation made from the keys alone. Off, for wind controllers and DAWs: the air from velocity, nothing else.
+tuba label volume Volume|The output level, after everything else. The left end is off.
+tuba mallets 
+tuba pedals
+tuba preps
+tuba recorded 28 60
+tuba tabs Sound Touch Mics Tuning MIDI About Player
+tuba visible mic=0 prep=0 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=0 prep=1 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=0 prep=2 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=0 prep=3 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=0 prep=4 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=0 prep=5 volume dynamics variation mic_position distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=1 prep=0 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=1 prep=1 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=1 prep=2 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=1 prep=3 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=1 prep=4 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=1 prep=5 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=2 prep=0 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=2 prep=1 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=2 prep=2 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=2 prep=3 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=2 prep=4 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=2 prep=5 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=3 prep=0 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=3 prep=1 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=3 prep=2 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=3 prep=3 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=3 prep=4 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=3 prep=5 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=4 prep=0 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=4 prep=1 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=4 prep=2 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=4 prep=3 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=4 prep=4 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=4 prep=5 volume dynamics variation mic_position mic_distance mic_spacing distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=5 prep=0 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=5 prep=1 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=5 prep=2 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=5 prep=3 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=5 prep=4 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added
+tuba visible mic=5 prep=5 volume dynamics variation mic_position mic_l_x mic_l_y mic_l_z mic_r_x mic_r_y mic_r_z mic_l_pattern mic_l_yaw mic_l_pitch mic_r_pattern mic_r_yaw mic_r_pitch distance_level room concert_pitch temperament temperament_key brass_mute growl flutter brass_vibrato air air_set virtual_player brass_solo aftertouch_to air_added

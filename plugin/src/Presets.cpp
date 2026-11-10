@@ -1,4 +1,5 @@
 #include "Presets.hpp"
+#include "Ports.hpp"
 #include "Numbers.hpp"
 #include "Paths.hpp"
 
@@ -129,7 +130,26 @@ bool bodyIndex(const std::string& name, uint32_t& body)
     return false;
 }
 
-const std::vector<Preset>& shippedPresets()
+namespace {
+/// Default (every parameter and state at the plugin's default, the instrument the menu's first), then the
+/// plugin's files (plugin/presets/<plugin>/), embedded by the build
+void addFull(PluginKind k, const char* const* texts, std::vector<Preset>& v)
+{
+    Preset d;
+    d.name = "Default";
+    d.scope = PresetScope::All;
+    d.shipped = true;
+    v.push_back(d);
+    for (const char* const* t = texts; *t != nullptr; ++t) {
+        Preset f;
+        if (parsePreset(k, *t, f)) {
+            f.shipped = true;
+            v.push_back(std::move(f));
+        }
+    }
+}
+
+const std::vector<Preset>& shippedKeys()
 {
     // the grand's coordinates: origin the soundboard's center, x to the treble, y to the tail, z up (the
     // player's ears at about (0, −1.25, 0.45)); the upright's: the board in the x–z plane, the player at −y
@@ -155,31 +175,35 @@ const std::vector<Preset>& shippedPresets()
         v.push_back(custom("Pair behind the board", kUpright, backL, backR, 1.2f));
         const float uOrtfL[6] = { -0.085f, -1.00f, 0.45f, 50, -55, -24 }, uOrtfR[6] = { 0.085f, -1.00f, 0.45f, 50, 55, -24 };
         v.push_back(custom("ORTF at the player's seat", kUpright, uOrtfL, uOrtfR));
-        // the full presets: Default (every parameter and state at its default, the instrument the menu's
-        // first), then the repository's plugin/presets/*.dussek-preset, embedded by the build
-        Preset d;
-        d.name = "Default";
-        d.scope = PresetScope::All;
-        d.shipped = true;
-        v.push_back(d);
         static const char* const texts[] = {
-#include "ShippedPresets.inc"
+#include "ShippedPresets-dussek.inc"
             nullptr };
-        for (const char* const* t = texts; *t != nullptr; ++t) {
-            Preset f;
-            if (parsePreset(*t, f)) {
-                f.shipped = true;
-                v.push_back(std::move(f));
-            }
-        }
+        addFull(PluginKind::Keys, texts, v);
         return v;
     }();
     return p;
 }
 
-std::string formatPreset(const Preset& p)
+const std::vector<Preset>& shippedWinds()
 {
-    std::string s = "# Dussek preset\nversion = " + std::to_string(kStateVersion) + "\nname = " + p.name + "\nscope = " + (p.scope == PresetScope::All ? "all" : "mics") + "\n";
+    // no microphone presets for the bell yet
+    static const std::vector<Preset> p = [] {
+        std::vector<Preset> v;
+        static const char* const texts[] = {
+#include "ShippedPresets-weidinger.inc"
+            nullptr };
+        addFull(PluginKind::Winds, texts, v);
+        return v;
+    }();
+    return p;
+}
+} // namespace
+
+const std::vector<Preset>& shippedPresets(PluginKind k) { return k == PluginKind::Winds ? shippedWinds() : shippedKeys(); }
+
+std::string formatPreset(PluginKind k, const Preset& p)
+{
+    std::string s = "# " + std::string(identity(k).name) + " preset\nversion = " + std::to_string(kStateVersion) + "\nname = " + p.name + "\nscope = " + (p.scope == PresetScope::All ? "all" : "mics") + "\n";
     if (p.scope == PresetScope::Mics)
         s += std::string("body = ") + bodyName(p.body) + "\n";
     for (const auto& [k, v] : p.values)
@@ -189,13 +213,17 @@ std::string formatPreset(const Preset& p)
     return s;
 }
 
-bool parsePreset(const std::string& text, Preset& out)
+bool parsePreset(PluginKind k, const std::string& text, Preset& out)
 {
+    const PluginKind other = k == PluginKind::Winds ? PluginKind::Keys : PluginKind::Winds;
+    const std::string foreign = "# " + std::string(identity(other).name) + " preset";
     Preset p;
     bool scope = false, body = false;
     std::istringstream in(text);
     std::string line;
     while (std::getline(in, line)) {
+        if (trim(line) == foreign)
+            return false; // the other plugin's (each has its folder and extension: a file moved by hand)
         if (line.empty() || line[0] == '#')
             continue;
         const size_t eq = line.find('=');
@@ -227,27 +255,27 @@ bool parsePreset(const std::string& text, Preset& out)
     return true;
 }
 
-std::string presetDir()
+std::string presetDir(PluginKind k)
 {
     const std::string data = pe::dataDirs().data;
-    return data.empty() ? data : data + "/presets";
+    return data.empty() ? data : data + "/" + identity(k).presetFolder;
 }
 
-std::vector<Preset> loadUserPresets(const std::string& dir)
+std::vector<Preset> loadUserPresets(PluginKind k, const std::string& dir)
 {
     namespace fs = std::filesystem;
     std::vector<Preset> out;
     std::error_code ec;
     for (fs::directory_iterator it(dir.empty() ? fs::path() : fs::path(dir), ec), end; !dir.empty() && !ec && it != end; it.increment(ec)) {
         const std::string n = it->path().filename().string();
-        const std::string ext = ".dussek-preset";
+        const std::string ext = identity(k).presetExtension;
         if (n.size() <= ext.size() || n.compare(n.size() - ext.size(), ext.size(), ext) != 0)
             continue;
         std::ifstream f(dir + "/" + n);
         std::stringstream ss;
         ss << f.rdbuf();
         Preset p;
-        if (f && parsePreset(ss.str(), p)) {
+        if (f && parsePreset(k, ss.str(), p)) {
             p.file = dir + "/" + n;
             out.push_back(std::move(p));
         }
@@ -256,7 +284,7 @@ std::vector<Preset> loadUserPresets(const std::string& dir)
     return out;
 }
 
-std::string presetFile(const std::string& dir, const std::string& name)
+std::string presetFile(PluginKind k, const std::string& dir, const std::string& name)
 {
     std::string safe;
     for (unsigned char c : name)
@@ -264,10 +292,10 @@ std::string presetFile(const std::string& dir, const std::string& name)
     safe = trim(safe);
     if (safe.empty())
         safe = "preset";
-    return dir + "/" + safe + ".dussek-preset";
+    return dir + "/" + safe + identity(k).presetExtension;
 }
 
-bool saveUserPreset(const std::string& dir, const Preset& p, std::string& error)
+bool saveUserPreset(PluginKind k, const std::string& dir, const Preset& p, std::string& error)
 {
     error.clear();
     if (dir.empty()) {
@@ -281,10 +309,10 @@ bool saveUserPreset(const std::string& dir, const Preset& p, std::string& error)
         error = "cannot make " + dir + ": " + ec.message();
         return false;
     }
-    const std::string path = presetFile(dir, p.name), tmp = path + ".tmp";
+    const std::string path = presetFile(k, dir, p.name), tmp = path + ".tmp";
     {
         std::ofstream f(tmp, std::ios::trunc);
-        f << formatPreset(p);
+        f << formatPreset(k, p);
         if (!f) {
             error = "cannot write " + tmp;
             return false;
@@ -301,11 +329,11 @@ bool saveUserPreset(const std::string& dir, const Preset& p, std::string& error)
 
 bool deleteUserPreset(const Preset& p) { return !p.shipped && !p.file.empty() && std::remove(p.file.c_str()) == 0; }
 
-std::vector<const Preset*> presetsFor(PresetScope scope, uint32_t body, const std::vector<Preset>& user)
+std::vector<const Preset*> presetsFor(PluginKind k, PresetScope scope, uint32_t body, const std::vector<Preset>& user)
 {
     std::vector<const Preset*> shipped, mine;
     auto fits = [&](const Preset& p) { return p.scope == scope && (scope == PresetScope::All || p.body == body); };
-    for (const Preset& p : shippedPresets())
+    for (const Preset& p : shippedPresets(k))
         if (fits(p))
             shipped.push_back(&p);
     for (const Preset& p : user)
@@ -316,18 +344,18 @@ std::vector<const Preset*> presetsFor(PresetScope scope, uint32_t body, const st
     return shipped;
 }
 
-std::vector<std::pair<uint32_t, float>> presetParams(const Preset& p)
+std::vector<std::pair<uint32_t, float>> presetParams(PluginKind k, const Preset& p)
 {
     std::vector<std::pair<uint32_t, float>> out;
     // a full preset: every parameter at its default, then the file's values (a shipped one lists only
     // what differs)
     if (p.scope == PresetScope::All)
         for (uint32_t i = 0; i < kParamCount; ++i)
-            out.push_back({ i, paramInfo(i).def });
-    for (const auto& [k, v] : p.values) {
-        const int i = symbolIndex(k);
-        // a microphone preset sets microphones only, whatever its file says
-        if (i < 0 || (p.scope == PresetScope::Mics && !micScoped((uint32_t)i)))
+            out.push_back({ i, defaultOf(k, i) });
+    for (const auto& [symbol, v] : p.values) {
+        const int i = symbolIndex(symbol);
+        // a microphone preset sets microphones only, whatever its file says; a plugin its own ports only
+        if (i < 0 || !hasPort(k, (uint32_t)i) || (p.scope == PresetScope::Mics && !micScoped((uint32_t)i)))
             continue;
         const ParamInfo& d = paramInfo((uint32_t)i);
         const float x = std::clamp(v, d.min, d.max);
@@ -352,19 +380,19 @@ std::vector<std::pair<std::string, std::string>> presetStates(const Preset& p)
     return out;
 }
 
-std::vector<const Preset*> shippedFullPresets()
+std::vector<const Preset*> shippedFullPresets(PluginKind k)
 {
     std::vector<const Preset*> out;
-    for (const Preset& p : shippedPresets())
+    for (const Preset& p : shippedPresets(k))
         if (p.scope == PresetScope::All)
             out.push_back(&p);
     return out;
 }
 
-int matchingPreset(const std::vector<const Preset*>& offered, const float* values)
+int matchingPreset(PluginKind kind, const std::vector<const Preset*>& offered, const float* values)
 {
     for (size_t k = 0; k < offered.size(); ++k) {
-        const std::vector<std::pair<uint32_t, float>> ps = presetParams(*offered[k]);
+        const std::vector<std::pair<uint32_t, float>> ps = presetParams(kind, *offered[k]);
         if (ps.empty())
             continue;
         const bool same = std::all_of(ps.begin(), ps.end(), [&](const std::pair<uint32_t, float>& q) {
@@ -401,7 +429,7 @@ std::string presetLabel(const std::vector<const Preset*>& offered, int current)
     return current >= 0 && (size_t)current < offered.size() ? offered[(size_t)current]->name : std::string("None");
 }
 
-Preset presetFrom(const std::string& name, PresetScope scope, uint32_t body, const float* values,
+Preset presetFrom(PluginKind k, const std::string& name, PresetScope scope, uint32_t body, const float* values,
                   const std::vector<std::pair<std::string, std::string>>& states)
 {
     Preset p;
@@ -409,7 +437,7 @@ Preset presetFrom(const std::string& name, PresetScope scope, uint32_t body, con
     p.scope = scope;
     p.body = body;
     for (uint32_t i = 0; i < kParamCount; ++i)
-        if (scope == PresetScope::All || micScoped(i))
+        if (hasPort(k, i) && (scope == PresetScope::All || micScoped(i)))
             p.values.push_back({ paramInfo(i).symbol, values[i] });
     if (scope == PresetScope::All)
         for (const auto& [k, v] : states)

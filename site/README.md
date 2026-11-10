@@ -15,9 +15,13 @@ chromium --headless --window-size=1280,640 --screenshot=docs/social-preview.png 
 ```
 
 - `clips.toml`: every clip, by section (the menu groups' demos, the original pieces, the real
-  performances, the features); its comments say each key. A clip names plugin controls by symbol:
+  performances, the features), and by page: Dussek's (index.html) or Weidinger's (weidinger.html: a demo
+  per brass instrument, the brass album's three mixes from `albums/brass/mix.py`, rendered when missing,
+  its features); its comments say each key. A brass demo's card is a screenshot of its bell
+  (`screenshots.sh`), not a Visualization still (`--video` refuses a bell). A clip names plugin controls by symbol:
   `plugin/build/settings_line` (`just plugin`) turns them into the plugin's own Copy CLI line.
-- `phrases.py`: the demos' and the features' phrases (CC0), within each instrument's recorded keys.
+- `phrases.py`: the demos' and the features' phrases (CC0), within each instrument's recorded keys; the
+  brass's slur where their notes overlap and tongue where they do not.
 - `midi/maestro/`: three performances from the MAESTRO dataset, CC BY-NC-SA 4.0 with their
   citation (`LICENSE.md`); their renders carry the same license.
 - `sounds/`: the audio input's sound (CC0, `LICENSE.md`).

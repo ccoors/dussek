@@ -37,11 +37,13 @@
 #include "WorkerPriority.hpp"
 #include "Working.hpp"
 #include "dussek.h"
-#include "DistrhoPluginInfo.h"
+#include "PluginKind.hpp"
+#include "Ports.hpp"
 #include "StateVersion.hpp"
 #include "GlCheck.hpp"
 
 #include <algorithm>
+#include <cctype>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
@@ -175,7 +177,7 @@ static const InstrumentEntry& entryOf(uint32_t p)
 {
     if (p >= kProfileCount)
         return noInstrument();
-    const InstrumentEntry* e = committed().find(kProfiles[p]);
+    const InstrumentEntry* e = committed().find(kProfiles[p], PluginKind::Keys);
     if (e == nullptr) {
         std::fprintf(stderr, "no instrument %s under %s\n", kProfiles[p], PE_INSTRUMENTS_DIR);
         std::abort();
@@ -230,7 +232,7 @@ static bool profileBalafon(uint32_t p) { return profileBody(p) == BodyKind::Bala
 /// the menu's group of an old index: its place in the catalog's groups (0 past the list)
 static uint32_t groupOf(uint32_t p)
 {
-    const std::vector<std::string> g = committed().groups();
+    const std::vector<std::string> g = committed().groups(PluginKind::Keys);
     for (uint32_t i = 0; i < g.size(); ++i)
         if (p < kProfileCount && g[i] == entryOf(p).group)
             return i;
@@ -313,12 +315,14 @@ std::string lockFlags(const pe::ParamInfo& d)
     return f.empty() ? "-" : f;
 }
 
-std::string lockLine(uint32_t i)
+/// a host port's row: its host index, the parameter's symbol, range, the plugin's default, unit, flags
+std::string lockLine(pe::PluginKind k, uint32_t host)
 {
+    const uint32_t i = pe::toInternal(k, host);
     const pe::ParamInfo& d = pe::paramInfo(i);
     char nums[96];
-    std::snprintf(nums, sizeof(nums), "%.9g %.9g %.9g", (double)d.min, (double)d.max, (double)d.def);
-    return std::to_string(i) + " " + d.symbol + " " + nums + " " + (d.unit != nullptr && *d.unit ? d.unit : "-") + " "
+    std::snprintf(nums, sizeof(nums), "%.9g %.9g %.9g", (double)d.min, (double)d.max, (double)pe::defaultOf(k, i));
+    return std::to_string(host) + " " + d.symbol + " " + nums + " " + (d.unit != nullptr && *d.unit ? d.unit : "-") + " "
         + lockFlags(d);
 }
 
@@ -389,22 +393,23 @@ TEST(user_files_carry_a_version)
     p.name = "Mine";
     p.scope = pe::PresetScope::All;
     p.values = { { "volume", 3.0f } };
-    const std::string text = pe::formatPreset(p);
+    const std::string text = pe::formatPreset(PluginKind::Keys, p);
     CHECK(text.find("\nversion = 1\n") != std::string::npos);
     pe::Preset q;
-    CHECK(pe::parsePreset("name = Old\nscope = all\nparam.volume = 2\n", q) && q.version == pe::kFirstStateVersion);
+    CHECK(pe::parsePreset(PluginKind::Keys, "name = Old\nscope = all\nparam.volume = 2\n", q) && q.version == pe::kFirstStateVersion);
     CHECK(pe::Preset {}.version == pe::kFirstStateVersion && MidiMap {}.version == pe::kFirstMidiMapVersion);
-    CHECK(pe::parsePreset("# a later release\nversion = 2\nname = New\nscope = all\nfuture = x\nparam.volume = 2\n"
+    CHECK(pe::parsePreset(PluginKind::Keys, "# a later release\nversion = 2\nname = New\nscope = all\nfuture = x\nparam.volume = 2\n"
                           "param.not_a_parameter = 5\nstate.instrument = grand_b\n",
               q));
     CHECK(q.version == 2 && q.name == "New" && q.scope == pe::PresetScope::All);
     CHECK(q.values.size() == 2 && q.values[0].first == "volume" && q.states.size() == 1);
     MidiMap m;
     m.tie(kMicLX, 1, 22);
-    CHECK(m.text().find("\nversion 1\n") != std::string::npos && MidiMap::parse(m.text()).version == 1);
-    const MidiMap later = MidiMap::parse("version 2\nknob 1 2 3\nprogram_change on\ncc 2 22 mic_l_x\n");
+    CHECK(m.text().find("\nversion " + std::to_string(kMidiMapVersion) + "\n") != std::string::npos
+        && MidiMap::parse(m.text(), PluginKind::Keys).version == kMidiMapVersion);
+    const MidiMap later = MidiMap::parse("version 2\nknob 1 2 3\nprogram_change on\ncc 2 22 mic_l_x\n", PluginKind::Keys);
     CHECK(later.version == 2 && later.programChange && later.find(kMicLX) != nullptr && later.find(kMicLX)->cc == 22);
-    CHECK(MidiMap::parse("cc 2 22 mic_l_x\n").version == pe::kFirstMidiMapVersion);
+    CHECK(MidiMap::parse("cc 2 22 mic_l_x\n", PluginKind::Keys).version == pe::kFirstMidiMapVersion);
 }
 
 TEST(the_scale_is_kept_for_the_next_window)
@@ -424,9 +429,10 @@ TEST(a_display_without_opengl_2_is_named)
 {
     // over Remote Desktop, or in a VM without 3D acceleration, Windows offers OpenGL 1.1 only: the
     // window stays black; the player is told why and that the sound still plays
-    const std::string m = pe::openGlMissingText();
+    const std::string m = pe::openGlMissingText(pe::PluginKind::Keys);
     CHECK(m.find("OpenGL 2") != std::string::npos && m.find("Remote Desktop") != std::string::npos
-          && m.find("sound") != std::string::npos);
+          && m.find("sound") != std::string::npos && m.rfind("Dussek's window", 0) == 0);
+    CHECK(pe::openGlMissingText(pe::PluginKind::Winds).rfind("Weidinger's window", 0) == 0); // each its own name
 }
 
 TEST(a_picked_file_gives_its_folder)
@@ -443,46 +449,128 @@ TEST(a_picked_file_gives_its_folder)
 #endif
 }
 
-TEST(the_parameter_table_only_grows)
+/// a plugin's lock: its ports as released, which a host saves by symbol (LV2's ports, DPF's VST3 and CLAP
+/// state) and automates by index (VST3, CLAP). A locked row never changes; a new port goes at the end and
+/// is recorded with it (PE_WRITE_PARAMS_LOCK=1 appends the new rows, never rewrites one). Changing a locked
+/// row is a deliberate edit of the lock (docs/compatibility.md).
+void checkLock(pe::PluginKind k, const std::string& file)
 {
-    // the user parameters as released: a host saves them by symbol (LV2's ports, DPF's VST3 and CLAP
-    // state) and automates them by index (VST3, CLAP). A locked row never changes; a new parameter
-    // goes at the end and is recorded with it (PE_WRITE_PARAMS_LOCK=1 appends the new rows, never
-    // rewrites one). Changing a locked row is a deliberate edit of the lock (docs/compatibility.md).
-    const std::string path = std::string(PE_TESTS_DIR) + "/params.lock";
+    const std::string path = std::string(PE_TESTS_DIR) + "/" + file;
+    const uint32_t ports = (uint32_t)pe::ports(k).size();
     std::vector<LockRow> lock;
     const bool read = readLock(path, lock);
     if (const char* w = std::getenv("PE_WRITE_PARAMS_LOCK"); w != nullptr && *w && read == std::ifstream(path).good()) {
         std::ofstream out(path, std::ios::app);
         if (lock.empty())
-            out << "# plugin/tests/params.lock: the user parameters' index symbol min max default unit flags\n"
+            out << "# plugin/tests/" << file << ": " << pe::identity(k).name
+                << "'s ports: host index, symbol, min, max, default, unit, flags\n"
                    "# (a automatable, i integer, b boolean). Append only: docs/compatibility.md.\n";
-        for (uint32_t i = (uint32_t)lock.size(); i < pe::kParamCount; ++i)
-            out << lockLine(i) << "\n";
+        for (uint32_t h = (uint32_t)lock.size(); h < ports; ++h)
+            out << lockLine(k, h) << "\n";
         out.close();
         lock.clear();
         CHECK(readLock(path, lock));
     }
     CHECK(read || !lock.empty());
     for (const LockRow& r : lock) {
-        if (r.index >= pe::kParamCount) {
-            std::printf("  params.lock: row %u (%s) is gone from the table\n", r.index, r.symbol.c_str());
-            CHECK(r.index < pe::kParamCount);
+        if (r.index >= ports) {
+            std::printf("  %s: port %u (%s) is gone\n", file.c_str(), r.index, r.symbol.c_str());
+            CHECK(r.index < ports);
             continue;
         }
-        const pe::ParamInfo& d = pe::paramInfo(r.index);
-        const bool same = r.symbol == d.symbol && r.min == d.min && r.max == d.max && r.def == d.def
-            && r.unit == (d.unit != nullptr && *d.unit ? d.unit : "-") && r.flags == lockFlags(d);
+        const bool same = r.line == lockLine(k, r.index);
         if (!same)
-            std::printf("  params.lock: locked \"%s\", the table has \"%s\"\n", r.line.c_str(), lockLine(r.index).c_str());
+            std::printf("  %s: locked \"%s\", the plugin has \"%s\"\n", file.c_str(), r.line.c_str(), lockLine(k, r.index).c_str());
         CHECK(same);
     }
     for (size_t i = 0; i < lock.size(); ++i)
         CHECK(lock[i].index == i);
-    if (lock.size() < pe::kParamCount)
-        std::printf("  params.lock: %u new parameter(s) not recorded: PE_WRITE_PARAMS_LOCK=1 plugin/build/ui_tests\n",
-            pe::kParamCount - (uint32_t)lock.size());
-    CHECK(lock.size() == pe::kParamCount);
+    if (lock.size() < ports)
+        std::printf("  %s: %u new port(s) not recorded: PE_WRITE_PARAMS_LOCK=1 plugin/build/ui_tests\n", file.c_str(),
+            ports - (uint32_t)lock.size());
+    CHECK(lock.size() == ports);
+}
+
+TEST(dussek_s_ports_are_the_released_table)
+{
+    // Dussek's host interface is v0.3.2's: its lock is that release's (params-v0.3.2.lock, a copy of
+    // `git show v0.3.2:plugin/tests/params.lock`), the ports the table's first 78 rows in place
+    checkLock(pe::PluginKind::Keys, "params.lock");
+    std::vector<LockRow> now, released;
+    CHECK(readLock(std::string(PE_TESTS_DIR) + "/params.lock", now));
+    CHECK(readLock(std::string(PE_TESTS_DIR) + "/params-v0.3.2.lock", released));
+    CHECK(released.size() == 78);
+    CHECK(now.size() >= released.size());
+    for (size_t i = 0; i < released.size() && i < now.size(); ++i)
+        CHECK(now[i].line == released[i].line);
+    const std::vector<uint32_t>& p = pe::ports(pe::PluginKind::Keys);
+    CHECK(p.size() == 78);
+    for (uint32_t i = 0; i < p.size(); ++i)
+        CHECK(p[i] == i && pe::toHost(pe::PluginKind::Keys, i) == i);
+    CHECK(pe::toHost(pe::PluginKind::Keys, pe::kDiagPedalIn) == 78); // the diagnostics after the ports, as released
+    CHECK(pe::hostCount(pe::PluginKind::Keys) == 78 + (pe::kTotalParams - pe::kParamCount));
+}
+
+TEST(weidinger_s_ports_are_its_lock)
+{
+    checkLock(pe::PluginKind::Winds, "params-weidinger.lock");
+    const std::vector<uint32_t>& p = pe::ports(pe::PluginKind::Winds);
+    CHECK(std::is_sorted(p.begin(), p.end()));
+    for (uint32_t i = pe::kBrassMute; i <= pe::kAftertouchTo; ++i)
+        CHECK(pe::hasPort(pe::PluginKind::Winds, i)); // every brass row
+    for (uint32_t i : { pe::kVolume, pe::kMicPosition, pe::kMicLX, pe::kMicRPitch, pe::kRoom, pe::kTemperamentKey })
+        CHECK(pe::hasPort(pe::PluginKind::Winds, i));
+    for (uint32_t i : { pe::kStop8, pe::kHammerHardness, pe::kLid, pe::kMicWall, pe::kSustain, pe::kPrepMode })
+        CHECK(!pe::hasPort(pe::PluginKind::Winds, i));
+}
+
+TEST(each_plugin_s_port_groups_are_numbered_densely)
+{
+    // DPF takes a group id at or past the number of groups in use for one of its own (stereo, mono): Weidinger's
+    // Brass (7, of four) lost its symbol and the LV2 export asserted
+    for (PluginKind k : { PluginKind::Keys, PluginKind::Winds }) {
+        const std::vector<uint32_t>& g = portGroups(k);
+        std::set<uint32_t> used;
+        for (uint32_t i : ports(k)) {
+            const uint32_t h = hostGroup(k, paramInfo(i).group);
+            CHECK(h < g.size() && g[h] == paramInfo(i).group);
+            used.insert(h);
+        }
+        CHECK(used.size() == g.size()); // every group a port's
+    }
+    CHECK(portGroups(PluginKind::Keys).size() == 7 && hostGroup(PluginKind::Keys, kGroupDefects) == kGroupDefects); // as released
+    CHECK((portGroups(PluginKind::Winds) == std::vector<uint32_t> { kGroupInstrument, kGroupMics, kGroupTuning, kGroupBrass }));
+}
+
+TEST(weidinger_takes_no_audio_input)
+{
+    // the strings' sympathetic bank hears the input; a bell has none: Dussek's port, not Weidinger's
+    CHECK(hasPort(PluginKind::Keys, kAudioInput) && !hasPort(PluginKind::Winds, kAudioInput));
+    CHECK(identity(PluginKind::Keys).audioInputs == 2 && identity(PluginKind::Winds).audioInputs == 0);
+}
+
+TEST(a_host_index_round_trips)
+{
+    for (pe::PluginKind k : { pe::PluginKind::Keys, pe::PluginKind::Winds }) {
+        for (uint32_t h = 0; h < pe::hostCount(k); ++h)
+            CHECK(pe::toHost(k, pe::toInternal(k, h)) == h);
+        CHECK(pe::toInternal(k, pe::hostCount(k)) == pe::kNoPort);
+        CHECK(pe::toHost(k, pe::kTotalParams) == pe::kNoPort);
+    }
+    CHECK(pe::toHost(pe::PluginKind::Keys, pe::kBrassMute) == pe::kNoPort);
+    CHECK(pe::toHost(pe::PluginKind::Winds, pe::kHammerHardness) == pe::kNoPort);
+    CHECK(pe::toInternal(pe::PluginKind::Winds, (uint32_t)pe::ports(pe::PluginKind::Winds).size()) == pe::kDiagPedalIn);
+}
+
+TEST(weidinger_starts_at_the_audience)
+{
+    // a brass player's defaults: the Audience's place (not behind the bell), the variation as fitted
+    CHECK(pe::defaultOf(pe::PluginKind::Winds, pe::kMicPosition) == 2.0f);
+    CHECK(pe::defaultOf(pe::PluginKind::Winds, pe::kVariation) == 100.0f);
+    for (pe::PluginKind k : { pe::PluginKind::Keys, pe::PluginKind::Winds })
+        for (uint32_t i = 0; i < pe::kParamCount; ++i)
+            if (k == pe::PluginKind::Keys || (i != pe::kMicPosition && i != pe::kVariation))
+                CHECK(pe::defaultOf(k, i) == pe::paramInfo(i).def);
 }
 
 TEST(no_diagnostic_is_automatable)
@@ -495,7 +583,7 @@ TEST(no_diagnostic_is_automatable)
 
 TEST(param_table_is_complete)
 {
-    CHECK(kParamCount == 78);
+    CHECK(kParamCount == 93);
     std::set<std::string> symbols;
     for (uint32_t i = 0; i < kParamCount; ++i) {
         const ParamInfo& p = paramInfo(i);
@@ -552,12 +640,18 @@ TEST(instruments_in_menu_order)
         "Harpsichord F", "Clavichord", "Harp A",
         "Harp B", "Guitar", "Strumstick", "Balafon", "Bells", "Crotales", "Glockenspiel A", "Glockenspiel B", "Hand chimes", "Marimba", "Tongue drum", "Tubular bells",
         "Vibraphone", "Xylophone", "Kalimba", "Mbira A", "Mbira B", "Nyunga nyunga", "Dan tranh", "Psaltery" };
-    const std::vector<const InstrumentEntry*> m = committed().menu();
+    const std::vector<const InstrumentEntry*> m = committed().menu(PluginKind::Keys);
     CHECK(m.size() == sizeof(want) / sizeof(*want));
     for (size_t i = 0; i < m.size() && i < sizeof(want) / sizeof(*want); ++i)
         CHECK(m[i]->name == want[i]);
     for (uint32_t i = 0; i < kProfileCount; ++i)
-        CHECK(profileByDir(kProfiles[i]) == i && committed().find(kProfiles[i]) != nullptr);
+        CHECK(profileByDir(kProfiles[i]) == i && committed().find(kProfiles[i], PluginKind::Keys) != nullptr);
+    // Weidinger's: the brass, by name
+    std::vector<std::string> winds;
+    for (const InstrumentEntry* e : committed().menu(PluginKind::Winds))
+        winds.push_back(e->name);
+    CHECK(winds == std::vector<std::string>({ "Bass Trombone (experimental)", "Horn (experimental)", "Tenor Trombone (experimental)",
+                                              "Trumpet (experimental)", "Tuba (experimental)" }));
     CHECK(profileByDir("nonesuch") == kProfileCount);
 }
 
@@ -816,7 +910,7 @@ TEST(mallet_past_the_count_plays_the_first)
 
 TEST(a_missing_instrument_is_kept)
 {
-    const Choice c = choose(committed(), "harp2");
+    const Choice c = choose(committed(), "harp2", PluginKind::Keys);
     CHECK(c.entry == nullptr && c.id == "harp2");
     // nothing instrument-specific shows; what does not depend on the instrument does
     CHECK(!paramVisible(kBuff, UiContext { nullptr, 0, 0 }) && !paramVisible(kMallet, UiContext { nullptr, 1, 0 }));
@@ -1047,7 +1141,7 @@ TEST(param_kinds)
 static PeMicGeometry geom(uint32_t body, uint32_t pos, double spacing, double distance)
 {
     PeMicGeometry g {};
-    CHECK(pe_mic_geometry(body, pos, spacing, distance, 1.0, nullptr, &g));
+    CHECK(pe_mic_geometry(body, nullptr, pos, spacing, distance, 1.0, nullptr, &g));
     return g;
 }
 
@@ -1079,7 +1173,7 @@ TEST(the_drawing_keeps_clear_of_the_views_caption)
         for (uint32_t pos = 1; pos <= 4; ++pos)
             for (double spacing : { 0.2, 0.5, 2.0 }) {
                 PeMicGeometry g {};
-                if (!pe_mic_geometry(body, pos, spacing, 0.0, 1.0, nullptr, &g))
+                if (!pe_mic_geometry(body, nullptr, pos, spacing, 0.0, 1.0, nullptr, &g))
                     continue;
                 for (View v : { kTop, kFront }) {
                     const ViewTransform t = fitView(g, v, r);
@@ -1179,11 +1273,11 @@ TEST(harp_close_pair_drags_in_the_side_view)
 
 TEST(instrument_menu_groups_every_instrument_once_by_type)
 {
-    const std::vector<std::string> g = committed().groups();
+    const std::vector<std::string> g = committed().groups(PluginKind::Keys);
     CHECK((g == std::vector<std::string> { "Grand pianos", "Upright pianos", "Harpsichords", "Clavichords", "Harps", "Guitars",
         "Percussion", "Thumb pianos", "Zithers" }));
     std::vector<size_t> count(g.size(), 0);
-    for (const InstrumentEntry* e : committed().menu())
+    for (const InstrumentEntry* e : committed().menu(PluginKind::Keys))
         for (size_t i = 0; i < g.size(); ++i)
             if (e->group == g[i]) ++count[i];
     CHECK((count == std::vector<size_t> { 9, 4, 6, 1, 2, 2, 11, 4, 2 }));
@@ -1192,7 +1286,7 @@ TEST(instrument_menu_groups_every_instrument_once_by_type)
         && groupOf(kMar) == 6 && groupOf(kXyl) == 6 && groupOf(kBel) == 6 && groupOf(kCro) == 6);
     CHECK(groupOf(kUprB) == 1 && groupOf(kHarpC) == 2 && groupOf(kHarpB2) == 4 && groupOf(profileByDir("grand_g")) == 0);
     // every group's names start like its type
-    for (const InstrumentEntry* e : committed().menu())
+    for (const InstrumentEntry* e : committed().menu(PluginKind::Keys))
         if (e->group == "Harps") CHECK(e->name.rfind("Harp ", 0) == 0);
 }
 
@@ -1300,6 +1394,36 @@ TEST(markers_hit)
     CHECK(hitMarker(g, t, t.toScreen(g.markers[1][0], g.markers[1][1]), 6, 0) == 1);
 }
 
+TEST(a_far_marker_is_pinned_to_the_edge_and_the_bell_framed)
+{
+    // a brass bell's Audience stands 6 m out: from above at Player the bell is framed, not a few pixels, and the
+    // Audience's marker waits at the view's edge, clickable
+    const Rect r { 0, 0, 250, 195 };
+    const PeMicGeometry g = geom(18, 1, 0.18, 0.45);
+    const ViewTransform t = fitView(g, kTop, r);
+    float x0 = 1e9f, x1 = -1e9f, y0 = 1e9f, y1 = -1e9f;
+    for (uint32_t i = 0; i < g.case_top_count; ++i) {
+        const Point2 p = t.toScreen(g.case_top[i][0], g.case_top[i][1]);
+        x0 = std::min(x0, p.x); x1 = std::max(x1, p.x); y0 = std::min(y0, p.y); y1 = std::max(y1, p.y);
+    }
+    CHECK(std::max(x1 - x0, y1 - y0) > 40);
+    const Point2 m = markerScreen(g, t, 2);
+    CHECK(m.x >= r.x && m.x <= r.x + r.w && m.y >= r.y && m.y <= r.y + r.h - kCaptionBand);
+    CHECK(hitMarker(g, t, m, 6, 1) == 2);
+    // the other bodies' markers are near: drawn where they are, the framing as before
+    for (uint32_t body = 0; body < 18; ++body)
+        for (uint32_t pos = 0; pos < 5; ++pos) {
+            const PeMicGeometry h = geom(body, pos, 0.5, 1.0);
+            const ViewTransform u = fitView(h, kTop, r);
+            for (int i = 1; i < 5; ++i) {
+                if (!std::isfinite(h.markers[i][0]))
+                    continue;
+                const Point2 a = markerScreen(h, u, i), b = u.toScreen(h.markers[i][0], h.markers[i][1]);
+                CHECK(a.x == b.x && a.y == b.y);
+            }
+        }
+}
+
 TEST(ui_state_round_trip_and_bad_input)
 {
     UiState s; s.tab = kTabCondition; s.zoom = 250;
@@ -1309,8 +1433,14 @@ TEST(ui_state_round_trip_and_bad_input)
     const UiState d = parseUiState("garbage");
     CHECK(d.tab == kTabSound && d.zoom == 100);
     CHECK(parseUiState("tab=9;zoom=999").zoom == 100);         // not a zoom step
-    CHECK(parseUiState("tab=10;zoom=999").tab == kTabSound);   // no such tab
+    CHECK(parseUiState("tab=11;zoom=999").tab == kTabSound);   // no such tab
     CHECK(parseUiState(nullptr).zoom == 100 && parseUiState(nullptr).tab == kTabSound);
+    // the diagnostics' level: a panel alone (4, 5) comes back too; past them nothing opens
+    for (int l = 0; l <= 5; ++l) {
+        UiState v; v.diag = l;
+        CHECK(parseUiState(formatUiState(v).c_str()).diag == l);
+    }
+    CHECK(parseUiState("tab=0;zoom=100;diag=6").diag == 0);
     // a state saved before the tabs: the open sections are dropped (Sound), the rest stays
     const UiState old = parseUiState("open=21;zoom=150;diag=1;view=1;lo=55;hi=8000;floor=-70");
     CHECK(old.tab == kTabSound && old.zoom == 150 && old.diag == 1 && old.view == 1);
@@ -1366,6 +1496,36 @@ TEST(mic_distance_shows_what_the_engine_uses)
     CHECK(formatMicDistance(0.0f, true, std::nan("")) == "Custom"); // the free pair (position 5) has no distance
 }
 
+TEST(a_mic_label_stays_in_the_view)
+{
+    // L left of its dot, R right of it; at the view's edge (a wide pair 6 m out) under the dot instead
+    const Rect r { 0, 0, 180, 190 };
+    CHECK(micLabel(Point2 { 90, 50 }, 1, r).side == 1 && micLabel(Point2 { 90, 50 }, 0, r).side == -1);
+    const MicLabel right = micLabel(Point2 { 175, 50 }, 1, r), left = micLabel(Point2 { 4, 50 }, 0, r);
+    CHECK(right.side == 0 && right.at.y > 50 && right.at.x <= r.w);
+    CHECK(left.side == 0 && left.at.y > 50 && left.at.x >= 0);
+}
+
+TEST(glide_time_and_air_read_as_set)
+{
+    // a time in whole milliseconds with its unit; the air on the MIDI scale it is played on, whole steps
+    CHECK(formatValue(kGlideTime, 220.0f) == "220 ms");
+    CHECK(formatValue(kAir, 80.0f) == "80");
+    float v = 0;
+    CHECK(parseValue(kGlideTime, "300 ms", v) && v == 300.0f);
+    CHECK(parseValue(kAir, "64", v) && v == 64.0f);
+}
+
+TEST(mic_spacing_shows_what_the_engine_uses)
+{
+    // a bell's Player pair stops at the ears' 18 cm: 50 cm set reads as what is heard
+    CHECK(formatMicSpacing(50.0f, true, 0.18) == "18 cm (limited)");
+    CHECK(formatMicSpacing(50.0f, true, 0.5) == "50 cm");
+    CHECK(formatMicSpacing(12.0f, false, 0.0) == formatValue(kMicSpacing, 12.0f));
+    const PeMicGeometry g = geom(18, 1, 0.5, 0.0);
+    CHECK(formatMicSpacing(50.0f, g.has_pair, g.spacing) == "18 cm (limited)");
+}
+
 TEST(drag_keeps_its_start_geometry)
 {
     // a host change during the drag (the UI fetches a new geometry into the same struct)
@@ -1375,7 +1535,7 @@ TEST(drag_keeps_its_start_geometry)
     CHECK(d.begin(g, kTop, 1, g.mics[1][0], g.mics[1][1]));
     const DragValues before = d.update(g.mics[1][0], g.mics[1][1] - 0.2);
     const double x = g.mics[1][0], y = g.mics[1][1];
-    CHECK(pe_mic_geometry(0, 1, 2.0, 5.0, 1.0, nullptr, &g));
+    CHECK(pe_mic_geometry(0, nullptr, 1, 2.0, 5.0, 1.0, nullptr, &g));
     const DragValues after = d.update(x, y - 0.2);
     CHECK(before.distance == after.distance && before.spacingCm == after.spacingCm);
 }
@@ -1445,8 +1605,8 @@ TEST(panic_and_the_menu_sit_in_a_row_at_the_right)
 
 TEST(updating_has_its_place_in_the_bottom_bar)
 {
-    // beside the Keyboard tab (the strip shut) or the Visualization toggle (open), on their row, clear
-    // of the pedals' names over their columns; the tabs where they always were
+    // beside the Visualization toggle (the tabs show with the strip shut too), on their row, clear of the
+    // pedals' names over their columns; the tabs where they always were
     for (float w : { kMinWidth, 480.0f, 487.0f, 520.0f, kBreakpoint, kDefaultWidth, 1600.0f })
         for (bool open : { false, true }) {
             const float y = 500;
@@ -1460,8 +1620,8 @@ TEST(updating_has_its_place_in_the_bottom_bar)
             CHECK(b.working.y == b.keyboard.y && b.working.h == b.keyboard.h);
             CHECK(b.working.w >= textWidth(kWorkingLabel));
             CHECK(!b.working.overlaps(b.keyboard) && b.working.x + b.working.w <= w - 8);
+            CHECK(!b.working.overlaps(b.analysis) && !b.working.overlaps(b.viz));
             if (open) {
-                CHECK(!b.working.overlaps(b.analysis) && !b.working.overlaps(b.viz));
                 for (const Rect& c : { g.soft, g.sostenuto, g.pedal }) // the names, centered over these, at most 5 characters
                     CHECK(b.working.x + b.working.w <= c.x + c.w / 2 - textWidth("sost.") / 2);
             }
@@ -1737,7 +1897,7 @@ TEST(sweep_ignores_an_out_of_range_owner_pid)
 
 TEST(diagnostic_parameters_extend_the_table)
 {
-    CHECK(kParamCount == 78); // the user-visible table (diagnostics come after it)
+    CHECK(kParamCount == 93); // the user-visible table (diagnostics come after it)
     CHECK((uint32_t)kDiagPedalIn == (uint32_t)kParamCount);
     CHECK((uint32_t)kTotalParams == (uint32_t)kParamCount + 25);
     for (uint32_t i = kParamCount; i < kTotalParams; ++i) {
@@ -2724,12 +2884,12 @@ struct FakeStrip {
     }
 };
 
-/// the view at `top` (window-logical): levels 2 and 3 have the 300 px panel above the header (as DiagView::layout)
+/// the view at `top` (window-logical): a level with a panel has the 300 px panel above the header (as DiagView::layout)
 StripLayout stripLayout(float top, int level, float width = 900)
 {
     StripLayout l;
     l.top = top;
-    l.panelH = level >= 2 ? 300.0f : 0.0f;
+    l.panelH = diagPanel(level) != 0 ? 300.0f : 0.0f;
     const float header = top + l.panelH;
     l.keyboardTab = { 8, header + 3, 96, 18 };
     l.analysisTab = { 112, header + 3, 84, 18 };
@@ -2885,7 +3045,7 @@ TEST(strip_interaction_a_dragged_pedal_gone_is_released)
 
 TEST(pedals_follow_the_report)
 {
-    for (const InstrumentEntry* e : committed().menu()) {
+    for (const InstrumentEntry* e : committed().menu(PluginKind::Keys)) {
         const Pedals p = entryPedals(*e);
         CHECK(p.soft == e->info.soft_pedal && p.sostenuto == e->info.dampers && p.sustain == e->info.dampers);
     }
@@ -3035,20 +3195,45 @@ TEST(strip_interaction_release_after_a_lost_release_does_not_claim_the_event)
     // the old code returned `true` here (the stale flag), leaving the control's edit bracket open: mutant check in the report
 }
 
+TEST(the_panels_open_with_or_without_the_strip)
+{
+    // 0 collapsed, 1 strip, 2 strip + analysis, 3 strip + visualization (as saved before), 4 analysis, 5 visualization
+    for (int l = 0; l <= 5; ++l) {
+        CHECK(diagStrip(l) == (l >= 1 && l <= 3));
+        CHECK(diagPanel(l) == (l == 2 || l == 4 ? 1 : l == 3 || l == 5 ? 2 : 0));
+        CHECK(diagStrip(toggleStrip(l)) != diagStrip(l) && diagPanel(toggleStrip(l)) == diagPanel(l)); // the panel stays
+    }
+    const int analysis[6] = { 4, 2, 1, 2, 0, 4 }, viz[6] = { 5, 3, 3, 1, 5, 0 };
+    for (int l = 0; l <= 5; ++l) {
+        CHECK(toggleAnalysis(l) == analysis[l] && diagStrip(toggleAnalysis(l)) == diagStrip(l)); // the strip stays
+        CHECK(toggleViz(l) == viz[l] && diagStrip(toggleViz(l)) == diagStrip(l));
+    }
+}
+
 TEST(strip_interaction_routes_the_press_by_zone)
 {
-    { // level 0: only the Keyboard tab; the rest of the header is ours but plays nothing
+    { // level 0: the three tabs (a panel opens without the strip); the rest of the header is ours but plays nothing
         StripRig r(0);
         CHECK(r.in.press(r.l.keyboardTab.x + 3, r.l.keyboardTab.y + 3) == StripInteraction::Press::Ours && r.fake.levelToggles == 1);
-        CHECK(r.in.press(r.l.analysisTab.x + 3, r.l.analysisTab.y + 3) == StripInteraction::Press::Ours && r.fake.analysisToggles == 0);
-        CHECK(r.in.press(r.l.vizTab.x + 3, r.l.vizTab.y + 3) == StripInteraction::Press::Ours && r.fake.vizToggles == 0);
+        CHECK(r.in.press(r.l.analysisTab.x + 3, r.l.analysisTab.y + 3) == StripInteraction::Press::Ours && r.fake.analysisToggles == 1);
+        CHECK(r.in.press(r.l.vizTab.x + 3, r.l.vizTab.y + 3) == StripInteraction::Press::Ours && r.fake.vizToggles == 1);
         const Point2 k = r.key(30), p = r.pedal(0.5f); // where a strip would be (stale geometry): level 0 has none
         CHECK(r.in.press(k.x, k.y) == StripInteraction::Press::Ours && !r.in.dragging());
         CHECK(r.in.press(p.x, p.y) == StripInteraction::Press::Ours && !r.in.dragging());
         CHECK(r.fake.sounding.empty() && r.fake.brackets == 0);
         CHECK(!r.in.release());
         CHECK(r.in.press(10, r.l.top - 1) == StripInteraction::Press::Outside);
-        CHECK(r.fake.log.size() == 1); // only the one toggle
+        CHECK(r.fake.log.size() == 3); // the three toggles
+    }
+    for (int level : { 4, 5 }) { // a panel without the strip: the panel routed out, the tabs work, no strip to play
+        StripRig r(level);
+        CHECK(r.in.press(300, r.l.top + 10) == StripInteraction::Press::Panel);
+        CHECK(r.in.press(r.l.analysisTab.x + 3, r.l.analysisTab.y + 3) == StripInteraction::Press::Ours && r.fake.analysisToggles == 1);
+        CHECK(r.in.press(r.l.vizTab.x + 3, r.l.vizTab.y + 3) == StripInteraction::Press::Ours && r.fake.vizToggles == 1);
+        const Point2 k = r.key(30), p = r.pedal(0.5f);
+        CHECK(r.in.press(k.x, k.y) == StripInteraction::Press::Ours && !r.in.dragging());
+        CHECK(r.in.press(p.x, p.y) == StripInteraction::Press::Ours && !r.in.dragging());
+        CHECK(r.fake.sounding.empty() && r.fake.brackets == 0);
     }
     { // level 1: the three tabs, the pedal and the keys
         StripRig r(1);
@@ -3513,6 +3698,10 @@ TEST(panel_text_helpers_need_no_string_and_match_the_old_text)
     formatStatus(b, sizeof b, true, 0, false, 0, false); CHECK(std::strcmp(b, "0 voices") == 0);
     formatStatus(b, sizeof b, true, 0, false, 24, true); CHECK(std::strcmp(b, "24 voices (frozen)") == 0);
     formatStatus(b, sizeof b, true, 4000000000u, false, 0, false); CHECK(std::strcmp(b, "0 voices, 4000000000 dropped") == 0);
+    // no voices to count (Weidinger: its players are no voices of the strings)
+    formatStatus(b, sizeof b, true, 0, false, kNoVoices, false); CHECK(std::strcmp(b, "") == 0);
+    formatStatus(b, sizeof b, true, 0, false, kNoVoices, true); CHECK(std::strcmp(b, "frozen") == 0);
+    formatStatus(b, sizeof b, true, 7, false, kNoVoices, false); CHECK(std::strcmp(b, "7 dropped") == 0);
 }
 
 TEST(status_shows_drops_only_while_recent_and_keeps_the_voices)
@@ -3852,7 +4041,7 @@ TEST(tabs_follow_the_report)
         CHECK(tabShown(kTabMorph, c) == (c.inst->info.morph_family != 0));
         for (Tab t : { kTabSound, kTabTouch, kTabMics, kTabTuning, kTabMidi, kTabAbout }) CHECK(tabShown(t, c));
     }
-    CHECK(tabsOf(computeLayout(kDefaultWidth, kDefaultHeight, kTabSound, ctxOf(0, 1, 0))).size() == kTabCount);
+    CHECK(tabsOf(computeLayout(kDefaultWidth, kDefaultHeight, kTabSound, ctxOf(0, 1, 0))).size() == kTabCount - 1); // all but brass's Player
     const std::vector<Tab> m = tabsOf(computeLayout(kDefaultWidth, kDefaultHeight, kTabSound, ctxOf(kMar, 1, 0)));
     CHECK(std::find(m.begin(), m.end(), kTabFelt) == m.end() && std::find(m.begin(), m.end(), kTabMorph) == m.end());
 }
@@ -3897,7 +4086,7 @@ TEST(the_drawing_stays_put_between_instruments)
 
 TEST(ten_tabs_fit_two_rows)
 {
-    CHECK((int)kTabCount == 10);
+    CHECK((int)kTabCount == 11); // ten at most on one instrument: Player is brass's, which has few
     for (float w : { kDefaultWidth, kMinWidth }) {
         const Layout l = computeLayout(w, kDefaultHeight, kTabSound, ctxOf(0, 1, 0));
         float lo = l.tabs[0].rect.y, hi = lo;
@@ -4779,17 +4968,27 @@ TEST(the_sustain_is_compiled_on_the_sound_tab)
 
 // Everything the UI derives per instrument, one fact per line, sorted (the catalog of the
 // instrument-discovery plan must reproduce it; plugin/tests/visibility.txt)
-static std::vector<std::string> uiTable()
+/// a plugin's context for an instrument at a mic position and preparation
+static UiContext uiContext(const InstrumentEntry* e, uint32_t mic, uint32_t prep, PluginKind k)
+{
+    UiContext c { e, mic, prep };
+    c.plugin = k;
+    return c;
+}
+
+/// what a plugin's UI shows, per instrument of its menu (plugin/tests/visibility.txt: Dussek's,
+/// visibility-weidinger.txt: Weidinger's)
+static std::vector<std::string> uiTable(PluginKind k)
 {
     std::vector<std::string> t;
     const Catalog& c = committed();
     uint32_t pos = 0;
-    for (const InstrumentEntry* e : c.menu()) {
+    for (const InstrumentEntry* e : c.menu(k)) {
         char line[256];
         std::snprintf(line, sizeof(line), "menu %02u %s|%s|%s", pos++, e->group.c_str(), e->name.c_str(), e->id.c_str());
         t.push_back(line);
     }
-    for (const InstrumentEntry* e : c.menu()) {
+    for (const InstrumentEntry* e : c.menu(k)) {
         const std::string& id = e->id;
         t.push_back(id + " body " + std::to_string((uint32_t)entryBody(*e)));
         int lo = 0, hi = 0;
@@ -4805,18 +5004,18 @@ static std::vector<std::string> uiTable()
         for (uint32_t i = 0, n = entryMallets(*e); i < n; ++i) mallets += (i ? "|" : "") + malletLabel(*e, i);
         t.push_back(mallets);
         for (uint32_t i = 0; i < kParamCount; ++i) {
-            if (i == kMallet) continue;
+            if (i == kMallet || !hasPort(k, i)) continue;
             t.push_back(id + " label " + paramInfo(i).symbol + " " + pe::displayName(i, *e) + "|" + pe::displayDescription(i, *e));
         }
         std::string tabs = id + " tabs";
         for (uint32_t i = 0; i < kTabCount; ++i)
-            if (tabShown((Tab)i, UiContext { e, 1, 0 })) tabs += std::string(" ") + tabName((Tab)i);
+            if (tabShown((Tab)i, uiContext(e, 1, 0, k))) tabs += std::string(" ") + tabName((Tab)i);
         t.push_back(tabs);
         for (uint32_t mic = 0; mic < 6; ++mic)
             for (uint32_t prep = 0; prep < 6; ++prep) {
                 std::string line = id + " visible mic=" + std::to_string(mic) + " prep=" + std::to_string(prep);
                 for (uint32_t i = 0; i < kParamCount; ++i)
-                    if (paramVisible(i, UiContext { e, mic, prep })) line += std::string(" ") + paramInfo(i).symbol;
+                    if (paramVisible(i, uiContext(e, mic, prep, k))) line += std::string(" ") + paramInfo(i).symbol;
                 t.push_back(line);
             }
     }
@@ -4824,10 +5023,10 @@ static std::vector<std::string> uiTable()
     return t;
 }
 
-TEST(the_ui_matches_the_recorded_table)
+static void checkUiTable(PluginKind k, const char* file)
 {
-    const std::string path = std::string(PE_TESTS_DIR) + "/visibility.txt";
-    const std::vector<std::string> now = uiTable();
+    const std::string path = std::string(PE_TESTS_DIR) + "/" + file;
+    const std::vector<std::string> now = uiTable(k);
     if (const char* w = std::getenv("PE_WRITE_UI_TABLE"); w != nullptr && *w) {
         FILE* f = std::fopen(path.c_str(), "w");
         CHECK(f != nullptr);
@@ -4849,10 +5048,36 @@ TEST(the_ui_matches_the_recorded_table)
     CHECK(!want.empty());
     size_t shown = 0;
     for (const std::string& l : want)
-        if (!std::binary_search(now.begin(), now.end(), l) && ++shown <= 20) std::fprintf(stderr, "  lost: %s\n", l.c_str());
+        if (!std::binary_search(now.begin(), now.end(), l) && ++shown <= 20) std::fprintf(stderr, "  %s lost: %s\n", file, l.c_str());
     for (const std::string& l : now)
-        if (!std::binary_search(want.begin(), want.end(), l) && ++shown <= 40) std::fprintf(stderr, "  new:  %s\n", l.c_str());
+        if (!std::binary_search(want.begin(), want.end(), l) && ++shown <= 40) std::fprintf(stderr, "  %s new:  %s\n", file, l.c_str());
     CHECK(shown == 0);
+}
+
+TEST(the_ui_matches_the_recorded_table)
+{
+    // PE_WRITE_UI_TABLE=1 rewrites both
+    checkUiTable(PluginKind::Keys, "visibility.txt");
+    checkUiTable(PluginKind::Winds, "visibility-weidinger.txt");
+}
+
+TEST(no_row_without_a_port)
+{
+    // what a plugin shows, a host can save and automate: every visible row is one of its ports, whatever
+    // the instrument (one of the other plugin's too, which its menu never offers)
+    for (PluginKind k : { PluginKind::Keys, PluginKind::Winds })
+        for (const InstrumentEntry* e : committed().menu(PluginKind::Keys))
+            for (const InstrumentEntry* f : { e, committed().first(PluginKind::Winds) })
+                for (uint32_t mic = 0; mic < 6; ++mic)
+                    for (uint32_t prep = 0; prep < 6; ++prep)
+                        for (uint32_t i = 0; i < kParamCount; ++i)
+                            if (paramVisible(i, uiContext(f, mic, prep, k)) && !hasPort(k, i)) {
+                                std::fprintf(stderr, "  %s shows %s on %s\n", identity(k).name, paramInfo(i).symbol, f->id.c_str());
+                                CHECK(hasPort(k, i));
+                            }
+    // the Player tab is Weidinger's
+    CHECK(!tabShown(kTabPlayer, uiContext(committed().first(PluginKind::Winds), 1, 0, PluginKind::Keys)));
+    CHECK(tabShown(kTabPlayer, uiContext(committed().first(PluginKind::Winds), 1, 0, PluginKind::Winds)));
 }
 
 // a temporary directory tree for the catalog: <root>/<sub>/<id>/instrument.json copied from
@@ -4907,9 +5132,15 @@ TEST(catalog_shadows_and_skips)
     t.add("b", "lever", "leverharp", R"({"name": "Harp B", "group": "Harps"})");
     t.add("b", "nodata", "harp", R"({"name": "No data", "group": "Harps"})", false);
     const Catalog c = Catalog::scan({ t.path("a"), t.path("missing"), t.path("b"), "" });
-    CHECK(c.find("harp") != nullptr && c.find("harp")->name == "Harp A");
-    CHECK(c.find("lever") != nullptr && c.find("nodata") == nullptr);
+    CHECK(c.find("harp", PluginKind::Keys) != nullptr && c.find("harp", PluginKind::Keys)->name == "Harp A");
+    CHECK(c.find("lever", PluginKind::Keys) != nullptr && c.find("nodata", PluginKind::Keys) == nullptr);
     CHECK(c.messages().size() == 1); // the shadowed one (a missing path is no problem; no data.bin: not an instrument)
+    CHECK(c.messages()[0].rfind("Dussek: ", 0) == 0);
+    // each plugin's binary names itself (its own copy of pe_common: set once by the target)
+    setMessagesPlugin(PluginKind::Winds);
+    const Catalog w = Catalog::scan({ t.path("a"), t.path("b") });
+    setMessagesPlugin(PluginKind::Keys);
+    CHECK(w.messages().size() == 1 && w.messages()[0].rfind("Weidinger: ", 0) == 0);
 }
 
 TEST(aliases_resolve_old_instrument_ids)
@@ -4925,17 +5156,28 @@ TEST(aliases_resolve_old_instrument_ids)
         f << "# old new\na b\nx y\np q\nq p\nc d\nchain a\n";
     }
     const Catalog c = Catalog::scan({ t.path("a") });
-    CHECK(c.find("a") != nullptr && c.find("a")->id == "b");
-    CHECK(c.find("chain") != nullptr && c.find("chain")->id == "b"); // chain → a → b
-    CHECK(c.find("x") == nullptr && c.find("p") == nullptr);          // a missing target; a cycle
-    CHECK(c.find("c") != nullptr && c.find("c")->id == "c");          // the real folder wins
-    CHECK(c.find("zzz") == nullptr && choose(c, "zzz").entry == nullptr && choose(c, "zzz").id == "zzz");
-    CHECK(c.menu().size() == 2); // an alias is no menu entry
+    CHECK(c.find("a", PluginKind::Keys) != nullptr && c.find("a", PluginKind::Keys)->id == "b");
+    CHECK(c.find("chain", PluginKind::Keys) != nullptr && c.find("chain", PluginKind::Keys)->id == "b"); // chain → a → b
+    CHECK(c.find("x", PluginKind::Keys) == nullptr && c.find("p", PluginKind::Keys) == nullptr);          // a missing target; a cycle
+    CHECK(c.find("c", PluginKind::Keys) != nullptr && c.find("c", PluginKind::Keys)->id == "c");          // the real folder wins
+    CHECK(c.find("zzz", PluginKind::Keys) == nullptr && choose(c, "zzz", PluginKind::Keys).entry == nullptr && choose(c, "zzz", PluginKind::Keys).id == "zzz");
+    // a chain through the other plugin's instrument goes on to this plugin's
+    TempTree w;
+    w.add("a", "b", "harp", R"({"name": "B", "group": "Harps"})");
+    w.add("a", "t", "trumpet", R"({"name": "T", "group": "Brass"})");
+    {
+        std::ofstream f(w.path("a") + "/aliases.txt");
+        f << "m t\nt b\n";
+    }
+    const Catalog d = Catalog::scan({ w.path("a") });
+    CHECK(d.find("m", PluginKind::Keys) != nullptr && d.find("m", PluginKind::Keys)->id == "b");
+    CHECK(d.find("m", PluginKind::Winds) != nullptr && d.find("m", PluginKind::Winds)->id == "t");
+    CHECK(c.menu(PluginKind::Keys).size() == 2); // an alias is no menu entry
     // the engine's side finds the folder the same way (the worker loads instrumentDir's)
     const char* env = std::getenv("DUSSEK_INSTRUMENTS");
     const std::string envWas = env ? env : "";
     setEnv("DUSSEK_INSTRUMENTS", t.path("a").c_str());
-    CHECK(instrumentDir(nullptr, "a") == c.find("b")->dir && instrumentDir(nullptr, "p").empty());
+    CHECK(instrumentDir(nullptr, "a", PluginKind::Keys) == c.find("b", PluginKind::Keys)->dir && instrumentDir(nullptr, "p", PluginKind::Keys).empty());
     if (env) setEnv("DUSSEK_INSTRUMENTS", envWas.c_str()); else unsetEnv("DUSSEK_INSTRUMENTS");
 }
 
@@ -4953,14 +5195,14 @@ TEST(an_alias_never_hides_a_real_folder)
     for (const auto& paths : { std::vector<std::string> { t.path("shipped"), t.path("user") },
              std::vector<std::string> { t.path("user"), t.path("shipped") } }) {
         const Catalog c = Catalog::scan(paths);
-        CHECK(c.find("grand_x") != nullptr && c.find("grand_x")->name == "Mine" && c.menu().size() == 2);
+        CHECK(c.find("grand_x", PluginKind::Keys) != nullptr && c.find("grand_x", PluginKind::Keys)->name == "Mine" && c.menu(PluginKind::Keys).size() == 2);
         CHECK(c.messages().empty());
     }
     const char* env = std::getenv("DUSSEK_INSTRUMENTS");
     const std::string envWas = env ? env : "";
     setEnv("DUSSEK_INSTRUMENTS", t.path("user").c_str());
     const Catalog c = Catalog::scan({ t.path("user") });
-    CHECK(instrumentDir(nullptr, "grand_x") == c.find("grand_x")->dir);
+    CHECK(instrumentDir(nullptr, "grand_x", PluginKind::Keys) == c.find("grand_x", PluginKind::Keys)->dir);
     if (env) setEnv("DUSSEK_INSTRUMENTS", envWas.c_str()); else unsetEnv("DUSSEK_INSTRUMENTS");
 }
 
@@ -4970,8 +5212,8 @@ TEST(catalog_rejects_and_keeps)
     t.add("a", "bad", "harp", R"({"name": 3, "group": "Harps"})");
     t.add("a", "odd", "harp", R"({"name": "Odd", "group": "Harps", "labels": {"no_such": {"name": "x"}}})");
     const Catalog c = Catalog::scan({ t.path("a") });
-    CHECK(c.find("bad") == nullptr && c.messages().size() == 1);
-    CHECK(c.find("odd") != nullptr); // an unknown label symbol is ignored
+    CHECK(c.find("bad", PluginKind::Keys) == nullptr && c.messages().size() == 1);
+    CHECK(c.find("odd", PluginKind::Keys) != nullptr); // an unknown label symbol is ignored
 }
 
 TEST(catalog_orders_the_menu)
@@ -4986,20 +5228,28 @@ TEST(catalog_orders_the_menu)
     t.add("a", "hid", "harp", R"({"name": "Hidden", "group": "Harps", "hidden": true})");
     const Catalog c = Catalog::scan({ t.path("a") });
     std::vector<std::string> ids;
-    for (const InstrumentEntry* e : c.menu()) ids.push_back(e->id);
+    for (const InstrumentEntry* e : c.menu(PluginKind::Keys)) ids.push_back(e->id);
     CHECK((ids == std::vector<std::string> { "g", "h1", "h2", "z1", "w", "plain" }));
-    CHECK((c.groups() == std::vector<std::string> { "Grand pianos", "Harps", "Wires", "Other" }));
-    CHECK(c.find("plain") != nullptr && c.find("plain")->name == "plain" && c.find("hid") != nullptr);
-    CHECK(c.first() != nullptr && c.first()->id == "g");
+    CHECK((c.groups(PluginKind::Keys) == std::vector<std::string> { "Grand pianos", "Harps", "Wires", "Other" }));
+    CHECK(c.find("plain", PluginKind::Keys) != nullptr && c.find("plain", PluginKind::Keys)->name == "plain" && c.find("hid", PluginKind::Keys) != nullptr);
+    CHECK(c.first(PluginKind::Keys) != nullptr && c.first(PluginKind::Keys)->id == "g");
+    // a menu block's "first": the plugin's default choice (a fresh instance, the Default preset), its place kept
+    TempTree f;
+    f.add("a", "h1", "harp", R"({"name": "Harp A", "group": "Harps"})");
+    f.add("a", "h2", "harp", R"({"name": "Harp B", "group": "Harps", "first": true})");
+    const Catalog d = Catalog::scan({ f.path("a") });
+    CHECK(d.first(PluginKind::Keys) != nullptr && d.first(PluginKind::Keys)->id == "h2");
+    CHECK(d.menu(PluginKind::Keys).front()->id == "h1");
+    CHECK(choose(d, "", PluginKind::Keys).id == "h2");
 }
 
 TEST(catalog_of_the_committed_instruments)
 {
     const Catalog& c = committed();
-    CHECK(c.menu().size() == 41 && c.messages().empty());
-    CHECK(c.find("registers_fixture") != nullptr && c.find("registers_fixture")->hidden);
-    CHECK(c.first() != nullptr && c.first()->name == "Grand A");
-    const InstrumentEntry* k = c.find("kalimba");
+    CHECK(c.menu(PluginKind::Keys).size() == 41 && c.menu(PluginKind::Winds).size() == 5 && c.messages().empty());
+    CHECK(c.find("registers_fixture", PluginKind::Keys) != nullptr && c.find("registers_fixture", PluginKind::Keys)->hidden);
+    CHECK(c.first(PluginKind::Keys) != nullptr && c.first(PluginKind::Keys)->name == "Grand A");
+    const InstrumentEntry* k = c.find("kalimba", PluginKind::Keys);
     CHECK(k != nullptr && k->label("knock") != nullptr && std::string(k->label("knock")->name) == "Thumb click");
     CHECK(k != nullptr && k->label("volume") == nullptr);
 }
@@ -5007,9 +5257,9 @@ TEST(catalog_of_the_committed_instruments)
 TEST(choice_by_id)
 {
     const Catalog c = Catalog::scan({ PE_INSTRUMENTS_DIR });
-    CHECK(choose(c, "").entry == c.first() && choose(c, "").id == c.first()->id);
-    CHECK(choose(c, "harp").entry == c.find("harp"));
-    const Choice m = choose(c, "harp2");
+    CHECK(choose(c, "", PluginKind::Keys).entry == c.first(PluginKind::Keys) && choose(c, "", PluginKind::Keys).id == c.first(PluginKind::Keys)->id);
+    CHECK(choose(c, "harp", PluginKind::Keys).entry == c.find("harp", PluginKind::Keys));
+    const Choice m = choose(c, "harp2", PluginKind::Keys);
     CHECK(m.id == "harp2" && m.entry == nullptr);
 }
 
@@ -5021,11 +5271,11 @@ TEST(a_dropped_in_instrument_plays)
     std::filesystem::copy_file(std::string(PE_INSTRUMENTS_DIR) + "/harp/data.bin", t.path("user") + "/myharp/data.bin",
                                std::filesystem::copy_options::overwrite_existing);
     const Catalog c = Catalog::scan({ PE_INSTRUMENTS_DIR, t.path("user") });
-    const InstrumentEntry* e = c.find("myharp");
+    const InstrumentEntry* e = c.find("myharp", PluginKind::Keys);
     CHECK(e != nullptr && e->name == "My harp" && e->group == "Harps");
     if (e == nullptr) return;
     // its controls and labels are the harp's
-    const InstrumentEntry* harp = c.find("harp");
+    const InstrumentEntry* harp = c.find("harp", PluginKind::Keys);
     CHECK(harp != nullptr);
     if (harp == nullptr) return;
     for (uint32_t i = 0; i < kParamCount; ++i) {
@@ -5035,7 +5285,7 @@ TEST(a_dropped_in_instrument_plays)
     }
     // listed in its group, after the harp's own entries ("My harp" sorts after "Harp A", "Harp B")
     std::vector<std::string> harps;
-    for (const InstrumentEntry* m : c.menu())
+    for (const InstrumentEntry* m : c.menu(PluginKind::Keys))
         if (m->group == "Harps") harps.push_back(m->name);
     CHECK((harps == std::vector<std::string> { "Harp A", "Harp B", "My harp" }));
     char err[256] = {};
@@ -5077,11 +5327,11 @@ TEST(the_dsp_finds_an_id_where_the_catalog_does)
     t.add(snapshots.c_str(), "harp@t-1", "harp", R"({"name": "Harp A @ t-1", "group": "Snapshots"})");
     const std::string bundle = t.path("bundle");
     const Catalog c = Catalog::scan(Catalog::searchPaths(bundle.c_str()));
-    CHECK(c.find("harp") != nullptr && instrumentDir(bundle.c_str(), "harp") == c.find("harp")->dir);
-    CHECK(c.find("bad") != nullptr && instrumentDir(bundle.c_str(), "bad") == c.find("bad")->dir);
-    CHECK(instrumentDir(bundle.c_str(), "../instruments/harp").empty() && instrumentDir(bundle.c_str(), "..").empty());
-    CHECK(instrumentDir(bundle.c_str(), "").empty() && instrumentDir(bundle.c_str(), "nonesuch").empty());
-    CHECK(c.find("harp@t-1") != nullptr && c.find("harp@t-1")->group == "Snapshots");
+    CHECK(c.find("harp", PluginKind::Keys) != nullptr && instrumentDir(bundle.c_str(), "harp", PluginKind::Keys) == c.find("harp", PluginKind::Keys)->dir);
+    CHECK(c.find("bad", PluginKind::Keys) != nullptr && instrumentDir(bundle.c_str(), "bad", PluginKind::Keys) == c.find("bad", PluginKind::Keys)->dir);
+    CHECK(instrumentDir(bundle.c_str(), "../instruments/harp", PluginKind::Keys).empty() && instrumentDir(bundle.c_str(), "..", PluginKind::Keys).empty());
+    CHECK(instrumentDir(bundle.c_str(), "", PluginKind::Keys).empty() && instrumentDir(bundle.c_str(), "nonesuch", PluginKind::Keys).empty());
+    CHECK(c.find("harp@t-1", PluginKind::Keys) != nullptr && c.find("harp@t-1", PluginKind::Keys)->group == "Snapshots");
     CHECK(Catalog::searchPaths(bundle.c_str()).back() == data + "/snapshots");
     if (env) setEnv("DUSSEK_INSTRUMENTS", envWas.c_str()); else unsetEnv("DUSSEK_INSTRUMENTS");
     if (xdg) setEnv(var, xdgWas.c_str()); else unsetEnv(var);
@@ -5192,7 +5442,7 @@ TEST(midi_map_ties_move_and_round_trip)
     CHECK(m.find(kStop8) == nullptr);
     m.tie(kTargetNext, 0, 40);
     m.programChange = true;
-    const MidiMap r = MidiMap::parse(m.text());
+    const MidiMap r = MidiMap::parse(m.text(), PluginKind::Keys);
     CHECK(r.programChange && r.ties().size() == 2 && r.find(kTargetNext)->cc == 40 && r.find(kMicLX)->cc == 22);
     CHECK(m.text().find("mic_l_x") != std::string::npos); // by symbol, not index
     CHECK(m.forget(kMicLX) && !m.forget(kMicLX));
@@ -5215,21 +5465,21 @@ TEST(midi_map_steps_share_a_cc)
     m.tie(kTargetPrevious, 0, 40, true);
     CHECK(m.ties().size() == 2 && !m.find(kTargetNext)->zero && m.find(kTargetPrevious)->zero);
     CHECK(tieLabel(*m.find(kTargetPrevious)) == "CC 40 at 0" && tieLabel(*m.find(kTargetNext)) == "CC 40");
-    const MidiMap r = MidiMap::parse(m.text());
+    const MidiMap r = MidiMap::parse(m.text(), PluginKind::Keys);
     CHECK(r.ties().size() == 2 && r.find(kTargetPrevious)->zero && !r.find(kTargetNext)->zero);
     m.tie(kTargetNext, 0, 40, true); // the same side: Previous goes
     CHECK(m.ties().size() == 1 && m.find(kTargetNext)->zero);
     m.tie(kTargetPrevious, 0, 40);
     m.tie(kLid, 0, 40, true); // a control takes the whole CC, on both sides
     CHECK(m.ties().size() == 1 && !m.find(kLid)->zero);
-    CHECK(MidiMap::parse("cc 1 30 lid zero\ncc 1 31 next_instrument up\n").ties().empty());
+    CHECK(MidiMap::parse("cc 1 30 lid zero\ncc 1 31 next_instrument up\n", PluginKind::Keys).ties().empty());
 }
 
 TEST(midi_map_reads_bad_files_safely)
 {
-    CHECK(MidiMap::parse("").ties().empty() && !MidiMap::parse("").programChange);
+    CHECK(MidiMap::parse("", PluginKind::Keys).ties().empty() && !MidiMap::parse("", PluginKind::Keys).programChange);
     const MidiMap g = MidiMap::parse("garbage\ncc 0 21 lid\ncc 17 21 lid\ncc 1 128 lid\ncc 1 21 no_such_control\n"
-                                     "cc 1 64 lid\ncc 1 30 lid\ncc 1 30 mic_l_x\nprogram_change maybe\ncc 1 31\n");
+                                     "cc 1 64 lid\ncc 1 30 lid\ncc 1 30 mic_l_x\nprogram_change maybe\ncc 1 31\n", PluginKind::Keys);
     CHECK(g.ties().size() == 1 && g.find(kMicLX) != nullptr && g.find(kMicLX)->cc == 30 && g.find(kLid) == nullptr
         && !g.programChange); // the later of two lines on one CC wins
     const std::string dir = tempDir("pe_midimap_");
@@ -5237,8 +5487,8 @@ TEST(midi_map_reads_bad_files_safely)
     const std::string path = dir + "/a/b/midi-map.txt"; // missing directories are created
     MidiMap m;
     m.tie(kLid, 0, 21);
-    CHECK(m.save(path) && MidiMap::load(path).find(kLid) != nullptr);
-    CHECK(MidiMap::load(dir + "/missing.txt").ties().empty());
+    CHECK(m.save(path) && MidiMap::load(path, PluginKind::Keys).find(kLid) != nullptr);
+    CHECK(MidiMap::load(dir + "/missing.txt", PluginKind::Keys).find(kLid) == nullptr); // no file: only the defaults
     if (readOnlyFoldersRefuse()) {
         std::filesystem::permissions(dir, std::filesystem::perms::owner_read | std::filesystem::perms::owner_exec);
         CHECK(!m.save(dir + "/c/midi-map.txt")); // unwritable: false, no crash
@@ -5249,8 +5499,8 @@ TEST(midi_map_reads_bad_files_safely)
     const char* old = std::getenv(var);
     const std::string saved = old != nullptr ? old : "";
     setEnv(var, dir.c_str());
-    CHECK(!pe::dataDirs().config.empty() && midiMapPath() == pe::dataDirs().config + "/midi-map.txt");
-    CHECK(midiMapPath().rfind(dir, 0) == 0);
+    CHECK(!pe::dataDirs().config.empty() && midiMapPath(PluginKind::Keys) == pe::dataDirs().config + "/midi-map.txt");
+    CHECK(midiMapPath(PluginKind::Keys).rfind(dir, 0) == 0);
     if (old != nullptr) setEnv(var, saved.c_str()); else unsetEnv(var);
     std::filesystem::remove_all(dir); // no directories left behind in the temporary folder
 }
@@ -5301,7 +5551,7 @@ TEST(relative_knobs_move_from_where_the_control_is)
     CHECK(m.ties().size() == 1 && m.find(kTargetNext)->relative && !m.find(kTargetNext)->zero);
     m.tie(kLid, 0, 21, false, true);
     m.tie(kTemperament, 0, 22, false, true);
-    const MidiMap r = MidiMap::parse(m.text());
+    const MidiMap r = MidiMap::parse(m.text(), PluginKind::Keys);
     CHECK(r.ties().size() == 3 && r.find(kLid)->relative && tieLabel(*r.find(kLid)) == "CC 21 ±");
     CHECK(m.text().find("lid relative") != std::string::npos);
 
@@ -5337,9 +5587,9 @@ TEST(a_pad_flips_a_switch_and_a_knob_turns_the_instrument)
     m.tie(kTargetNext, 0, 33);              // the buttons keep theirs
     CHECK(m.find(kStop8)->flip && !m.find(kLid)->flip && m.find(kTargetKnob)->relative && m.find(kTargetNext) != nullptr);
     CHECK(tieLabel(*m.find(kStop8)) == "CC 30 flip" && tieLabel(*m.find(kTargetKnob)) == "CC 32");
-    const MidiMap r = MidiMap::parse(m.text());
+    const MidiMap r = MidiMap::parse(m.text(), PluginKind::Keys);
     CHECK(r.find(kStop8)->flip && r.find(kTargetKnob)->relative && r.ties().size() == 4);
-    CHECK(MidiMap::parse("cc 1 30 lid flip\n").ties().empty()); // a flip on a slider: left out
+    CHECK(MidiMap::parse("cc 1 30 lid flip\n", PluginKind::Keys).ties().empty()); // a flip on a slider: left out
     CHECK(std::string(targetSymbol(kTargetKnob)) == "instrument_knob");
     TieTable t;
     InstrumentLists l;
@@ -5363,7 +5613,19 @@ TEST(soft_takeover_waits_for_the_knob)
     CHECK(k.accept(kLid, fromNormalized(kLid, 0.51f), at));       // near it
     CHECK(k.accept(kStop8, 1.0f, 0.0f) && k.accept(kTemperament, 3.0f, 0.0f)); // switches and lists: always
     MidiMap m;
-    CHECK(m.softTakeover && !MidiMap::parse("soft_takeover off\n").softTakeover && MidiMap::parse(m.text()).softTakeover);
+    CHECK(!m.softTakeover && MidiMap::parse("soft_takeover on\n", PluginKind::Keys).softTakeover && !MidiMap::parse(m.text(), PluginKind::Keys).softTakeover);
+}
+
+TEST(soft_takeover_keeps_a_fast_knob_through_the_hosts_rounding)
+{
+    // the host hands the value back a hair under what MIDI set (its own normalized float); a knob
+    // moving up faster than the pickup must still move the slider
+    Takeover k;
+    const float a = fromNormalized(kAir, 0.5f);
+    CHECK(k.accept(kAir, a, a));
+    const float back = std::nextafter(a, 0.0f);
+    CHECK(k.accept(kAir, fromNormalized(kAir, 0.56f), back));
+    CHECK(k.accept(kAir, fromNormalized(kAir, 0.50f), fromNormalized(kAir, 0.56f) * (1.0f + 1e-6f))); // and down
 }
 
 TEST(router_steps_at_every_press)
@@ -5446,7 +5708,7 @@ TEST(midi_tab_lists_every_tie_and_the_switch)
     CHECK(std::string(tabName(kTabMidi)) == "MIDI" && kTabMidi + 1 == kTabAbout);
     // the default window keeps the tab bar on one row
     const Layout d = computeLayout(kDefaultWidth, kDefaultHeight, kTabSound, ctxOf(0, 1, 0));
-    CHECK(d.tabs.size() == kTabCount && d.tabs.back().rect.y == d.tabs.front().rect.y);
+    CHECK(d.tabs.size() == kTabCount - 1 && d.tabs.back().rect.y == d.tabs.front().rect.y);
     UiContext c = ctxOf(0, 1, 0);
     c.midiTies = 3;
     for (float w : { kMinWidth, kDefaultWidth, 1600.0f }) {
@@ -5520,7 +5782,7 @@ TEST(midi_map_update_keeps_other_ties_and_fails_cleanly)
     CHECK(other.save(path));
     CHECK(mine.update(path, [](MidiMap& m) { m.tie(kRoom, 0, 22); }));
     CHECK(mine.find(kLid) != nullptr && mine.find(kRoom) != nullptr); // the other's tie kept
-    const MidiMap disk = MidiMap::load(path);
+    const MidiMap disk = MidiMap::load(path, PluginKind::Keys);
     CHECK(disk.find(kLid) != nullptr && disk.find(kRoom) != nullptr);
     // a file that cannot be written: the map stays as it was (no tie the DSP never hears of)
     if (readOnlyFoldersRefuse()) {
@@ -5542,7 +5804,7 @@ TEST(an_instrument_folder_anywhere_is_an_entry)
     CHECK(Catalog::outside(std::string(PE_INSTRUMENTS_DIR)) == nullptr);   // no instrument there
     CHECK(Catalog::outside("grand_a") == nullptr && Catalog::outside("") == nullptr); // a name, not a path
     const Catalog none;
-    CHECK(choose(none, dir).entry == e && instrumentDir(nullptr, dir.c_str()) == dir);
+    CHECK(choose(none, dir, PluginKind::Keys).entry == e && instrumentDir(nullptr, dir.c_str(), PluginKind::Keys) == dir);
 #ifdef _WIN32
     // the file browser's form: backslashes
     std::string back = dir;
@@ -5550,6 +5812,23 @@ TEST(an_instrument_folder_anywhere_is_an_entry)
     const InstrumentEntry* b = Catalog::outside(back + "\\");
     CHECK(b != nullptr && b->name == "Grand A");
 #endif
+}
+
+TEST(a_folder_that_is_no_instrument_says_why)
+{
+    // the folder opener showed nothing in the window when a folder was no instrument (only stderr): the reason in words
+    CHECK(Catalog::whyNot(std::string(PE_INSTRUMENTS_DIR) + "/grand_a").empty());
+    CHECK(Catalog::whyNot(PE_INSTRUMENTS_DIR).find("instrument.json") != std::string::npos);
+    const std::string dir = (std::filesystem::temp_directory_path() / "pe_why_not").string();
+    std::filesystem::remove_all(dir);
+    std::filesystem::create_directories(dir);
+    std::ofstream(dir + "/instrument.json") << "{ not json";
+    CHECK(Catalog::whyNot(dir).find("data.bin") != std::string::npos);
+    std::ofstream(dir + "/data.bin") << "x";
+    const std::string engine = Catalog::whyNot(dir); // the engine's own reason, not the plugin's name in front
+    CHECK(!engine.empty());
+    CHECK(engine.rfind("Dussek: ", 0) != 0 && engine.rfind("Weidinger: ", 0) != 0);
+    std::filesystem::remove_all(dir);
 }
 
 TEST(learn_input_takes_only_targets)
@@ -5672,7 +5951,7 @@ TEST(the_harpsichords_and_the_harps_morph_among_themselves)
     const Catalog& c = committed();
     const auto offered = [&c](const std::string& main) {
         std::vector<std::string> out;
-        for (const InstrumentEntry* e : c.menu())
+        for (const InstrumentEntry* e : c.menu(PluginKind::Keys))
             if (validPartners({ e->id }, c, main).size() == 1)
                 out.push_back(e->id);
         std::sort(out.begin(), out.end());
@@ -5744,7 +6023,7 @@ TEST(the_morph_tab_lays_out_its_list_and_pad)
 TEST(the_tab_bar_fits_with_the_morph_tab)
 {
     const Layout d = computeLayout(kDefaultWidth, kDefaultHeight, kTabSound, ctxOf(0, 1, 0));
-    CHECK(d.tabs.size() == kTabCount);
+    CHECK(d.tabs.size() == kTabCount - 1);
     for (const TabButton& b : d.tabs)
         CHECK(b.rect.y == d.tabs.front().rect.y && b.rect.x + b.rect.w <= kDefaultWidth);
 }
@@ -6074,7 +6353,7 @@ TEST(shipped_full_presets_name_exported_instruments)
 {
     // the shipped full presets (Default, then plugin/presets, embedded): an exported instrument each, every value a known
     // parameter's and in range (none clamped), and they are the plugin's programs
-    const std::vector<const pe::Preset*> full = pe::shippedFullPresets();
+    const std::vector<const pe::Preset*> full = pe::shippedFullPresets(PluginKind::Keys);
     CHECK(full.size() >= 3);
     // Default first: nothing of its own (every parameter and state at its default, the menu's first instrument)
     CHECK(full[0]->name == "Default" && full[0]->shipped && full[0]->values.empty() && full[0]->states.empty());
@@ -6088,7 +6367,7 @@ TEST(shipped_full_presets_name_exported_instruments)
                 inst = v;
         const std::string json = std::string(PE_INSTRUMENTS_DIR) + "/" + inst + "/instrument.json";
         CHECK(!inst.empty() && access(json.c_str(), R_OK) == 0);
-        const std::vector<std::pair<uint32_t, float>> ps = pe::presetParams(*p);
+        const std::vector<std::pair<uint32_t, float>> ps = pe::presetParams(PluginKind::Keys, *p);
         CHECK(ps.size() == pe::kParamCount);
         size_t set = 0;
         for (const auto& [sym, x] : p->values)
@@ -6109,7 +6388,7 @@ TEST(a_full_preset_starts_from_the_defaults)
     p.scope = pe::PresetScope::All;
     p.values = { { "dynamics", 25.0f }, { "no_such_symbol", 1.0f } };
     p.states = { { "instrument", "somewhere" } };
-    const std::vector<std::pair<uint32_t, float>> ps = pe::presetParams(p);
+    const std::vector<std::pair<uint32_t, float>> ps = pe::presetParams(PluginKind::Keys, p);
     CHECK(ps.size() == pe::kParamCount);
     for (const auto& [i, x] : ps)
         CHECK(x == (i == pe::kDynamics ? 25.0f : pe::paramInfo(i).def));
@@ -6120,19 +6399,19 @@ TEST(a_full_preset_starts_from_the_defaults)
     // a microphone preset: its own values, no states
     p.scope = pe::PresetScope::Mics;
     p.values = { { "mic_position", 2.0f }, { "dynamics", 25.0f } };
-    CHECK(pe::presetParams(p).size() == 1 && pe::presetStates(p).empty());
+    CHECK(pe::presetParams(PluginKind::Keys, p).size() == 1 && pe::presetStates(p).empty());
 }
 
 TEST(shipped_mic_presets_are_valid_setups)
 {
     // every shipped microphone preset sets microphones only, in range, and its Custom pair is one the engine
     // keeps as it is
-    CHECK(!pe::shippedPresets().empty());
-    for (const pe::Preset& p : pe::shippedPresets()) {
+    CHECK(!pe::shippedPresets(PluginKind::Keys).empty());
+    for (const pe::Preset& p : pe::shippedPresets(PluginKind::Keys)) {
         if (p.scope == pe::PresetScope::All)
             continue; // shipped_full_presets_name_exported_instruments
         CHECK(p.scope == pe::PresetScope::Mics && p.shipped && (p.body == 0 || p.body == 1));
-        const std::vector<std::pair<uint32_t, float>> ps = pe::presetParams(p);
+        const std::vector<std::pair<uint32_t, float>> ps = pe::presetParams(PluginKind::Keys, p);
         CHECK(ps.size() == p.values.size()); // every symbol known and a microphone's
         float v[pe::kParamCount] = {};
         for (uint32_t i = 0; i < pe::kParamCount; ++i)
@@ -6154,7 +6433,7 @@ TEST(shipped_mic_presets_are_valid_setups)
         s.wall = v[pe::kMicWall];
         // kept as it is (to float rounding: the parameters are floats; the grand pins its wall, which it ignores)
         PeMicSetup c = s;
-        pe_mic_clamp(p.body, 1.0, &c);
+        pe_mic_clamp(p.body, nullptr, 1.0, &c);
         bool same = std::fabs(c.wall - s.wall) < 1e-6;
         for (int m = 0; m < 2; ++m) {
             for (int k = 0; k < 3; ++k)
@@ -6176,7 +6455,7 @@ TEST(a_preset_reads_back_from_its_file)
     p.values = { { "volume", -6.5f }, { "mic_l_x", 0.125f } };
     p.states = { { "instrument", "grand_a" }, { "velocity_curve", "0 0\n64 50\\x\n127 127" }, { "ui", "tab=1" } };
     pe::Preset q;
-    CHECK(pe::parsePreset(pe::formatPreset(p), q));
+    CHECK(pe::parsePreset(PluginKind::Keys, pe::formatPreset(PluginKind::Keys, p), q));
     CHECK(q.name == "Late night = soft" && q.scope == pe::PresetScope::All);
     CHECK(q.values == p.values);
     CHECK(q.states.size() == 2 && q.states[1].second == "0 0\n64 50\\x\n127 127"); // as written; the UI's state dropped
@@ -6184,19 +6463,27 @@ TEST(a_preset_reads_back_from_its_file)
     m.name = "Close";
     m.body = 1;
     m.values = { { "mic_position", 3.0f } };
-    CHECK(pe::parsePreset(pe::formatPreset(m), q) && q.scope == pe::PresetScope::Mics && q.body == 1);
-    CHECK(!pe::parsePreset("name = x\n", q));                  // no scope
-    CHECK(!pe::parsePreset("name = x\nscope = mics\n", q));    // a mic preset without a body
-    CHECK(!pe::parsePreset("scope = all\n", q));               // no name
+    CHECK(pe::parsePreset(PluginKind::Keys, pe::formatPreset(PluginKind::Keys, m), q) && q.scope == pe::PresetScope::Mics && q.body == 1);
+    CHECK(!pe::parsePreset(PluginKind::Keys, "name = x\n", q));                  // no scope
+    CHECK(!pe::parsePreset(PluginKind::Keys, "name = x\nscope = mics\n", q));    // a mic preset without a body
+    CHECK(!pe::parsePreset(PluginKind::Keys, "scope = all\n", q));               // no name
 }
 
-TEST(the_plugin_is_named_dussek)
+TEST(the_plugins_are_named_dussek_and_weidinger)
 {
-    // the name, the maker and the IDs under ccoors.de (fixed from the first release on)
-    CHECK(std::string(DISTRHO_PLUGIN_NAME) == "Dussek");
-    CHECK(std::string(DISTRHO_PLUGIN_BRAND) == "Christian Friedrich Coors");
-    CHECK(std::string(DISTRHO_PLUGIN_URI) == "https://ccoors.de/plugins/dussek");
-    CHECK(std::string(DISTRHO_PLUGIN_CLAP_ID) == "de.ccoors.dussek");
+    // the names and the IDs under ccoors.de (fixed from each plugin's first release on); each target's
+    // DistrhoPluginInfo.h is checked against its identity at compile time (PianoPlugin.cpp)
+    const pe::Identity k = pe::identity(pe::PluginKind::Keys), w = pe::identity(pe::PluginKind::Winds);
+    CHECK(std::string(k.name) == "Dussek" && std::string(w.name) == "Weidinger");
+    CHECK(std::string(k.uri) == "https://ccoors.de/plugins/dussek" && std::string(k.clapId) == "de.ccoors.dussek");
+    CHECK(std::string(w.uri) == "https://ccoors.de/plugins/weidinger" && std::string(w.clapId) == "de.ccoors.weidinger");
+    CHECK(std::string(k.midiMapFile) == "midi-map.txt" && std::string(w.midiMapFile) == "weidinger-midi-map.txt");
+    CHECK(std::string(k.presetFolder) == "presets" && std::string(w.presetFolder) == "weidinger-presets");
+    CHECK(std::string(k.presetExtension) == ".dussek-preset" && std::string(w.presetExtension) == ".weidinger-preset");
+    CHECK(std::string(k.executable) == "dussek" && std::string(w.executable) == "weidinger");
+    CHECK(std::string(k.description).rfind("Physically modeled pianos", 0) == 0);
+    CHECK(std::string(w.description) == "Brass, physically modeled: trumpet, trombones, horn and tuba, played as lines");
+    CHECK(std::string(pe::kPluginBrand) == "Christian Friedrich Coors");
 }
 
 TEST(user_presets_save_load_and_delete)
@@ -6210,36 +6497,36 @@ TEST(user_presets_save_load_and_delete)
     v[pe::kMicPosition] = 5;
     v[pe::kMicLX] = -0.5f;
     v[pe::kVolume] = 3;
-    const pe::Preset mine = pe::presetFrom("My/close: pair", pe::PresetScope::Mics, 0, v, {});
+    const pe::Preset mine = pe::presetFrom(PluginKind::Keys, "My/close: pair", pe::PresetScope::Mics, 0, v, {});
     CHECK(std::all_of(mine.values.begin(), mine.values.end(), [](const auto& kv) { return kv.first != "volume"; }));
     std::string err;
-    CHECK(pe::saveUserPreset(dir, mine, err) && err.empty());
-    CHECK(pe::presetFile(dir, "My/close: pair") == dir + "/My_close_ pair.dussek-preset");
-    const pe::Preset all = pe::presetFrom("Everything", pe::PresetScope::All, 0, v, { { "instrument", "grand_b" }, { "ui", "tab=2" } });
-    CHECK(pe::saveUserPreset(dir, all, err));
-    std::vector<pe::Preset> user = pe::loadUserPresets(dir);
+    CHECK(pe::saveUserPreset(PluginKind::Keys, dir, mine, err) && err.empty());
+    CHECK(pe::presetFile(PluginKind::Keys, dir, "My/close: pair") == dir + "/My_close_ pair.dussek-preset");
+    const pe::Preset all = pe::presetFrom(PluginKind::Keys, "Everything", pe::PresetScope::All, 0, v, { { "instrument", "grand_b" }, { "ui", "tab=2" } });
+    CHECK(pe::saveUserPreset(PluginKind::Keys, dir, all, err));
+    std::vector<pe::Preset> user = pe::loadUserPresets(PluginKind::Keys, dir);
     CHECK(user.size() == 2 && user[0].name == "Everything" && user[1].name == "My/close: pair");
     { // a file of the old extension is not a preset
         std::ofstream old(dir + "/Old.pepreset");
         old << "# a preset\nname = Old\nscope = all\n";
     }
-    CHECK(pe::loadUserPresets(dir).size() == 2);
+    CHECK(pe::loadUserPresets(PluginKind::Keys, dir).size() == 2);
     CHECK(user[0].states.size() == 1 && user[0].states[0].second == "grand_b"); // the UI's state not a preset's
     // offered: the grand's shipped first, then the user's; an upright sees none of the grand's
-    const std::vector<const pe::Preset*> grand = pe::presetsFor(pe::PresetScope::Mics, 0, user);
+    const std::vector<const pe::Preset*> grand = pe::presetsFor(PluginKind::Keys, pe::PresetScope::Mics, 0, user);
     CHECK(grand.size() == 5 && grand[0]->shipped && grand.back()->name == "My/close: pair");
-    const std::vector<const pe::Preset*> upright = pe::presetsFor(pe::PresetScope::Mics, 1, user);
+    const std::vector<const pe::Preset*> upright = pe::presetsFor(PluginKind::Keys, pe::PresetScope::Mics, 1, user);
     CHECK(upright.size() == 3 && std::all_of(upright.begin(), upright.end(), [](const pe::Preset* p) { return p->shipped; }));
-    const std::vector<const pe::Preset*> full = pe::presetsFor(pe::PresetScope::All, 7, user);
-    CHECK(full.size() == pe::shippedFullPresets().size() + 1 && full.back()->name == "Everything"); // the shipped first
+    const std::vector<const pe::Preset*> full = pe::presetsFor(PluginKind::Keys, pe::PresetScope::All, 7, user);
+    CHECK(full.size() == pe::shippedFullPresets(PluginKind::Keys).size() + 1 && full.back()->name == "Everything"); // the shipped first
     // the values still the preset's: it is the one shown; one moved: none
-    CHECK(pe::matchingPreset(grand, v) == 4);
+    CHECK(pe::matchingPreset(PluginKind::Keys, grand, v) == 4);
     v[pe::kMicLX] = -0.4f;
-    CHECK(pe::matchingPreset(grand, v) == -1);
-    for (const auto& [i, x] : pe::presetParams(*grand[0]))
+    CHECK(pe::matchingPreset(PluginKind::Keys, grand, v) == -1);
+    for (const auto& [i, x] : pe::presetParams(PluginKind::Keys, *grand[0]))
         v[i] = x;
-    CHECK(pe::matchingPreset(grand, v) == 0);
-    CHECK(pe::deleteUserPreset(user[1]) && pe::loadUserPresets(dir).size() == 1);
+    CHECK(pe::matchingPreset(PluginKind::Keys, grand, v) == 0);
+    CHECK(pe::deleteUserPreset(user[1]) && pe::loadUserPresets(PluginKind::Keys, dir).size() == 1);
     CHECK(!pe::deleteUserPreset(*grand[0])); // a shipped one stays
     std::filesystem::remove_all(tmpl);
 }
@@ -6251,7 +6538,7 @@ TEST(a_mic_preset_sets_microphones_only)
     p.name = "Odd";
     p.body = 0;
     p.values = { { "volume", 12.0f }, { "no_such_knob", 1.0f }, { "mic_l_z", 99.0f }, { "mic_position", 2.0f } };
-    const std::vector<std::pair<uint32_t, float>> ps = pe::presetParams(p);
+    const std::vector<std::pair<uint32_t, float>> ps = pe::presetParams(PluginKind::Keys, p);
     CHECK(ps.size() == 2 && ps[0].first == pe::kMicLZ && ps[0].second == pe::paramInfo(pe::kMicLZ).max);
     CHECK(ps[1].first == pe::kMicPosition && ps[1].second == 2.0f);
 }
@@ -6260,7 +6547,7 @@ TEST(a_preset_rows_menu_offers_save_and_deletes_only_the_users)
 {
     pe::Preset mine;
     mine.name = "Mine";
-    const std::vector<const pe::Preset*> offered { &pe::shippedPresets()[0], &mine };
+    const std::vector<const pe::Preset*> offered { &pe::shippedPresets(PluginKind::Keys)[0], &mine };
     pe::PresetMenu m = pe::presetMenu(offered, 0, false);
     CHECK(m.items.size() == 3 && m.items[2] == "Save as…" && m.actions[2] == pe::kPresetSaveAs); // a shipped one: no delete
     m = pe::presetMenu(offered, 1, false);
@@ -6279,7 +6566,7 @@ TEST(listing_text_names_each_instrument_once)
     t.add("a", "grand", "grand_a", R"({"name": "Grand A", "group": "Grand pianos"})");
     t.add("b", "harp", "harp", R"({"name": "Harp A, old", "group": "Harps"})");
     const Catalog c = Catalog::scan({ t.path("a"), t.path("b") });
-    const std::string text = listingText(c);
+    const std::string text = listingText(c, PluginKind::Keys);
     std::vector<std::string> lines;
     for (size_t at = 0, end; at < text.size(); at = end + 1) {
         end = std::min(text.find('\n', at), text.size());
@@ -6289,7 +6576,7 @@ TEST(listing_text_names_each_instrument_once)
     CHECK(lines.size() == 3 && lines[0] == "grand\tGrand pianos\tGrand A\t" + t.path("a") + "/grand");
     CHECK(lines.size() == 3 && lines[1] == "harp\tHarps\tHarp A\t" + t.path("a") + "/harp");
     CHECK(lines.size() == 3 && lines[2].rfind("# ", 0) == 0 && lines[2].find(t.path("b")) != std::string::npos);
-    CHECK(listingText(Catalog::scan({ t.path("none") })).empty());
+    CHECK(listingText(Catalog::scan({ t.path("none") }), PluginKind::Keys).empty());
 }
 
 TEST(the_standalone_reads_the_instruments_beside_it)
@@ -6353,7 +6640,7 @@ TEST(search_paths_put_the_installed_before_the_users)
         t.add(("sys" + sys.substr(t.path("sys").size()) + "/instruments").c_str(), "harp", "harp", R"({"name": "Harp A", "group": "Harps"})");
         t.add(("user" + user.substr(t.path("user").size()) + "/instruments").c_str(), "harp", "harp", R"({"name": "Harp A, old", "group": "Harps"})");
         const Catalog c = Catalog::scan(p);
-        CHECK(c.find("harp") != nullptr && c.find("harp")->dir.rfind(sys, 0) == 0);
+        CHECK(c.find("harp", PluginKind::Keys) != nullptr && c.find("harp", PluginKind::Keys)->dir.rfind(sys, 0) == 0);
         bool named = false;
         for (const std::string& m : c.messages())
             named = named || (m.find("shadowed") != std::string::npos && m.find(user) != std::string::npos);
@@ -6394,8 +6681,8 @@ TEST(data_dirs_per_platform)
     const pe::DataDirs here = pe::dataDirs();
     if (!here.data.empty()) {
         CHECK(Catalog::searchPaths(nullptr).back() == here.data + "/snapshots");
-        CHECK(presetDir() == here.data + "/presets");
-        CHECK(midiMapPath() == here.config + "/midi-map.txt");
+        CHECK(presetDir(PluginKind::Keys) == here.data + "/presets");
+        CHECK(midiMapPath(PluginKind::Keys) == here.config + "/midi-map.txt");
     }
 }
 
@@ -6440,10 +6727,10 @@ TEST(saving_again_replaces_the_file)
     for (uint32_t i = 0; i < pe::kParamCount; ++i)
         v[i] = pe::paramInfo(i).def;
     std::string err;
-    CHECK(pe::saveUserPreset(presets, pe::presetFrom("Twice", pe::PresetScope::Mics, 0, v, {}), err) && err.empty());
+    CHECK(pe::saveUserPreset(PluginKind::Keys, presets, pe::presetFrom(PluginKind::Keys, "Twice", pe::PresetScope::Mics, 0, v, {}), err) && err.empty());
     v[pe::kMicSpacing] = 70;
-    CHECK(pe::saveUserPreset(presets, pe::presetFrom("Twice", pe::PresetScope::Mics, 0, v, {}), err) && err.empty());
-    const std::vector<pe::Preset> user = pe::loadUserPresets(presets);
+    CHECK(pe::saveUserPreset(PluginKind::Keys, presets, pe::presetFrom(PluginKind::Keys, "Twice", pe::PresetScope::Mics, 0, v, {}), err) && err.empty());
+    const std::vector<pe::Preset> user = pe::loadUserPresets(PluginKind::Keys, presets);
     CHECK(user.size() == 1);
     MidiMap m;
     const std::string map = (dir / "config" / "midi-map.txt").string();
@@ -6496,6 +6783,16 @@ TEST(settings_line_is_copy_cli_for_named_controls)
     CHECK(pe::settingsLine("/i/grand_a", { { "condition", 1000.0f } }, error).empty() && error.find("condition") != std::string::npos);
     CHECK(pe::settingsLine("/i/grand_a", { { "condition", INFINITY } }, error).empty() && error.find("condition") != std::string::npos);
     CHECK(pe::settingsLine("/i/grand_a", { { "condition", NAN } }, error).empty() && error.find("condition") != std::string::npos);
+    // a brass instrument starts from Weidinger's defaults, as its plugin does: Audience, the player's variation as
+    // fitted (the website's brass clips were rendered at Player)
+    std::vector<float> w(pe::kParamCount);
+    for (uint32_t i = 0; i < pe::kParamCount; ++i)
+        w[i] = pe::defaultOf(pe::PluginKind::Winds, i);
+    const std::string trumpet = std::string(PE_INSTRUMENTS_DIR) + "/trumpet", grand = std::string(PE_INSTRUMENTS_DIR) + "/grand_a";
+    CHECK(pe::settingsLine(trumpet, {}, error) == midi2wavLine(w.data(), trumpet.c_str(), 48000) && error.empty());
+    CHECK(pe::settingsLine(trumpet, {}, error).find("mic=2") != std::string::npos);
+    CHECK(pe::settingsLine(grand, {}, error).find("mic=1") != std::string::npos);
+    CHECK(pe::settingsLine(trumpet, { { "mic_position", 1.0f } }, error).find("mic=1") != std::string::npos);
 }
 
 TEST(copy_cli_finds_the_standalone)
@@ -6524,24 +6821,24 @@ TEST(copy_cli_finds_the_standalone)
     file(bin / "dussek.vst3" / "Contents" / "x86_64-linux" / "dussek.so");
     file(bin / "dussek.clap");
     const auto same = [](const std::string& a, const fs::path& b) { std::error_code ec; return !a.empty() && fs::equivalent(a, b, ec); };
-    CHECK(pe::standaloneExecutable((bin / exe).string(), true, nullptr) == (bin / exe).string());
-    CHECK(same(pe::standaloneExecutable((bin / "dussek.lv2" / "dussek_dsp.so").string(), false, nullptr), bin / exe));
-    CHECK(same(pe::standaloneExecutable((bin / "dussek.vst3" / "Contents" / "x86_64-linux" / "dussek.so").string(), false, nullptr), bin / exe));
-    CHECK(same(pe::standaloneExecutable((bin / "dussek.clap").string(), false, nullptr), bin / exe));
+    CHECK(pe::standaloneExecutable(PluginKind::Keys, (bin / exe).string(), true, nullptr) == (bin / exe).string());
+    CHECK(same(pe::standaloneExecutable(PluginKind::Keys, (bin / "dussek.lv2" / "dussek_dsp.so").string(), false, nullptr), bin / exe));
+    CHECK(same(pe::standaloneExecutable(PluginKind::Keys, (bin / "dussek.vst3" / "Contents" / "x86_64-linux" / "dussek.so").string(), false, nullptr), bin / exe));
+    CHECK(same(pe::standaloneExecutable(PluginKind::Keys, (bin / "dussek.clap").string(), false, nullptr), bin / exe));
 #ifndef _WIN32
     // `just install`: ~/.lv2/dussek.lv2 a link to the build's bundle
     fs::create_directories(root / "home" / ".lv2");
     std::error_code ec;
     fs::create_directory_symlink(bin / "dussek.lv2", root / "home" / ".lv2" / "dussek.lv2", ec);
     if (!ec)
-        CHECK(same(pe::standaloneExecutable((root / "home" / ".lv2" / "dussek.lv2" / "dussek_dsp.so").string(), false, nullptr), bin / exe));
+        CHECK(same(pe::standaloneExecutable(PluginKind::Keys, (root / "home" / ".lv2" / "dussek.lv2" / "dussek_dsp.so").string(), false, nullptr), bin / exe));
 #endif
 #ifndef _WIN32
     // macOS: the VST3's binary is named dussek too; the standalone is the .app's (Windows has no .app)
     const fs::path mac = root / "mac";
     file(mac / "dussek.vst3" / "Contents" / "MacOS" / "dussek");
     file(mac / "dussek.app" / "Contents" / "MacOS" / "dussek");
-    CHECK(same(pe::standaloneExecutable((mac / "dussek.vst3" / "Contents" / "MacOS" / "dussek").string(), false, nullptr),
+    CHECK(same(pe::standaloneExecutable(PluginKind::Keys, (mac / "dussek.vst3" / "Contents" / "MacOS" / "dussek").string(), false, nullptr),
         mac / "dussek.app" / "Contents" / "MacOS" / "dussek"));
 #endif
     // a package's layout: the plugin in lib/lv2, the program on PATH
@@ -6550,9 +6847,9 @@ TEST(copy_cli_finds_the_standalone)
     file(pkg / "bin" / exe);
     const std::string path = (root / "nowhere").string() + sep + (pkg / "bin").string();
     const std::string plugin = (pkg / "lib" / "lv2" / "dussek.lv2" / "dussek_dsp.so").string();
-    CHECK(same(pe::standaloneExecutable(plugin, false, path.c_str()), pkg / "bin" / exe));
-    CHECK(pe::standaloneExecutable(plugin, false, nullptr).empty());
-    CHECK(pe::standaloneExecutable("", false, nullptr).empty());
+    CHECK(same(pe::standaloneExecutable(PluginKind::Keys, plugin, false, path.c_str()), pkg / "bin" / exe));
+    CHECK(pe::standaloneExecutable(PluginKind::Keys, plugin, false, nullptr).empty());
+    CHECK(pe::standaloneExecutable(PluginKind::Keys, "", false, nullptr).empty());
     // an installer's layout: the plugin in the system's plugin folder, the program in its own
     // (Windows: Program Files\Dussek; macOS: /Applications, the app named Dussek.app)
     const fs::path apps = root / "apps";
@@ -6560,8 +6857,20 @@ TEST(copy_cli_finds_the_standalone)
     file(inApp);
     file(root / "sys" / "LV2" / "dussek.lv2" / "dussek_dsp.so");
     const std::string sysPlugin = (root / "sys" / "LV2" / "dussek.lv2" / "dussek_dsp.so").string();
-    CHECK(pe::standaloneExecutable(sysPlugin, false, nullptr).empty());
-    CHECK(same(pe::standaloneExecutable(sysPlugin, false, nullptr, { apps.string() }), inApp));
+    CHECK(pe::standaloneExecutable(PluginKind::Keys, sysPlugin, false, nullptr).empty());
+    CHECK(same(pe::standaloneExecutable(PluginKind::Keys, sysPlugin, false, nullptr, { apps.string() }), inApp));
+    // both plugins' standalones side by side (plugin/build/bin): each plugin finds its own
+#ifdef _WIN32
+    const char* wexe = "weidinger.exe";
+#else
+    const char* wexe = "weidinger";
+#endif
+    file(bin / wexe);
+    file(bin / "weidinger.lv2" / "weidinger_dsp.so");
+    CHECK(same(pe::standaloneExecutable(PluginKind::Winds, (bin / "weidinger.lv2" / "weidinger_dsp.so").string(), false, nullptr), bin / wexe));
+    CHECK(same(pe::standaloneExecutable(PluginKind::Keys, (bin / "dussek.lv2" / "dussek_dsp.so").string(), false, nullptr), bin / exe));
+    CHECK(pe::portableFolder("/x/weidinger-0.4.0-linux/weidinger") == "/x/weidinger-0.4.0-linux");
+    CHECK(pe::portableFolder("/x/m/Weidinger.app/Contents/MacOS/weidinger") == "/x/m");
     fs::remove_all(root);
     // the line starts with it, quoted as the instrument's path is
     std::vector<float> v(pe::kParamCount);
@@ -6574,11 +6883,12 @@ TEST(copy_cli_finds_the_standalone)
 
 TEST(about_is_the_last_tab)
 {
-    CHECK(std::string(tabName(kTabAbout)) == "About" && kTabAbout + 1 == kTabCount);
+    CHECK(std::string(tabName(kTabAbout)) == "About");
+    CHECK(computeLayout(kDefaultWidth, kDefaultHeight, kTabSound, ctxOf(0, 1, 0)).tabs.back().tab == kTabAbout);
     CHECK(tabGroups(kTabAbout).empty()); // no parameters
     // the default window keeps the ten tabs on one row (the drawing gives up a little width for it)
     const Layout d = computeLayout(kDefaultWidth, kDefaultHeight, kTabSound, ctxOf(0, 1, 0));
-    CHECK(d.tabs.size() == kTabCount && d.tabs.back().rect.y == d.tabs.front().rect.y);
+    CHECK(d.tabs.size() == kTabCount - 1 && d.tabs.back().rect.y == d.tabs.front().rect.y);
     CHECK(d.topView.w + d.frontView.w + kGap >= 0.5f * (kDefaultWidth - 3 * kPad) - 0.5f);
     // a wide window keeps the drawing's share as before
     const Layout big = computeLayout(1600, kDefaultHeight, kTabSound, ctxOf(0, 1, 0));
@@ -6650,11 +6960,11 @@ TEST(lines_wrap_to_the_width)
 
 TEST(every_export_carries_a_license_the_about_tab_reads)
 {
-    for (const InstrumentEntry* e : committed().menu()) {
+    for (const InstrumentEntry* e : committed().menu(PluginKind::Keys)) {
         std::string md;
         CHECK(readTextFile(e->dir + "/LICENSE.md", md));
         const std::vector<TextLine> lines = markdownLines(md);
-        CHECK(!lines.empty() && lines.front().heading && lines.front().text.find(e->name) != std::string::npos);
+        CHECK(!lines.empty() && lines.front().heading && lines.front().text.find(e->info.has_menu ? e->info.name : e->name.c_str()) != std::string::npos);
         for (const TextLine& l : wrapLines(lines, 300))
             CHECK(textWidth(l.text.c_str()) <= 300 && l.text.find("**") == std::string::npos && l.text.find('`') == std::string::npos);
     }
@@ -6735,3 +7045,470 @@ TEST(the_standalone_links_its_outputs_to_the_first_playback_device)
     CHECK(pe::autoconnectWanted(nullptr) && pe::autoconnectWanted("1") && !pe::autoconnectWanted("0"));
 }
 
+
+// brass (a report written by hand: the suite needs no export)
+static InstrumentEntry brassEntry(std::initializer_list<const char*> mutes, bool slide = false)
+{
+    InstrumentEntry e;
+    e.id = e.name = "brass";
+    e.info.body = (uint32_t)BodyKind::Bell;
+    e.info.exciter = PE_EXCITER_BREATH;
+    e.info.recorded_lo = 54;
+    e.info.recorded_hi = 86;
+    e.info.play_lo = 48;
+    e.info.play_hi = 88;
+    e.info.registers = 1;
+    e.info.brass = true;
+    e.info.slide = slide;
+    e.info.mute_count = (uint32_t)mutes.size();
+    uint32_t i = 0;
+    for (const char* m : mutes) {
+        std::snprintf(e.info.mutes[i++], 16, "%s", m);
+        if (std::strcmp(m, "plunger") == 0)
+            e.info.plunger = true;
+    }
+    e.info.inert = ~(uint32_t)0 & ~(1u << PE_CONTROL_DYNAMICS) & ~(1u << PE_CONTROL_VARIATION);
+    return e;
+}
+
+TEST(weidinger_speaks_of_a_bell_not_a_piano)
+{
+    // every port's name and description, as a host reads them and as the window shows them for a brass instrument whose
+    // export names none of its own (the piano's mic texts were the bell's: "across the piano", "above the soundboard")
+    const InstrumentEntry e = brassEntry({ "open" });
+    for (uint32_t i : ports(PluginKind::Winds)) {
+        for (const std::string& t : { std::string(nameOf(PluginKind::Winds, i)), std::string(descriptionOf(PluginKind::Winds, i)),
+                 std::string(displayName(i, e)), std::string(displayDescription(i, e)) }) {
+            std::string low = t;
+            std::transform(low.begin(), low.end(), low.begin(), [](unsigned char c) { return (char)std::tolower(c); });
+            for (const char* w : { "piano", "keyboard", "soundboard", "string", "hammer", "strike", "treble", " lid" })
+                if (low.find(w) != std::string::npos) {
+                    std::printf("  %s: \"%s\" in \"%s\"\n", paramInfo(i).symbol, w, t.c_str());
+                    CHECK(false);
+                }
+        }
+        CHECK(descriptionOf(PluginKind::Winds, i)[0] != '\0');
+        // and its values' names (Close 1 and 2 named the hammers, the bars, the resonators)
+        for (uint32_t v = 0, n = paramLabelCount(i); n > 1 && v < n; ++v) {
+            std::string low = labelOf(PluginKind::Winds, i, v);
+            std::transform(low.begin(), low.end(), low.begin(), [](unsigned char c) { return (char)std::tolower(c); });
+            for (const char* w : { "piano", "keyboard", "soundboard", "hammer", "bars", "resonator", "sound hole", "open top", "tail" })
+                if (low.find(w) != std::string::npos) {
+                    std::printf("  %s = %u: \"%s\" in \"%s\"\n", paramInfo(i).symbol, v, w, low.c_str());
+                    CHECK(false);
+                }
+        }
+    }
+    CHECK(std::string(labelOf(PluginKind::Keys, kMicPosition, 3)) == paramLabel(kMicPosition, 3));
+    // Dussek's keep theirs
+    for (uint32_t i : { kMicLX, kMicPosition, kVariation, kConcertPitch })
+        CHECK(std::string(descriptionOf(PluginKind::Keys, i)) == paramInfo(i).description
+            && std::string(nameOf(PluginKind::Keys, i)) == paramInfo(i).name);
+}
+
+TEST(brass_tabs)
+{
+    const InstrumentEntry e = brassEntry({ "open", "straight" });
+    UiContext c;
+    c.plugin = PluginKind::Winds; // a brass instrument: Weidinger's
+    c.inst = &e;
+    c.micPosition = 2;
+    std::vector<Tab> shown;
+    const Layout l = computeLayout(kDefaultWidth, kDefaultHeight, kTabSound, c);
+    for (const TabButton& t : l.tabs)
+        shown.push_back(t.tab);
+    CHECK((shown == std::vector<Tab> { kTabSound, kTabPlayer, kTabTouch, kTabMics, kTabTuning, kTabMidi, kTabAbout }));
+}
+
+TEST(player_tab_is_brass_only)
+{
+    CHECK(!tabShown(kTabPlayer, ctxOf(0, 1, 0)));
+    UiContext none;
+    CHECK(!tabShown(kTabPlayer, none));
+    for (uint32_t p = kBrassMute; p <= kAftertouchTo; ++p)
+        CHECK(!paramVisible(p, ctxOf(0, 1, 0)));
+}
+
+TEST(mute_buttons_follow_the_report)
+{
+    const InstrumentEntry horn = brassEntry({ "open" }), tuba = brassEntry({ "open", "straight" });
+    CHECK(entryMutes(horn) == 0 && !paramActive(kBrassMute, horn, 2, 0));
+    CHECK(entryMutes(tuba) == 2 && paramActive(kBrassMute, tuba, 2, 0));
+    UiContext c;
+    c.plugin = PluginKind::Winds; // a brass instrument: Weidinger's
+    c.inst = &tuba;
+    c.micPosition = 2;
+    const Layout l = computeLayout(kDefaultWidth, kDefaultHeight, kTabSound, c);
+    const Row* mute = nullptr;
+    for (const Row& r : l.rows)
+        if (r.param == kBrassMute)
+            mute = &r;
+    CHECK(mute != nullptr && mute->kind == Kind::Chips);
+    if (mute != nullptr) {
+        const std::vector<Rect> chips = muteChips(*mute, tuba);
+        CHECK(chips.size() == 2 && chips[0].x + chips[0].w <= chips[1].x);
+        CHECK(chips[1].x + chips[1].w <= mute->control.x + mute->control.w + 1e-3f);
+    }
+    CHECK(std::strcmp(muteLabel(tuba, 1), "Straight") == 0);
+    CHECK(effectiveMute(tuba, 5) == 0);
+}
+
+TEST(a_mute_is_kept_by_its_kind)
+{
+    // the value names a kind (the engine's MUTE_KINDS): the trumpet's wah is no bucket on the bass trombone
+    const InstrumentEntry trumpet = brassEntry({ "open", "straight", "cup", "wah", "wah_stem", "bucket", "plunger" }),
+                          bass = brassEntry({ "open", "straight", "cup", "bucket", "plunger" });
+    CHECK(muteKind(trumpet, 3) == 3 && effectiveMute(trumpet, 3) == 3);
+    CHECK(muteKind(bass, 3) == 5 && effectiveMute(bass, 5) == 3);
+    CHECK(effectiveMute(bass, 3) == 0); // no wah: open, and the wah again on the trumpet
+    CHECK(muteKind(bass, 4) == 6 && isPlunger(bass, effectiveMute(bass, 6)));
+}
+
+TEST(the_plunger_knob_comes_with_the_plunger)
+{
+    const InstrumentEntry e = brassEntry({ "open", "straight", "plunger" });
+    UiContext c;
+    c.plugin = PluginKind::Winds; // a brass instrument: Weidinger's
+    c.inst = &e;
+    c.brassMute = 1;
+    CHECK(!paramVisible(kPlunger, c) && !paramVisible(kPlungerSet, c));
+    c.brassMute = 6; // the plunger's kind
+    CHECK(paramVisible(kPlunger, c) && paramVisible(kPlungerSet, c));
+}
+
+TEST(variation_hides_with_the_player_off)
+{
+    const InstrumentEntry e = brassEntry({ "open" });
+    UiContext c;
+    c.plugin = PluginKind::Winds; // a brass instrument: Weidinger's
+    c.inst = &e;
+    CHECK(paramVisible(kVariation, c) && paramVisible(kDynamics, c) && !paramVisible(kRestrike, c));
+    c.virtualPlayer = false;
+    CHECK(!paramVisible(kVariation, c) && paramVisible(kDynamics, c));
+    // a piano's stays
+    UiContext p = ctxOf(0, 1, 0);
+    p.virtualPlayer = false;
+    CHECK(paramVisible(kVariation, p));
+}
+
+TEST(the_glide_is_the_slide_s)
+{
+    const InstrumentEntry trumpet = brassEntry({ "open" }), trombone = brassEntry({ "open" }, true);
+    for (uint32_t p : { kGlideMode, kGlideHold, kGlideTime }) {
+        CHECK(!paramActive(p, trumpet, 2, 0));
+        CHECK(paramActive(p, trombone, 2, 0));
+    }
+}
+
+TEST(what_a_bell_has_not_goes)
+{
+    const InstrumentEntry e = brassEntry({ "open", "straight" });
+    for (uint32_t p : { kCondition, kPillow, kPrepMode, kLid, kHammerHardness, kSustain, kDamperFall, kSustainLatch, kSympathetic, kRelease })
+        CHECK(!paramActive(p, e, 2, 0));
+    for (uint32_t p : { kVolume, kRoom, kMicPosition, kConcertPitch, kTemperament })
+        CHECK(paramActive(p, e, 2, 0));
+    const Pedals pedals = entryPedals(e);
+    CHECK(!pedals.soft && !pedals.sostenuto && !pedals.sustain);
+}
+
+TEST(gray_keys_are_the_range)
+{
+    const InstrumentEntry e = brassEntry({ "open" });
+    int lo, hi;
+    entryPlays(e, lo, hi);
+    CHECK(lo == 48 && hi == 88);
+    entryRecorded(e, lo, hi);
+    CHECK(lo == 54 && hi == 86); // inside the range and outside the fit: the amber of extrapolated keys
+    entryPlays(entryOf(0), lo, hi);
+    CHECK(lo == 21 && hi == 108);
+}
+
+TEST(brass_controllers_are_ties_out_of_the_box)
+{
+    // Weidinger's: shown on their controls and in the map's file, learned again or forgotten like any
+    // other, not built in; Dussek's map starts empty
+    const std::string dir = tempDir("pe_brass_ties_");
+    CHECK(!dir.empty());
+    const MidiMap fresh = MidiMap::load(dir + "/missing.txt", PluginKind::Winds);
+    const struct { uint32_t param; uint8_t cc; } want[] = { { kAirAdded, 1 }, { kAir, 11 }, { kBrassVibrato, 70 }, { kGrowl, 21 },
+        { kFlutter, 23 }, { kPlunger, 4 }, { kGlideHold, 65 }, { kGlideTime, 5 } };
+    CHECK(fresh.ties().size() == 8);
+    for (const auto& w : want)
+        CHECK(fresh.find(w.param) != nullptr && fresh.find(w.param)->cc == w.cc && fresh.find(w.param)->channel == 0);
+    CHECK(MidiMap::load(dir + "/missing.txt", PluginKind::Keys).ties().empty());
+    // written since: what the player forgot stays forgotten
+    const std::string path = dir + "/weidinger-midi-map.txt";
+    MidiMap m = fresh;
+    CHECK(m.update(path, [](MidiMap& x) { x.forget(kGrowl); x.forget(kAir); }));
+    const MidiMap again = MidiMap::load(path, PluginKind::Winds);
+    CHECK(again.find(kAir) == nullptr && again.find(kGrowl) == nullptr && again.find(kFlutter)->cc == 23);
+    CHECK(again.version == kMidiMapVersion && again.ties().size() == 6);
+    std::filesystem::remove_all(dir);
+}
+
+TEST(a_map_written_with_brass_loads_in_dussek_without_it)
+{
+    // the branch's own map (version 2, the brass ties added to every map) in the split Dussek: the piano's
+    // ties stay, no brass tie is shown or written back; in Weidinger the brass's alone
+    const std::string text = "version 2\ncc 1 74 hammer_hardness\ncc 1 11 air\ncc 1 21 growl\n";
+    const MidiMap k = MidiMap::parse(text, PluginKind::Keys);
+    CHECK(k.ties().size() == 1 && k.find(kHammerHardness) != nullptr && k.find(kHammerHardness)->cc == 74);
+    CHECK(k.text().find(" air") == std::string::npos && k.text().find("\nversion 1\n") != std::string::npos);
+    CHECK(k.text().rfind("# Dussek MIDI map", 0) == 0);
+    const MidiMap w = MidiMap::parse(text, PluginKind::Winds);
+    CHECK(w.ties().size() == 2 && w.find(kAir) != nullptr && w.find(kGrowl) != nullptr && w.find(kHammerHardness) == nullptr);
+    CHECK(w.text().rfind("# Weidinger MIDI map", 0) == 0);
+    // the instrument steps are both plugins'
+    CHECK(MidiMap::parse("cc 1 30 next_instrument\n", PluginKind::Winds).find(kTargetNext) != nullptr);
+}
+
+TEST(each_plugin_has_its_map_file)
+{
+    const std::string config = pe::dataDirs().config;
+    if (!config.empty()) {
+        CHECK(midiMapPath(PluginKind::Keys) == config + "/midi-map.txt");
+        CHECK(midiMapPath(PluginKind::Winds) == config + "/weidinger-midi-map.txt");
+    }
+    CHECK(defaultTies(PluginKind::Keys).ties().empty());
+    CHECK(defaultTies(PluginKind::Winds).ties().size() == 8 && defaultTies(PluginKind::Winds).plugin == PluginKind::Winds);
+}
+
+TEST(each_plugin_lists_its_kind)
+{
+    // one catalog for both plugins in a process (sharedCatalog): each lists, finds and opens its own
+    const Catalog& c = committed();
+    const std::vector<const InstrumentEntry*> keys = c.menu(PluginKind::Keys), winds = c.menu(PluginKind::Winds);
+    std::set<std::string> k, w;
+    for (const InstrumentEntry* e : keys) k.insert(e->id);
+    for (const InstrumentEntry* e : winds) w.insert(e->id);
+    CHECK(w == std::set<std::string>({ "bass_trombone", "horn", "tenor_trombone", "trumpet", "tuba" }));
+    for (const std::string& id : w)
+        CHECK(k.count(id) == 0);
+    for (const std::string& id : trackedInstruments()) // each instrument is one plugin's
+        CHECK((c.find(id, PluginKind::Keys) != nullptr) != (c.find(id, PluginKind::Winds) != nullptr));
+    CHECK(c.first(PluginKind::Keys) != nullptr && c.first(PluginKind::Keys)->id == "grand_a");
+    CHECK(c.first(PluginKind::Winds) != nullptr && c.first(PluginKind::Winds)->id == "trumpet"); // its menu block's "first"
+    CHECK(c.find("trumpet", PluginKind::Keys) == nullptr && c.find("trumpet", PluginKind::Winds) != nullptr);
+    CHECK(c.find("grand_a", PluginKind::Winds) == nullptr && c.find("grand_a", PluginKind::Keys) != nullptr);
+    // a folder opened from anywhere (its absolute path): the other plugin's is refused
+    const std::string trumpet = std::filesystem::absolute(std::string(PE_INSTRUMENTS_DIR) + "/trumpet").lexically_normal().string();
+    const std::string grand = std::filesystem::absolute(std::string(PE_INSTRUMENTS_DIR) + "/grand_a").lexically_normal().string();
+    CHECK(c.find(trumpet, PluginKind::Keys) == nullptr && c.find(trumpet, PluginKind::Winds) != nullptr);
+    CHECK(c.find(grand, PluginKind::Winds) == nullptr && c.find(grand, PluginKind::Keys) != nullptr);
+    CHECK(Catalog::outside(trumpet) != nullptr && !ofKind(*Catalog::outside(trumpet), PluginKind::Keys));
+    CHECK(choose(c, "", PluginKind::Winds).entry != nullptr && choose(c, "", PluginKind::Winds).entry->info.brass);
+    CHECK(c.groups(PluginKind::Winds) == std::vector<std::string>({ "Brass" }));
+}
+
+TEST(an_instrument_of_the_other_plugin_is_not_loaded)
+{
+    // a saved session (or the DSP's own state) naming the other plugin's instrument: no directory, nothing loads
+    const std::string trumpet = std::filesystem::absolute(std::string(PE_INSTRUMENTS_DIR) + "/trumpet").lexically_normal().string();
+    const std::string grand = std::filesystem::absolute(std::string(PE_INSTRUMENTS_DIR) + "/grand_a").lexically_normal().string();
+    CHECK(instrumentDir(nullptr, trumpet.c_str(), PluginKind::Keys).empty());
+    CHECK(instrumentDir(nullptr, trumpet.c_str(), PluginKind::Winds) == trumpet);
+    CHECK(instrumentDir(nullptr, grand.c_str(), PluginKind::Winds).empty());
+    CHECK(instrumentDir(nullptr, grand.c_str(), PluginKind::Keys) == grand);
+}
+
+TEST(the_sound_tab_offers_the_presets_in_both_plugins)
+{
+    // the Preset row is no parameter (kPresetRow): a port check must not hide it
+    for (PluginKind k : { PluginKind::Keys, PluginKind::Winds }) {
+        const Layout l = computeLayout(kDefaultWidth, kDefaultHeight, kTabSound, uiContext(committed().first(k), 1, 0, k));
+        CHECK(std::any_of(l.rows.begin(), l.rows.end(), [](const Row& r) { return r.param == kPresetRow; }));
+    }
+}
+
+TEST(a_saved_instrument_of_the_other_plugin_is_named_so)
+{
+    // a session, a preset or a saved path naming the other plugin's instrument: refused, and told why
+    const Catalog& c = committed();
+    const std::string trumpet = std::filesystem::absolute(std::string(PE_INSTRUMENTS_DIR) + "/trumpet").lexically_normal().string();
+    CHECK(otherPluginOf(c, "trumpet", PluginKind::Keys) == "Weidinger");
+    CHECK(otherPluginOf(c, trumpet, PluginKind::Keys) == "Weidinger");
+    CHECK(otherPluginOf(c, "grand_a", PluginKind::Winds) == "Dussek");
+    CHECK(otherPluginOf(c, "grand_a", PluginKind::Keys).empty() && otherPluginOf(c, "no_such", PluginKind::Keys).empty());
+    CHECK(missingLabel(c, "trumpet", PluginKind::Keys) == "Weidinger's: trumpet");
+    CHECK(missingLabel(c, "no_such", PluginKind::Keys) == "Missing: no_such");
+}
+
+TEST(each_standalone_renders_its_own)
+{
+    // `dussek render <folder>` of a brass folder, `weidinger render` of a piano's: refused, the other named
+    const std::string trumpet = std::string(PE_INSTRUMENTS_DIR) + "/trumpet", grand = std::string(PE_INSTRUMENTS_DIR) + "/grand_a";
+    CHECK(otherPluginsFolder(trumpet, PluginKind::Keys) == "Weidinger");
+    CHECK(otherPluginsFolder(grand, PluginKind::Winds) == "Dussek");
+    CHECK(otherPluginsFolder(trumpet, PluginKind::Winds).empty() && otherPluginsFolder(grand, PluginKind::Keys).empty());
+    CHECK(otherPluginsFolder("/no/such/folder", PluginKind::Keys).empty()); // the engine says what is wrong with it
+}
+
+TEST(dussek_s_programs_are_the_released_ones)
+{
+    // a program change selects the instrument v0.3.2's did (brass had moved Percussion and what follows by 5)
+    std::ifstream f(std::string(PE_TESTS_DIR) + "/menu-v0.3.2.txt");
+    std::vector<std::string> released, now;
+    for (std::string line; std::getline(f, line);)
+        if (!line.empty() && line[0] != '#')
+            released.push_back(line);
+    for (const InstrumentEntry* e : committed().menu(PluginKind::Keys))
+        now.push_back(e->id);
+    CHECK(released.size() == 41);
+    CHECK(now == released);
+}
+
+TEST(a_controller_moving_air_or_the_plunger_takes_over_from_the_keys)
+{
+    CHECK(byHandSwitch(kAir) == kAirSet && byHandSwitch(kPlunger) == kPlungerSet);
+    CHECK(byHandSwitch(kGrowl) == kParamCount && byHandSwitch(kAirSet) == kParamCount);
+}
+
+TEST(the_state_is_the_released_one)
+{
+    // both plugins save v0.3.2's seven keys (one initState); no brass_values: each plugin plays one side
+    const auto declared = pe::stateKeys();
+    const std::vector<std::string> keys(declared.begin(), declared.end());
+    CHECK(keys == std::vector<std::string>({ "_state_version", "ui", "instrument", "velocity_curve", "morph", "felt", "scale_file" }));
+    CHECK(!stateKnown("brass_values"));
+}
+
+TEST(each_plugin_keeps_its_own_presets)
+{
+    Preset w;
+    w.name = "Muted";
+    w.scope = PresetScope::All;
+    w.values = { { "brass_mute", 2.0f } };
+    const std::string text = formatPreset(PluginKind::Winds, w);
+    CHECK(text.rfind("# Weidinger preset\n", 0) == 0);
+    Preset q;
+    CHECK(parsePreset(PluginKind::Winds, text, q) && q.name == "Muted");
+    CHECK(!parsePreset(PluginKind::Keys, text, q)); // the other plugin's
+    CHECK(!parsePreset(PluginKind::Winds, formatPreset(PluginKind::Keys, w), q));
+    const std::string data = pe::dataDirs().data;
+    if (!data.empty()) {
+        CHECK(presetDir(PluginKind::Keys) == data + "/presets");
+        CHECK(presetDir(PluginKind::Winds) == data + "/weidinger-presets");
+    }
+    CHECK(presetFile(PluginKind::Winds, "/d", "Muted") == "/d/Muted.weidinger-preset");
+    CHECK(presetFile(PluginKind::Keys, "/d", "Muted") == "/d/Muted.dussek-preset");
+    // the programs: Weidinger's Default at the Audience; Dussek's as released
+    const std::vector<const Preset*> wp = shippedFullPresets(PluginKind::Winds);
+    CHECK(wp.size() == 1 && wp[0]->name == "Default");
+    CHECK(presetParams(PluginKind::Winds, *wp[0])[kMicPosition].second == 2.0f);
+    CHECK(presetParams(PluginKind::Winds, *wp[0])[kVariation].second == 100.0f);
+    std::vector<std::string> names;
+    for (const Preset* p : shippedFullPresets(PluginKind::Keys))
+        names.push_back(p->name);
+    CHECK(names == std::vector<std::string>({ "Default", "Production, bright", "Production, warm" }));
+    CHECK(presetParams(PluginKind::Keys, *shippedFullPresets(PluginKind::Keys)[0])[kMicPosition].second == paramInfo(kMicPosition).def);
+    // no microphone preset for the bell yet: Weidinger offers none of the pianos'
+    for (const Preset& p : shippedPresets(PluginKind::Winds))
+        CHECK(p.scope == PresetScope::All);
+    // a value outside the plugin's ports is ignored: the default stands
+    Preset k;
+    k.name = "Hard";
+    k.scope = PresetScope::All;
+    k.values = { { "hammer_hardness", 12.0f }, { "brass_mute", 3.0f } };
+    CHECK(presetParams(PluginKind::Winds, k)[kHammerHardness].second == paramInfo(kHammerHardness).def);
+    CHECK(presetParams(PluginKind::Winds, k)[kBrassMute].second == 3.0f);
+    CHECK(presetParams(PluginKind::Keys, k)[kHammerHardness].second == 12.0f);
+    CHECK(presetParams(PluginKind::Keys, k)[kBrassMute].second == paramInfo(kBrassMute).def);
+    // a saved one carries its plugin's ports only
+    float v[kParamCount];
+    for (uint32_t i = 0; i < kParamCount; ++i)
+        v[i] = paramInfo(i).def;
+    const Preset f = presetFrom(PluginKind::Winds, "Mine", PresetScope::All, 0, v, {});
+    CHECK(f.values.size() == pe::ports(PluginKind::Winds).size());
+    CHECK(presetFrom(PluginKind::Keys, "Mine", PresetScope::All, 0, v, {}).values.size() == 78);
+}
+
+TEST(a_learned_tie_wins_over_brass_s_default)
+{
+    MidiMap m;
+    m.tie(kVolume, 0, 21);
+    TieTable t;
+    t.load(m);
+    InstrumentLists lists;
+    MidiRouter r;
+    const MidiRouter::Action a = r.cc(0, 21, 64, 0, t, lists);
+    CHECK(a.kind == MidiRouter::Action::Set && a.param == kVolume); // routeCc takes it before brass's default is asked
+}
+
+/// the brass controls `midi2wav --cc` drives, each at five values: what the engine gets (`cc_values.txt`, which the
+/// engine's `midi2wav::cc` tests read too); the default ties as Copy CLI writes them
+static std::vector<std::string> ccTable()
+{
+    std::vector<std::string> rows;
+    MidiMap fresh;
+    fresh = defaultTies(PluginKind::Winds);
+    rows.push_back("default " + ccTiesArg(fresh));
+    const uint32_t targets[] = { kAir, kGrowl, kFlutter, kBrassVibrato, kPlunger, kGlideHold, kGlideTime, kVirtualPlayer, kBrassSolo, kAirAdded };
+    for (uint32_t param : targets)
+        for (uint8_t cc : { 0, 1, 64, 100, 127 }) {
+            std::vector<float> v(kParamCount);
+            for (uint32_t i = 0; i < kParamCount; ++i) v[i] = paramInfo(i).def;
+            v[param] = ccToValue(param, cc, ListChoices {});
+            if (byHandSwitch(param) < kParamCount)
+                v[byHandSwitch(param)] = 1.0f; // moved by MIDI, it takes over from the keys
+            const PeParams e = engineParams(v.data());
+            const float got = param == kAir ? e.air : param == kGrowl ? e.growl : param == kFlutter ? e.flutter
+                : param == kBrassVibrato ? e.brass_vibrato : param == kPlunger ? e.plunger : param == kGlideHold ? (float)e.glide_hold
+                : param == kGlideTime ? e.glide_time : param == kVirtualPlayer ? (float)e.virtual_player
+                : param == kAirAdded ? e.air_added : (float)e.brass_solo;
+            char line[160];
+            std::snprintf(line, sizeof(line), "%s %u %.9g", paramInfo(param).symbol, (unsigned)cc, got);
+            rows.push_back(line);
+        }
+    return rows;
+}
+
+TEST(midi2wav_reads_the_controllers_as_the_plugin_does)
+{
+    const std::string path = std::string(PE_TESTS_DIR) + "/cc_values.txt";
+    const std::vector<std::string> now = ccTable();
+    if (const char* w = std::getenv("PE_WRITE_CC_TABLE"); w != nullptr && *w) {
+        FILE* f = std::fopen(path.c_str(), "w");
+        CHECK(f != nullptr);
+        if (f == nullptr) return;
+        std::fprintf(f, "# what the plugin's engine gets from a tied controller (ui_tests, PE_WRITE_CC_TABLE=1); midi2wav --cc reads it too\n");
+        for (const std::string& l : now) std::fprintf(f, "%s\n", l.c_str());
+        std::fclose(f);
+        return;
+    }
+    std::vector<std::string> want;
+    if (FILE* f = std::fopen(path.c_str(), "r")) {
+        char buf[512];
+        while (std::fgets(buf, sizeof(buf), f)) {
+            std::string l(buf);
+            while (!l.empty() && (l.back() == '\n' || l.back() == '\r')) l.pop_back();
+            if (!l.empty() && l[0] != '#') want.push_back(l);
+        }
+        std::fclose(f);
+    }
+    CHECK(want == now);
+}
+
+TEST(copy_cli_writes_the_ties_midi2wav_takes)
+{
+    MidiMap m;
+    m = defaultTies(PluginKind::Winds);
+    CHECK(ccTiesArg(m) == "1:1=air_added,1:11=air,1:70=brass_vibrato,1:21=growl,1:23=flutter,1:4=plunger,1:65=glide_hold,1:5=glide_time");
+    // what midi2wav cannot drive (a piano's control, a list, a step, a relative knob) is left out; nothing: "none"
+    MidiMap p;
+    p.tie(kHammerHardness, 0, 74);
+    p.tie(kGlideMode, 0, 75);
+    p.tie(kGrowl, 2, 30, false, true);
+    CHECK(ccTiesArg(p) == "none");
+    p.tie(kFlutter, 15, 31);
+    CHECK(ccTiesArg(p) == "16:31=flutter");
+}
+
+TEST(copy_cli_carries_the_brass_ties)
+{
+    std::vector<float> v(kParamCount);
+    for (uint32_t i = 0; i < kParamCount; ++i) v[i] = paramInfo(i).def;
+    const std::string line = midi2wavLine(v.data(), "/i/trumpet", 48000, nullptr, {}, "", "", "", "1:11=air,1:21=growl");
+    const std::string tail = " --cc 1:11=air,1:21=growl";
+    CHECK(line.size() > tail.size() && line.compare(line.size() - tail.size(), tail.size(), tail) == 0);
+    CHECK(midi2wavLine(v.data(), "/i/grand_a", 48000).find("--cc") == std::string::npos);
+}

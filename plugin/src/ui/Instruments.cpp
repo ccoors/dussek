@@ -1,4 +1,5 @@
 #include "Instruments.hpp"
+#include "Ports.hpp"
 #include "Params.hpp"
 
 #include <algorithm>
@@ -45,6 +46,52 @@ void entryRecorded(const InstrumentEntry& e, int& lo, int& hi)
         hi = 108;
     }
 }
+
+void entryPlays(const InstrumentEntry& e, int& lo, int& hi)
+{
+    lo = e.info.brass ? (int)e.info.play_lo : 21;
+    hi = e.info.brass ? (int)e.info.play_hi : 108;
+}
+
+uint32_t entryMutes(const InstrumentEntry& e) { return e.info.brass && e.info.mute_count > 1 ? std::min<uint32_t>(e.info.mute_count, 8) : 0; }
+
+const char* muteLabel(const InstrumentEntry& e, uint32_t i)
+{
+    if (i >= entryMutes(e))
+        return "";
+    const char* m = e.info.mutes[i];
+    static const struct { const char* key; const char* word; } words[] = { { "open", "Open" }, { "straight", "Straight" }, { "cup", "Cup" },
+        { "wah", "Wah" }, { "wah_stem", "Stem" }, { "bucket", "Bucket" }, { "plunger", "Plunger" } };
+    for (const auto& w : words)
+        if (std::strcmp(m, w.key) == 0)
+            return w.word;
+    return m;
+}
+
+namespace {
+/// the Mute parameter's values: a mute by kind, as the engine's MUTE_KINDS (engine/src/brass/family.rs)
+constexpr const char* kMuteKinds[] = { "open", "straight", "cup", "wah", "wah_stem", "bucket", "plunger" };
+} // namespace
+
+uint32_t effectiveMute(const InstrumentEntry& e, uint32_t value)
+{
+    if (value >= sizeof(kMuteKinds) / sizeof(kMuteKinds[0]))
+        return 0;
+    for (uint32_t i = 0; i < entryMutes(e); ++i)
+        if (std::strcmp(e.info.mutes[i], kMuteKinds[value]) == 0)
+            return i;
+    return 0;
+}
+
+uint32_t muteKind(const InstrumentEntry& e, uint32_t i)
+{
+    for (uint32_t k = 0; i < entryMutes(e) && k < sizeof(kMuteKinds) / sizeof(kMuteKinds[0]); ++k)
+        if (std::strcmp(e.info.mutes[i], kMuteKinds[k]) == 0)
+            return k;
+    return 0;
+}
+
+bool isPlunger(const InstrumentEntry& e, uint32_t i) { return i < entryMutes(e) && std::strcmp(e.info.mutes[i], "plunger") == 0; }
 
 Pedals entryPedals(const InstrumentEntry& e) { return { e.info.soft_pedal, e.info.dampers, e.info.dampers }; }
 
@@ -94,6 +141,8 @@ const char* displayName(uint32_t param, const InstrumentEntry& e)
     if (param < kParamCount)
         if (const PeLabel* l = e.label(paramInfo(param).symbol))
             return l->name;
+    if (e.info.brass && param < kParamCount)
+        return nameOf(PluginKind::Winds, param); // a bell's, not a piano's
     if (param == kHammerHardness)
         switch (e.info.exciter) {
         case PE_EXCITER_QUILL: return "Quill brightness";
@@ -120,13 +169,39 @@ const char* displayDescription(uint32_t param, const InstrumentEntry& e)
     if (param < kParamCount)
         if (const PeLabel* l = e.label(paramInfo(param).symbol); l != nullptr && l->description[0] != '\0')
             return l->description;
+    if (e.info.brass && param < kParamCount)
+        return descriptionOf(PluginKind::Winds, param);
     const char* d = paramInfo(param).description;
     return d != nullptr ? d : "";
+}
+
+bool brassActive(uint32_t param, const InstrumentEntry& e, uint32_t mute, bool virtualPlayer)
+{
+    if (!e.info.brass)
+        return true;
+    if (param == kPlunger || param == kPlungerSet)
+        return isPlunger(e, effectiveMute(e, mute));
+    if (param == kVariation)
+        return virtualPlayer;
+    return true;
 }
 
 bool paramActive(uint32_t param, const InstrumentEntry& e, uint32_t micPosition, uint32_t prep)
 {
     const PeInstrumentInfo& i = e.info;
+    // brass's own, on brass alone
+    if (param >= kBrassMute && param <= kAirAdded) {
+        if (!i.brass)
+            return false;
+        if (param == kBrassMute)
+            return entryMutes(e) > 0;
+        if (param == kGlideMode || param == kGlideHold || param == kGlideTime)
+            return i.slide;
+        return true;
+    }
+    // no condition, pillow or preparation on a bell: the report's controls are inert, these have no control of their own
+    if (i.brass && (param == kCondition || param == kWearVariant || param == kPillow || param == kPrepMode))
+        return false;
     // the preparations: None 0, Plucked 1, Muted 2, Harmonic 3, Bolt 4, Paper 5
     switch (param) {
     case kPluckPosition:
@@ -189,12 +264,20 @@ uint32_t effectivePrep(const InstrumentEntry& e, uint32_t value) { return offers
 bool paramVisible(uint32_t param, const UiContext& c)
 {
     const InstrumentEntry& e = c.inst != nullptr ? *c.inst : noInstrument();
-    return paramActive(param, e, c.micPosition, effectivePrep(e, c.prep));
+    // a parameter the host cannot save is not shown: the plugin's ports only (Ports.hpp); the rows that are
+    // no parameter (the instrument, the presets) are every plugin's
+    return (param >= kParamCount || hasPort(c.plugin, param)) && paramActive(param, e, c.micPosition, effectivePrep(e, c.prep))
+        && brassActive(param, e, c.brassMute, c.virtualPlayer);
 }
 
 uint32_t exclusiveStop(uint32_t param)
 {
     return param == kStop8b ? kLute : param == kLute ? kStop8b : kParamCount;
+}
+
+uint32_t byHandSwitch(uint32_t param)
+{
+    return param == kAir ? kAirSet : param == kPlunger ? kPlungerSet : kParamCount;
 }
 
 } // namespace pe

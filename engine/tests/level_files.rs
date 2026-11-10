@@ -19,6 +19,10 @@ fn mismatch(dir: &Path) -> Option<String> {
         Ok(i) => i,
         Err(e) => return Some(format!("{name}: {e}")),
     };
+    // a brass instrument's level is its fit's, no morph reads it
+    if inst.brass.is_some() {
+        return None;
+    }
     let (plays, curve) = match inst.ff_level().and_then(|db| Ok((db, inst.level_curve()?))) {
         Ok(x) => x,
         Err(e) => return Some(format!("{name}: {e}")),

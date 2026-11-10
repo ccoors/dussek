@@ -139,8 +139,11 @@ bool Takeover::accept(uint32_t param, float next, float current)
         return true;
     const float n = toNormalized(param, next), c = toNormalized(param, current), last = fLast[param];
     fLast[param] = n;
-    // the slider where MIDI left it, near the knob, or passed between two of its values
-    const bool ok = current == fSet[param] || std::fabs(n - c) <= kPickup || (!std::isnan(last) && (last - c) * (n - c) <= 0.0f);
+    // the slider where MIDI left it (as the host hands it back: its float, an integer's rounding), near
+    // the knob, or passed between two of its values
+    const float left = info.integer ? 0.5f / (info.max - info.min) : kLeft;
+    const bool there = !std::isnan(fSet[param]) && std::fabs(toNormalized(param, fSet[param]) - c) <= left;
+    const bool ok = there || std::fabs(n - c) <= kPickup || (!std::isnan(last) && (last - c) * (n - c) <= 0.0f);
     if (ok)
         fSet[param] = next;
     return ok;

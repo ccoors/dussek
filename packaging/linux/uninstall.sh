@@ -17,4 +17,4 @@ while IFS= read -r path; do
     [ -n "$path" ] && rm -rf "$path"
 done < "$manifest"
 rm -f "$manifest"
-echo "Dussek removed."
+echo "Dussek and Weidinger removed."

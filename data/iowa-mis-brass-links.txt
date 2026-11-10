@@ -1,0 +1,57 @@
+sound files/MIS/Brass/Bbtrumpet/Trumpet.novib.ff.C4B4.aiff
+sound files/MIS/Brass/Bbtrumpet/Trumpet.novib.ff.C5B5.aiff
+sound files/MIS/Brass/Bbtrumpet/Trumpet.novib.ff.C6Eb6.aiff
+sound files/MIS/Brass/Bbtrumpet/Trumpet.novib.ff.E3B3.aiff
+sound files/MIS/Brass/Bbtrumpet/Trumpet.novib.mf.C4B4.aiff
+sound files/MIS/Brass/Bbtrumpet/Trumpet.novib.mf.C5B5.aiff
+sound files/MIS/Brass/Bbtrumpet/Trumpet.novib.mf.C6D6.aiff
+sound files/MIS/Brass/Bbtrumpet/Trumpet.novib.mf.E3B3.aiff
+sound files/MIS/Brass/Bbtrumpet/Trumpet.novib.pp.C4B4.aiff
+sound files/MIS/Brass/Bbtrumpet/Trumpet.novib.pp.C5B5.aiff
+sound files/MIS/Brass/Bbtrumpet/Trumpet.novib.pp.C6Eb6.aiff
+sound files/MIS/Brass/Bbtrumpet/Trumpet.novib.pp.E3B3.aiff
+sound files/MIS/Brass/tenortrombone/TenorTrombone.ff. E2B2.aiff
+sound files/MIS/Brass/tenortrombone/TenorTrombone.ff.C3B3.aiff
+sound files/MIS/Brass/tenortrombone/TenorTrombone.ff.C4B4.aiff
+sound files/MIS/Brass/tenortrombone/TenorTrombone.ff.C5.aiff
+sound files/MIS/Brass/tenortrombone/TenorTrombone.mf. E2B2.aiff
+sound files/MIS/Brass/tenortrombone/TenorTrombone.mf.C3B3.aiff
+sound files/MIS/Brass/tenortrombone/TenorTrombone.mf.C4B4.aiff
+sound files/MIS/Brass/tenortrombone/TenorTrombone.mf.C5.aiff
+sound files/MIS/Brass/tenortrombone/TenorTrombone.pp. E2B2.aiff
+sound files/MIS/Brass/tenortrombone/TenorTrombone.pp.C3B3.aiff
+sound files/MIS/Brass/tenortrombone/TenorTrombone.pp.C4B4.aiff
+sound files/MIS/Brass/tenortrombone/TenorTrombone.pp.C5.aiff
+sound files/MIS/Brass/frenchhorn/Horn.ff.Bb1B1.aiff
+sound files/MIS/Brass/frenchhorn/Horn.ff.C2B2.aiff
+sound files/MIS/Brass/frenchhorn/Horn.ff.C3B3.aiff
+sound files/MIS/Brass/frenchhorn/Horn.ff.C4B4.aiff
+sound files/MIS/Brass/frenchhorn/Horn.ff.C5F5.aiff
+sound files/MIS/Brass/frenchhorn/Horn.mf.Bb1B1.aiff
+sound files/MIS/Brass/frenchhorn/Horn.mf.C2B2.aiff
+sound files/MIS/Brass/frenchhorn/Horn.mf.C4B4.aiff
+sound files/MIS/Brass/frenchhorn/Horn.mf.C5F5.aiff
+sound files/MIS/Brass/frenchhorn/Horn.pp.Bb1B1.aiff
+sound files/MIS/Brass/frenchhorn/Horn.pp.C4B4.aiff
+sound files/MIS/Brass/frenchhorn/Horn.pp.C5F5.aiff
+sound files/MIS/Brass/basstrombone/BassTrombone.ff. Db1B1.aiff
+sound files/MIS/Brass/basstrombone/BassTrombone.ff.C2B2.aiff
+sound files/MIS/Brass/basstrombone/BassTrombone.ff.C3B3.aiff
+sound files/MIS/Brass/basstrombone/BassTrombone.ff.C4F4.aiff
+sound files/MIS/Brass/basstrombone/BassTrombone.mf. Db1B1.aiff
+sound files/MIS/Brass/basstrombone/BassTrombone.mf.C2B2.aiff
+sound files/MIS/Brass/basstrombone/BassTrombone.mf.C3B3.aiff
+sound files/MIS/Brass/basstrombone/BassTrombone.mf.C4G4.aiff
+sound files/MIS/Brass/basstrombone/BassTrombone.pp.C1B1.aiff
+sound files/MIS/Brass/basstrombone/BassTrombone.pp.C2B2.aiff
+sound files/MIS/Brass/basstrombone/BassTrombone.pp.C3B3.aiff
+sound files/MIS/Brass/basstrombone/BassTrombone.pp.C4Bb4.aiff
+sound files/MIS/Brass/tuba/Tuba.ff.C1B1.aiff
+sound files/MIS/Brass/tuba/Tuba.ff.C2B2.aiff
+sound files/MIS/Brass/tuba/Tuba.ff.C3C4.aiff
+sound files/MIS/Brass/tuba/Tuba.mf.C1B1.aiff
+sound files/MIS/Brass/tuba/Tuba.mf.C2B2.aiff
+sound files/MIS/Brass/tuba/Tuba.mf.C3C4.aiff
+sound files/MIS/Brass/tuba/Tuba.pp.C1B1.aiff
+sound files/MIS/Brass/tuba/Tuba.pp.C2B2.aiff
+sound files/MIS/Brass/tuba/Tuba.pp.C3C4.aiff

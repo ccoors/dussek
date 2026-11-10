@@ -1,6 +1,7 @@
 <!doctype html>
 <!-- The repository's social preview (1280 × 640): the website's hero at a card's size, everything inside
-     GitHub's safe area (80 px from each edge: its repository card crops the top and the bottom).
+     GitHub's safe area (80 px from each edge: its repository card crops the top and the bottom); the tag names
+     Weidinger's brass, a preview in the same download.
      site/README.md has the line that renders it to docs/social-preview.png. -->
 <html lang="en">
 <head>
@@ -22,6 +23,8 @@ body::before { content: ""; position: absolute; left: 0; right: 0; top: 0; heigh
 .title span { grid-area: 1 / 1; }
 .top { color: var(--accent); clip-path: inset(0 0 50% 0); }
 .bottom { color: var(--deep-orange); clip-path: inset(50% 0 0 0); }
+.brass { margin-left: 22px; padding: 10px 16px; border-radius: 999px; background: #d9a63c;
+  color: var(--field-ink); font: 700 22px/1 "Inter"; letter-spacing: 0.01em; }
 .lead { position: absolute; left: 96px; right: 96px; bottom: 92px; margin: 0; text-align: center; color: var(--field-ink);
   font: 400 30px/1.3 "Dussek Serif"; }
 </style>
@@ -29,6 +32,7 @@ body::before { content: ""; position: absolute; left: 0; right: 0; top: 0; heigh
 <body>
 <div class="bar">
   <div class="wordmark"><img src="../packaging/icon/dussek.svg" alt="">Dussek</div>
+  <div class="brass">+ Brass, a preview</div>
   <div class="formats">LV2 · CLAP · VST3 · Standalone</div>
 </div>
 <div class="title"><span class="top">Struck,<br>not sampled</span><span class="bottom">Struck,<br>not sampled</span></div>

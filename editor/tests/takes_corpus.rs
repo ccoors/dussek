@@ -11,6 +11,12 @@ use std::sync::atomic::AtomicUsize;
 /// and Upright Y raised when the rise came to read nothing below −90 dBFS: their blips out of
 /// digital silence had widened the spread their rises are scored in)
 const CEILINGS: &[(&str, f32)] = &[
+    // the brass, measured 2026-11-06 on Iowa's runs as cut by analysis/split_brass.py
+    ("bass_trombone_iowa", 1.0),
+    ("horn_iowa", 0.0),
+    ("tenor_trombone_iowa", 0.0),
+    ("trumpet_iowa", 0.0),
+    ("tuba_iowa", 0.0),
     ("harpsichord_e_lower", 5.0),
     ("harpsichord_e_upper", 0.0),
     ("balafon_hard", 0.0),

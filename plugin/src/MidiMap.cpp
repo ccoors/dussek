@@ -1,4 +1,5 @@
 #include "MidiMap.hpp"
+#include "Ports.hpp"
 #include "Paths.hpp"
 #include "Format.hpp"
 
@@ -78,7 +79,7 @@ const Tie* MidiMap::find(uint32_t target) const
 
 std::string MidiMap::text() const
 {
-    std::string s = "# Dussek MIDI map: program_change on|off, one \"cc <channel 1-16> <cc 0-127> <control>\" per tie\n";
+    std::string s = "# " + std::string(identity(plugin).name) + " MIDI map: program_change on|off, one \"cc <channel 1-16> <cc 0-127> <control>\" per tie\n";
     s += "version " + std::to_string(kMidiMapVersion) + "\n";
     s += programChange ? "program_change on\n" : "program_change off\n";
     s += softTakeover ? "soft_takeover on\n" : "soft_takeover off\n";
@@ -88,9 +89,10 @@ std::string MidiMap::text() const
     return s;
 }
 
-MidiMap MidiMap::parse(const std::string& text)
+MidiMap MidiMap::parse(const std::string& text, PluginKind k)
 {
     MidiMap m;
+    m.plugin = k;
     std::istringstream in(text);
     std::string line;
     while (std::getline(in, line)) {
@@ -122,7 +124,8 @@ MidiMap MidiMap::parse(const std::string& text)
             continue;
         for (uint32_t t = 0; t < kTargetCount; ++t)
             if (symbol == targetSymbol(t)) {
-                if ((!zero || stepTarget(t)) && (!flip || (t < kParamCount && paramInfo(t).boolean)))
+                if ((!zero || stepTarget(t)) && (!flip || (t < kParamCount && paramInfo(t).boolean))
+                    && (t >= kParamCount || hasPort(k, t)))
                     m.tie(t, (uint8_t)(channel - 1), (uint8_t)cc, zero, relative, flip);
                 break;
             }
@@ -158,19 +161,34 @@ bool MidiMap::save(const std::string& path) const
     return true;
 }
 
-MidiMap MidiMap::load(const std::string& path)
+MidiMap MidiMap::load(const std::string& path, PluginKind k)
 {
     std::ifstream in(path);
     if (!in)
-        return MidiMap();
+        return defaultTies(k);
     std::ostringstream s;
     s << in.rdbuf();
-    return parse(s.str());
+    return parse(s.str(), k);
+}
+
+MidiMap defaultTies(PluginKind k)
+{
+    MidiMap m;
+    m.plugin = k;
+    if (k == PluginKind::Winds) {
+        // the brass player's controllers: an expression pedal (or a breath controller, learned on CC2) sets the air, the
+        // mod wheel adds to it
+        const struct { uint32_t param; uint8_t cc; } ties[] = { { kAirAdded, 1 }, { kAir, 11 }, { kBrassVibrato, 70 }, { kGrowl, 21 },
+            { kFlutter, 23 }, { kPlunger, 4 }, { kGlideHold, 65 }, { kGlideTime, 5 } };
+        for (const auto& t : ties)
+            m.tie(t.param, 0, t.cc);
+    }
+    return m;
 }
 
 bool MidiMap::update(const std::string& path, const std::function<void(MidiMap&)>& edit)
 {
-    MidiMap next = load(path);
+    MidiMap next = load(path, plugin);
     edit(next);
     if (!next.save(path))
         return false;
@@ -178,10 +196,10 @@ bool MidiMap::update(const std::string& path, const std::function<void(MidiMap&)
     return true;
 }
 
-std::string midiMapPath()
+std::string midiMapPath(PluginKind k)
 {
     const std::string config = pe::dataDirs().config;
-    return config.empty() ? config : config + "/midi-map.txt";
+    return config.empty() ? config : config + "/" + identity(k).midiMapFile;
 }
 
 std::string tieLabel(const Tie& t)
@@ -248,6 +266,18 @@ float ccToValue(uint32_t param, uint8_t value, const ListChoices& lists)
     if (paramInfo(param).boolean)
         return value > 0 ? 1.0f : 0.0f;
     return fromNormalized(param, value / 127.0f);
+}
+
+std::string ccTiesArg(const MidiMap& map)
+{
+    static constexpr uint32_t kDriven[] = { kAir, kGrowl, kFlutter, kBrassVibrato, kPlunger, kGlideHold, kGlideTime, kVirtualPlayer, kBrassSolo, kAirAdded };
+    std::string s;
+    for (const Tie& t : map.ties()) {
+        if (t.zero || t.relative || t.flip || std::find(std::begin(kDriven), std::end(kDriven), t.target) == std::end(kDriven))
+            continue;
+        s += (s.empty() ? "" : ",") + std::to_string(t.channel + 1) + ":" + std::to_string(t.cc) + "=" + targetSymbol(t.target);
+    }
+    return s.empty() ? "none" : s;
 }
 
 float nudgeValue(uint32_t param, float current, int steps, const ListChoices& lists)

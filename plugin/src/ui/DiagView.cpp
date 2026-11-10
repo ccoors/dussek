@@ -34,9 +34,9 @@ DiagView::DiagView(DiagHost host)
           [this](float depth, bool begin, bool end) { fHost.pedal(depth, begin, end); fHost.repaint(); },
           [this](bool down, bool begin, bool end) { fHost.sostenuto(down, begin, end); fHost.repaint(); },
           [this](float depth, bool begin, bool end) { fHost.soft(depth, begin, end); fHost.repaint(); },
-          [this] { setLevel(fLevel >= 1 ? 0 : 1); fHost.changed(); },
-          [this] { setLevel(fLevel == 2 ? 1 : 2); fHost.changed(); },
-          [this] { setLevel(fLevel == 3 ? 1 : 3); fHost.changed(); } }),
+          [this] { setLevel(toggleStrip(fLevel)); fHost.changed(); },
+          [this] { setLevel(toggleAnalysis(fLevel)); fHost.changed(); },
+          [this] { setLevel(toggleViz(fLevel)); fHost.changed(); } }),
       fPanel([this] { fHost.repaint(); }, [this] { fHost.changed(); }),
       fViz([this] { fHost.repaint(); })
 {
@@ -44,21 +44,23 @@ DiagView::DiagView(DiagHost host)
 
 float DiagView::height() const
 {
-    return kHeaderH + (fLevel >= 1 ? kStripH : 0.0f) + (fLevel >= 2 ? kPanelH : 0.0f);
+    return kHeaderH + (diagStrip(fLevel) ? kStripH : 0.0f) + (diagPanel(fLevel) != 0 ? kPanelH : 0.0f);
 }
 
 void DiagView::setLevel(int level)
 {
-    level = std::min(3, std::max(0, level));
+    level = std::min(5, std::max(0, level));
+    if (diagPanel(level) == 2 && !fVizOffered) // no visualization here (a saved state from another instrument)
+        level = diagLevel(diagStrip(level), 0);
     if (level == fLevel) return;
-    if (level == 0) cancel();
+    if (!diagStrip(level)) cancel(); // the strip shut: no note or pedal left on
     fLevel = level;
     fInput.setLevel(fLevel);
     // one reader of the frames at a time: the one closing first (it clears the engine's flag)
-    if (fLevel != 2) fPanel.close(); // the engine stops collecting
-    if (fLevel != 3) fViz.close();
-    if (fLevel == 2) fPanel.open();
-    if (fLevel == 3) fViz.open();
+    if (diagPanel(fLevel) != 1) fPanel.close(); // the engine stops collecting
+    if (diagPanel(fLevel) != 2) fViz.close();
+    if (diagPanel(fLevel) == 1) fPanel.open();
+    if (diagPanel(fLevel) == 2) fViz.open();
 }
 
 void DiagView::setPanelSettings(const PanelSettings& s) { fPanel.setSettings(s); }
@@ -66,23 +68,23 @@ void DiagView::setToken(uint32_t token) { fPanel.setToken(token); fViz.setToken(
 
 void DiagView::idle()
 {
-    if (fLevel == 2) fPanel.idle();
-    if (fLevel == 3) fViz.idle(); // nothing to poll or draw otherwise
+    if (diagPanel(fLevel) == 1) fPanel.idle();
+    if (diagPanel(fLevel) == 2) fViz.idle(); // nothing to poll or draw otherwise
 }
 
 void DiagView::layout(float width, float windowHeight)
 {
     fWidth = width;
     fTop = windowHeight - height();
-    // the panel on top, then the header, then the strip
-    const float header = fTop + (fLevel >= 2 ? kPanelH : 0.0f);
+    // the panel on top, then the header, then the strip (its geometry also when shut: the panels' key columns)
+    const float header = fTop + (diagPanel(fLevel) != 0 ? kPanelH : 0.0f);
     fStrip = computeStrip({ 0, header + kHeaderH, width, kStripH }, fPedals);
-    const DiagBar bar = diagBar(width, header, kHeaderH, fLevel >= 1, fStrip);
+    const DiagBar bar = diagBar(width, header, kHeaderH, diagStrip(fLevel), fStrip);
     fKeyboardTab = bar.keyboard;
     fAnalysisTab = bar.analysis;
     fVizTab = bar.viz;
     fWorkingRect = bar.working;
-    fInput.setLayout({ fTop, kPanelH, fKeyboardTab, fAnalysisTab, fVizTab, fStrip });
+    fInput.setLayout({ fTop, kPanelH, fKeyboardTab, fAnalysisTab, fVizOffered ? fVizTab : Rect {}, fStrip });
     fPanel.layout({ 0, fTop, width, kPanelH }, fStrip);
     fViz.layout({ 0, fTop, width, kPanelH }, fStrip);
 }
@@ -93,35 +95,35 @@ void DiagView::setKeyWords(const float words[8])
     for (int i = 0; i < 8; ++i) same = same && words[i] == fWords[i];
     if (same) return;
     std::copy(words, words + 8, fWords);
-    if (fLevel >= 1) fHost.repaint();
+    if (diagStrip(fLevel)) fHost.repaint();
 }
 
 void DiagView::setPedal(float depth)
 {
     if (depth == fPedal) return;
     fPedal = depth;
-    if (fLevel >= 1) fHost.repaint();
+    if (diagStrip(fLevel)) fHost.repaint();
 }
 
 void DiagView::setSostenuto(bool down)
 {
     if (down == fSostenuto) return;
     fSostenuto = down;
-    if (fLevel >= 1) fHost.repaint();
+    if (diagStrip(fLevel)) fHost.repaint();
 }
 
 void DiagView::setSoft(float depth)
 {
     if (depth == fSoft) return;
     fSoft = depth;
-    if (fLevel >= 1) fHost.repaint();
+    if (diagStrip(fLevel)) fHost.repaint();
 }
 
 void DiagView::setPedals(Pedals p)
 {
     if (p.soft == fPedals.soft && p.sostenuto == fPedals.sostenuto && p.sustain == fPedals.sustain) return;
     fPedals = p;
-    if (fLevel >= 1) fHost.repaint();
+    if (diagStrip(fLevel)) fHost.repaint();
 }
 
 void DiagView::setRecorded(int lo, int hi)
@@ -129,36 +131,55 @@ void DiagView::setRecorded(int lo, int hi)
     if (lo == fRecordedLo && hi == fRecordedHi) return;
     fRecordedLo = lo;
     fRecordedHi = hi;
-    if (fLevel >= 1) fHost.repaint();
+    if (diagStrip(fLevel)) fHost.repaint();
+}
+
+void DiagView::setPlays(int lo, int hi)
+{
+    if (lo == fPlaysLo && hi == fPlaysHi) return;
+    fPlaysLo = lo;
+    fPlaysHi = hi;
+    if (diagStrip(fLevel)) fHost.repaint();
+}
+
+void DiagView::setVizOffered(bool on)
+{
+    if (on == fVizOffered) return;
+    fVizOffered = on;
+    if (!on && diagPanel(fLevel) == 2) setLevel(diagLevel(diagStrip(fLevel), 0)); // through setLevel: the input and the panel follow
+    fInput.setLayout({ fTop, kPanelH, fKeyboardTab, fAnalysisTab, fVizOffered ? fVizTab : Rect {}, fStrip });
+    fHost.repaint();
 }
 
 void DiagView::setReversedKeys(bool on)
 {
     if (on == fReversedKeys) return;
     fReversedKeys = on;
-    if (fLevel >= 1) fHost.repaint();
+    if (diagStrip(fLevel)) fHost.repaint();
 }
 
 void DiagView::draw(NanoVG& vg)
 {
     vg.beginPath(); vg.rect(0, fTop, fWidth, height()); vg.fillColor(theme::panel); vg.fill();
     vg.beginPath(); vg.rect(0, fTop, fWidth, 1); vg.fillColor(theme::line); vg.fill();
-    if (fLevel >= 2) {
-        if (fLevel == 2) fPanel.draw(vg); else fViz.draw(vg);
+    const int panel = diagPanel(fLevel);
+    if (panel != 0) {
+        if (panel == 1) fPanel.draw(vg); else fViz.draw(vg);
         vg.beginPath(); vg.rect(0, fTop + kPanelH, fWidth, 1); vg.fillColor(theme::line); vg.fill();
     }
-    if (fLevel != 2) fPanel.releaseTexture(); // closed: free the GL image while the context is current (recreated on reopen)
+    if (panel != 1) fPanel.releaseTexture(); // closed: free the GL image while the context is current (recreated on reopen)
     vg.fontSize(theme::smallFont);
-    // the Analysis and Visualization toggles exist only on the open strip
-    drawTab(vg, fKeyboardTab, fLevel >= 1 ? "Keyboard  \xE2\x96\xBE" : "Keyboard  \xE2\x96\xB8", fLevel >= 1);
+    // the three toggles, each its own part: the strip, the analysis, the visualization
+    const bool strip = diagStrip(fLevel);
+    drawTab(vg, fKeyboardTab, strip ? "Keyboard  \xE2\x96\xBE" : "Keyboard  \xE2\x96\xB8", strip);
     if (fWorking && fWorkingRect.w > 0) { // a change on its way to the sound (Working.hpp)
         vg.fillColor(theme::accentText);
         vg.textAlign(NanoVG::Align(NanoVG::ALIGN_LEFT | NanoVG::ALIGN_MIDDLE));
         vg.text(fWorkingRect.x + 4, fWorkingRect.y + fWorkingRect.h / 2, kWorkingLabel, nullptr);
     }
-    if (fLevel < 1) return;
-    drawTab(vg, fAnalysisTab, fLevel == 2 ? "Analysis  \xE2\x96\xBE" : "Analysis  \xE2\x96\xB8", fLevel == 2);
-    drawTab(vg, fVizTab, fLevel == 3 ? "Visualization  \xE2\x96\xBE" : "Visualization  \xE2\x96\xB8", fLevel == 3);
+    drawTab(vg, fAnalysisTab, panel == 1 ? "Analysis  \xE2\x96\xBE" : "Analysis  \xE2\x96\xB8", panel == 1);
+    if (fVizOffered) drawTab(vg, fVizTab, panel == 2 ? "Visualization  \xE2\x96\xBE" : "Visualization  \xE2\x96\xB8", panel == 2);
+    if (!strip) return;
 
     // reversed (many harpsichords): ebony naturals, bone sharps
     const Color white = fReversedKeys ? Color(76, 68, 60) : Color(220, 222, 225);
@@ -173,6 +194,8 @@ void DiagView::draw(NanoVG& vg)
             // held: the accent; ringing after release: a dim tint; otherwise the key's own color
             Color c = s.black ? black : white;
             if (k + 21 < fRecordedLo || k + 21 > fRecordedHi) c = mix(c, amber, s.black ? 0.4f : 0.45f);
+            // keys that do not play: gray, apart from the amber, on either color
+            if (k + 21 < fPlaysLo || k + 21 > fPlaysHi) c = s.black ? Color(84, 86, 90) : Color(128, 130, 134);
             if (l.held) c = mix(c, theme::accent, 0.85f);
             else if (l.ringing) c = mix(c, theme::accent, 0.35f);
             vg.beginPath(); vg.rect(s.r.x + 0.5f, s.r.y, std::max(0.5f, s.r.w - 1.0f), s.r.h - 1.0f);
@@ -201,7 +224,7 @@ bool DiagView::mouse(bool press, float x, float y)
     if (!press) return fInput.release(); // ours only if a strip drag was really active
     switch (fInput.press(x, y)) {
     case StripInteraction::Press::Outside: return false;
-    case StripInteraction::Press::Panel: if (fLevel == 2) fPanel.mouse(x, y); return true;
+    case StripInteraction::Press::Panel: if (diagPanel(fLevel) == 1) fPanel.mouse(x, y); return true;
     case StripInteraction::Press::Ours: break;
     }
     return true;
@@ -210,7 +233,7 @@ bool DiagView::mouse(bool press, float x, float y)
 bool DiagView::motion(float x, float y)
 {
     if (fInput.motion(x, y)) return true;
-    const bool inPanel = fLevel == 2 && y >= fTop && y < fTop + kPanelH;
+    const bool inPanel = diagPanel(fLevel) == 1 && y >= fTop && y < fTop + kPanelH;
     fPanel.hover(inPanel ? x : -1.0f, y);
     return y >= fTop;
 }

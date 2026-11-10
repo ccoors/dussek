@@ -109,6 +109,11 @@ fn coherence(f: f64, spacing: f64) -> f64 {
     sinc(2.0 * f * spacing / 343.0)
 }
 
+/// A minimum-phase filter of `n` samples with the magnitude `h_db` on rfftfreq(n), via the cepstrum.
+pub fn min_phase_fir(h_db: &[f64], n: usize) -> Vec<f64> {
+    Fft::new().min_phase(h_db, n)
+}
+
 /// np.interp: piecewise linear through sorted xp, clamped at the ends.
 pub fn interp(x: f64, xp: &[f64], fp: &[f64]) -> f64 {
     if x <= xp[0] {

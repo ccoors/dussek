@@ -13,6 +13,8 @@ bool parseValue(uint32_t param, const std::string& text, float& out);
 /// "(default)" for the parameter's 0 and "(limited)" where a limit moved it; no pair
 /// ("Recording"): the parameter as it is
 std::string formatMicDistance(float value, bool hasPair, double effective);
+/// the spacing a pair has, cm: the set one, or the position's widest marked "(limited)" (a bell's Player at the ears)
+std::string formatMicSpacing(float value, bool hasPair, double effective);
 float toNormalized(uint32_t param, float value);
 float fromNormalized(uint32_t param, float norm);
 }

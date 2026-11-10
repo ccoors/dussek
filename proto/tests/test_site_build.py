@@ -37,12 +37,13 @@ def fixture_renders(root):
         steps = c.get("steps") or [{"label": c["title"]}]
         files = [{"label": s["label"], "file": f"audio/{c['id']}{'' if len(steps) == 1 else f'-{i + 1}'}.ogg"}
                  for i, s in enumerate(steps)]
-        entries.append({"id": c["id"], "section": c["section"], "title": c["title"], "instrument": c["title"],
-                        "group": None, "listen": c.get("listen", ""), "license": c.get("license", "cc0"), "steps": files})
+        entries.append({"id": c["id"], "page": c.get("page", "dussek"), "section": c["section"], "title": c["title"],
+                        "instrument": c["title"], "dir": c.get("instrument"), "group": None, "listen": c.get("listen", ""),
+                        "license": c.get("license", "cc0"), "steps": files})
         for f in files:
             os.makedirs(os.path.dirname(f"{root}/{f['file']}"), exist_ok=True)
             open(f"{root}/{f['file']}", "wb").close()
-        if c["section"] == "demo":
+        if c["section"] == "demo" and c.get("page", "dussek") == "dussek":
             os.makedirs(f"{root}/frames", exist_ok=True)
             open(f"{root}/frames/{c['id']}.jpg", "wb").close()
     json.dump({"clips": entries, "groups": {}}, open(f"{root}/clips.json", "w"))
@@ -50,7 +51,9 @@ def fixture_renders(root):
     for f in ("video/ensemble.mp4", "video/ensemble.jpg"):
         open(f"{root}/{f}", "wb").close()
     os.makedirs(f"{root}/screenshots", exist_ok=True)
-    for f in ("grand-sound", "grand-felt", "grand-mics", "grand-visualization", "vibraphone"):
+    brass = [c["instrument"] for c in clips if c.get("page") == "weidinger" and c["section"] == "demo"]
+    for f in ("grand-sound", "grand-felt", "grand-mics", "grand-visualization", "vibraphone", "weidinger-player",
+              "weidinger-mics", *(f"weidinger-{d}" for d in brass), *(f"weidinger-{d}-bell" for d in brass)):
         open(f"{root}/screenshots/{f}.png", "wb").close()
 
 
@@ -173,8 +176,8 @@ def build(tmp_path, change):
 
 def test_the_counts_and_names_follow_the_clips(tmp_path):
     def change(clips):
-        demos = [c for c in clips if c["section"] == "demo"]
-        pieces = [c for c in clips if c["section"] == "piece"]
+        demos = [c for c in clips if c["section"] == "demo" and c.get("page", "dussek") == "dussek"]
+        pieces = [c for c in clips if c["section"] == "piece" and c.get("page", "dussek") == "dussek"]
         clips.remove(demos[0])
         clips.remove(pieces[0])
         for c in pieces:
@@ -182,8 +185,9 @@ def test_the_counts_and_names_follow_the_clips(tmp_path):
     page = build(tmp_path, change)
     clips = tomllib.load(open(f"{P.REPO}/site/clips.toml", "rb"))["clip"]
     words = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"]
-    demos = sum(c["section"] == "demo" for c in clips) - 1
-    pieces = sum(c["section"] == "piece" for c in clips) - 1
+    dussek = [c for c in clips if c.get("page", "dussek") == "dussek"]
+    demos = sum(c["section"] == "demo" for c in dussek) - 1
+    pieces = sum(c["section"] == "piece" for c in dussek) - 1
     performances = sum(c["section"] == "performance" for c in clips)
     assert f"{words[demos - 1].capitalize()} kinds of instrument" in page
     assert f"The {words[pieces - 1]} pieces were written for Dussek (CC0) and play on Grand Z" in page
@@ -282,7 +286,7 @@ def test_the_demos_are_one_grid_of_cards(site):
     assert "cards-window" not in showcase and showcase.count('<ol class="cards">') == 1
     cards = showcase.split('<li class="card">')[1:]
     clips = tomllib.load(open(f"{P.REPO}/site/clips.toml", "rb"))["clip"]
-    demos = [c for c in clips if c["section"] == "demo"]
+    demos = [c for c in clips if c["section"] == "demo" and c.get("page", "dussek") == "dussek"]  # the brass: weidinger.html
     assert len(cards) == len(demos)
     for c, card in zip(demos, cards):
         assert f'src="frames/{c["id"]}.jpg"' in card, c["id"]
@@ -298,3 +302,15 @@ def test_the_download_choices_sit_under_their_legend(site):
     fieldset = form[form.index("<fieldset>"):form.index("</fieldset>")]
     assert fieldset.index("<legend>") < fieldset.index('<div class="os-choices">')
     assert fieldset.count('type="radio" name="os"') == 3
+
+
+def test_weidinger_has_its_own_page(site):
+    # the brass on their page, not among Dussek's kinds; each card a line from its export; linked from the start page
+    page = open(f"{site}/weidinger.html", encoding="utf-8").read()
+    index = open(f"{site}/index.html", encoding="utf-8").read()
+    clips = tomllib.load(open(f"{P.REPO}/site/clips.toml", "rb"))["clip"]
+    brass = [c for c in clips if c.get("page") == "weidinger"]
+    assert brass and all(f'audio/{c["id"]}' in page and f'audio/{c["id"]}' not in index for c in brass)
+    assert "Five brass instruments" in page and "F♯3 to D6, open and with six mutes" in page
+    assert 'href="weidinger.html"' in index
+    assert "weidinger.html" in open(f"{site}/sitemap.xml").read() and "weidinger.html" in open(f"{site}/llms.txt").read()

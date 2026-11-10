@@ -62,7 +62,7 @@ DataDirs dataDirs(const std::function<const char*(const char*)>& env, Platform p
     return d;
 }
 
-std::string standaloneExecutable(const std::string& self, bool selfIsStandalone, const char* path,
+std::string standaloneExecutable(PluginKind k, const std::string& self, bool selfIsStandalone, const char* path,
     const std::vector<std::string>& installed)
 {
     namespace fs = std::filesystem;
@@ -70,17 +70,18 @@ std::string standaloneExecutable(const std::string& self, bool selfIsStandalone,
         return std::string();
     if (selfIsStandalone)
         return self;
+    const std::string exe = identity(k).executable, app = identity(k).name;
 #ifdef _WIN32
-    const char* const names[] = { "dussek.exe" };
+    const std::string names[] = { exe + ".exe" };
     const char sep = ';';
 #else
-    const char* const names[] = { "dussek", "Dussek.app/Contents/MacOS/dussek", "dussek.app/Contents/MacOS/dussek" };
+    const std::string names[] = { exe, app + ".app/Contents/MacOS/" + exe, exe + ".app/Contents/MacOS/" + exe };
     const char sep = ':';
 #endif
     std::error_code ec;
     const fs::path me = fs::weakly_canonical(fs::path(self), ec);
     const auto standalone = [&](const fs::path& dir) -> std::string {
-        for (const char* n : names) {
+        for (const std::string& n : names) {
             const fs::path c = dir / n;
             std::error_code e;
             // not the plugin itself (a macOS VST3's or CLAP's binary is named dussek too)
@@ -134,7 +135,10 @@ std::string portableFolder(const std::string& exe)
         return std::string();
     std::string name = exe.substr(cut + 1);
     std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return (char)std::tolower(c); });
-    if (name != "dussek" && name != "dussek.exe")
+    bool ours = false;
+    for (PluginKind k : { PluginKind::Keys, PluginKind::Winds })
+        ours = ours || name == identity(k).executable || name == std::string(identity(k).executable) + ".exe";
+    if (!ours)
         return std::string();
     std::string dir = exe.substr(0, cut);
     // macOS: <folder>/Dussek.app/Contents/MacOS/dussek
@@ -148,12 +152,12 @@ std::string portableFolder(const std::string& exe)
     return dir;
 }
 
-std::vector<std::string> installedProgramDirs()
+std::vector<std::string> installedProgramDirs(PluginKind k)
 {
     switch (hostPlatform()) {
     case Platform::Windows:
         if (const char* pf = std::getenv("PROGRAMFILES"); pf != nullptr && *pf)
-            return { std::string(pf) + "/Dussek" };
+            return { std::string(pf) + "/" + identity(k).name };
         return {};
     case Platform::MacOS:
         return { "/Applications" };

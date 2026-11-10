@@ -19,63 +19,74 @@ if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dpf/CMakeLists.txt)
 endif()
 add_subdirectory(dpf)
 
-# the engine, built by cargo; when it is missing, a silent dummy engine
-# (src/dummy) keeps everything buildable: the UI runs, the sound is silence
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../engine/Cargo.toml)
-  find_program(CARGO cargo REQUIRED)
-  set(ENGINE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../engine)
-  set(ENGINE_LIB ${ENGINE_DIR}/target/release/${CMAKE_STATIC_LIBRARY_PREFIX}dussek${CMAKE_STATIC_LIBRARY_SUFFIX})
-  add_custom_target(engine_cargo
-    COMMAND ${CMAKE_COMMAND} -E env MACOSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
-            ${CARGO} build --release --lib --manifest-path ${ENGINE_DIR}/Cargo.toml
-    BYPRODUCTS ${ENGINE_LIB}
-    USES_TERMINAL
-    COMMENT "cargo build (engine)")
-  add_library(engine STATIC IMPORTED)
-  set_target_properties(engine PROPERTIES IMPORTED_LOCATION ${ENGINE_LIB})
-  if(WIN32)
-    # what Rust's standard library links on Windows (cargo rustc -- --print native-static-libs)
-    set_property(TARGET engine PROPERTY INTERFACE_LINK_LIBRARIES
-      kernel32 advapi32 ntdll userenv ws2_32 bcrypt dbghelp synchronization)
-  endif()
-  add_dependencies(engine engine_cargo)
-  set(PE_ENGINE_LIB engine)
-else()
-  message(STATUS "engine/ missing: using the silent dummy engine (UI only, no sound)")
-  add_library(pe_dummy STATIC src/dummy/DummyEngine.cpp)
-  target_include_directories(pe_dummy PUBLIC src)
-  set_target_properties(pe_dummy PROPERTIES POSITION_INDEPENDENT_CODE ON)
-  set(PE_ENGINE_LIB pe_dummy)
+# the engine, built by cargo
+find_program(CARGO cargo REQUIRED)
+set(ENGINE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../engine)
+set(ENGINE_LIB ${ENGINE_DIR}/target/release/${CMAKE_STATIC_LIBRARY_PREFIX}dussek${CMAKE_STATIC_LIBRARY_SUFFIX})
+add_custom_target(engine_cargo
+  COMMAND ${CMAKE_COMMAND} -E env MACOSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
+          ${CARGO} build --release --lib --manifest-path ${ENGINE_DIR}/Cargo.toml
+  BYPRODUCTS ${ENGINE_LIB}
+  USES_TERMINAL
+  COMMENT "cargo build (engine)")
+add_library(engine STATIC IMPORTED)
+set_target_properties(engine PROPERTIES IMPORTED_LOCATION ${ENGINE_LIB})
+if(WIN32)
+  # what Rust's standard library links on Windows (cargo rustc -- --print native-static-libs)
+  set_property(TARGET engine PROPERTY INTERFACE_LINK_LIBRARIES
+    kernel32 advapi32 ntdll userenv ws2_32 bcrypt dbghelp synchronization)
 endif()
+add_dependencies(engine engine_cargo)
 find_package(Threads REQUIRED)
 find_library(RT_LIB rt)
 
-dpf_add_plugin(dussek
-  TARGETS lv2 vst3 clap jack
-  UI_TYPE opengl
-  USE_FILE_BROWSER
-  FILES_DSP src/PianoPlugin.cpp
-  FILES_UI src/ui/PianoUI.cpp src/ui/Widgets.cpp src/ui/Panel.cpp src/ui/DiagView.cpp src/ui/DiagPanel.cpp src/ui/VizPanel.cpp src/ui/MicView.cpp)
+# the two plugins, from the same sources: Dussek (the keyboard instruments) and Weidinger (the brass);
+# each its own DistrhoPluginInfo.h (src/plugins/<name>/: the name, the IDs, PE_PLUGIN_KIND)
+set(PE_PLUGINS dussek weidinger)
+foreach(p ${PE_PLUGINS})
+  dpf_add_plugin(${p}
+    TARGETS lv2 vst3 clap jack
+    UI_TYPE opengl
+    USE_FILE_BROWSER
+    FILES_DSP src/PianoPlugin.cpp
+    FILES_UI src/ui/PianoUI.cpp src/ui/Widgets.cpp src/ui/Panel.cpp src/ui/DiagView.cpp src/ui/DiagPanel.cpp src/ui/VizPanel.cpp src/ui/MicView.cpp)
+  target_include_directories(${p} PUBLIC src src/plugins/${p})
+  target_link_libraries(${p} PUBLIC Threads::Threads ${CMAKE_DL_LIBS} m)
+  # the standalone's `render` command (midi2wav's code through pe_cli), before DPF's main
+  target_sources(${p}-jack PRIVATE src/StandaloneCli.cpp)
+endforeach()
 
-target_include_directories(dussek PUBLIC src)
-target_link_libraries(dussek PUBLIC Threads::Threads ${CMAKE_DL_LIBS} m)
-# the standalone's `render` command (midi2wav's code through pe_cli), before DPF's main
-target_sources(dussek-jack PRIVATE src/StandaloneCli.cpp)
+# the standalones' window icon (in a host the window is the host's): on X11 DPF sets _NET_WM_ICON from the array
+# PianoUI.cpp defines (src/ui/WindowIcon.inc, from packaging/icon/render.sh; the size its length), on Windows
+# from the icon resource compiled into each standalone; macOS's app carries its own (packaging/macos)
+if(UNIX AND NOT APPLE)
+  target_compile_definitions(dgl-opengl PUBLIC DGL_X11_WINDOW_ICON_NAME=pe_window_icon DGL_X11_WINDOW_ICON_SIZE=21510)
+elseif(WIN32)
+  enable_language(RC)
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/generated/WindowIcon.rc
+       "1 ICON \"${CMAKE_CURRENT_SOURCE_DIR}/../packaging/icon/dussek.ico\"\n")
+  target_compile_definitions(dgl-opengl PUBLIC DGL_WINDOWS_ICON_ID=1)
+  foreach(p ${PE_PLUGINS})
+    target_sources(${p}-jack PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated/WindowIcon.rc)
+  endforeach()
+endif()
 
 # pure logic shared by the DSP and the UI, and its tests (no window)
-add_library(pe_common STATIC src/Autoconnect.cpp src/Catalog.cpp src/Params.cpp src/EngineValues.cpp src/PedalMixer.cpp src/ui/About.cpp src/ui/BuildInfo.cpp src/ui/Format.cpp src/ui/Instruments.cpp src/ui/Layout.cpp src/ui/MicMap.cpp src/ui/Spectro.cpp src/ui/Strip.cpp src/ui/StripInteraction.cpp src/ui/Viz.cpp src/ui/Tooltip.cpp src/ui/UiState.cpp src/SharedRegion.cpp src/ui/TelemetryClient.cpp src/ui/CurveEdit.cpp src/ui/FeltEditor.cpp src/ui/NoteHistory.cpp src/MidiMap.cpp src/MidiRoute.cpp src/Morph.cpp src/FileWatch.cpp src/Presets.cpp src/Paths.cpp src/Numbers.cpp src/StateVersion.cpp src/ui/GlCheck.cpp)
+add_library(pe_common STATIC src/Autoconnect.cpp src/Catalog.cpp src/Params.cpp src/Ports.cpp src/EngineValues.cpp src/PedalMixer.cpp src/ui/About.cpp src/ui/BuildInfo.cpp src/ui/Format.cpp src/ui/Instruments.cpp src/ui/Layout.cpp src/ui/MicMap.cpp src/ui/Spectro.cpp src/ui/Strip.cpp src/ui/StripInteraction.cpp src/ui/Viz.cpp src/ui/Tooltip.cpp src/ui/UiState.cpp src/SharedRegion.cpp src/ui/TelemetryClient.cpp src/ui/CurveEdit.cpp src/ui/FeltEditor.cpp src/ui/NoteHistory.cpp src/MidiMap.cpp src/MidiRoute.cpp src/Morph.cpp src/FileWatch.cpp src/Presets.cpp src/Paths.cpp src/Numbers.cpp src/StateVersion.cpp src/ui/GlCheck.cpp)
 target_include_directories(pe_common PUBLIC src src/ui)
-# the shipped full presets (presets/*.dussek-preset), embedded as text: Presets.cpp parses them (the files
-# name instruments, which the code may not)
-file(GLOB PE_PRESET_FILES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/presets/*.dussek-preset)
-list(SORT PE_PRESET_FILES)
-set(PE_PRESET_TEXTS "")
-foreach(f ${PE_PRESET_FILES})
-  file(READ ${f} text)
-  string(APPEND PE_PRESET_TEXTS "R\"pepreset(${text})pepreset\",\n")
-  set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${f})
+# the shipped full presets, each plugin's (presets/dussek/*.dussek-preset, presets/weidinger/*.weidinger-preset),
+# embedded as text: Presets.cpp parses them (the files name instruments, which the code may not)
+foreach(p ${PE_PLUGINS})
+  file(GLOB PE_PRESET_FILES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/presets/${p}/*.${p}-preset)
+  list(SORT PE_PRESET_FILES)
+  set(PE_PRESET_TEXTS "")
+  foreach(f ${PE_PRESET_FILES})
+    file(READ ${f} text)
+    string(APPEND PE_PRESET_TEXTS "R\"pepreset(${text})pepreset\",\n")
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${f})
+  endforeach()
+  file(CONFIGURE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/generated/ShippedPresets-${p}.inc CONTENT "${PE_PRESET_TEXTS}" @ONLY)
 endforeach()
-file(CONFIGURE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/generated/ShippedPresets.inc CONTENT "${PE_PRESET_TEXTS}" @ONLY)
 target_include_directories(pe_common PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated)
 # the version and the commit for the About tab (BuildInfo.cpp): the commit read at every build
 # (cmake/BuildCommit.cmake; "unknown" without git or outside a checkout)
@@ -89,13 +100,15 @@ add_custom_target(pe_build_commit
 add_dependencies(pe_common pe_build_commit)
 set_source_files_properties(src/ui/BuildInfo.cpp PROPERTIES COMPILE_DEFINITIONS
   "PE_VERSION_MAJOR=${PROJECT_VERSION_MAJOR};PE_VERSION_MINOR=${PROJECT_VERSION_MINOR};PE_VERSION_PATCH=${PROJECT_VERSION_PATCH}")
-target_link_libraries(pe_common PUBLIC ${PE_ENGINE_LIB})
+target_link_libraries(pe_common PUBLIC engine)
 target_link_libraries(pe_common PUBLIC Threads::Threads ${CMAKE_DL_LIBS} m)
 set_target_properties(pe_common PROPERTIES POSITION_INDEPENDENT_CODE ON)
 if(RT_LIB)
     target_link_libraries(pe_common PUBLIC ${RT_LIB}) # glibc before 2.34 keeps shm_open in librt
 endif()
-target_link_libraries(dussek PUBLIC pe_common)
+foreach(p ${PE_PLUGINS})
+  target_link_libraries(${p} PUBLIC pe_common)
+endforeach()
 
 enable_testing()
 # the Copy CLI line for named controls, for site/render.py (not shipped: outside bin/)
@@ -109,4 +122,6 @@ target_compile_definitions(ui_tests PRIVATE PE_INSTRUMENTS_DIR="${CMAKE_CURRENT_
 target_compile_definitions(ui_tests PRIVATE PE_TESTS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests")
 add_test(NAME ui_tests COMMAND ui_tests)
 
-target_link_libraries(dussek-ui PUBLIC pe_common)
+foreach(p ${PE_PLUGINS})
+  target_link_libraries(${p}-ui PUBLIC pe_common)
+endforeach()

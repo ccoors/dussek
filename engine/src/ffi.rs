@@ -109,6 +109,26 @@ pub struct PeParams {
     pub variation: f32,
     /// a re-strike meets the strings or the bar where they ring: 0 off, 1 on (`Params::restrike`)
     pub restrike: f32,
+    /// brass (`brass::BrassParams`; others ignore them): the mute's place in the instrument's
+    pub brass_mute: u32,
+    pub growl: f32,
+    pub flutter: f32,
+    pub brass_vibrato: f32,
+    /// the hand over the plunger, 0 shut … 1 open; negative: the player's
+    pub plunger: f32,
+    /// the air, 0 … 127; negative: from the keys
+    pub air: f32,
+    pub virtual_player: u32,
+    pub brass_solo: u32,
+    /// 0 off, 1 auto, 2 on
+    pub glide_mode: u32,
+    pub glide_hold: u32,
+    /// s for a minor third
+    pub glide_time: f32,
+    /// 0 growl, 1 flutter
+    pub aftertouch_to: u32,
+    /// the air over the keys' or the air's, 0 … 1 (the mod wheel's tie)
+    pub air_added: f32,
 }
 
 /// The morphs a cache keeps (a point dragged back to a recent mix builds no morph).
@@ -855,6 +875,16 @@ pub unsafe extern "C" fn pe_hammer_piano(e: *const PeEngine) -> bool {
     !e.is_null() && unsafe { &*e }.engine.instrument().is_hammer_piano()
 }
 
+/// The engine plays a brass instrument.
+///
+/// # Safety
+/// `e` is null or a live engine.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn pe_brass(e: *const PeEngine) -> bool {
+    // SAFETY: as the caller's
+    !e.is_null() && unsafe { &*e }.engine.instrument().brass.is_some()
+}
+
 /// The engine's parameters from the C ones: non-finite values become the defaults, the
 /// rest is clamped to its range.
 fn params_from(p: &PeParams) -> Params {
@@ -900,6 +930,21 @@ fn params_from(p: &PeParams) -> Params {
         },
         variation: if p.variation.is_finite() { p.variation.clamp(0.0, 4.0) } else { crate::engine::VARIATION_DEFAULT },
         restrike: if p.restrike > 0.5 { 1.0 } else { 0.0 },
+        brass: crate::brass::BrassParams {
+            mute: p.brass_mute,
+            growl: if p.growl.is_finite() { p.growl.clamp(0.0, 1.0) } else { 0.0 },
+            flutter: if p.flutter.is_finite() { p.flutter.clamp(0.0, 1.0) } else { 0.0 },
+            vibrato: if p.brass_vibrato.is_finite() { p.brass_vibrato.clamp(0.0, 1.0) } else { 0.0 },
+            plunger: (p.plunger.is_finite() && p.plunger >= 0.0).then(|| p.plunger.min(1.0)),
+            air: (p.air.is_finite() && p.air >= 0.0).then(|| p.air.min(127.0)),
+            virtual_player: p.virtual_player != 0,
+            solo: p.brass_solo != 0,
+            glide_mode: p.glide_mode.min(2),
+            glide_hold: p.glide_hold != 0,
+            glide_time: if p.glide_time.is_finite() { p.glide_time.clamp(0.04, 1.2) } else { 0.22 },
+            aftertouch_to: p.aftertouch_to.min(1),
+            air_added: if p.air_added.is_finite() { p.air_added.clamp(0.0, 1.0) } else { 0.0 },
+        },
     }
 }
 
@@ -1183,7 +1228,7 @@ pub struct PeMicGeometry {
 }
 
 /// The bodies by the C interface's number (`mic::BODIES`).
-const BODIES: [Body; 18] = crate::mic::BODIES;
+const BODIES: [Body; 19] = crate::mic::BODIES;
 
 /// The body for the C interface's number (`BODIES`; out of range: the grand).
 fn body_of(body: u32) -> Body {
@@ -1207,10 +1252,11 @@ pub extern "C" fn pe_body_name(body: u32) -> *const std::ffi::c_char {
 ///
 /// # Safety
 /// `out` must point to a writable `PeMicGeometry`; `custom` null or valid (used when
-/// `position` is 5).
+/// `position` is 5); `bell` null or valid (a bell's pose, `PeInstrumentInfo::bell`).
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn pe_mic_geometry(
     body: u32,
+    bell: *const PeBellPose,
     position: u32,
     spacing: f64,
     distance: f64,
@@ -1221,7 +1267,7 @@ pub unsafe extern "C" fn pe_mic_geometry(
     if out.is_null() || body as usize >= BODIES.len() || position > 5 {
         return false;
     }
-    let b = body_of(body);
+    let b = posed(body, bell);
     let lid = crate::mic::lid_value(lid);
     let pos = MicPosition::from_index(position);
     let custom_setup = (pos == MicPosition::Custom).then(|| {
@@ -1282,13 +1328,13 @@ pub unsafe extern "C" fn pe_mic_geometry(
 /// engine applies); false: nothing changed or the body is out of range.
 ///
 /// # Safety
-/// `setup` must point to a writable `PeMicSetup`.
+/// `setup` must point to a writable `PeMicSetup`; `bell` null or valid.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn pe_mic_clamp(body: u32, lid: f64, setup: *mut PeMicSetup) -> bool {
+pub unsafe extern "C" fn pe_mic_clamp(body: u32, bell: *const PeBellPose, lid: f64, setup: *mut PeMicSetup) -> bool {
     if setup.is_null() || body as usize >= BODIES.len() {
         return false;
     }
-    let b = body_of(body);
+    let b = posed(body, bell);
     let lid = crate::mic::lid_value(lid);
     // SAFETY: checked non-null; the caller guarantees validity
     let s = unsafe { &mut *setup };
@@ -1572,6 +1618,52 @@ pub struct PeInstrumentInfo {
     pub morph_family: u32,
     /// a hammer piano: the felt bends (`pe_create_morph`'s felt)
     pub hammer_piano: bool,
+    /// a brass instrument (`info::BrassInfo`; the rest below only then)
+    pub brass: bool,
+    pub slide: bool,
+    pub plunger: bool,
+    pub experimental: bool,
+    /// the lowest and highest key that plays
+    pub play_lo: u32,
+    pub play_hi: u32,
+    pub mute_count: u32,
+    /// "open" first, in the project's order
+    pub mutes: [[c_char; 16]; 8],
+    /// where the bell points as played (`pe_mic_geometry`'s `bell`)
+    pub bell: PeBellPose,
+    /// the menu block's `first`: the plugin's default choice
+    pub first: bool,
+}
+
+/// Where a bell points and where its player's ears are (`mic::BellPose`): degrees from the player's front toward the right
+/// and above level, cm from the bell's mouth (x right, y front, z up), the bell's radius in mm.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct PeBellPose {
+    pub azimuth: i32,
+    pub elevation: i32,
+    pub ears_cm: [i32; 3],
+    pub radius_mm: u32,
+}
+
+impl PeBellPose {
+    fn from_engine(p: crate::mic::BellPose) -> Self {
+        PeBellPose { azimuth: p.azimuth.into(), elevation: p.elevation.into(), ears_cm: p.ears.map(i32::from), radius_mm: p.radius_mm.into() }
+    }
+
+    fn to_engine(&self) -> crate::mic::BellPose {
+        let c = |x: i32| x.clamp(i16::MIN.into(), i16::MAX.into()) as i16;
+        crate::mic::BellPose { azimuth: c(self.azimuth), elevation: c(self.elevation), ears: self.ears_cm.map(c), radius_mm: self.radius_mm.clamp(1, 2000) as u16 }
+    }
+}
+
+/// The body by number, a bell turned as `bell` says (null: `BellPose::DEFAULT`).
+fn posed(body: u32, bell: *const PeBellPose) -> Body {
+    match body_of(body) {
+        // SAFETY: null or valid (the caller guarantees it)
+        Body::Bell(d) => Body::Bell(unsafe { bell.as_ref() }.map_or(d, PeBellPose::to_engine)),
+        b => b,
+    }
 }
 
 impl Default for PeInstrumentInfo {
@@ -1626,9 +1718,23 @@ impl PeInstrumentInfo {
         for (d, s) in o.mallets.iter_mut().zip(shown) {
             copy_str(d, s);
         }
+        if let Some(b) = &i.brass {
+            o.brass = true;
+            o.slide = b.slide;
+            o.plunger = b.plunger;
+            o.experimental = b.experimental;
+            o.play_lo = u32::from(b.low);
+            o.play_hi = u32::from(b.high);
+            o.bell = PeBellPose::from_engine(b.pose);
+            o.mute_count = b.mutes.len().min(o.mutes.len()) as u32;
+            for (d, s) in o.mutes.iter_mut().zip(&b.mutes) {
+                copy_str(d, s);
+            }
+        }
         if let Some(m) = &i.menu {
             o.has_menu = true;
             o.hidden = m.hidden;
+            o.first = m.first;
             o.reversed_keys = m.reversed_keys;
             copy_str(&mut o.name, &m.name);
             copy_str(&mut o.group, &m.group);
@@ -1765,6 +1871,19 @@ mod tests {
             dynamics: 45.0,
             variation: 0.5,
             restrike: 0.0,
+            brass_mute: 0,
+            growl: 0.0,
+            flutter: 0.0,
+            brass_vibrato: 0.0,
+            plunger: -1.0,
+            air: -1.0,
+            virtual_player: 1,
+            brass_solo: 0,
+            glide_mode: 1,
+            glide_hold: 0,
+            glide_time: 0.22,
+            aftertouch_to: 0,
+            air_added: 0.0,
         };
         // SAFETY: a live engine from pe_create, valid parameters; destroyed once
         unsafe {
@@ -1873,6 +1992,19 @@ mod tests {
             dynamics: 45.0,
             variation: 0.5,
             restrike: 0.0,
+            brass_mute: 0,
+            growl: 0.0,
+            flutter: 0.0,
+            brass_vibrato: 0.0,
+            plunger: -1.0,
+            air: -1.0,
+            virtual_player: 1,
+            brass_solo: 0,
+            glide_mode: 1,
+            glide_hold: 0,
+            glide_time: 0.22,
+            aftertouch_to: 0,
+            air_added: 0.0,
         };
         // SAFETY: a live engine from pe_create, valid parameters; destroyed once
         unsafe {
@@ -1928,6 +2060,19 @@ mod tests {
             dynamics: 45.0,
             variation: 0.5,
             restrike: 0.0,
+            brass_mute: 0,
+            growl: 0.0,
+            flutter: 0.0,
+            brass_vibrato: 0.0,
+            plunger: -1.0,
+            air: -1.0,
+            virtual_player: 1,
+            brass_solo: 0,
+            glide_mode: 1,
+            glide_hold: 0,
+            glide_time: 0.22,
+            aftertouch_to: 0,
+            air_added: 0.0,
         };
         // SAFETY: a live engine from pe_create, valid parameters; destroyed once
         unsafe {
@@ -1940,13 +2085,13 @@ mod tests {
     #[test]
     fn mic_geometry_matches_the_placement() {
         let mut g = std::mem::MaybeUninit::<PeMicGeometry>::zeroed();
-        assert!(!unsafe { pe_mic_geometry(BODIES.len() as u32, 1, 0.5, 0.0, 1.0, std::ptr::null(), g.as_mut_ptr()) });
-        assert!(!unsafe { pe_mic_geometry(0, 6, 0.5, 0.0, 1.0, std::ptr::null(), g.as_mut_ptr()) });
-        assert!(unsafe { pe_mic_geometry(0, 0, 0.5, 0.0, 1.0, std::ptr::null(), g.as_mut_ptr()) });
+        assert!(!unsafe { pe_mic_geometry(BODIES.len() as u32, std::ptr::null(), 1, 0.5, 0.0, 1.0, std::ptr::null(), g.as_mut_ptr()) });
+        assert!(!unsafe { pe_mic_geometry(0, std::ptr::null(), 6, 0.5, 0.0, 1.0, std::ptr::null(), g.as_mut_ptr()) });
+        assert!(unsafe { pe_mic_geometry(0, std::ptr::null(), 0, 0.5, 0.0, 1.0, std::ptr::null(), g.as_mut_ptr()) });
         assert_eq!(unsafe { g.assume_init_ref() }.has_pair, 0);
         for (body, b) in BODIES.iter().enumerate().map(|(i, &b)| (i as u32, b)) {
             for pos in 1..5u32 {
-                assert!(unsafe { pe_mic_geometry(body, pos, 0.7, 1.3, 1.0, std::ptr::null(), g.as_mut_ptr()) });
+                assert!(unsafe { pe_mic_geometry(body, std::ptr::null(), pos, 0.7, 1.3, 1.0, std::ptr::null(), g.as_mut_ptr()) });
                 let g = unsafe { g.assume_init_ref() };
                 let p = b.placement(MicPosition::from_index(pos), 0.7, 1.3, 1.0).unwrap();
                 assert_eq!(g.has_pair, 1);
@@ -1966,7 +2111,7 @@ mod tests {
         let mut s = PeMicSetup::default();
         s.pos = [[-1.0, -2.0, 0.5], [1.0, -2.0, 0.5]];
         let mut g = std::mem::MaybeUninit::<PeMicGeometry>::zeroed();
-        assert!(unsafe { pe_mic_geometry(0, 5, 0.0, 0.0, 1.0, &s, g.as_mut_ptr()) });
+        assert!(unsafe { pe_mic_geometry(0, std::ptr::null(), 5, 0.0, 0.0, 1.0, &s, g.as_mut_ptr()) });
         let g = unsafe { g.assume_init() };
         assert_eq!((g.custom, g.has_pair), (1, 1));
         assert_eq!(g.mics, [[-1.0, -2.0, 0.5], [1.0, -2.0, 0.5]]);
@@ -1976,28 +2121,28 @@ mod tests {
         sa.yaw = [-45.0, 45.0];
         sa.pitch = [-10.0, 20.0];
         let mut ga = std::mem::MaybeUninit::<PeMicGeometry>::zeroed();
-        assert!(unsafe { pe_mic_geometry(0, 5, 0.0, 0.0, 1.0, &sa, ga.as_mut_ptr()) });
+        assert!(unsafe { pe_mic_geometry(0, std::ptr::null(), 5, 0.0, 0.0, 1.0, &sa, ga.as_mut_ptr()) });
         let ga = unsafe { ga.assume_init() };
         assert_eq!((ga.pattern, ga.yaw, ga.pitch), ([0.5, 1.0], [-45.0, 45.0], [-10.0, 20.0]));
         // an out-of-range position comes back clamped
         let mut sc = s;
         sc.pos[0][0] = 100.0;
         let mut gc = std::mem::MaybeUninit::<PeMicGeometry>::zeroed();
-        assert!(unsafe { pe_mic_geometry(0, 5, 0.0, 0.0, 1.0, &sc, gc.as_mut_ptr()) });
+        assert!(unsafe { pe_mic_geometry(0, std::ptr::null(), 5, 0.0, 0.0, 1.0, &sc, gc.as_mut_ptr()) });
         assert_eq!(unsafe { gc.assume_init() }.mics[0][0], 20.0);
         // a null setup is the default pair, still valid
         let mut g2 = std::mem::MaybeUninit::<PeMicGeometry>::zeroed();
-        assert!(unsafe { pe_mic_geometry(1, 5, 0.0, 0.0, 1.0, std::ptr::null(), g2.as_mut_ptr()) });
+        assert!(unsafe { pe_mic_geometry(1, std::ptr::null(), 5, 0.0, 0.0, 1.0, std::ptr::null(), g2.as_mut_ptr()) });
         // the clamp reports a change, and agrees with the engine's
         let mut bad = PeMicSetup::default();
         bad.pos[0] = [100.0, f64::NAN, -9.0];
-        assert!(unsafe { pe_mic_clamp(0, 1.0, &mut bad) });
+        assert!(unsafe { pe_mic_clamp(0, std::ptr::null(), 1.0, &mut bad) });
         assert!(bad.pos[0].iter().all(|v| v.is_finite()) && bad.pos[0][0] == 20.0);
-        assert!(!unsafe { pe_mic_clamp(0, 1.0, &mut bad) }, "already clamped");
-        assert!(!unsafe { pe_mic_clamp(2, 1.0, &mut bad) });
+        assert!(!unsafe { pe_mic_clamp(0, std::ptr::null(), 1.0, &mut bad) }, "already clamped");
+        assert!(!unsafe { pe_mic_clamp(2, std::ptr::null(), 1.0, &mut bad) });
         // a preset ignores the custom pair
         let mut gp = std::mem::MaybeUninit::<PeMicGeometry>::zeroed();
-        assert!(unsafe { pe_mic_geometry(0, 1, 0.5, 0.0, 1.0, &s, gp.as_mut_ptr()) });
+        assert!(unsafe { pe_mic_geometry(0, std::ptr::null(), 1, 0.5, 0.0, 1.0, &s, gp.as_mut_ptr()) });
         assert_eq!(unsafe { gp.assume_init() }.custom, 0);
     }
 
@@ -2005,7 +2150,7 @@ mod tests {
     fn lid_reaches_the_geometry_and_the_clamp() {
         let call = |lid: f64| {
             let mut g = std::mem::MaybeUninit::<PeMicGeometry>::zeroed();
-            assert!(unsafe { pe_mic_geometry(0, 3, 0.5, 0.0, lid, std::ptr::null(), g.as_mut_ptr()) });
+            assert!(unsafe { pe_mic_geometry(0, std::ptr::null(), 3, 0.5, 0.0, lid, std::ptr::null(), g.as_mut_ptr()) });
             unsafe { g.assume_init() }
         };
         // Close 1: the pair under the lid; closed, it sits at the minimum height; the drawing's lid line is flat
@@ -2021,10 +2166,10 @@ mod tests {
         // the clamp depends on the lid: a point at 0.3 m under a closed lid is pulled down
         let mut s = PeMicSetup::default();
         s.pos[0] = [0.0, 0.0, 0.3];
-        assert!(unsafe { pe_mic_clamp(0, 0.0, &mut s) } && s.pos[0][2] <= 0.1);
+        assert!(unsafe { pe_mic_clamp(0, std::ptr::null(), 0.0, &mut s) } && s.pos[0][2] <= 0.1);
         let mut t = PeMicSetup::default();
         t.pos[0] = [0.0, 0.0, 0.3];
-        unsafe { pe_mic_clamp(0, 1.0, &mut t) };
+        unsafe { pe_mic_clamp(0, std::ptr::null(), 1.0, &mut t) };
         // the open lid is 0.65 m above the point, so the height is not pulled down at all
         assert!(t.pos[0][2] > 0.1 && (t.pos[0][2] - 0.3).abs() < 1e-12, "{:?}", t.pos[0]);
     }

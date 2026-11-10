@@ -75,6 +75,10 @@ std::string formatValue(uint32_t param, float value)
         return printf1("%.0f cm", value);
     if (std::strcmp(unit, "Hz") == 0)
         return printf1("%.1f Hz", value);
+    if (std::strcmp(unit, "ms") == 0)
+        return printf1("%.0f ms", value);
+    if (param == kAir) // the MIDI scale it is played on (an expression pedal's, CC 11 by default)
+        return printf1("%.0f", value);
     if (p.integer)
         return printf1("%.0f", value);
     return printf1("%.2f", value);
@@ -144,6 +148,15 @@ std::string formatMicDistance(float value, bool hasPair, double effective)
     if (value <= 0.0f)
         return m + " (default)";
     return std::fabs(effective - value) > 0.005 ? m + " (limited)" : m;
+}
+
+std::string formatMicSpacing(float value, bool hasPair, double effective)
+{
+    if (!hasPair || !std::isfinite(effective))
+        return formatValue(kMicSpacing, value);
+    const float cm = (float)(effective * 100.0);
+    const std::string s = formatValue(kMicSpacing, cm);
+    return std::fabs(cm - value) > 0.5f ? s + " (limited)" : s;
 }
 
 float toNormalized(uint32_t param, float value)

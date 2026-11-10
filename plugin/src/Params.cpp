@@ -42,7 +42,8 @@ Group groupOf(uint32_t i)
         : i <= kDamperFall ? kGroupNoises
         : i <= kWearSoundboard ? kGroupCondition
         : i <= kPhantom ? kGroupDefects
-                       : kGroupPrepared;
+        : i <= kPaperBuzz ? kGroupPrepared
+                       : kGroupBrass;
 }
 
 ParamInfo make(uint32_t i)
@@ -196,6 +197,61 @@ ParamInfo make(uint32_t i)
         p.description = "The strings' bass, as an equalizer on them: more or less of their sound below about 180 Hz, "
                         "louder with it; the hammer's thud through the soundboard stays as it is. 0 is the instrument's "
                         "own. Rebuilds the instrument.";
+        break;
+    case kBrassMute: set("Mute", "brass_mute", nullptr, 0, 0, 7);
+        p.integer = true;
+        p.description = "What goes in the bell. Takes effect from the next tongued note: the notes sounding and a slur keep theirs.";
+        break;
+    case kGrowl: set("Growl", "growl", "%", 0, 0, 100);
+        p.description = "The throat's rough edge on the air: more breath and a rattle in the tone.";
+        break;
+    case kFlutter: set("Flutter", "flutter", "%", 0, 0, 100);
+        p.description = "The tongue rolling: the air cut about 25 times a second.";
+        break;
+    case kBrassVibrato: set("Vibrato", "brass_vibrato", "%", 0, 0, 100);
+        p.description = "Above 0 it replaces the virtual player's vibrato: the depth, at a fixed rate.";
+        break;
+    case kPlunger: set("Plunger", "plunger", "%", 50, 0, 100);
+        p.description = "The hand over the plunger, 0 % shut, 100 % open. Moving it (or its controller) takes over from the virtual player's hand.";
+        break;
+    case kPlungerSet: set("Plunger by hand", "plunger_set", nullptr, 0, 0, 1);
+        p.description = "On: the Plunger knob sets the hand. Off: the virtual player's hand follows how hard the key was struck, without a player half open.";
+        p.boolean = p.integer = true;
+        break;
+    case kAir: set("Air", "air", nullptr, 80, 0, 127);
+        p.description = "How hard the air blows. Moving it (or its controller) takes over from the keys.";
+        break;
+    case kAirSet: set("Air by hand", "air_set", nullptr, 0, 0, 1);
+        p.description = "On: the Air knob sets the air. Off: the air comes from how hard the keys are struck.";
+        p.boolean = p.integer = true;
+        break;
+    case kVirtualPlayer: set("Virtual player", "virtual_player", nullptr, 1, 0, 1);
+        p.description = "On: the air's shape, vibrato and intonation made from the keys alone. Off, for wind controllers "
+                        "and DAWs: the air from velocity, nothing else.";
+        p.boolean = p.integer = true;
+        break;
+    case kBrassSolo: set("Solo", "brass_solo", nullptr, 0, 0, 1);
+        p.description = "Off (Auto): a line is one player, a chord a section of up to six. On: one player, the last key wins.";
+        p.boolean = p.integer = true;
+        break;
+    case kGlideMode: set("Glide", "glide_mode", nullptr, 1, 0, 2);
+        p.description = "A slur on the slide. Auto: a soft key after a long note, close by, the way a player would. On: "
+                        "every slur within a tritone. Off: never.";
+        p.integer = true;
+        break;
+    case kGlideHold: set("Glide held", "glide_hold", nullptr, 0, 0, 1);
+        p.description = "On while held: every slur within a tritone goes by the slide (a pedal, or a knob past its middle).";
+        p.boolean = p.integer = true;
+        break;
+    case kGlideTime: set("Glide time", "glide_time", "ms", 220, 40, 1200);
+        p.description = "How long the slide takes over a minor third.";
+        break;
+    case kAftertouchTo: set("Aftertouch to", "aftertouch_to", nullptr, 0, 0, 1);
+        p.description = "What pressing on a held key does.";
+        p.integer = true;
+        break;
+    case kAirAdded: set("Air added", "air_added", "%", 0, 0, 100);
+        p.description = "Air on top of what the keys or the Air knob give, up to the top at 100 %. The mod wheel (CC 1) plays it.";
         break;
     case kVariation: set("Strike variation", "variation", "%", 0, 0, 400);
         p.description = "How much each strike differs from the last, as a real hammer never meets the strings quite "
@@ -418,6 +474,8 @@ uint32_t paramLabelCount(uint32_t index)
     case kDistanceLevel: return 2;
     case kPrepMode: return 6;
     case kMallet: return kMalletCount;
+    case kGlideMode: return 3;
+    case kAftertouchTo: return 2;
     default: return 0;
     }
 }
@@ -436,6 +494,8 @@ const char* paramLabel(uint32_t index, uint32_t value)
     case kDistanceLevel: return kLevelNames[value];
     case kPrepMode: return kPrepNames[value];
     case kMallet: return kMalletNumbers[value];
+    case kGlideMode: return value == 0 ? "Off" : value == 1 ? "Auto" : "On";
+    case kAftertouchTo: return value == 0 ? "Growl" : "Flutter";
     default: return nullptr;
     }
 }

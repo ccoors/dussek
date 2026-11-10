@@ -1,5 +1,6 @@
 <!doctype html>
-<!-- itch.io's cover image (630 × 500; its browse grid shows it at half that): the website's hero.
+<!-- itch.io's cover image (630 × 500; its browse grid shows it at half that): the website's hero, a tag for
+     Weidinger's brass (a preview in the same downloads).
      packaging/itch/README.md has the line that renders it to cover.png. -->
 <html lang="en">
 <head>
@@ -20,6 +21,8 @@ body::before { content: ""; position: absolute; left: 0; right: 0; top: 0; heigh
 .title span { grid-area: 1 / 1; }
 .top { color: var(--accent); clip-path: inset(0 0 50% 0); }
 .bottom { color: var(--deep-orange); clip-path: inset(50% 0 0 0); }
+.brass { position: absolute; right: 36px; top: 42px; padding: 8px 14px; border-radius: 999px; background: #d9a63c;
+  color: var(--field-ink); font: 700 19px/1 "Inter"; letter-spacing: 0.01em; }
 .lead { position: absolute; left: 30px; right: 30px; bottom: 40px; margin: 0; text-align: center; color: var(--field-ink);
   font: 400 27px/1.25 "Dussek Serif"; }
 .lead b { display: block; font: 700 22px/1.4 "Inter"; letter-spacing: 0.01em; }
@@ -27,6 +30,7 @@ body::before { content: ""; position: absolute; left: 0; right: 0; top: 0; heigh
 </head>
 <body>
 <div class="wordmark"><img src="../icon/dussek.svg" alt="">Dussek</div>
+<div class="brass">+ Brass, a preview</div>
 <div class="title"><span class="top">Struck,<br>not sampled</span><span class="bottom">Struck,<br>not sampled</span></div>
 <p class="lead">Free piano, harpsichords, harps, percussion<b>LV2 · CLAP · VST3 · Standalone</b></p>
 </body>

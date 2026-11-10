@@ -10,6 +10,10 @@ Nothing in progress; the next item comes from below.
 
 ## Next
 
+- **Brass, by ear.** The five play, marked experimental (step 235). Left: a brass player's word, Auto's thresholds on a longer
+  session, a hand in the horn's bell and more mutes on the horn and the tuba; the soft notes' wait before they speak (20–45 ms
+  at pp and mf, not heard as late so far); a Visualization of their own (none on a bell yet, and `--video` refuses one); the
+  mute in the bell in the microphone drawing. [Notes](docs/roadmap-notes.md#brass)
 - **Traits, the rest.** The plan (design 2026-10-21-traits-plan): a piano as smooth curves with
   its few breaks plus traits (knobs), its unevenness as statistics with a seed, the tuner's and
   voicer's choices on top. Done: the rail (step 136), the even levels (138–139), the felt as runtime
@@ -37,6 +41,10 @@ Nothing in progress; the next item comes from below.
 
 ## Later
 
+- **Signing the releases.** The installers and bundles are unsigned: Windows warns of an unknown publisher,
+  macOS asks before opening the package. Windows first: SignPath Foundation's free signing for open source
+  (from the release workflow) looks like the way; macOS needs Apple's Developer Program (Developer ID,
+  notarization). [Notes](docs/roadmap-notes.md#signing)
 - **The user guide.** The [quick start](docs/quick-start.md) covers installing and the controls
   that matter; how to play the instruments well, beyond the reference pages, waits while things
   change quickly. It grows from the quick start. [Notes](docs/roadmap-notes.md#user-guide)

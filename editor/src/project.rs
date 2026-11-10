@@ -678,6 +678,10 @@ pub fn templates(repo: &Repo) -> Vec<Template> {
                 return None;
             }
             let family = p.get(&Table::top("project"), "family")?.as_str()?.to_string();
+            // the wizard does not make brass (its chains render through a player of their own)
+            if family.starts_with("brass") {
+                return None;
+            }
             let menu_name = p.get(&Table::top("menu"), "name").and_then(|v| v.as_str().map(String::from)).unwrap_or_else(|| n.clone());
             let group = p.get(&Table::top("menu"), "group").and_then(|v| v.as_str().map(String::from)).unwrap_or_default();
             Some(Template { family, name: n, menu_name, group })

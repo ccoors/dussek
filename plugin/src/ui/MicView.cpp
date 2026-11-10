@@ -69,7 +69,7 @@ void drawMicView(NanoVG& vg, const PeMicGeometry& g, View v, const Rect& r, cons
         for (int i = 1; i < 5; ++i) { // the other positions
             if ((uint32_t)i == position)
                 continue;
-            const Point2 m = t.toScreen(g.markers[i][0], g.markers[i][1]);
+            const Point2 m = markerScreen(g, t, i);
             vg.beginPath(); vg.circle(m.x, m.y, i == hotMarker ? 6 : 4);
             vg.fillColor(i == hotMarker ? theme::dim : theme::marker); vg.fill();
         }
@@ -138,9 +138,11 @@ void drawMicView(NanoVG& vg, const PeMicGeometry& g, View v, const Rect& r, cons
         // which is which: L left of its dot, R right of it (also when the two coincide)
         vg.fontSize(theme::smallFont);
         for (int i = 0; i < 2; ++i) {
+            const MicLabel l = micLabel(m[i], i, r);
             vg.fillColor(i == hotMic ? theme::accentText : theme::dim);
-            vg.textAlign(NanoVG::Align((i == 0 ? NanoVG::ALIGN_RIGHT : NanoVG::ALIGN_LEFT) | NanoVG::ALIGN_MIDDLE));
-            vg.text(m[i].x + (i == 0 ? -10.0f : 10.0f), m[i].y, i == 0 ? "L" : "R", nullptr);
+            const int h = l.side < 0 ? NanoVG::ALIGN_RIGHT : l.side > 0 ? NanoVG::ALIGN_LEFT : NanoVG::ALIGN_CENTER;
+            vg.textAlign(NanoVG::Align(h | (l.side == 0 ? NanoVG::ALIGN_TOP : NanoVG::ALIGN_MIDDLE)));
+            vg.text(l.at.x, l.at.y, i == 0 ? "L" : "R", nullptr);
         }
     } else if (v == kTop) {
         vg.fontSize(theme::smallFont); vg.fillColor(theme::dim);

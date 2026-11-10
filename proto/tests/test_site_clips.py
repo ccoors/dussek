@@ -35,9 +35,9 @@ def test_each_menu_group_has_one_demo():
     groups = {}
     for f in glob.glob(f"{P.REPO}/instruments/*/instrument.json"):
         menu = json.load(open(f)).get("menu", {})
-        if not menu.get("hidden"):
+        if not menu.get("hidden") and not menu.get("experimental"):  # a demo waits for the ear's word
             groups[os.path.basename(os.path.dirname(f))] = menu.get("group", "Other")
-    demos = [groups[c["instrument"]] for c in clips if c["section"] == "demo"]
+    demos = [groups[c["instrument"]] for c in clips if c["section"] == "demo" and c["instrument"] in groups]
     assert sorted(demos) == sorted(set(groups.values())), "one demo per menu group"
 
 

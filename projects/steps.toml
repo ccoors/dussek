@@ -243,6 +243,188 @@ run = ["cargo", "run", "--release", "--quiet", "--manifest-path", "engine/Cargo.
 version = 1
 reads = ["project.roll", "project.menu", "project.project", "project.uses", "uses.*:*", "uses.*:export"]
 
+[step.brass_fit]
+# the model against the recordings: per key a grid over the lips and the air, the table from it
+scope = "project"
+run = ["python3", "proto/brass/steps.py", "brass_fit", "{project}"]
+version = 2  # 2: the later steps' keys dropped first (the live player and the mutes read the last build's)
+reads = ["project.brass", "project.sources", "project.uses", "project.project", "cache.grids", "cache.recording",
+    "fit.cells", "fit.cells_mutes", "fit.gain_db", "fit.level", "fit.leveled", "fit.mute_residual", "fit.mute_shapes",
+    "fit.residual", "fit.speak", "fit.table", "fit.tuning", "fit.tuning_mutes", "uses.mutes:fit.mute_residual",
+    "uses.mutes:fit.mute_shapes"]
+memos = ["cache.tables"]
+owns = ["cache.grids", "cache.recording", "fit.leveled", "fit.table"]
+amends = ["fit.cells", "fit.cells_mutes", "fit.gain_db", "fit.level", "fit.residual", "fit.speak", "fit.tuning", "fit.tuning_mutes"]
+
+[step.brass_retune]
+# each note's slide per dynamics: what it plays off (run twice: the first pass moves the modes under it)
+scope = "project"
+run = ["python3", "proto/brass/steps.py", "brass_retune", "{project}"]
+version = 2  # 2: from the table's own tuning, both passes in the step (each build had added two to the last)
+reads = ["project.brass", "project.sources", "project.uses", "project.project", "cache.grids", "cache.recording",
+    "fit.cells", "fit.cells_mutes", "fit.gain_db", "fit.level", "fit.leveled", "fit.mute_residual", "fit.mute_shapes",
+    "fit.residual", "fit.speak", "fit.table", "fit.tuning", "fit.tuning_mutes", "uses.mutes:fit.mute_residual",
+    "uses.mutes:fit.mute_shapes"]
+memos = ["cache.tables"]
+owns = ["fit.tuning"]
+
+[step.brass_repair]
+# notes that do not hold, and slides that lost their mode
+scope = "project"
+run = ["python3", "proto/brass/steps.py", "brass_repair", "{project}"]
+version = 2  # 2: each trial from the cells as they stand (one left in a worker changed the next); from none, not the last build's
+reads = ["project.brass", "project.sources", "project.uses", "project.project", "cache.grids", "cache.recording",
+    "fit.cells", "fit.cells_mutes", "fit.gain_db", "fit.level", "fit.leveled", "fit.mute_residual", "fit.mute_shapes",
+    "fit.residual", "fit.speak", "fit.table", "fit.tuning", "fit.tuning_mutes", "uses.mutes:fit.mute_residual",
+    "uses.mutes:fit.mute_shapes"]
+memos = ["cache.tables"]
+owns = ["fit.cells"]
+amends = ["fit.tuning"]
+
+[step.brass_speak]
+# the air spaced per dynamics, the push at the attack; on tables without the harmonics' correction
+scope = "project"
+run = ["python3", "proto/brass/steps.py", "brass_speak", "{project}"]
+version = 1
+reads = ["project.brass", "project.sources", "project.uses", "project.project", "cache.grids", "cache.recording",
+    "fit.cells", "fit.cells_mutes", "fit.gain_db", "fit.level", "fit.leveled", "fit.mute_residual", "fit.mute_shapes",
+    "fit.residual", "fit.speak", "fit.table", "fit.tuning", "fit.tuning_mutes", "uses.mutes:fit.mute_residual",
+    "uses.mutes:fit.mute_shapes"]
+memos = ["cache.tables"]
+owns = ["fit.speak"]
+
+[step.brass_harmonics]
+# each harmonic against the recording's, with its limits per project (ff_cap, mf_cap)
+scope = "project"
+run = ["python3", "proto/brass/steps.py", "brass_harmonics", "{project}"]
+version = 1
+reads = ["project.brass", "project.sources", "project.uses", "project.project", "cache.grids", "cache.recording",
+    "fit.cells", "fit.cells_mutes", "fit.gain_db", "fit.level", "fit.leveled", "fit.mute_residual", "fit.mute_shapes",
+    "fit.residual", "fit.speak", "fit.table", "fit.tuning", "fit.tuning_mutes", "uses.mutes:fit.mute_residual",
+    "uses.mutes:fit.mute_shapes"]
+memos = ["cache.tables"]
+owns = ["fit.residual"]
+
+[step.brass_mute_shapes]
+# the mutes' shapes against the one measurement there is, then VSCO's muted notes (the lender)
+scope = "project"
+run = ["python3", "proto/brass/steps.py", "brass_mute_shapes", "{project}"]
+version = 2  # 2: the shapes and their correction dropped first (the muted notes read the last build's correction)
+reads = ["project.brass", "project.sources", "project.uses", "project.project", "cache.grids", "cache.recording",
+    "fit.cells", "fit.cells_mutes", "fit.gain_db", "fit.level", "fit.leveled", "fit.mute_residual", "fit.mute_shapes",
+    "fit.residual", "fit.speak", "fit.table", "fit.tuning", "fit.tuning_mutes", "uses.mutes:fit.mute_residual",
+    "uses.mutes:fit.mute_shapes"]
+memos = ["cache.tables"]
+owns = ["fit.mute_shapes"]
+amends = ["fit.mute_residual"]
+
+[step.brass_mutes]
+# every note retuned and repaired per mute
+scope = "project"
+run = ["python3", "proto/brass/steps.py", "brass_mutes", "{project}"]
+version = 2  # 2: each trial from the cells as they stand (one left in a worker changed the next); from none, not the last build's
+reads = ["project.brass", "project.sources", "project.uses", "project.project", "cache.grids", "cache.recording",
+    "fit.cells", "fit.cells_mutes", "fit.gain_db", "fit.level", "fit.leveled", "fit.mute_residual", "fit.mute_shapes",
+    "fit.residual", "fit.speak", "fit.table", "fit.tuning", "fit.tuning_mutes", "uses.mutes:fit.mute_residual",
+    "uses.mutes:fit.mute_shapes"]
+memos = ["cache.tables"]
+owns = ["fit.cells_mutes", "fit.tuning_mutes"]
+amends = ["fit.cells"]
+
+[step.brass_mute_residual]
+# the filter for what a mute's shape cannot reach, against VSCO (the lender)
+scope = "project"
+run = ["python3", "proto/brass/steps.py", "brass_mute_residual", "{project}"]
+version = 1
+reads = ["project.brass", "project.sources", "project.uses", "project.project", "cache.grids", "cache.recording",
+    "fit.cells", "fit.cells_mutes", "fit.gain_db", "fit.level", "fit.leveled", "fit.mute_residual", "fit.mute_shapes",
+    "fit.residual", "fit.speak", "fit.table", "fit.tuning", "fit.tuning_mutes", "uses.mutes:fit.mute_residual",
+    "uses.mutes:fit.mute_shapes"]
+memos = ["cache.tables"]
+owns = ["fit.mute_residual"]
+
+[step.brass_land]
+# slurs that catch the next mode
+scope = "project"
+run = ["python3", "proto/brass/steps.py", "brass_land", "{project}"]
+version = 2  # 2: each trial from the cells as they stand (one left in a worker changed the next); from none, not the last build's
+reads = ["project.brass", "project.sources", "project.uses", "project.project", "cache.grids", "cache.recording",
+    "fit.cells", "fit.cells_mutes", "fit.gain_db", "fit.level", "fit.leveled", "fit.mute_residual", "fit.mute_shapes",
+    "fit.residual", "fit.speak", "fit.table", "fit.tuning", "fit.tuning_mutes", "uses.mutes:fit.mute_residual",
+    "uses.mutes:fit.mute_shapes"]
+memos = ["cache.tables"]
+amends = ["fit.cells"]
+
+[step.brass_slurs]
+# a slur that stays off its note, soft or loud: the virtual player eases the lips past it
+scope = "project"
+run = ["python3", "proto/brass/steps.py", "brass_slurs", "{project}"]
+version = 3  # 2: the lips only, the air kept; 3: loud slurs too (the ff cells: the trumpet's G-sharp 5)
+reads = ["project.brass", "project.sources", "project.uses", "project.project", "cache.grids", "cache.recording",
+    "fit.cells", "fit.cells_mutes", "fit.gain_db", "fit.level", "fit.leveled", "fit.mute_residual", "fit.mute_shapes",
+    "fit.residual", "fit.speak", "fit.table", "fit.tuning", "fit.tuning_mutes", "uses.mutes:fit.mute_residual",
+    "uses.mutes:fit.mute_shapes"]
+memos = ["cache.tables"]
+amends = ["fit.cells"]
+
+[step.brass_level]
+# the level per mute, key and air
+scope = "project"
+run = ["python3", "proto/brass/steps.py", "brass_level", "{project}"]
+version = 1
+reads = ["project.brass", "project.sources", "project.uses", "project.project", "cache.grids", "cache.recording",
+    "fit.cells", "fit.cells_mutes", "fit.gain_db", "fit.level", "fit.leveled", "fit.mute_residual", "fit.mute_shapes",
+    "fit.residual", "fit.speak", "fit.table", "fit.tuning", "fit.tuning_mutes", "uses.mutes:fit.mute_residual",
+    "uses.mutes:fit.mute_shapes"]
+memos = ["cache.tables"]
+owns = ["fit.level"]
+
+[step.brass_gain]
+# the output so that a loud note's peaks stand at about the soft limit
+scope = "project"
+run = ["python3", "proto/brass/steps.py", "brass_gain", "{project}"]
+version = 1
+reads = ["project.brass", "project.sources", "project.uses", "project.project", "cache.grids", "cache.recording",
+    "fit.cells", "fit.cells_mutes", "fit.gain_db", "fit.level", "fit.leveled", "fit.mute_residual", "fit.mute_shapes",
+    "fit.residual", "fit.speak", "fit.table", "fit.tuning", "fit.tuning_mutes", "uses.mutes:fit.mute_residual",
+    "uses.mutes:fit.mute_shapes"]
+memos = ["cache.tables"]
+owns = ["fit.gain_db"]
+
+[step.brass_tables]
+# every table, and each key's digest: what a port is held to
+scope = "project"
+run = ["python3", "proto/brass/steps.py", "brass_tables", "{project}"]
+version = 1
+reads = ["project.brass", "project.sources", "project.uses", "project.project", "cache.grids", "cache.recording",
+    "fit.cells", "fit.cells_mutes", "fit.gain_db", "fit.level", "fit.leveled", "fit.mute_residual", "fit.mute_shapes",
+    "fit.residual", "fit.speak", "fit.table", "fit.tuning", "fit.tuning_mutes", "uses.mutes:fit.mute_residual",
+    "uses.mutes:fit.mute_shapes"]
+memos = ["cache.tables"]
+owns = ["cache.tables_manifest"]
+
+[step.export_brass]
+# the tables in 32 bits and what the players read: no notes, the sound in the `brass` block
+scope = "project"
+run = ["python3", "proto/export_brass.py", "--project", "{project}"]
+version = 4  # 2: the bell as held (`[pose]`); 3: no silent notes (the engine reads a brass block without them); 4: `[export]`'s output gain
+reads = ["project.brass", "project.export", "project.menu", "project.pose", "project.sources", "project.uses", "project.project", "fit.cells",
+    "fit.cells_mutes", "fit.gain_db", "fit.level", "fit.leveled", "fit.mute_residual", "fit.mute_shapes", "fit.residual", "fit.speak",
+    "fit.table", "fit.tuning", "fit.tuning_mutes", "uses.mutes:fit.mute_residual", "uses.mutes:fit.mute_shapes"]
+memos = ["cache.tables"]
+
+[step.brass_report]
+# what a person checks a rebuild by: not holding, landing, level
+scope = "project"
+run = ["python3", "proto/brass/steps.py", "brass_report", "{project}"]
+version = 1
+reads = ["project.brass", "project.sources", "project.uses", "project.project", "cache.grids", "cache.recording",
+    "fit.cells", "fit.cells_mutes", "fit.gain_db", "fit.level", "fit.leveled", "fit.mute_residual", "fit.mute_shapes",
+    "fit.residual", "fit.speak", "fit.table", "fit.tuning", "fit.tuning_mutes", "uses.mutes:fit.mute_residual",
+    "uses.mutes:fit.mute_shapes"]
+memos = ["cache.tables"]
+owns = ["cache.report"]
+
 [chain]
 struck = ["analyze", "release_noise", "dampers", "pedal_noise", "felt", "body_decay", "attack_noise",
           "soundboard", "coupling", "room", "register", "knock", "fine_structure", "pedal", "export"]
@@ -258,3 +440,8 @@ bars = ["modes", "bars", "export_bars"]
 buff = ["fit_buff"]
 derived = ["export"]
 rolled = ["roll"]
+brass = ["brass_fit", "brass_retune", "brass_repair", "brass_speak", "brass_harmonics", "brass_mutes",
+         "brass_land", "brass_slurs", "brass_level", "brass_gain", "brass_tables", "brass_report", "export_brass"]
+brass_lender = ["brass_fit", "brass_retune", "brass_repair", "brass_speak", "brass_harmonics",
+                "brass_mute_shapes", "brass_mutes", "brass_mute_residual", "brass_land", "brass_slurs", "brass_level", "brass_gain",
+                "brass_tables", "brass_report", "export_brass"]

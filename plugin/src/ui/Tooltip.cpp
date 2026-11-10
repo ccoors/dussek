@@ -79,6 +79,7 @@ const char* tooltipGestures(Kind kind, bool learnable)
     case Kind::Slider:
         return learnable ? "Drag · Shift+drag: fine · click the value to type · double-click: default · right-click: MIDI learn"
                          : "Drag · Shift+drag: fine · click the value to type · double-click: default";
+    case Kind::Chips: return "Click to choose";
     case Kind::Toggle: return learnable ? "Click to switch on or off · right-click: MIDI learn" : "Click to switch on or off";
     case Kind::Dropdown: return learnable ? "Click to choose · right-click: MIDI learn" : "Click to choose";
     }

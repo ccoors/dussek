@@ -3,13 +3,14 @@
 #   site/screenshots.sh <out folder>
 # grand-sound.png, grand-felt.png, grand-mics.png (Grand A's tabs), grand-visualization.png (the
 # Visualization panel, a chord ringing with the sustain latch), vibraphone.png (an instrument of
-# another kind). Each run starts the standalone with one instrument and its own empty settings; its
+# another kind); Weidinger's: weidinger-<instrument>.png for each brass instrument (its Sound tab, the microphones at
+# Player: its bell as held) and weidinger-<instrument>-bell.png (its drawings alone, its card's picture), weidinger-player.png (the tenor trombone's Player tab), weidinger-mics.png (the horn at
+# Close 1). Each run starts a standalone with one instrument and its own empty settings; its
 # audio goes to an unconnected JACK client (a dummy jackd when none runs: CI), never to speakers.
-# Needs Xvfb, xdotool, ImageMagick's import, and plugin/build/bin/dussek (`just plugin`).
+# Needs Xvfb, xdotool, ImageMagick's import, and plugin/build/bin/dussek and weidinger (`just plugin`).
 set -euo pipefail
 out=$(mkdir -p "${1:?usage: screenshots.sh <out folder>}" && cd "$1" && pwd)
 repo=$(cd "$(dirname "$0")/.." && pwd)
-bin=$repo/plugin/build/bin/dussek
 scale=2
 display=:${SCREENSHOT_DISPLAY:-97}
 tmp=$(mktemp -d)
@@ -37,8 +38,10 @@ tab() { # the tab bar's labels' centers at 1x
 }
 key() { click "$(($1 * 31 / 2 + 7))" 616 0.12; } # white key n (0: A0), on the strip's lower half
 
-start() { # <instrument folder>: the standalone with only it, settings of its own
-    local inst=$1
+start() { # <instrument folder> [dussek|weidinger]: that standalone with only it, settings of its own
+    local inst=$1 prog=${2:-dussek}
+    local bin=$repo/plugin/build/bin/$prog name
+    name=$([ "$prog" = weidinger ] && echo Weidinger || echo Dussek)
     if [ -n "${app:-}" ]; then kill "$app" 2>/dev/null || true; wait "$app" 2>/dev/null || true; fi
     rm -rf "$tmp/run" && mkdir -p "$tmp/run/cfg" "$tmp/run/data" "$tmp/run/sys" "$tmp/run/inst"
     ln -s "$repo/instruments/$inst" "$tmp/run/inst/$inst"
@@ -51,7 +54,7 @@ start() { # <instrument folder>: the standalone with only it, settings of its ow
     win=
     # the previous one waited for above: its window is gone (X may hand its id to this one)
     for _ in $(seq 200); do
-        win=$(DISPLAY=$display xdotool search --pid "$app" --name '^Dussek$' 2>/dev/null | head -n 1 || true)
+        win=$(DISPLAY=$display xdotool search --pid "$app" --name "^$name\$" 2>/dev/null | head -n 1 || true)
         [ -n "$win" ] && break
         sleep 0.1
     done
@@ -87,8 +90,27 @@ shot grand-visualization
 start vibraphone
 tab sound; shot vibraphone
 
+# Weidinger: the tabs and the microphone menu at 1x (its window has fewer tabs than Dussek's)
+wtab() { case $1 in sound) click 476 66 ;; player) click 521 66 ;; esac; }
+mics() { # the Mic position menu's entry: player, close1
+    click 280 266 0.6
+    case $1 in player) click 200 322 ;; close1) click 200 382 ;; esac
+    xdotool mousemove --window "$win" "$((880 * scale))" "$((590 * scale))"; sleep 0.8 # no tooltip in the picture
+}
+for inst in trumpet horn tenor_trombone bass_trombone tuba; do
+    start "$inst" weidinger
+    wtab sound; mics player; shot "weidinger-$inst"
+    # its card's picture: the two drawings (from above, from the front), the bell as held
+    $im "$out/weidinger-$inst.png" -crop "$((434 * scale))x$((196 * scale))+$((12 * scale))+$((54 * scale))" +repage "$out/weidinger-$inst-bell.png"
+done
+start tenor_trombone weidinger
+wtab player; mics player; shot weidinger-player
+start horn weidinger
+wtab sound; mics close1; shot weidinger-mics
+
 # each one a picture, not an empty window
-for f in grand-sound grand-felt grand-mics grand-visualization vibraphone; do
+for f in grand-sound grand-felt grand-mics grand-visualization vibraphone weidinger-trumpet weidinger-horn \
+         weidinger-tenor_trombone weidinger-bass_trombone weidinger-tuba weidinger-player weidinger-mics; do
     sd=$(identify -format '%[fx:standard_deviation]' "$out/$f.png")
     awk -v s="$sd" 'BEGIN { exit !(s > 0.02) }' || { echo "screenshots.sh: $f.png is (nearly) uniform" >&2; exit 1; }
 done

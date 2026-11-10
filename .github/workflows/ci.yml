@@ -59,6 +59,11 @@ jobs:
           plugin/build/bin/dussek render instruments/grand_a albums/demos/midi/03-glass-rain.mid render.wav --tail 1
           engine/target/release/midi2wav instruments/grand_a albums/demos/midi/03-glass-rain.mid midi2wav.wav --tail 1
           cmp render.wav midi2wav.wav
+      - name: Weidinger's standalone renders as midi2wav does
+        run: |
+          plugin/build/bin/weidinger render instruments/trumpet albums/demos/midi/03-glass-rain.mid wrender.wav --tail 1
+          engine/target/release/midi2wav instruments/trumpet albums/demos/midi/03-glass-rain.mid wmidi2wav.wav --tail 1
+          cmp wrender.wav wmidi2wav.wav
       # a build to try on another machine (Actions tab: the run's artifacts; kept 3 days)
       - name: Package
         if: github.event_name != 'pull_request'

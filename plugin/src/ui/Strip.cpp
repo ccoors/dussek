@@ -25,8 +25,7 @@ DiagBar diagBar(float width, float y, float h, bool open, const StripGeometry& s
     b.keyboard = { 8, y + 3, 96, h - 6 };
     b.analysis = { 112, y + 3, 84, h - 6 };
     b.viz = { 204, y + 3, 108, h - 6 };
-    const Rect& last = open ? b.viz : b.keyboard;
-    const float x = last.x + last.w + 8, w = textWidth(kWorkingLabel) + 8;
+    const float x = b.viz.x + b.viz.w + 8, w = textWidth(kWorkingLabel) + 8; // the tabs show with the strip shut too
     // the pedals' names are centered over their columns: clear of the leftmost pedal's
     float end = width;
     if (open)

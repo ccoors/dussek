@@ -19,12 +19,12 @@ once on Linux and Windows).
 | Path | What |
 |---|---|
 | `projects/` | one project per instrument, **committed**: `<name>/project.toml` (every per-instrument choice: the sets' maps, the scale model, the fits' settings, the borrowings, the export and its menu entry), `fits/<part>.json` (the fitted values), `ledger.json` (what ran on which inputs); `cache/` (analysis results, intermediate files, logs) not in git, except what a lender lends (`git add -f`, listed by `proto/tests/test_fresh_clone.py`); `steps.toml`: the steps and each family's chain; `kinds.toml`: the wizard's answers to "How is it played?" and their donors; two projects are not in the menu: `harpsichord_buff` (the buff stop's source, no export), `registers_fixture` (a test fixture, `hidden` in its menu) |
-| `analysis/` | measurements from the recordings (Python); `project.py` (the projects' files and the steps' checks), `mapping.py` (a set's files → notes and dynamics) |
-| `proto/` | the offline model and its fits (Python); `build.py` runs a project's chain; renders in `proto/out/` (not in git) |
-| `proto/export.py`, `proto/export_bars.py` | write `instruments/<project>/` (strings, bars) |
+| `analysis/` | measurements from the recordings (Python); `project.py` (the projects' files and the steps' checks), `mapping.py` (a set's files → notes and dynamics), `split_brass.py` (the brass runs cut into notes, once) |
+| `proto/` | the offline model and its fits (Python); `build.py` runs a project's chain; renders in `proto/out/` (not in git); `brass/`: the brass model, its fits (`steps.py`, the chain's entry) and `live.py`, the player the fits render through and the engine's brass players are held to (`port_check.py`) |
+| `proto/export.py`, `proto/export_bars.py`, `proto/export_brass.py` | write `instruments/<project>/` (strings, bars, brass) |
 | `instruments/` | exported instruments, **committed**; re-export after changing a fit, an export or a menu entry |
-| `engine/` | the real-time engine (Rust 2024); `src/bin/`: `render`, `bench`, `midi2wav`, `level` (an export's measured level, kept in its `instrument.json`), `roll` (a rolled piano's export) |
-| `plugin/` | DPF wrapper (C++17): `src/Params.*` (the parameter table), `src/PianoPlugin.cpp` (DSP side), `src/ui/` (UI; pure logic in `pe_common`, tested by `tests/ui_tests.cpp`), `presets/` (the shipped presets), `tools/` (`run-standalone.sh`; `lv2render.c`, an offline LV2 host) |
+| `engine/` | the real-time engine (Rust 2024); `src/bin/`: `render`, `bench`, `midi2wav`, `level` (an export's measured level, kept in its `instrument.json`), `roll` (a rolled piano's export), `brass_check` (the brass players against `proto/brass/port_check.py`); `src/brass/`: the brass family |
+| `plugin/` | DPF wrapper (C++17), two plugins from one set of sources: Dussek (the keyboard instruments) and Weidinger (the brass, a preview bundled in Dussek's releases; `docs/brass.md`), each its `src/plugins/<name>/DistrhoPluginInfo.h`; `src/PluginKind.hpp` (what tells them apart), `src/Ports.*` (which parameters each host sees), `src/Params.*` (the parameter table), `src/PianoPlugin.cpp` (DSP side), `src/ui/` (UI; pure logic in `pe_common`, tested by `tests/ui_tests.cpp`), `presets/` (the shipped presets), `tools/` (`run-standalone.sh`; `lv2render.c`, an offline LV2 host) |
 | `editor/` | the instrument editor (Rust 2024, egui): `src/` the logic (project files, the mapper ported from `analysis/mapping.py`, measurements, the suggestion, `rule.rs` the rule the pages edit, `wizard.rs`, the driver client), `src/ui/` the window (`steps/` the pages the wizard and a source's tabs share) |
 | `albums/demos/` | original demo pieces (CC0), the script that composes them and one that mixes the ensemble piece's stems; renders in `out/` (not in git) |
 | `data/` | datasets, **not in git**; how to get each one: `docs/getting-data.md`, `data/SOURCES.md` |
@@ -87,13 +87,14 @@ The engine's tests use the committed instruments; a test without its data return
 
 - Parameters: `plugin/src/Params.hpp` is the plugin's interface (indices, symbols, ranges).
   Every parameter has a `description` (the tooltip; `ui_tests` checks it).
-- Instruments in the plugin: the catalog (`plugin/src/Catalog.*`) lists every instrument
+- Instruments in the plugin: the catalog (`plugin/src/Catalog.*`; each plugin its own: one with a
+  `brass` block is Weidinger's, every other Dussek's) lists every instrument
   directory in the search paths; the choice is the `"instrument"` state (the directory's name,
   or an opened folder's path: step 163). What an instrument shows comes from the engine's report
   on its file (`engine/src/info.rs`, `pe_instrument_info`: rules over the data, never a name) and
   the export's menu block (`[menu]` in the project: name, group, labels, mallets' names,
   `reversed_keys`, `hidden`); `engine/tests/no_effect.rs` checks the report against renders on
-  every exported instrument, `plugin/tests/visibility.txt` records what the UI shows per
+  every exported instrument, `plugin/tests/visibility.txt` (Weidinger's: `visibility-weidinger.txt`) records what the UI shows per
   instrument (`PE_WRITE_UI_TABLE=1 plugin/build/ui_tests` rewrites it: read its diff).
   `plugin/src/ui/Instruments.cpp` `paramActive`/`paramVisible` read the entry.
 - The rail for by-ear changes: `just snapshot <ref>` puts instruments from a git ref into the
@@ -106,7 +107,7 @@ The engine's tests use the committed instruments; a test without its data return
   content area carry `scrolls` and live in layout coordinates (window + scroll).
 - Fitting an instrument: `python3 proto/build.py build <project>` (the chains: `projects/steps.toml`;
   `status <project>` says what is stale and why; `just fit`, `just status`); `just export
-  [<project>]` exports again without refitting (`--only export,export_bars`, every project by
+  [<project>]` exports again without refitting (`--only export,export_bars,export_brass`, every project by
   default); `docs/building-instruments.md`.
 - The editor's mapper (`editor/src/mapping.rs`) gives the same items as `analysis/mapping.py`
   (`editor/tests/mapping_parity.rs`): change both together. Its suggestion is measured against the
@@ -131,12 +132,15 @@ The engine's tests use the committed instruments; a test without its data return
 - Where the real instrument's mechanism plays badly from a keyboard, prefer the keyboard
   player's mapping (the vibraphone: a held key lifts its damper bar, step 48).
 - What a player saves stays loadable (`docs/compatibility.md`): a new parameter goes at the end of
-  `Params.hpp`'s table and into `plugin/tests/params.lock`; a state key renamed or reshaped raises
+  `Params.hpp`'s table and into its plugin's ports and lock (`plugin/tests/params.lock`, Dussek's, or
+  `params-weidinger.lock`); a state key renamed or reshaped raises
   `kStateVersion` with a migration; a renamed instrument gets a line in `instruments/aliases.txt`;
   `instrument.json` grows by optional fields (a change that cannot be optional raises `format` and
   freezes a copy in `engine/tests/formats/`); `render`'s options are added, not renamed. During 0.x
   a break is a deliberate edit of the lock in a commit that says why.
-- LV2 and the JACK standalone are the targets; VST3/CLAP were tested once by hand (Linux, Windows).
+- LV2 and the JACK standalone are the targets, of both plugins; VST3/CLAP were tested once by hand (Linux, Windows).
+  Both ship in one release, five files (`plugin/tools/package.sh`): Weidinger as a preview, an installer component that can be
+  left out (`packaging/split-brass.sh` keeps its instruments apart for the installers).
 
 ## Style
 

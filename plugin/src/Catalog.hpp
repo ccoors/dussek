@@ -1,6 +1,7 @@
 // The instruments found in the search paths: what the menu lists and the "instrument" state
 // names (by directory name, never by position, so a rescan changes nothing else).
 #pragma once
+#include "PluginKind.hpp"
 #include "dussek.h"
 
 #include <memory>
@@ -22,7 +23,14 @@ struct InstrumentEntry {
     const PeLabel* label(const char* symbol) const;
 };
 
-/// The instruments found, in menu order (hidden ones kept, for a session that names one).
+/// whose an instrument is: Weidinger's the brass (an export's `brass` block), Dussek's every other
+bool ofKind(const InstrumentEntry& e, PluginKind k);
+/// the plugin the scan's messages name ("Weidinger: …"): each plugin's binary holds its own copy of this code
+/// (DPF hides the symbols), so the target sets it once (PianoPlugin, PianoUI, the standalone's CLI); Dussek by default
+void setMessagesPlugin(PluginKind k);
+
+/// The instruments found, in menu order (hidden ones kept, for a session that names one): every kind's, each
+/// plugin seeing its own (each plugin's binary scans for itself: its own copy of this code).
 class Catalog {
 public:
     /// the search paths, in precedence order: $DUSSEK_INSTRUMENTS, <resources>/instruments, the
@@ -43,21 +51,24 @@ public:
     /// opened from a folder) as an entry, made on first use and kept for the process (the same
     /// pointer every time); nullptr when it is none
     static const InstrumentEntry* outside(const std::string& id);
+    /// why a folder is no instrument, in words for the window (empty: it is one): no instrument.json, no data.bin
+    /// beside it, or the engine's reason
+    static std::string whyNot(const std::string& dir);
     /// the aliases an instrument folder declares (its aliases.txt: "old-id new-id" per line, `#`
     /// comments): a renamed or removed instrument's saved sessions find its successor
     static std::map<std::string, std::string> aliasesIn(const std::string& path);
     /// `id`, then the ids its aliases lead to (up to 8 hops; a cycle ends it), in order
     static std::vector<std::string> aliasChain(const std::map<std::string, std::string>& aliases, const std::string& id);
 
-    /// the entry of a listed id, else of the first listed id its aliases lead to (a real folder wins
-    /// over an alias), else of an absolute path (`outside`)
-    const InstrumentEntry* find(const std::string& id) const;
-    /// the listed entries (not hidden), in menu order
-    std::vector<const InstrumentEntry*> menu() const;
-    /// the groups of the listed entries, in menu order
-    std::vector<std::string> groups() const;
-    /// the default choice: the first listed entry (nullptr: none found)
-    const InstrumentEntry* first() const;
+    /// the plugin's entry of a listed id, else of the first listed id its aliases lead to (a real folder
+    /// wins over an alias), else of an absolute path (`outside`); the other plugin's: nullptr
+    const InstrumentEntry* find(const std::string& id, PluginKind k) const;
+    /// the plugin's listed entries (not hidden), in menu order
+    std::vector<const InstrumentEntry*> menu(PluginKind k) const;
+    /// the groups of the plugin's listed entries, in menu order
+    std::vector<std::string> groups(PluginKind k) const;
+    /// the plugin's default choice: the listed entry its menu block marks "first", else its first listed (nullptr: none found)
+    const InstrumentEntry* first(PluginKind k) const;
     /// one line per problem the scan found (shadowed, rejected), as printed
     const std::vector<std::string>& messages() const { return fMessages; }
 
@@ -78,11 +89,20 @@ struct Choice {
     std::string id;
     const InstrumentEntry* entry = nullptr;
 };
-/// the state's value as a choice: empty → the catalog's first; an id not found stays, entry nullptr
-Choice choose(const Catalog& c, const std::string& state);
+/// the state's value as a choice: empty → the plugin's first; an id not found (or the other plugin's) stays,
+/// entry nullptr
+Choice choose(const Catalog& c, const std::string& state, PluginKind k);
 
 /// `dussek list`: a line per instrument in the menu's order, "<id>\t<group>\t<name>\t<folder>\n",
 /// then the scan's messages as "# <message>\n"; empty without instruments and messages
-std::string listingText(const Catalog& c);
+std::string listingText(const Catalog& c, PluginKind k);
+
+/// the other plugin's name when it holds `id` (a saved session's, a preset's or a folder's path), else empty
+std::string otherPluginOf(const Catalog& c, const std::string& id, PluginKind k);
+/// the other plugin's name when `path` (absolute or relative) is an instrument folder of its, else empty (the
+/// standalone's `render` refuses it)
+std::string otherPluginsFolder(const std::string& path, PluginKind k);
+/// the instrument row's text for an id the plugin does not have: "Weidinger's: trumpet", else "Missing: <id>"
+std::string missingLabel(const Catalog& c, const std::string& id, PluginKind k);
 
 } // namespace pe

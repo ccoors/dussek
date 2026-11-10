@@ -299,6 +299,8 @@ pub struct Params {
     /// (> 0.5; `voice::Voice::set_restrike`, `Voice::mallet_meets`), else as from rest; from the
     /// next strike (off by default)
     pub restrike: f32,
+    /// a brass instrument's own controls (`Instrument::brass`; others ignore them)
+    pub brass: crate::brass::BrassParams,
 }
 
 impl Default for Params {
@@ -340,6 +342,7 @@ impl Default for Params {
             dynamics: crate::velocity::DYNAMICS_DB as f32,
             variation: VARIATION_DEFAULT,
             restrike: 0.0,
+            brass: crate::brass::BrassParams::default(),
         }
     }
 }
@@ -540,6 +543,8 @@ pub struct Engine {
     tele_scratch: Vec<VoiceFrame>,
     /// the block's output pair as pushed to the audio tap (filled only while telemetry is on)
     tele_tap: [[f32; 2]; BASE],
+    /// a brass instrument's players: they take the key events and write into the block before the room
+    brass: Option<Box<crate::brass::Family>>,
 }
 
 type Responses = (Vec<[Vec<Vec<f32>>; 2]>, [Vec<Vec<f32>>; 2]);
@@ -803,7 +808,13 @@ fn radiation_for(inst: &Instrument, sr: f64, tuning: &Tuning) -> Responses {
     let room_energy: Vec<f64> = room[0].iter().zip(&inst.radiation_v.room_kept).map(|(c, k)| c.iter().map(|&v| (v as f64).powi(2)).sum::<f64>() / k.max(1e-12)).collect();
     let (mut bodies, mut rooms) = match tuning.mics_for(inst.body()) {
         Some(setup) => {
-            let z = crate::mic::zones(inst.body(), &inst.globals.board, &inst.body_h, [&body[0], &body[1]], &room_energy, sr, rsr, &setup, tuning.keep_direct);
+            // a bell's direct path is the family's (`brass::bell`): the room alone here
+            let bell = matches!(inst.body(), crate::mic::Body::Bell(_));
+            let z = if bell {
+                crate::mic::Zones { body: Vec::new(), room_gain: 1.0 }
+            } else {
+                crate::mic::zones(inst.body(), &inst.globals.board, &inst.body_h, [&body[0], &body[1]], &room_energy, sr, rsr, &setup, tuning.keep_direct)
+            };
             let (sens, coupling) = setup.diffuse();
             let spacing = crate::mic::dist(setup.mics[0].pos, setup.mics[1].pos);
             // the room's inter-channel coherence follows the pair's spacing too (same
@@ -843,7 +854,7 @@ fn radiation_for(inst: &Instrument, sr: f64, tuning: &Tuning) -> Responses {
                     }
                 }
             }
-            (z.body, room)
+            (if bell { vec![body] } else { z.body }, room)
         }
         None => (vec![body], room),
     };
@@ -928,8 +939,14 @@ impl Engine {
     /// (the plugin's Visualization panel, `midi2wav --video`). Call after a block's end.
     pub fn viz_keys(&self, out: &mut [KeyFrame; 88]) {
         for (i, k) in out.iter_mut().enumerate() {
-            let note = &self.inst.notes[i];
             k.amp.fill(0.0);
+            (k.struck_at, k.speed) = self.last_strike[i];
+            let Some(note) = self.inst.notes.get(i) else {
+                // a brass export: no strings to show
+                k.ring.fill(0.0);
+                (k.engage, k.length, k.point, k.flags) = (0.0, 0.0, 0.0, 0);
+                continue;
+            };
             for r in 0..self.inst.registers() {
                 let j = r * 88 + i;
                 if let Some(v) = self.voices.get(j).filter(|v| v.active) {
@@ -965,6 +982,11 @@ impl Engine {
         for (j, v) in self.voices.iter().enumerate() {
             if v.active {
                 ringing[j % 88] = true;
+            }
+        }
+        if let Some(f) = &self.brass {
+            for (j, r) in ringing.iter_mut().enumerate() {
+                *r = f.sounding(j as u8 + 21);
             }
         }
         telemetry::pack_keys(&self.key_down, &ringing)
@@ -1031,7 +1053,9 @@ impl Engine {
         let knock = inst.notes.iter().map(|n| n.knock.as_ref().map(|k| burst_at(&k.burst, rsr, sr))).collect();
         let release = inst.notes.iter().map(|n| burst_at(&n.release.burst, rsr, sr)).collect();
         // thump levels: the takes' peaks re the median mf note peak (as the release noise)
-        let mf = {
+        let mf = if inst.notes.is_empty() {
+            1.0 // a brass export: no notes, no pedal
+        } else {
             let mut v: Vec<f64> = inst.notes[..88].iter().map(|n| n.release.peak[1]).collect();
             v.sort_by(f64::total_cmp);
             v[v.len() / 2]
@@ -1144,10 +1168,16 @@ impl Engine {
             tele_frame: Some(Frame::boxed()),
             tele_scratch: Vec::with_capacity(inst_voices),
             tele_tap: [[0.0; 2]; BASE],
+            brass: crate::brass::Family::new(&inst, sr).map(Box::new),
             inst,
         };
         e.out_fifo.extend(std::iter::repeat_n([0.0, 0.0], BASE));
-        e.ff_force = e.ff_peak_force(28).max(1e-30);
+        if e.brass.is_some() {
+            // the variation scales the player's as it was fitted, not a strike's measured takes
+            e.params.variation = crate::brass::VARIATION_AS_FITTED;
+        }
+        // the rattle's threshold, a string's force (a brass export has none)
+        e.ff_force = if e.inst.notes.is_empty() { 1.0 } else { e.ff_peak_force(28).max(1e-30) };
         e.rattle_th = RATTLE_TH * e.ff_force;
         for i in 0..88 {
             e.update_key(i);
@@ -1173,6 +1203,9 @@ impl Engine {
             return false;
         }
         self.params = old.params;
+        if let (Some(a), Some(b)) = (&mut self.brass, &mut old.brass) {
+            a.take_over(b);
+        }
         self.motor = old.motor.clone();
         self.bank.set_coupling(self.params.sympathetic as f64);
         if self.inst.strings_print == old.inst.strings_print {
@@ -1274,7 +1307,8 @@ impl Engine {
     }
 
     pub fn latency(&self) -> usize {
-        BASE
+        // a brass instrument's resampling from its 44.1 kHz on top
+        BASE + self.brass.as_ref().map_or(0, |f| f.latency())
     }
 
     /// the voicing's level offset of `key` (dB) at the current voicing wear: σ · its draw
@@ -1323,6 +1357,11 @@ impl Engine {
     /// pp/mf/ff anchors, extrapolated with the outer slopes. Allocation-free.
     pub fn hammer_speed(&self, key: u8, velocity: f64) -> f64 {
         let v = velocity.clamp(1.0, 127.0);
+        if self.brass.is_some() {
+            // the velocity over 127; Dynamics as on the pianos: less brings the soft notes up, more takes them down
+            let range = (self.params.dynamics as f64).clamp(DYNAMICS_RANGE.0, DYNAMICS_RANGE.1);
+            return (v / 127.0).powf(range / crate::velocity::DYNAMICS_DB);
+        }
         let d = &self.inst.dynamics;
         if !d.is_empty() && self.mallet().is_none() {
             use crate::velocity::{FF_VELOCITY, dynamics_db};
@@ -1380,6 +1419,9 @@ impl Engine {
     fn clear_sound(&mut self) {
         for v in &mut self.voices {
             v.silence();
+        }
+        if let Some(f) = &mut self.brass {
+            f.clear();
         }
         self.bank.clear();
         for r in std::iter::once(&mut self.rad).chain(self.fading.iter_mut()) {
@@ -1528,7 +1570,8 @@ impl Engine {
     /// strings get the lift kick. The key's dampers act on the strings of every register
     /// (string j = r·88 + i).
     fn update_key(&mut self, i: usize) {
-        let note = &self.inst.notes[i];
+        // a brass export has no notes (its players hold the keys): nothing on the strings to update
+        let Some(note) = self.inst.notes.get(i) else { return };
         // the vibraphone's damper bar too: played from a keyboard, a held key lifts it off its bar
         let held = self.key_down[i] || self.sostenuto_held[i];
         let mut e = if !note.has_damper || held { 0.0 } else { pedal_engage(self.pedal) };
@@ -1673,7 +1716,36 @@ impl Engine {
         }
     }
 
+    /// An event on a brass instrument: the keys and wheels are the players'; the pedals do nothing.
+    fn apply_brass(&mut self, ev: Event) {
+        use crate::brass::section::Ev;
+        let Some(f) = &mut self.brass else { return };
+        match ev {
+            Event::Silence => self.sound_off(),
+            Event::NoteOn { key, speed } if (21..=108).contains(&key) => {
+                let i = key as usize - 21;
+                if !self.key_down[i] {
+                    self.down_at[i] = self.now;
+                }
+                self.key_down[i] = true;
+                self.last_strike[i] = (self.now.max(1), speed as f32);
+                f.post(Ev::On(key, (speed * 127.0).clamp(1.0, 127.0)));
+            }
+            Event::KeyUp { key } if (21..=108).contains(&key) => {
+                self.key_down[key as usize - 21] = false;
+                f.post(Ev::Off(key));
+            }
+            Event::PitchBend { value } => f.post(Ev::Bend(if value.is_finite() { value.clamp(-1.0, 1.0) as f64 } else { 0.0 })),
+            Event::ChannelPressure { value } => f.post(Ev::Aftertouch(pressure(value) * 127.0)),
+            _ => {}
+        }
+    }
+
     fn apply(&mut self, ev: Event) {
+        if self.brass.is_some() {
+            self.apply_brass(ev);
+            return;
+        }
         match ev {
             Event::Silence => self.sound_off(),
             Event::ModWheel { value } => self.wheel = pressure(value),
@@ -1879,6 +1951,15 @@ impl Engine {
     /// Render n samples (within the current block).
     /// `input`: the audio input of these samples (empty: none)
     fn render(&mut self, n: usize, input: &[f32]) {
+        if self.brass.is_some() {
+            // the block's sound comes whole at its end, every event of the block queued
+            self.fill += n;
+            self.now += n as u64;
+            if self.fill == BASE {
+                self.end_block();
+            }
+            return;
+        }
         self.advance_dampers(n);
         let r = self.fill..self.fill + n;
         let zero = [0.0; LANES];
@@ -2060,6 +2141,17 @@ impl Engine {
     }
 
     fn end_block(&mut self) {
+        // the players' block: their direct sound, the room's feed in the instrument's place
+        if let Some(f) = &mut self.brass {
+            let (mut l, mut r) = ([0.0; BASE], [0.0; BASE]);
+            f.render(&self.params.brass, self.params.variation, BASE, &mut l, &mut r, &mut self.blk_v);
+            let direct = if self.mix.body { 1.0 } else { 0.0 };
+            for j in 0..BASE {
+                self.blk_out[0][j] = direct * l[j] as f32;
+                self.blk_out[1][j] = direct * r[j] as f32;
+            }
+            self.blk_h.fill(0.0);
+        }
         // after a handover: the input crossfades from the old setups to this one
         let start = self.now - BASE as u64;
         if self.fading.iter().any(Radiator::live) {
@@ -2104,7 +2196,7 @@ impl Engine {
         }
         let Params { room, volume, .. } = self.params;
         let volume = volume * self.calibration;
-        let (body, room) = (if self.mix.body { 1.0 } else { 0.0 }, if self.mix.room { room } else { 0.0 });
+        let (body, room) = (if self.mix.body && self.brass.is_none() { 1.0 } else { 0.0 }, if self.mix.room { room } else { 0.0 });
         // the enabled flag is read once per block (relaxed): the tap and the frame agree on it
         let tele_on = self.telemetry.as_ref().is_some_and(|t| t.region.enabled());
         for j in 0..BASE {
@@ -2246,8 +2338,11 @@ impl Drop for FlushDenormals {
 
 /// Gain from model units to full scale, from the radiated ff peak of every key (the
 /// release-noise reference table): the median key peaks at `FF_MEDIAN_PEAK_DBFS`, plus the
-/// instrument's own `output_gain_db`.
+/// instrument's own `output_gain_db`. The brass keep their fit's own level, times that gain.
 fn calibration(inst: &Instrument) -> f32 {
+    if inst.brass.is_some() {
+        return 10f64.powf(inst.output_gain_db / 20.0) as f32;
+    }
     // register 0's notes (an added register plays at its own level re these)
     let mut ff: Vec<f64> = inst.notes[..88].iter().map(|n| n.release.peak[2]).collect();
     ff.sort_by(f64::total_cmp);

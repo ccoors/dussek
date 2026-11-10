@@ -1,6 +1,6 @@
 # The MAESTRO performances
 
-Three performances from the MAESTRO dataset v3.0.0, recorded at the International
+Four performances from the MAESTRO dataset v3.0.0, recorded at the International
 Piano-e-Competition, as MIDI files:
 
 | File | Piece | MAESTRO file |
@@ -8,6 +8,7 @@ Piano-e-Competition, as MIDI files:
 | `scarlatti-k9.mid` | Scarlatti: Sonata in D minor, K. 9 | `Domenico Scarlatti - Sonata in D Minor, K. 9 - 2014` |
 | `bach-bwv848.mid` | Bach: Prelude and Fugue in C-sharp major, BWV 848 | `Johann Sebastian Bach - Prelude and Fugue in C-sharp Major, WTC I, BWV 848 - 2013` |
 | `schubert-op90-3.mid` | Schubert: Impromptu in G-flat major, Op. 90 No. 3 | `Franz Schubert - Impromptu Op. 90 No. 3 in G-flat Major, D. 899 - 2017 (2)` |
+| `rachmaninoff-op23-4.mid` | Rachmaninoff: Prelude in D major, Op. 23 No. 4 | `Sergei Rachmaninoff - Prelude Op. 23 No. 4 in D Major - 2015` |
 
 Curtis Hawthorne, Andriy Stasyuk, Adam Roberts, Ian Simon, Cheng-Zhi Anna Huang, Sander
 Dieleman, Erich Elsen, Jesse Engel and Douglas Eck: "Enabling Factorized Piano Music Modeling and

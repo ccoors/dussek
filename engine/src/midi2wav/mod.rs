@@ -5,7 +5,9 @@
 //! The engine is sequential, so the piece is cut into time segments (`--jobs`), each rendered by
 //! its own engine that first replays at least `--warmup` seconds of the music before it, from the
 //! latest moment before that when the pedal is up and no key is held (at most `--maxwarm` ahead).
+//! A brass instrument renders in one segment: its players' state is the whole piece's.
 
+pub mod cc;
 mod video;
 
 use std::time::{Duration, Instant};
@@ -41,6 +43,9 @@ struct Opts {
     felt: String,
     input: Option<String>,
     video: Option<video::VideoOpts>,
+    /// None: the plugin's ties on brass, none on the others
+    cc: Option<Vec<cc::Tie>>,
+    lowest_key: u8,
 }
 
 /// The command line's definition (its options and arguments), for the lock on them
@@ -94,6 +99,17 @@ struct Cli {
     /// loudness kept (a few seconds).
     #[arg(long, value_name = "TEXT", value_parser = felt, help_heading = "Playing")]
     felt: Option<String>,
+    /// MIDI controllers tied to controls, as the plugin's MIDI tab ties them: CH:CC=SYMBOL,… or none
+    ///
+    /// Each controller's value moves its control from its time on, as in the plugin (CH 1–16). On a brass instrument
+    /// the plugin's ties by default (1:1=air_added,1:11=air,1:70=brass_vibrato,1:21=growl,1:23=flutter,1:4=plunger,
+    /// 1:65=glide_hold,1:5=glide_time; the plugin's Copy CLI writes its own); none on the others. A tie on CC 1 takes it
+    /// from the mod wheel.
+    #[arg(long, value_name = "CH:CC=SYMBOL,…", value_parser = cc_spec, long_help = cc_help(), help_heading = "Playing")]
+    cc: Option<String>,
+    /// Notes under KEY (MIDI) dropped: another library's keyswitches
+    #[arg(long, value_name = "KEY", value_parser = clap::value_parser!(u8).range(0..=127), help_heading = "Playing")]
+    lowest_key: Option<u8>,
     /// A sound file (WAV) into the audio input, from the start
     ///
     /// As the plugin's Audio input: its channels summed, at the level of --param input=… (1 drives the free strings
@@ -148,7 +164,7 @@ struct Cli {
     /// The threads (auto: up to one per core, as the piece's length allows)
     ///
     /// The piece is cut into N segments, each rendered by its own engine that first replays the music before it;
-    /// 1 renders it in one go (the reference).
+    /// 1 renders it in one go (the reference). A brass instrument always renders in one go.
     #[arg(long, value_name = "N|auto", default_value = "auto", value_parser = jobs, help_heading = "Parallel render")]
     jobs: usize,
     /// The least seconds replayed before each segment
@@ -160,7 +176,7 @@ struct Cli {
     #[arg(long, value_name = "S", default_value_t = 40.0, value_parser = seconds, help_heading = "Parallel render")]
     maxwarm: f64,
 
-    /// Also a video of the piece, with OUT.wav as its sound (needs ffmpeg)
+    /// Also a video of the piece, with OUT.wav as its sound (needs ffmpeg; not for a brass instrument)
     ///
     /// The strings, dampers, hammers, keys and pedals as the engine plays them: the plugin's Visualization panel.
     #[arg(long, value_name = "OUT", help_heading = "Video")]
@@ -226,6 +242,21 @@ fn jobs(s: &str) -> std::result::Result<usize, String> {
 
 fn param_spec(s: &str) -> std::result::Result<String, String> {
     crate::spec::params(Params::default(), s).map(|_| s.to_string()).map_err(|e| e.to_string())
+}
+
+fn cc_spec(s: &str) -> std::result::Result<String, String> {
+    cc::parse(s).map(|_| s.to_string())
+}
+
+fn cc_help() -> String {
+    format!(
+        "MIDI controllers tied to controls, as the plugin's MIDI tab ties them: CH:CC=SYMBOL,… (CH 1–16) or none.\n\nEach \
+         controller's value moves its control from its time on, as in the plugin; air and the plunger moved so take over from \
+         the keys. On a brass instrument the plugin's ties by default ({}); the plugin's Copy CLI writes its own. None on the \
+         others. A tie on CC 1 takes it from the mod wheel. The symbols: {}.",
+        cc::BRASS_DEFAULT,
+        cc::symbols()
+    )
 }
 
 fn tuning_spec(s: &str) -> std::result::Result<String, String> {
@@ -322,12 +353,16 @@ where
         felt: c.felt.unwrap_or_default(),
         input: c.input,
         video: c.video.map(|path| video::VideoOpts { path, width: c.size.0, height: c.size.1, fps: c.fps, ffmpeg: c.ffmpeg, transparent: c.transparent }),
+        cc: c.cc.map(|s| cc::parse(&s).unwrap()), // checked by the parser
+        lowest_key: c.lowest_key.unwrap_or(0),
     };
     Ok((c.instrument, c.midi, c.out, o))
 }
 
 /// An event on the global sample axis.
 type Timed = (u64, Event);
+/// A tied controller's value on the global sample axis.
+type Change = (u64, cc::Tie, u8);
 
 /// Renders output frames `from..to` (global sample positions, the engine's latency
 /// already compensated) with an engine that starts at the earlier `start`; the music
@@ -340,12 +375,18 @@ fn render_segment(
     mix: Mix,
     sr: f64,
     events: &[Timed],
+    changes: &[Change],
     start: u64,
     from: u64,
     to: u64,
     input: &[f32],
 ) -> Result<Vec<[f32; 2]>> {
     let mut engine = Engine::with_cache(inst.clone(), sr, tuning, &mut RadiationCache::default())?;
+    // the controls as the controllers before `start` left them
+    let mut params = params;
+    for (_, tie, value) in changes.iter().take_while(|c| c.0 < start) {
+        cc::apply(&mut params, tie, *value);
+    }
     engine.set_params(params);
     engine.set_mix(mix);
     // the state at `start`: keys held and the pedal, as of the events before it
@@ -411,7 +452,21 @@ fn render_segment(
     let lat = engine.latency() as u64;
     let n = (to - start + lat) as usize;
     let (mut l, mut r) = (vec![0.0f32; n], vec![0.0f32; n]);
-    engine.process_input(&input[(start as usize).min(input.len())..], &mut l, &mut r);
+    // up to each controller's time, then its control moved
+    let mut done = 0usize;
+    let mut run = |engine: &mut Engine, until: usize| {
+        if until > done {
+            let at = (start as usize + done).min(input.len());
+            engine.process_input(&input[at..], &mut l[done..until], &mut r[done..until]);
+            done = until;
+        }
+    };
+    for (t, tie, value) in changes.iter().filter(|c| c.0 >= start) {
+        run(&mut engine, ((t - start) as usize).min(n));
+        cc::apply(&mut params, tie, *value);
+        engine.set_params(params);
+    }
+    run(&mut engine, n);
     let skip = (from - start + lat) as usize;
     Ok(l[skip..].iter().zip(&r[skip..]).map(|(&l, &r)| [l, r]).collect())
 }
@@ -496,13 +551,19 @@ fn run(dir: &str, midi_path: &str, out_path: &str, o: Opts) -> Result<()> {
     }
     let sides = crate::spec::morph_sides(dir, &o.morph)?;
     let mut inst = Instrument::morph(&sides).map_err(|e| format!("cannot load the instrument `{dir}`: {e}"))?;
+    if o.video.is_some() && inst.brass.is_some() {
+        // the plugin shows no Visualization on a bell: the video would be a piano's keys and strings that never move
+        return Err(format!("--video: `{dir}` is a brass instrument, which has no visualization").into());
+    }
     let load = t0.elapsed();
     let sr = o.rate;
     let mut tuning = crate::spec::tuning(inst.tuning, &o.tuning)?;
     if let Some(path) = &o.scl {
         tuning.keys = Some(crate::temperament::load_scale(std::path::Path::new(path), o.key).map_err(|e| format!("--scl `{path}`: {e}"))?.0);
     }
-    let mut params = crate::spec::params(Params::default(), &o.param)?;
+    // brass: the variation scales the player's as it was fitted, unless the options say otherwise
+    let base = if inst.brass.is_some() { Params { variation: crate::brass::VARIATION_AS_FITTED, ..Params::default() } } else { Params::default() };
+    let mut params = crate::spec::params(base, &o.param)?;
     // the felt and, on a hammer piano, Hammer hardness at the build, as the plugin plays them
     let mut felt = crate::felt::FeltEdit::try_parse(&o.felt).ok_or("--felt: unreadable")?; // checked by the parser
     if inst.is_hammer_piano() {
@@ -525,11 +586,28 @@ fn run(dir: &str, midi_path: &str, out_path: &str, o: Opts) -> Result<()> {
     // engine will do, and the one built first doubles as the reference for the single-segment case
     let mut probe = Engine::with_tuning(inst.clone(), sr, tuning)?;
     probe.set_params(params);
+    let ties = o.cc.clone().unwrap_or_else(|| if inst.brass.is_some() { cc::parse(cc::BRASS_DEFAULT).unwrap() } else { Vec::new() });
+    let wheel_tied = ties.iter().any(|t| t.cc == 1);
+    let below = |key: u8| key < o.lowest_key;
+    let changes: Vec<Change> = score
+        .events
+        .iter()
+        .filter_map(|&(t, a)| match a {
+            Action::Control { channel, cc, value } => {
+                ties.iter().find(|x| x.channel == channel && x.cc == cc).map(|tie| ((t * sr) as u64, *tie, value))
+            }
+            _ => None,
+        })
+        .collect();
     // the latch: the pedal down from the start and again after a sound-off (it releases the pedal)
     let latched = o.latch.then_some((0, Event::PedalDown));
     let events: Vec<Timed> = latched
         .into_iter()
-        .chain(score.events.iter().flat_map(|&(t, a)| {
+        .chain(score.events.iter().filter(|e| match e.1 {
+            Action::NoteOn { key, .. } | Action::KeyUp { key, .. } | Action::KeyPressure { key, .. } => !below(key),
+            Action::ModWheel { .. } => !wheel_tied,
+            _ => true,
+        }).flat_map(|&(t, a)| {
             let at = (t * sr) as u64;
             let mut out = [None, None];
             match a {
@@ -552,6 +630,7 @@ fn run(dir: &str, midi_path: &str, out_path: &str, o: Opts) -> Result<()> {
                 Action::ChannelPressure { value } => out[0] = Some(Event::ChannelPressure { value }),
                 Action::KeyPressure { key, value } => out[0] = Some(Event::KeyPressure { key, value }),
                 Action::PitchBend { value } => out[0] = Some(Event::PitchBend { value }),
+                Action::Control { .. } => {}
             }
             out.into_iter().flatten().map(move |ev| (at, ev))
         }))
@@ -595,7 +674,9 @@ fn run(dir: &str, midi_path: &str, out_path: &str, o: Opts) -> Result<()> {
     };
     // a segment is worth its warm-up only when it is much longer than it
     // the input excites the strings whether a damper is down or not: no quiet moment to cut at
-    let jobs = if !input.is_empty() {
+    // a brass player's state runs through the whole piece (its notes' draws, its noise, its vibrato): no warm-up replays it,
+    // and a segment's join would step
+    let jobs = if !input.is_empty() || inst.brass.is_some() {
         1
     } else if o.jobs > 0 {
         o.jobs
@@ -609,11 +690,11 @@ fn run(dir: &str, midi_path: &str, out_path: &str, o: Opts) -> Result<()> {
         let parts: Vec<Result<Vec<[f32; 2]>>> = std::thread::scope(|s| {
             let handles: Vec<_> = (0..jobs)
                 .map(|j| {
-                    let (inst, events, start_for, input) = (&inst, &events, &start_for, &input[..]);
+                    let (inst, events, changes, start_for, input) = (&inst, &events, &changes[..], &start_for, &input[..]);
                     let (from, to) = (bounds[j], bounds[j + 1]);
                     s.spawn(move || {
                         let start = start_for(from);
-                        render_segment(inst, tuning, params, mix, sr, events, start, from, to, input).map_err(|e| e.to_string())
+                        render_segment(inst, tuning, params, mix, sr, events, changes, start, from, to, input).map_err(|e| e.to_string())
                     })
                 })
                 .collect();

@@ -31,3 +31,7 @@ instruments/rolled_preview/
 # the website: renders and the built pages (site/render.py, site/build.py)
 site/out/
 site/public/
+
+# the brass model's compiled loops and what a step leaves for a person to read
+proto/brass/*.so
+proto/brass/out/

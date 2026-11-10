@@ -5,6 +5,14 @@ break is allowed but listed under "Breaking" (`docs/compatibility.md`).
 
 ## Unreleased
 
+### New
+
+- Weidinger, a second plugin for the brass (trumpet, horn, tenor and bass trombone, tuba), as a
+  preview in the same release files: its own standalone and LV2, CLAP and VST3 plugins. The Windows
+  installer and the macOS package offer it as a component that can be left out.
+- Analysis and Visualization open with or without the keyboard strip.
+- An instrument folder that is no instrument, or a file that is no Scala scale, says why in the window.
+
 ### Changed
 
 - The window shows only the tabs and pedals that act on the instrument, and the keyboard and its panels

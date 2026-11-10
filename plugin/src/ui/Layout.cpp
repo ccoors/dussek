@@ -1,5 +1,6 @@
 #include "Layout.hpp"
-#include "DistrhoPluginInfo.h"
+#include <cstring>
+#include "PluginKind.hpp"
 #include "MidiMap.hpp"
 #include "Morph.hpp"
 #include "Format.hpp"
@@ -91,21 +92,27 @@ static constexpr float kLatchExtra = 48;
 
 Kind paramKind(uint32_t param)
 {
+    if (param == kBrassMute)
+        return Kind::Chips;
     if (paramInfo(param).boolean)
         return Kind::Toggle;
     return paramLabelCount(param) > 0 ? Kind::Dropdown : Kind::Slider;
 }
 
+// in the window: the Player tab, appended last so a saved tab keeps its number, beside Sound
+static constexpr Tab kTabOrder[] = { kTabSound, kTabPlayer, kTabMorph, kTabTouch, kTabFelt, kTabMics, kTabTuning, kTabCondition, kTabExtras, kTabMidi, kTabAbout };
+static_assert(sizeof kTabOrder / sizeof kTabOrder[0] == kTabCount, "every tab has its place");
+
 const char* tabName(Tab t)
 {
-    static const char* const names[kTabCount] = { "Sound", "Morph", "Touch", "Felt", "Mics", "Tuning", "Condition", "Extras", "MIDI", "About" };
+    static const char* const names[kTabCount] = { "Sound", "Morph", "Touch", "Felt", "Mics", "Tuning", "Condition", "Extras", "MIDI", "About", "Player" };
     return names[t < kTabCount ? t : 0];
 }
 
 const std::vector<TabGroup>& tabGroups(Tab t)
 {
     static const std::vector<TabGroup> g[kTabCount] = {
-        { { nullptr, { kPresetRow, kMallet, kHammerHardness, kSustain, kBoardBass, kMotorSpeed, kMotorDepth, kBebung, kBendRange, kRoom, kCondition } } },
+        { { nullptr, { kPresetRow, kBrassMute, kPlungerSet, kPlunger, kGrowl, kFlutter, kBrassVibrato, kMallet, kHammerHardness, kSustain, kBoardBass, kMotorSpeed, kMotorDepth, kBebung, kBendRange, kRoom, kCondition } } },
         {}, // Morph: the list and the pad (Morph X and Y), no rows
         { { nullptr, { kDynamics, kVariation, kRestrike } } }, // Touch: the Dynamics, the variation, the re-strike, then the velocity curve
         {}, // Felt: the felt's curves (FeltEditor), no rows
@@ -121,6 +128,7 @@ const std::vector<TabGroup>& tabGroups(Tab t)
                                kBoltPosition, kPaperBuzz } } },
         {}, // MIDI: MIDI learn's ties, no parameters
         {}, // About: the plugin's and the instrument's text, no parameters
+        { { nullptr, { kVirtualPlayer, kBrassSolo, kGlideMode, kGlideHold, kGlideTime, kAirSet, kAir, kAirAdded, kAftertouchTo } } }, // Player: brass
     };
     return g[t < kTabCount ? t : 0];
 }
@@ -234,9 +242,31 @@ Row compactRow(uint32_t p, float x, float y, float w, float labelW, float valueW
 }
 } // namespace
 
+std::vector<Rect> muteChips(const Row& r, const InstrumentEntry& e)
+{
+    const uint32_t n = entryMutes(e);
+    std::vector<Rect> out;
+    if (n == 0)
+        return out;
+    const float gap = 3;
+    float words = 0;
+    for (uint32_t i = 0; i < n; ++i)
+        words += (float)std::strlen(muteLabel(e, i)) + 2;
+    const float room = std::max(1.0f, r.control.w - gap * (float)(n - 1));
+    float x = r.control.x;
+    for (uint32_t i = 0; i < n; ++i) {
+        const float w = room * ((float)std::strlen(muteLabel(e, i)) + 2) / words;
+        out.push_back({ x, r.control.y, w, r.control.h });
+        x += w + gap;
+    }
+    return out;
+}
+
 bool tabShown(Tab t, const UiContext& c)
 {
     switch (t) {
+    case kTabPlayer: // Weidinger's
+        return c.plugin == PluginKind::Winds && c.inst != nullptr && c.inst->info.brass;
     case kTabMorph:
         return c.inst != nullptr && c.inst->info.morph_family != 0;
     case kTabFelt:
@@ -346,7 +376,8 @@ Layout computeLayout(float width, float height, Tab tab, const UiContext& ctx)
     // instruments
     float tabsW = 0;
     for (uint32_t t = 0; t < kTabCount; ++t)
-        tabsW += textWidth(tabName((Tab)t)) + 4 + (t > 0 ? 2 : 0);
+        if (t != kTabPlayer) // brass's, which has few others: the tab bar's room as it was
+            tabsW += textWidth(tabName((Tab)t)) + 4 + (t > 0 ? 2 : 0);
     if (l.wide) {
         // the drawing and its rows stay put on the left; short windows shrink the views so the rows
         // stay in view. The drawing takes 55 % of the width, down to half where that puts the tabs
@@ -369,7 +400,7 @@ Layout computeLayout(float width, float height, Tab tab, const UiContext& ctx)
 
     // the tab bar (wraps where the five do not fit)
     float tx = panelX, ty = y;
-    for (uint32_t t = 0; t < kTabCount; ++t) {
+    for (Tab t : kTabOrder) {
         if (!tabShown((Tab)t, ctx))
             continue;
         const float bw = std::max(1.0f, std::min(textWidth(tabName((Tab)t)) + 4, panelW)); // ten fit one row at the default width
@@ -535,7 +566,7 @@ Layout computeLayout(float width, float height, Tab tab, const UiContext& ctx)
             l.subheadings.push_back({ title, { x, y, w, kSubheadH } });
             y += kSubheadH + kLineGap;
         };
-        line(std::string(DISTRHO_PLUGIN_NAME) + " " + versionText(), LineStyle::Title);
+        line(std::string(identity(ctx.plugin).name) + " " + versionText(), LineStyle::Title);
         line(std::string("Built from commit ") + buildCommit(), LineStyle::Dim);
         line(kPluginLicenseLine, LineStyle::Dim);
         // the link, its button at the right end (under it where they do not fit)

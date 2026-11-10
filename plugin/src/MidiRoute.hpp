@@ -44,7 +44,7 @@ private:
     static constexpr int16_t kRelative = 0x4000, kFlip = 0x2000;
     std::atomic<int16_t> fTarget[2][16][128];
     std::atomic<bool> fProgramChange { false };
-    std::atomic<bool> fSoftTakeover { true };
+    std::atomic<bool> fSoftTakeover { false };
 };
 
 /// the current instrument's Mallet and Preparation menus; writer: the worker, reader: the audio thread
@@ -67,6 +67,7 @@ private:
 class Takeover {
 public:
     static constexpr float kPickup = 0.02f; // of the slider's travel
+    static constexpr float kLeft = 1e-4f;   // of the travel: the slider still where MIDI left it
     Takeover();
     /// whether `next` (the CC's value as the slider's) may set `param` now at `current`
     bool accept(uint32_t param, float next, float current);

@@ -48,7 +48,7 @@ UiState parseUiState(const char* s)
     int diag = 0;
     if (const char* d = std::strstr(s, ";diag=")) {
         std::sscanf(d, ";diag=%d", &diag);
-        st.diag = diag >= 0 && diag <= 3 ? diag : 0;
+        st.diag = diag >= 0 && diag <= 5 ? diag : 0; // StripInteraction.hpp: 4 and 5 a panel without the strip
     }
     int view = 0;
     if (const char* v = std::strstr(s, ";view=")) {

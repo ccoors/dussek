@@ -443,3 +443,130 @@ fn a_non_wav_input_is_a_usage_error() {
     assert_eq!(out.status.code(), Some(2));
     assert!(String::from_utf8_lossy(&out.stderr).contains("not_a.wav"));
 }
+
+const TRUMPET: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/trumpet");
+
+/// One track at 960 ticks a second: (tick, channel, event), notes as (key, velocity), controllers as (cc + 128, value).
+fn midi_events(path: &std::path::Path, at: &[(u32, u8, u8, u8)]) {
+    let mut at = at.to_vec();
+    at.sort_by_key(|e| e.0);
+    let mut track = vec![];
+    let mut last = 0;
+    for (t, ch, a, b) in at {
+        let message = if a >= 128 {
+            MidiMessage::Controller { controller: u7::new(a - 128), value: u7::new(b) }
+        } else {
+            MidiMessage::NoteOn { key: u7::new(a), vel: u7::new(b) }
+        };
+        track.push(TrackEvent { delta: u28::new(t - last), kind: TrackEventKind::Midi { channel: u4::new(ch), message } });
+        last = t;
+    }
+    track.push(TrackEvent { delta: u28::new(0), kind: TrackEventKind::Meta(MetaMessage::EndOfTrack) });
+    let smf = Smf { header: Header::new(Format::SingleTrack, Timing::Metrical(u15::new(480))), tracks: vec![track] };
+    smf.save(path).unwrap();
+}
+
+fn render_brass(mid: &std::path::Path, out: &std::path::Path, extra: &[&str]) -> Option<Vec<f32>> {
+    if !std::path::Path::new(TRUMPET).join("instrument.json").exists() {
+        return None;
+    }
+    let status = Command::new(env!("CARGO_BIN_EXE_midi2wav"))
+        .args([TRUMPET, mid.to_str().unwrap(), out.to_str().unwrap(), "--rate", "44100", "--tail", "0.5", "--jobs", "1"])
+        .args(extra)
+        .status()
+        .unwrap();
+    assert!(status.success());
+    Some(hound::WavReader::open(out).unwrap().samples::<f32>().map(Result::unwrap).collect())
+}
+
+fn rms_diff(a: &[f32], b: &[f32], from: f64, to: f64) -> f64 {
+    let (i, j) = ((from * 44100.0) as usize * 2, (to * 44100.0) as usize * 2);
+    (a[i..j].iter().zip(&b[i..j]).map(|(x, y)| f64::from(x - y).powi(2)).sum::<f64>() / (j - i) as f64).sqrt()
+}
+
+#[test]
+fn a_controller_moves_its_control_at_its_time() {
+    // on brass the plugin's ties by default: CC21 Growl full at 1 s, on the held note
+    let dir = std::path::PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join("cc_at_its_time");
+    std::fs::create_dir_all(&dir).unwrap();
+    let (with, without) = (dir.join("with.mid"), dir.join("without.mid"));
+    let note = [(0, 0, 67, 90), (1920, 0, 67, 0)];
+    midi_events(&with, &[note[0], note[1], (960, 0, 128 + 21, 127)]);
+    midi_events(&without, &note);
+    let Some(a) = render_brass(&with, &dir.join("a.wav"), &[]) else { return };
+    let b = render_brass(&without, &dir.join("b.wav"), &[]).unwrap();
+    assert!(rms_diff(&a, &b, 0.0, 0.95) < 1e-7, "before it: {}", rms_diff(&a, &b, 0.0, 0.95));
+    assert!(rms_diff(&a, &b, 1.1, 1.9) > 1e-3, "after it: {}", rms_diff(&a, &b, 1.1, 1.9));
+    // tied elsewhere, or not at all: the controller does nothing
+    for cc in ["2:21=growl", "none"] {
+        let c = render_brass(&with, &dir.join("c.wav"), &["--cc", cc]).unwrap();
+        assert!(rms_diff(&c, &b, 0.0, 2.0) < 1e-7, "--cc {cc}");
+    }
+}
+
+#[test]
+fn keyswitches_under_the_lowest_key_are_dropped() {
+    // another library's files switch articulations with notes under the range; the trumpet would play some of them
+    let dir = std::path::PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join("lowest_key");
+    std::fs::create_dir_all(&dir).unwrap();
+    let (with, without) = (dir.join("with.mid"), dir.join("without.mid"));
+    let note = [(0, 0, 67, 90), (960, 0, 67, 0)];
+    midi_events(&with, &[note[0], note[1], (0, 0, 49, 100), (100, 0, 49, 0)]);
+    midi_events(&without, &note);
+    let Some(a) = render_brass(&with, &dir.join("a.wav"), &["--lowest-key", "52"]) else { return };
+    let b = render_brass(&without, &dir.join("b.wav"), &[]).unwrap();
+    assert!(rms_diff(&a, &b, 0.0, 1.4) < 1e-7);
+    let c = render_brass(&with, &dir.join("c.wav"), &[]).unwrap();
+    assert!(rms_diff(&c, &b, 0.0, 1.4) > 1e-4, "the key 49 plays without it");
+}
+
+/// A brass player's state runs through the whole piece (its notes' draws, its noise, its vibrato): a segment's warm-up never
+/// replays it, and the join stepped (a click at half the render). A brass instrument renders in one segment, whatever `--jobs`.
+#[test]
+fn a_brass_instrument_renders_in_one_segment() {
+    let tuba = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/tuba");
+    if !std::path::Path::new(tuba).exists() {
+        eprintln!("skipped: no instrument");
+        return;
+    }
+    let dir = std::path::PathBuf::from(env!("CARGO_TARGET_TMPDIR"));
+    let mid = dir.join("midi2wav_brass.mid");
+    midi(&mid);
+    let run = |out: &str, extra: &[&str]| -> Vec<f32> {
+        let out = dir.join(out);
+        let status = Command::new(env!("CARGO_BIN_EXE_midi2wav"))
+            .args([tuba, mid.to_str().unwrap(), out.to_str().unwrap(), "--rate", "32000", "--tail", "2"])
+            .args(extra)
+            .status()
+            .unwrap();
+        assert!(status.success());
+        hound::WavReader::open(out).unwrap().samples::<f32>().map(Result::unwrap).collect()
+    };
+    let one = run("brass_one.wav", &["--jobs", "1"]);
+    let two = run("brass_two.wav", &["--jobs", "2", "--warmup", "1", "--maxwarm", "2"]);
+    assert!(one.iter().any(|x| x.abs() > 1e-3), "silence");
+    assert!(one == two, "two segments differ from one");
+}
+
+#[test]
+fn a_brass_instrument_has_no_video() {
+    // the plugin shows no Visualization on a bell; --video drew a piano's keys and strings that never moved: refused before
+    // anything is rendered
+    let trumpet = concat!(env!("CARGO_MANIFEST_DIR"), "/../instruments/trumpet");
+    if !std::path::Path::new(trumpet).exists() {
+        eprintln!("skipped: no instrument");
+        return;
+    }
+    let dir = std::path::PathBuf::from(env!("CARGO_TARGET_TMPDIR"));
+    let (mid, wav, mp4) = (dir.join("midi2wav_brass_video.mid"), dir.join("brass_video.wav"), dir.join("brass_video.mp4"));
+    midi(&mid);
+    let _ = (std::fs::remove_file(&wav), std::fs::remove_file(&mp4));
+    let out = Command::new(env!("CARGO_BIN_EXE_midi2wav"))
+        .args([trumpet, mid.to_str().unwrap(), wav.to_str().unwrap(), "--video", mp4.to_str().unwrap(), "--size", "160x90"])
+        .output()
+        .unwrap();
+    let err = String::from_utf8_lossy(&out.stderr);
+    assert!(!out.status.success());
+    assert!(err.contains("--video") && err.contains("brass"), "{err}");
+    assert!(!wav.exists() && !mp4.exists());
+}

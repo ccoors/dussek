@@ -1,0 +1,118 @@
+# Iowa MIS tuba (anechoic), C1 to C4
+[project]
+# recorded anechoic (Iowa MIS), as the Compare page renders it
+recorded_dry = true
+family = "brass"
+
+[uses]
+# the mutes' shapes and their correction, scaled with the bell
+mutes = "trumpet"
+
+[menu]
+name = "Tuba"
+group = "Brass"
+experimental = true
+
+# Weidinger has these two texts built in since step 248: drop both labels at the next rebuild
+[menu.labels.variation]
+name = "Player's variation"
+description = "How much each note differs from the last in the virtual player's hands: its air, vibrato and intonation. 100 % as it was fitted, 0 every note alike. From the next note."
+
+[menu.labels.dynamics]
+name = "Dynamics"
+description = "How the velocity maps to the air: less brings the soft notes up, with more air, so also brighter; more takes them down. 45 dB plays the velocity as it comes."
+
+[pose]
+# the bell as played: up and a little to the right, the bell over the player's right shoulder: the
+# ears 20 cm left of it, 40 cm under it; azimuth clockwise from the player's front and elevation up,
+# degrees; the ears from the bell's mouth (right, front, up), m (the microphones' Player, the
+# Audience at their height)
+azimuth = 60
+elevation = 75
+ears = [-0.20, 0.0, -0.40]
+
+[brass]
+# the attack (step 244): the pressure rises over ten periods of the note under 100 Hz, back to 8 ms an octave above (a
+# low note rising in 8 ms shocks the bore into ringing louder than it then holds); never under the note's pressure
+attack_rise_periods = 10
+attack_rise_hz = 100
+attack_lean = false
+# the rise starts from a fifth of the pressure: from none the lips waited 50-60 ms for their first sound at the
+# bottom (step 247)
+attack_rise_from = 0.2
+# a tongued note on a release still sounding (the strip's glissando) fades the release out and starts from rest
+# (step 247)
+attack_from_rest = true
+# a BB-flat tuba, 18.5 mm bore, 42 cm bell, mostly cone; below B1 the valves take a whole octave off
+# the second mode. Round numbers from the literature, not measurements of the recorded one
+# (length, radius in, radius out), m: cup, throat, backbore, leadpipe
+mouth = [[0.016, 0.0155, 0.0155], [0.008, 0.004, 0.004], [0.07, 0.004, 0.0065], [0.35, 0.0065, 0.00925]]
+cyl = [0.093, 0.00925]
+# the lengths and flare by proto/brass/fit_bore.py
+cone = [3.9335, 0.0377]
+bell = [1.1105, 0.21, 0.5819]
+sides = [[127, 29.135, 5.6, 0.0]]
+width = 0.024
+mu = 1.5
+y0 = 0.00015
+nl = 4.0
+fmin = 15.0
+center = 42
+top_from = 127
+# it does not hold below about E1
+low = 28
+high = 60
+reach = 12.0
+nmin = 2
+below = 0
+# the first fit picked no steepening and air from 109 to 12000 Pa by key, a 6 dB range: these two hold it
+fit_nl = [1.0]
+even_air = true
+stem = "Tuba"
+hp = 18.0
+band0 = 20.0
+mutes = ["straight"]
+# by ear on the first fits (the tenor's): below about 200 Hz the floor between harmonics is mostly
+# the harmonics' own skirts, so the measure would ask for far more
+noise = [-3, -3, -8, -15, -16]
+# the harmonics' correction may lift this far at ff (dB): stuck at +10 on half its harmonics
+ff_cap = 20.0
+# a mute as wide as the bell: past its first mode across the chamber holds no waves along its length
+plain_chamber = true
+
+# the attack's slack lips, at most this share of the way to the next mode down
+scoop_span = 0.25
+# velocity to air: at these velocities (first row), this air (second)
+vel_air = [[1, 30, 64, 105, 127], [30, 48, 72, 112, 127]]
+
+[[part]]
+id = "tuba"
+
+# Iowa's runs cut into notes by analysis/split_brass.py
+[[part.source]]
+id = "tuba_iowa"
+role = "main"
+root = "iowa-mis-brass"
+dynamics = { pp = "pp", mf = "mf", ff = "ff" }
+levels = "recorded"
+
+[part.source.map]
+kind = "pattern"
+glob = "notes/Tuba/*/*.wav"
+match = "relpath"
+regex = 'notes/Tuba/(?P<dynamic>pp|mf|ff)/(?P<midi>\d+)\.wav'
+note = { group = "midi", style = "midi" }
+layers = ["pp", "mf", "ff"]
+order = "layer"
+
+[export]
+# at the grands' loudness: step 173's phrase (an arpeggio at 80, four long notes at 95) at Audience
+# measured −23.1 LUFS against the grands' median −30.4 (step 243)
+output_gain_db = -7.5
+
+[license]
+set = "University of Iowa Musical Instrument Samples: Tuba"
+author = "University of Iowa Electronic Music Studios"
+url = "https://theremin.music.uiowa.edu/MIS.html"
+terms = "\"Since 1997, these recordings have been freely available on this website and may be downloaded and used for any projects, without restrictions.\""
+source_license = "free-use"

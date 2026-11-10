@@ -14,6 +14,8 @@ def exported():
         if os.path.basename(os.path.dirname(path)) == "rolled_preview":
             continue  # the editor's preview (git-ignored): not an exported instrument
         d = json.load(open(path))
+        if "brass" in d:  # its notes are silent: a one-sample body, the sound is the players'
+            continue
         yield os.path.basename(os.path.dirname(path)), d, os.path.join(os.path.dirname(path), "data.bin")
 
 

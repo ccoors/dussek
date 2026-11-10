@@ -1,6 +1,7 @@
 #include "Catalog.hpp"
 #include "Paths.hpp"
 
+#include <atomic>
 #include <sstream>
 #include <fstream>
 #include <algorithm>
@@ -13,6 +14,14 @@
 #include <mutex>
 
 namespace pe {
+
+namespace {
+std::atomic<PluginKind> gMessagesPlugin { PluginKind::Keys };
+std::string messagesPrefix() { return std::string(identity(gMessagesPlugin.load()).name) + ": "; }
+} // namespace
+
+void setMessagesPlugin(PluginKind k) { gMessagesPlugin.store(k); }
+
 
 namespace {
 
@@ -39,7 +48,7 @@ std::vector<std::string> subdirectories(const std::string& path)
 }
 
 // the groups the shipped instruments use, in menu order; others after them, "Other" last
-const char* const kKnownGroups[] = { "Grand pianos", "Upright pianos", "Rolled pianos", "Harpsichords", "Clavichords", "Harps", "Guitars",
+const char* const kKnownGroups[] = { "Grand pianos", "Upright pianos", "Rolled pianos", "Harpsichords", "Clavichords", "Harps", "Guitars", "Brass",
     "Percussion", "Thumb pianos", "Zithers" };
 
 /// a group's place: the known ones first, then the unknown ones (alphabetically, by the caller's
@@ -94,16 +103,31 @@ bool Catalog::entryAt(const std::string& path, const std::string& id, Instrument
     InstrumentEntry e;
     char err[512] = {};
     if (!pe_instrument_info(dir.c_str(), &e.info, err, sizeof(err))) {
-        message = std::string("Dussek: ") + err;
+        message = messagesPrefix() + err;
         return false;
     }
     e.id = id;
     e.dir = dir;
     e.name = e.info.has_menu ? e.info.name : id;
+    if (e.info.experimental) // the mark, in the menu and the closed dropdown
+        e.name += " (experimental)";
     e.group = e.info.has_menu ? e.info.group : "Other";
     e.hidden = e.info.has_menu && e.info.hidden;
     out = e;
     return true;
+}
+
+std::string Catalog::whyNot(const std::string& dir)
+{
+    if (!isFile(dir + "/instrument.json"))
+        return "No instrument.json in " + dir + ".";
+    if (!isFile(dir + "/data.bin"))
+        return "An instrument.json, but no data.bin beside it.";
+    PeInstrumentInfo info {};
+    char err[512] = {};
+    if (!pe_instrument_info(dir.c_str(), &info, err, sizeof(err)))
+        return err[0] != '\0' ? std::string(err) : std::string("The engine cannot read it.");
+    return "";
 }
 
 Catalog Catalog::scan(const std::vector<std::string>& paths)
@@ -125,7 +149,7 @@ Catalog Catalog::scan(const std::vector<std::string>& paths)
             // shadowed by a real folder of this id only: an alias never hides one (Catalog::find)
             const auto seen = std::find_if(c.fEntries.begin(), c.fEntries.end(), [&](const InstrumentEntry& x) { return x.id == id; });
             if (seen != c.fEntries.end()) {
-                c.fMessages.push_back("Dussek: " + e.dir + " shadowed by " + seen->dir);
+                c.fMessages.push_back(messagesPrefix() + e.dir + " shadowed by " + seen->dir);
                 continue;
             }
             c.fEntries.push_back(e);
@@ -146,13 +170,16 @@ Catalog Catalog::scan(const std::vector<std::string>& paths)
     return c;
 }
 
-const InstrumentEntry* Catalog::find(const std::string& id) const
+bool ofKind(const InstrumentEntry& e, PluginKind k) { return e.info.brass == (k == PluginKind::Winds); }
+
+const InstrumentEntry* Catalog::find(const std::string& id, PluginKind k) const
 {
     for (const std::string& a : aliasChain(fAliases, id))
         for (const InstrumentEntry& e : fEntries)
-            if (e.id == a)
-                return &e;
-    return outside(id);
+            if (e.id == a && ofKind(e, k))
+                return &e; // the other plugin's: on along the chain
+    const InstrumentEntry* o = outside(id);
+    return o != nullptr && ofKind(*o, k) ? o : nullptr;
 }
 
 std::map<std::string, std::string> Catalog::aliasesIn(const std::string& path)
@@ -214,28 +241,32 @@ const InstrumentEntry* Catalog::outside(const std::string& id)
     return (kept[dir] = std::make_unique<InstrumentEntry>(e)).get();
 }
 
-std::vector<const InstrumentEntry*> Catalog::menu() const
+std::vector<const InstrumentEntry*> Catalog::menu(PluginKind k) const
 {
     std::vector<const InstrumentEntry*> m;
     for (const InstrumentEntry& e : fEntries)
-        if (!e.hidden)
+        if (!e.hidden && ofKind(e, k))
             m.push_back(&e);
     return m;
 }
 
-std::vector<std::string> Catalog::groups() const
+std::vector<std::string> Catalog::groups(PluginKind k) const
 {
     std::vector<std::string> g;
-    for (const InstrumentEntry* e : menu())
+    for (const InstrumentEntry* e : menu(k))
         if (g.empty() || g.back() != e->group)
             g.push_back(e->group);
     return g;
 }
 
-const InstrumentEntry* Catalog::first() const
+const InstrumentEntry* Catalog::first(PluginKind k) const
 {
+    // the one its menu block marks "first", else the menu's first
     for (const InstrumentEntry& e : fEntries)
-        if (!e.hidden)
+        if (!e.hidden && ofKind(e, k) && e.info.has_menu && e.info.first)
+            return &e;
+    for (const InstrumentEntry& e : fEntries)
+        if (!e.hidden && ofKind(e, k))
             return &e;
     return nullptr;
 }
@@ -261,19 +292,40 @@ CatalogPtr rescanCatalog(const char* resources)
     return fresh;
 }
 
-Choice choose(const Catalog& c, const std::string& state)
+Choice choose(const Catalog& c, const std::string& state, PluginKind k)
 {
     if (state.empty()) {
-        const InstrumentEntry* f = c.first();
+        const InstrumentEntry* f = c.first(k);
         return { f != nullptr ? f->id : std::string(), f };
     }
-    return { state, c.find(state) };
+    return { state, c.find(state, k) };
 }
 
-std::string listingText(const Catalog& c)
+std::string otherPluginOf(const Catalog& c, const std::string& id, PluginKind k)
+{
+    const PluginKind other = k == PluginKind::Winds ? PluginKind::Keys : PluginKind::Winds;
+    return c.find(id, k) == nullptr && c.find(id, other) != nullptr ? identity(other).name : std::string();
+}
+
+std::string otherPluginsFolder(const std::string& path, PluginKind k)
+{
+    namespace fs = std::filesystem;
+    std::error_code ec;
+    const InstrumentEntry* e = path.empty() ? nullptr : Catalog::outside(fs::absolute(fs::path(path), ec).lexically_normal().string());
+    const PluginKind other = k == PluginKind::Winds ? PluginKind::Keys : PluginKind::Winds;
+    return e != nullptr && ofKind(*e, other) ? identity(other).name : std::string();
+}
+
+std::string missingLabel(const Catalog& c, const std::string& id, PluginKind k)
+{
+    const std::string other = otherPluginOf(c, id, k);
+    return (other.empty() ? std::string("Missing") : other + "'s") + ": " + id;
+}
+
+std::string listingText(const Catalog& c, PluginKind k)
 {
     std::string out;
-    for (const InstrumentEntry* e : c.menu())
+    for (const InstrumentEntry* e : c.menu(k))
         out += e->id + "\t" + e->group + "\t" + e->name + "\t" + e->dir + "\n";
     for (const std::string& m : c.messages())
         out += "# " + m + "\n";

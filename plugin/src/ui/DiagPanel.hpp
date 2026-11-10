@@ -33,6 +33,9 @@ public:
     PanelSettings settings() const { return fSettings; }
     void setSettings(const PanelSettings& s);
     /// the panel's area and the strip below it (the partials' x axis)
+    /// the Partials view and the voice count: the strings' (none on a bell, whose players are no voices); the
+    /// Spectrogram stays, a saved choice of the Partials comes back with an instrument that has them
+    void setPartialsOffered(bool on);
     void layout(const Rect& area, const StripGeometry& strip);
     void idle(); // polls telemetry, repaints at the frame rate (nothing when closed)
     void draw(DGL_NAMESPACE::NanoVG& vg);
@@ -54,6 +57,8 @@ private:
 
     std::function<void()> fRepaint, fChanged;
     bool fOpen = false;
+    bool fPartials = true; // setPartialsOffered
+    int view() const { return fPartials ? fSettings.view : 0; }
     uint32_t fToken = 0;
     TelemetryClient fClient;
     bool fAvailable = false; // the region opened

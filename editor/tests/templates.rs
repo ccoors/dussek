@@ -52,3 +52,10 @@ fn a_new_project_from_each_family_passes_the_registry_checks() {
         assert!(rows.iter().all(|r| r["reason"] == "never run"), "{name}: {rows:?}");
     }
 }
+
+#[test]
+fn templates_leave_out_brass() {
+    // the wizard does not make brass
+    let repo = project::Repo::from_env();
+    assert!(project::templates(&repo).iter().all(|t| !t.family.starts_with("brass")));
+}

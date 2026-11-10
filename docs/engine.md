@@ -39,6 +39,8 @@ before anything renders; an unknown option or key gets the nearest known one as 
 | `--velocity-curve 1:1,64:80,127:127` | the Touch tab's curve, as in:out points |
 | `--latch` | the sustain pedal down throughout, as the plugin's Sustain latch |
 | `--felt TEXT` | the Felt tab's felt, as the plugin saves it (`s:21=6,60=0;p:;c:;d:`). On a hammer piano it and `--param hardness` go through the build, every key's loudness kept (a few seconds) |
+| `--cc CH:CC=SYMBOL,…` | MIDI controllers tied to controls as the plugin's MIDI tab ties them (CH 1–16): each value moves its control from its time on, air and the plunger then taking over from the keys. On a brass instrument the plugin's default ties unless given (`1:1=air_added,1:11=air,1:70=brass_vibrato,1:21=growl,1:23=flutter,1:4=plunger,1:65=glide_hold,1:5=glide_time`), none on the others; `none` drops them. The controls: air, growl, flutter, brass_vibrato, plunger, glide_hold, glide_time, virtual_player, brass_solo, air_added. A tie on CC 1 takes it from the mod wheel. `plugin/tests/cc_values.txt` holds what the plugin makes of each value; both sides' tests read it |
+| `--lowest-key KEY` | notes under KEY dropped: another library's keyswitches (a trumpet part's 41–51 would partly sound) |
 | `--input FILE.wav` | a sound file into the audio input from the start, its channels summed, at the level `--param input=…` sets (the plugin's Audio input; 0, the default, plays nothing); the render runs at least as long as the file, in one segment |
 | `--param room=0.5,pedal=1,pedal_ring=1,damper_fall=2,dynamics=45,…` | live parameters (`dynamics`: the pianos' level range in dB, 10–70). `prep`: 0 none, 1 plucked, 2 muted, 3 harmonic, 4 bolt, 5 paper; with `pluck_pos`, `pluck_bright`, `mute`, `harmonic`, `paper` |
 | `--tuning a4=442,stretch=1,mic=1,temperament=3,key=2,…` | compiled settings. `temperament` is the plugin's menu index (0 equal), `key` its key (0 C … 11 B); `stretch` is a tuner's stretch on top of the recording's own (1 adds it, −1 removes it, 0 as recorded); the bolt is `bolt=0.5,bolt_pos=0.31`; `lid` 0 closed … 1 open, 2 taken off; `pillow` 0 … 1 |
@@ -65,7 +67,9 @@ Each segment is rendered by its own engine, which first replays the music before
 from the last moment all dampers were down: at least 12 s (`--warmup`), at most 40 s
 (`--maxwarm`). A 4½-minute piece takes 5 s instead of 20 s. It differs from the one-go render
 (`--jobs 1`) only in the sympathetic resonance's wash, about 45 dB below the music, and there is
-no seam at the cuts.
+no seam at the cuts. A brass instrument renders in one segment: its players' state (each note's
+random draws, the noise, the vibrato) runs through the whole piece, no warm-up replays it, and the
+cuts clicked.
 
 `--stems` writes the parts beside the output, each a file of its own (`song.strings.wav`, …):
 
@@ -84,7 +88,8 @@ plugin's Visualization panel, frame by frame. Each key's strings from above, a s
 glowing band as wide as its partials move it (exaggerated; the strings ringing along drawn larger),
 a fresh snapshot of the string inside it every frame; the dampers on the strings; a piano's hammers
 from the front; the keys, held ones lit; under them the bars of the pedals that act on the instrument
-(soft, sostenuto, sustain), filled to their depth. A bar instrument shows its bars. The score is known ahead, so each hammer rises before its note at its own
+(soft, sostenuto, sustain), filled to their depth. A bar instrument shows its bars; a brass instrument has none (the
+plugin shows it no Visualization), and `--video` on one is an error. The score is known ahead, so each hammer rises before its note at its own
 speed (the plugin's cannot). Its state comes from a render of its own (one engine through the whole
 piece, the audio's state to the sample); the frames are drawn on every core and piped into ffmpeg.
 

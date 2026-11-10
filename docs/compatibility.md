@@ -9,7 +9,7 @@ what holds it in place, and how a change to it is made.
 | Saved | Keyed by | Kept stable by |
 |---|---|---|
 | a DAW session's parameters | the parameter's symbol (LV2, and DPF's VST3 and CLAP state); its index for automation (VST3, CLAP) | the parameter lock |
-| the plugin's state | its keys (`_state_version`, `ui`, `instrument`, `velocity_curve`, `morph`, `felt`, `scale_file`) | the state's version and its migrations |
+| the plugin's state | its keys (`_state_version`, `ui`, `instrument`, `velocity_curve`, `morph`, `felt`, `scale_file`; both plugins) | the state's version and its migrations |
 | the instrument chosen | the instrument's folder name | instrument aliases |
 | an instrument's files | `instrument.json` (its `format`), `data.bin` | the frozen formats |
 | presets, MIDI maps | their files | a version in each file |
@@ -26,8 +26,9 @@ notes say how to move a project along.
 
 ## The locks
 
-- **The parameter table only grows** (`plugin/tests/params.lock`, checked by `ui_tests`). Each user
-  parameter's index, symbol, range, default, unit and flags are recorded. A new parameter goes at
+- **The parameter table only grows** (`plugin/tests/params.lock`, checked by `ui_tests`; Weidinger's
+  ports in `params-weidinger.lock`, Dussek's checked against v0.3.2's own, `params-v0.3.2.lock`). Each
+  port's host index, symbol, range, default, unit and flags are recorded. A new parameter goes at
   the end of `Params.hpp`'s table and is recorded in the same commit
   (`PE_WRITE_PARAMS_LOCK=1 plugin/build/ui_tests` appends it). A parameter no longer wanted stays,
   hidden and inert. The order on screen is the layout's and stays free. The diagnostics after the
@@ -48,7 +49,8 @@ notes say how to move a project along.
   readable, and adds a frozen export of the new format.
 - **The files a player keeps carry a version**: a preset's `version = N` (the state version its
   states were saved at), a MIDI map's `version N`. A file without one is version 1; a newer one is
-  read as far as it is understood.
+  read as far as it is understood. A map older than 2 gets the brass player's ties where their
+  controls and CCs are free.
 - **`render` only grows** (`engine/tests/cli.lock`). Options and keys are added freely (and
   recorded: `PE_WRITE_CLI_LOCK=1`); removing or renaming one takes a release that deprecates it
   first.

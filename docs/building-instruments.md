@@ -32,8 +32,9 @@ What `project.toml` holds:
   - the harpsichords' buff stop.
 - **The export's options and its menu entry** (`[menu]`): the plugin's name and group for it,
   its own labels for controls whose generic words do not fit, its mallets' display names,
-  `reversed_keys` for a keyboard with dark naturals and light sharps (the harpsichords), and
-  `hidden` for a test fixture.
+  `reversed_keys` for a keyboard with dark naturals and light sharps (the harpsichords),
+  `first` for the plugin's default choice (Weidinger's trumpet: a fresh instance and the Default
+  preset play it; the menu's order stays), and `hidden` for a test fixture.
 - **The recordings' credit** (`[license]`): `set`, `author`, `url` (left out for recordings not
   published), `terms` (quoted where the source words them) and `source_license` (`CC0`,
   `public-domain`, `free-use`, `CC-BY-3.0`, `CC-BY-4.0` or `CC-BY-SA-4.0`); `by` names who made the
@@ -236,6 +237,8 @@ tranh against Harp A's).
 | `buff` | the English harpsichord with and without its buff | fit_buff |
 | `derived` | the registers test fixture `registers_fixture` | export |
 | `rolled` | rolled pianos | roll (the engine's `roll` binary) |
+| `brass` | the horn, the trombones, the tuba | brass_fit, brass_retune, brass_repair, brass_speak, brass_harmonics, brass_mutes, brass_land, brass_slurs, brass_level, brass_gain, brass_tables, brass_report, export_brass |
+| `brass_lender` | the trumpet | as `brass`, with brass_mute_shapes before brass_mutes and brass_mute_residual after it |
 
 A step reads and writes only what its entry declares. Under the driver, `analysis/project.py`
 checks every access, and the ledger keeps a fingerprint of every declared read. A borrowed read
@@ -245,6 +248,31 @@ of the lender therefore leaves its borrowers fresh unless it changed what they r
 
 The Iowa percussion and guitar sets hold runs of notes per file. `python3 analysis/split_runs.py
 <Instrument>` splits them once into `data/<set>/notes/`, a preparation of the data.
+
+### The brass
+
+A brass project fits a model, not a set of notes: the bore, the lips and the bell (`proto/brass/`), per key a grid over the lips
+and the air, then the tuning, the speech, the harmonics, the mutes, the slurs and the level (design log step 234). Its fits
+render through a player of their own (`proto/brass/live.py`), so the attack and the slur they judge are the ones the engine
+plays; `proto/brass/port_check.py` holds the engine's players to it (step 235). The tables:
+
+- `[brass]`: the model and the fits' settings: the range (`low`, `high`), the bore and bell, the lips, the fits' limits
+  (`ff_cap`, `mf_cap`), the mutes the instrument takes, and the attack (`attack_rise_periods`, `attack_rise_hz`, `attack_lean`,
+  `attack_rise_from`, `attack_from_rest`; steps 244–247). The driver fingerprints the whole table: a change makes every step
+  stale. A value only the export reads (the attack's) is exported with `--only export_brass` and the chain adopted
+  (`build.py adopt <project>`), as the ledger then says.
+- `[uses] mutes`: the trumpet fits the mutes' shapes and the filter for what a shape cannot reach (VSCO's muted notes); the
+  others borrow them, scaled with their bell.
+- `[pose]`: where the bell points as played and where the player's ears are (the microphones' places, `docs/brass.md`).
+- `[export] output_gain_db`: the level against the grands' (step 243).
+
+The runs: `python3 analysis/split_brass.py [project …]` cuts Iowa's brass runs once into one file per note
+(`data/iowa-mis-brass/notes/`), with a `<midi>.json` beside each: where it lay in its run, for the fits' background.
+
+A rebuild from nothing took 19 min (the horn, no mutes) to 83 min (the tenor trombone) at nice 19, before step 241 made
+the later steps five to ten times faster; `brass_report` writes what a person checks it by (keys not holding, landings, levels), and
+`python3 proto/brass/compare_tables.py <project> --other <checkout>` compares two builds band by band. A rebuild is not a
+reproduction: the mutes' search lands on other shapes, so the accepted fits stay until the ear prefers a rebuilt one.
 
 ## Developer tools
 
@@ -363,7 +391,7 @@ change against.
 | `register.py` | the radiated level and band shape per note against the recordings; `--fit`: the register gain |
 | `bars.py` | the bars' modes, mallets and harmonics |
 | `level_corrections.py` | a source's level corrections interpolated to every key |
-| `export.py`, `export_bars.py` | a project → `instruments/<name>/` |
+| `export.py`, `export_bars.py`, `export_brass.py` | a project → `instruments/<name>/` |
 | `even_levels.py` | the even levels' trend and per-key corrections (`[even_levels]`) |
 | `snapshot.py`, `report.py` | the rail: snapshots of a git ref, the report |
 | `tone_check.py`, `unison_check.py`, `bass_check.py`, `early_drop.py`, `felt_bands.py` | the engine against its recordings: the tone per register, the unisons' beats, the bass above 1 kHz, the low partials' early drop, the attack above 2 kHz |

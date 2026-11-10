@@ -185,6 +185,8 @@ void formatStatus(char* out, size_t n, bool available, uint32_t recentDropped, b
 {
     if (!available) std::snprintf(out, n, "%s", "");
     else if (stalled) std::snprintf(out, n, "%s", "stalled");
+    else if (voices == kNoVoices && recentDropped > 0) std::snprintf(out, n, "%u dropped", (unsigned)recentDropped);
+    else if (voices == kNoVoices) std::snprintf(out, n, "%s", frozen ? "frozen" : "");
     else if (recentDropped > 0)
         std::snprintf(out, n, "%u %s%s, %u dropped", (unsigned)voices, voices == 1 ? "voice" : "voices", frozen ? " (frozen)" : "", (unsigned)recentDropped);
     else std::snprintf(out, n, "%u %s%s", (unsigned)voices, voices == 1 ? "voice" : "voices", frozen ? " (frozen)" : "");

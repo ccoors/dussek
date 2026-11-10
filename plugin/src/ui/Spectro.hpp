@@ -68,8 +68,11 @@ DropWatch dropWatchUpdate(DropWatch w, uint32_t counter, uint64_t nowMs);
 /// true while the counter grew within the last kDropNoticeMs
 bool dropsRecent(const DropWatch& w, uint64_t nowMs);
 
+/// `voices` for a panel that counts none (a bell's players are no voices of the strings)
+constexpr uint32_t kNoVoices = 0xFFFFFFFFu;
 /// the panel's status text, no allocation: "" when the region is unavailable; "stalled" when no frames come;
-/// else "N voice(s)" with " (frozen)" and, when `recentDropped` > 0, ", N dropped" (the drops of the last ~2 s)
+/// else "N voice(s)" with " (frozen)" and, when `recentDropped` > 0, ", N dropped" (the drops of the last ~2 s);
+/// with kNoVoices "frozen", "N dropped" or nothing
 void formatStatus(char* out, size_t n, bool available, uint32_t recentDropped, bool stalled, uint32_t voices, bool frozen);
 
 /// The write position of a ring of `width` columns: logical x 0 is the oldest column, width-1 the newest; a

@@ -1,0 +1,105 @@
+# Iowa MIS horn (anechoic). Iowa lacks its pp C2-B3 and mf C3-B3: interpolated
+[project]
+# recorded anechoic (Iowa MIS), as the Compare page renders it
+recorded_dry = true
+family = "brass"
+
+[menu]
+name = "Horn"
+group = "Brass"
+experimental = true
+
+# Weidinger has these two texts built in since step 248: drop both labels at the next rebuild
+[menu.labels.variation]
+name = "Player's variation"
+description = "How much each note differs from the last in the virtual player's hands: its air, vibrato and intonation. 100 % as it was fitted, 0 every note alike. From the next note."
+
+[menu.labels.dynamics]
+name = "Dynamics"
+description = "How the velocity maps to the air: less brings the soft notes up, with more air, so also brighter; more takes them down. 45 dB plays the velocity as it comes."
+
+[pose]
+# the bell as played: back and to the right, a little down, the bell at the player's right hip: the
+# ears 30 cm left of it, 35 cm over it; azimuth clockwise from the player's front and elevation up,
+# degrees; the ears from the bell's mouth (right, front, up), m (the microphones' Player, the
+# Audience at their height)
+azimuth = 135
+elevation = -10
+ears = [-0.30, 0.10, 0.35]
+
+[brass]
+# the attack (step 244): the pressure rises over ten periods of the note under 100 Hz, back to 8 ms an octave above (a
+# low note rising in 8 ms shocks the bore into ringing louder than it then holds); never under the note's pressure
+attack_rise_periods = 10
+attack_rise_hz = 100
+attack_lean = false
+# the rise starts from a fifth of the pressure: from none the lips waited 50-60 ms for their first sound at the
+# bottom (step 247)
+attack_rise_from = 0.2
+# a tongued note on a release still sounding (the strip's glissando) fades the release out and starts from rest
+# (step 247)
+attack_from_rest = true
+# a double horn, 11.7 mm bore, 30 cm bell: the F side low, the B-flat side (about 95 cm less) high; no
+# hand in the bell yet. Round numbers from the literature, not measurements of the recorded one
+# (length, radius in, radius out), m: cup, throat, backbore, leadpipe
+mouth = [[0.012, 0.0085, 0.0085], [0.006, 0.0022, 0.0022], [0.06, 0.0022, 0.0035], [0.3, 0.0035, 0.00585]]
+cyl = [1.952, 0.00585]
+# the lengths and flare by proto/brass/fit_bore.py
+cone = [0.4231, 0.0084]
+bell = [0.9905, 0.15, 0.7349]
+sides = [[60, 43.65375, 3.75, 0.0], [127, 58.27, 2.8, 0.95]]
+width = 0.011
+mu = 1.5
+y0 = 0.00015
+nl = 2.0
+fmin = 20.0
+center = 60
+top_from = 127
+low = 38
+high = 77
+stem = "Horn"
+hp = 25.0
+reach = 8.0
+# VSCO's muted horn is much brighter than its open, against every other instrument's mute: no mutes
+mutes = []
+noise = [-3, -8, -11, -34, -26]
+# the harmonics' correction may lift this far at mf (dB); its ff stays at +10 by ear
+mf_cap = 20.0
+gain_db = 23.0
+
+# the attack's slack lips, at most this share of the way to the next mode down
+scoop_span = 0.25
+# velocity to air: at these velocities (first row), this air (second)
+vel_air = [[1, 30, 64, 105, 127], [30, 48, 72, 112, 127]]
+
+[[part]]
+id = "horn"
+
+# Iowa's runs cut into notes by analysis/split_brass.py
+[[part.source]]
+id = "horn_iowa"
+role = "main"
+root = "iowa-mis-brass"
+dynamics = { pp = "pp", mf = "mf", ff = "ff" }
+levels = "recorded"
+
+[part.source.map]
+kind = "pattern"
+glob = "notes/Horn/*/*.wav"
+match = "relpath"
+regex = 'notes/Horn/(?P<dynamic>pp|mf|ff)/(?P<midi>\d+)\.wav'
+note = { group = "midi", style = "midi" }
+layers = ["pp", "mf", "ff"]
+order = "layer"
+
+[export]
+# at the grands' loudness: step 173's phrase (an arpeggio at 80, four long notes at 95) at Audience
+# measured −16.2 LUFS against the grands' median −30.4 (step 243; −14.8 before the attack's settings, step 244)
+output_gain_db = -14.1
+
+[license]
+set = "University of Iowa Musical Instrument Samples: Horn"
+author = "University of Iowa Electronic Music Studios"
+url = "https://theremin.music.uiowa.edu/MIS.html"
+terms = "\"Since 1997, these recordings have been freely available on this website and may be downloaded and used for any projects, without restrictions.\""
+source_license = "free-use"

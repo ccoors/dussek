@@ -62,28 +62,30 @@ StripInteraction::Press StripInteraction::press(float x, float y)
     if (dragging()) cancel();
     const StripLayout& l = fLayout;
     if (y < l.top) return Press::Outside;
-    if (fLevel >= 2 && y < l.top + l.panelH) return Press::Panel;
+    if (diagPanel(fLevel) != 0 && y < l.top + l.panelH) return Press::Panel;
+    // the tabs at every level: a panel opens with or without the strip
     if (l.keyboardTab.contains(x, y)) { fHost.levelToggle(); return Press::Ours; }
-    if (fLevel >= 1 && l.analysisTab.contains(x, y)) { fHost.analysisToggle(); return Press::Ours; }
-    if (fLevel >= 1 && l.vizTab.contains(x, y)) { fHost.vizToggle(); return Press::Ours; }
-    if (fLevel >= 1 && l.strip.pedal.contains(x, y)) {
+    if (l.analysisTab.contains(x, y)) { fHost.analysisToggle(); return Press::Ours; }
+    if (l.vizTab.contains(x, y)) { fHost.vizToggle(); return Press::Ours; }
+    const bool strip = diagStrip(fLevel);
+    if (strip && l.strip.pedal.contains(x, y)) {
         fPedalDrag = true;
         fPedalSent = pedalDepthAt(l.strip, y);
         fHost.pedal(fPedalSent, true, false);
         return Press::Ours;
     }
-    if (fLevel >= 1 && l.strip.soft.contains(x, y)) {
+    if (strip && l.strip.soft.contains(x, y)) {
         fSoftDrag = true;
         fSoftSent = softDepthAt(l.strip, y);
         fHost.soft(fSoftSent, true, false);
         return Press::Ours;
     }
-    if (fLevel >= 1 && l.strip.sostenuto.contains(x, y)) {
+    if (strip && l.strip.sostenuto.contains(x, y)) {
         fSostenutoDrag = true;
         fHost.sostenuto(true, true, false);
         return Press::Ours;
     }
-    if (fLevel >= 1 && l.strip.keysArea.contains(x, y)) {
+    if (strip && l.strip.keysArea.contains(x, y)) {
         fKeyDrag = true;
         fPlayer.press(l.strip, x, y);
         return Press::Ours;

@@ -29,6 +29,9 @@ pub enum Action {
     KeyPressure { key: u8, value: f32 },
     /// the pitch wheel, −1 … 1 (re its middle; the đàn tranh's bend)
     PitchBend { value: f32 },
+    /// a controller MIDI learn can tie (all but the pedals', 64, 66, 67, and the panics', 120, 123), as sent: channel 0–15,
+    /// value 0–127 (`midi2wav --cc`); CC1 comes as the mod wheel too
+    Control { channel: u8, cc: u8, value: u8 },
 }
 
 #[derive(Debug, PartialEq)]
@@ -79,7 +82,7 @@ pub fn parse(bytes: &[u8]) -> Result<Score, String> {
         last_tick = tick;
         match kind {
             TrackEventKind::Meta(MetaMessage::Tempo(t)) => tempo = t.as_int() as f64,
-            TrackEventKind::Midi { message, .. } => match message {
+            TrackEventKind::Midi { channel, message } => match message {
                 MidiMessage::NoteOn { key, vel } if vel.as_int() > 0 => {
                     let k = key.as_int();
                     if (LOW..=HIGH).contains(&k) {
@@ -120,14 +123,15 @@ pub fn parse(bytes: &[u8]) -> Result<Score, String> {
                         events.push((t_s, Action::KeyPressure { key: k, value: vel.as_int() as f32 / 127.0 }));
                     }
                 }
-                MidiMessage::Controller { controller, value } => match controller.as_int() {
-                    1 => {
-                        let v = value.as_int() as f32 / 127.0;
-                        if v != wheel {
-                            wheel = v;
-                            events.push((t_s, Action::ModWheel { value: v }));
-                        }
+                MidiMessage::Controller { controller, value } if !matches!(controller.as_int(), 64 | 66 | 67 | 120 | 123) => {
+                    let (cc, v) = (controller.as_int(), value.as_int());
+                    events.push((t_s, Action::Control { channel: channel.as_int(), cc, value: v }));
+                    if cc == 1 && v as f32 / 127.0 != wheel {
+                        wheel = v as f32 / 127.0;
+                        events.push((t_s, Action::ModWheel { value: wheel }));
                     }
+                }
+                MidiMessage::Controller { controller, value } => match controller.as_int() {
                     64 => {
                         let depth = value.as_int() as f32 / 127.0;
                         if depth != pedal {
@@ -303,6 +307,32 @@ mod tests {
     }
 
     #[test]
+    fn a_controller_comes_with_its_channel() {
+        // every one MIDI learn can tie (not the pedals', not the panics'), as sent: `--cc` ties them by channel
+        let on_channel = |ch: u8, c: u8, v: u8| TrackEventKind::Midi {
+            channel: u4::new(ch),
+            message: MidiMessage::Controller { controller: u7::new(c), value: u7::new(v) },
+        };
+        let t = vec![
+            ev(0, on_channel(0, 11, 100)),
+            ev(1, on_channel(0, 11, 100)), // sent again: passed on
+            ev(1, on_channel(3, 21, 7)),
+            ev(1, cc(64, 127)), // the sustain pedal's: no controller
+            ev(0, TrackEventKind::Meta(MetaMessage::EndOfTrack)),
+        ];
+        let s = parse(&file(vec![t], 480)).unwrap();
+        let c: Vec<Action> = s.events.iter().map(|e| e.1).filter(|a| matches!(a, Action::Control { .. })).collect();
+        assert_eq!(
+            c,
+            vec![
+                Action::Control { channel: 0, cc: 11, value: 100 },
+                Action::Control { channel: 0, cc: 11, value: 100 },
+                Action::Control { channel: 3, cc: 21, value: 7 },
+            ]
+        );
+    }
+
+    #[test]
     fn the_mod_wheel_and_aftertouch_are_the_bebungs_pressure() {
         let chan = |v: u8| midi(MidiMessage::ChannelAftertouch { vel: u7::new(v) });
         let poly = |k: u8, v: u8| midi(MidiMessage::Aftertouch { key: u7::new(k), vel: u7::new(v) });
@@ -316,7 +346,7 @@ mod tests {
             ev(0, TrackEventKind::Meta(MetaMessage::EndOfTrack)),
         ];
         let s = parse(&file(vec![t], 480)).unwrap();
-        let a: Vec<Action> = s.events.iter().map(|e| e.1).collect();
+        let a: Vec<Action> = s.events.iter().map(|e| e.1).filter(|a| !matches!(a, Action::Control { .. })).collect();
         assert_eq!(
             a,
             vec![

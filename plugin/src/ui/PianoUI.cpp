@@ -7,6 +7,8 @@
 #include "DistrhoPluginUtils.hpp"
 #include "DistrhoStandaloneUtils.hpp"
 #include "OpenGL-include.hpp"
+#include "PluginTarget.hpp"
+#include "Ports.hpp"
 #include "About.hpp"
 #include "CurveEdit.hpp"
 #include "FeltEditor.hpp"
@@ -42,6 +44,14 @@
 #include <cstdlib>
 #include <cstring>
 
+#ifdef DGL_X11_WINDOW_ICON_NAME
+// the standalone's window icon on X11: DPF's pugl.cpp sets _NET_WM_ICON from it (plugin/CMakeLists.txt names it)
+#include "WindowIcon.inc"
+static_assert(sizeof(kPeWindowIcon) / sizeof(kPeWindowIcon[0]) == DGL_X11_WINDOW_ICON_SIZE,
+              "DGL_X11_WINDOW_ICON_SIZE is the icon's length (packaging/icon/render.sh prints it)");
+const unsigned long* DGL_X11_WINDOW_ICON_NAME = kPeWindowIcon;
+#endif
+
 START_NAMESPACE_DISTRHO
 using namespace pe;
 
@@ -54,21 +64,22 @@ public:
     PianoUI()
         : UI(DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT)
     {
+        setMessagesPlugin(kKind); // the catalog's lines name this plugin
         loadSharedResources();
         // the standalone on its own audio (no JACK): the MIDI inputs present open at start, others
         // by the MIDI tab's Rescan (a request reopens them all, cutting held notes)
         if (isUsingNativeAudio() && supportsMIDI() && !isMIDIEnabled())
             requestMIDI();
         fCatalog = sharedCatalog(resources());
-        fChoice = choose(*fCatalog, "");
+        fChoice = choose(*fCatalog, "", kKind);
         loadLicense();
         for (uint32_t i = 0; i < kParamCount; ++i)
-            fValues[i] = paramInfo(i).def;
+            fValues[i] = defaultOf(kKind, i);
         for (uint32_t i = kParamCount; i < kTotalParams; ++i)
             fValues[i] = diagInfo(i).def;
         fDiag.setConcertPitch(fValues[kConcertPitch]);
         if (getContext() == nullptr)
-            reportMissingOpenGl(); // no OpenGL 2: a black window, the player told why (GlCheck.hpp)
+            reportMissingOpenGl(kKind); // no OpenGL 2: a black window, the player told why (GlCheck.hpp)
         fHostScale = getScaleFactor();
         // at the scale last picked (window.txt: the standalone keeps no session); a host's saved
         // "ui" state, when it comes (stateChanged), wins
@@ -101,9 +112,23 @@ public:
     }
 
 protected:
-    // ---- host → UI
-    void parameterChanged(uint32_t index, float value) override
+    // the host's indices are the plugin's ports (Ports.hpp): these hide DPF's own, which take the host's, so
+    // the UI's code names the table's indices throughout; a parameter without a port never reaches the host
+    void editParameter(uint32_t index, bool started)
     {
+        if (const uint32_t h = toHost(kKind, index); h != kNoPort)
+            UI::editParameter(h, started);
+    }
+    void setParameterValue(uint32_t index, float value)
+    {
+        if (const uint32_t h = toHost(kKind, index); h != kNoPort)
+            UI::setParameterValue(h, value);
+    }
+
+    // ---- host → UI
+    void parameterChanged(uint32_t host, float value) override
+    {
+        const uint32_t index = toInternal(kKind, host);
         if (index >= kTotalParams)
             return;
         if (index >= kParamCount) {
@@ -157,7 +182,7 @@ protected:
             return;
         value = migrated.c_str();
         if (std::strcmp(key, "instrument") == 0) {
-            fChoice = choose(*fCatalog, value != nullptr ? value : "");
+            fChoice = choose(*fCatalog, value != nullptr ? value : "", kKind);
             instrumentChanged();
             return;
         }
@@ -481,7 +506,7 @@ protected:
             fFree.update(a, b, q);
             PeMicSetup s = customSetup();
             for (int k = 0; k < 3; ++k) s.pos[fFree.which()][k] = q[k];
-            pe_mic_clamp((uint32_t)entryBody(entry()), engineLid(fValues), &s);   // the drag shows only allowed points
+            pe_mic_clamp((uint32_t)entryBody(entry()), &entry().info.bell, engineLid(fValues), &s);   // the drag shows only allowed points
             writeCustomPos(fFree.which(), s.pos[fFree.which()]);
             loadGeometry(); // the pair follows the pointer; the views stay as they were (re-fit on release)
             repaint();
@@ -494,7 +519,7 @@ protected:
             setParam(kMicDistance, v.distance);
             setParam(kMicSpacing, v.spacingCm);
             // the pair follows the pointer; the views stay as they were (re-fit on release)
-            pe_mic_geometry((uint32_t)entryBody(entry()), micPosition(), v.spacingCm / 100.0, v.distance, engineLid(fValues), nullptr, &fGeom);
+            pe_mic_geometry((uint32_t)entryBody(entry()), &entry().info.bell, micPosition(), v.spacingCm / 100.0, v.distance, engineLid(fValues), nullptr, &fGeom);
             repaint();
             return true;
         }
@@ -641,6 +666,9 @@ private:
     UiContext ctx() const
     {
         UiContext c { fChoice.entry, micPosition(), prepMode() };
+        c.plugin = kKind;
+        c.brassMute = stored(kBrassMute);
+        c.virtualPlayer = fValues[kVirtualPlayer] >= 0.5f;
         for (const Tie& t : fMap.ties())
             if (t.target < kParamCount)
                 c.tied.set(t.target);
@@ -655,7 +683,7 @@ private:
     }
     uint32_t stored(uint32_t i) const { return (uint32_t)std::max(0L, std::lround(fValues[i])); }
     /// what is shown depends on these
-    static bool affectsLayout(uint32_t i) { return i == kMicPosition || i == kPrepMode; }
+    static bool affectsLayout(uint32_t i) { return i == kMicPosition || i == kPrepMode || i == kBrassMute || i == kVirtualPlayer; }
     /// window-logical → layout: inside the content (for a drag: pressed there) the scroll is added
     Point2 dragPoint(float wx, float wy) const
     {
@@ -693,7 +721,7 @@ private:
     void loadGeometry()
     {
         const PeMicSetup s = customSetup();
-        pe_mic_geometry((uint32_t)entryBody(entry()), micPosition(), fValues[kMicSpacing] / 100.0, fValues[kMicDistance], engineLid(fValues), &s, &fGeom);
+        pe_mic_geometry((uint32_t)entryBody(entry()), &entry().info.bell, micPosition(), fValues[kMicSpacing] / 100.0, fValues[kMicDistance], engineLid(fValues), &s, &fGeom);
     }
 
     /// a drag from a preset starts from the preset's microphones: copy them into the free pair and switch to Custom
@@ -715,6 +743,8 @@ private:
 
     void setParam(uint32_t i, float v)
     {
+        if (i < kParamCount && !hasPort(kKind, i))
+            return; // not this plugin's (a full preset, the geometry's wall): it keeps its default, as in the DSP
         v = clampTo(i, v);
         if (!std::isfinite(v) || v == fValues[i])
             return;
@@ -746,7 +776,7 @@ private:
 
     void chooseInstrument(const std::string& id)
     {
-        fChoice = choose(*fCatalog, id);
+        fChoice = choose(*fCatalog, id, kKind);
         // the new instrument's shipped felt: the bends were the old one's. Cleared first: a build
         // between the two states then plays the old instrument unbent (cheap, dropped), never
         // measures the old bends on the new one (3–7 s)
@@ -799,6 +829,10 @@ private:
         int lo = 21, hi = 108;
         entryRecorded(entry(), lo, hi);
         fDiag.setRecorded(lo, hi);
+        entryPlays(entry(), lo, hi);
+        fDiag.setPlays(lo, hi);
+        fDiag.setVizOffered(!entry().info.brass);
+        fDiag.setPartialsOffered(!entry().info.brass);
         fDiag.setReversedKeys(entry().info.reversed_keys);
         fDiag.setBars(entry().info.bars);
         fShownTab = shownTab(chosenTab(), ctx());
@@ -927,8 +961,20 @@ private:
         if (fBrowsing == Browsing::Instrument) {
             // the folder of the file chosen (its instrument.json, or any file in it)
             const std::string dir = folderOf(path);
-            if (Catalog::outside(dir) == nullptr) {
-                d_stderr2("Dussek: %s: no instrument (an instrument.json and a data.bin the engine accepts)", dir.c_str());
+            const InstrumentEntry* found = Catalog::outside(dir);
+            if (found == nullptr) { // in the window too, not only on stderr: why it is none
+                const std::string why = Catalog::whyNot(dir);
+                d_stderr2("%s: %s: no instrument: %s", identity(kKind).name, dir.c_str(), why.c_str());
+                if (const Row* r = rowFor(kInstrumentRow))
+                    showNote("Not an instrument", why.empty() ? "The engine cannot read it." : why, shown(r->control, r->scrolls, fScroll), 6000);
+                return;
+            }
+            if (!ofKind(*found, kKind)) { // the other plugin's (a trumpet in Dussek, a piano in Weidinger): not loaded
+                const char* other = identity(kKind == PluginKind::Winds ? PluginKind::Keys : PluginKind::Winds).name;
+                const std::string text = std::string("Not a ") + identity(kKind).name + " instrument: open it in " + other + ".";
+                d_stderr2("%s: %s: %s", identity(kKind).name, dir.c_str(), text.c_str());
+                if (const Row* r = rowFor(kInstrumentRow))
+                    showNote("Not this plugin's", text, shown(r->control, r->scrolls, fScroll), 4000);
                 return;
             }
             chooseInstrument(dir);
@@ -936,7 +982,9 @@ private:
         }
         char msg[256];
         if (pe_scale_info(path, msg, sizeof(msg)) == 0) {
-            d_stderr2("Dussek: %s", msg);
+            d_stderr2(DISTRHO_PLUGIN_NAME ": %s", msg);
+            if (const Row* r = rowFor(kTemperament))
+                showNote("Not a scale", msg, shown(r->control, r->scrolls, fScroll), 6000);
             return; // not a scale: the temperament as it was
         }
         fScaleFile = path;
@@ -959,10 +1007,12 @@ private:
     {
         ControlLook c;
         c.label = displayName(r.param, inst);
-        c.value = r.param == kInstrumentRow ? (fChoice.entry != nullptr ? morphLabel(fChoice.entry->name, partnersPlaying()) : "Missing: " + fChoice.id)
+        c.value = r.param == kInstrumentRow ? (fChoice.entry != nullptr ? morphLabel(fChoice.entry->name, partnersPlaying()) : missingLabel(*fCatalog, fChoice.id, kKind))
             : presetRow(r.param)          ? presetLabel(offered(r.param), currentPreset(r.param))
             : r.param == kMicPosition && currentPreset(kMicPresetRow) >= 0 ? presetLabel(offered(kMicPresetRow), currentPreset(kMicPresetRow))
+            : r.param == kMicPosition     ? std::string(labelOf(kKind, kMicPosition, (uint32_t)std::lround(fValues[kMicPosition])))
             : r.param == kMicDistance     ? formatMicDistance(fValues[kMicDistance], fGeom.has_pair, fGeom.distance)
+            : r.param == kMicSpacing      ? formatMicSpacing(fValues[kMicSpacing], fGeom.has_pair, fGeom.spacing)
             : r.param == kMallet          ? malletLabel(inst, effectiveMallet(inst, stored(kMallet)))
             : r.param == kPrepMode        ? formatValue(kPrepMode, (float)effectivePrep(inst, stored(kPrepMode)))
             : r.param == kTemperament && fValues[kTemperament] == (float)pe_temperament_count() ? scaleLabel()
@@ -982,6 +1032,18 @@ private:
             case Kind::Slider: drawSlider(*this, r.rect, c); break;
             case Kind::Toggle: drawToggle(*this, r.rect, c); break;
             case Kind::Dropdown: drawDropdown(*this, r.rect, c); break;
+            case Kind::Chips: break;
+            }
+        }
+        if (r.kind == Kind::Chips) {
+            const std::vector<Rect> chips = muteChips(r, inst);
+            const uint32_t chosen = effectiveMute(inst, stored(kBrassMute));
+            for (uint32_t i = 0; i < chips.size(); ++i) {
+                ControlLook k;
+                k.label = muteLabel(inst, i);
+                k.norm = i == chosen ? 1.0f : 0.0f;
+                k.active = true;
+                drawToggle(*this, chips[i], k);
             }
         }
         if (waiting)
@@ -1140,19 +1202,21 @@ private:
         const std::vector<std::string> ps = partners();
         const std::vector<float> w = morphWeights(1 + (uint32_t)ps.size(), fValues[kMorphX], fValues[kMorphY]);
         for (size_t i = 0; i < ps.size(); ++i)
-            if (const InstrumentEntry* e = fCatalog->find(ps[i]))
+            if (const InstrumentEntry* e = fCatalog->find(ps[i], kKind))
                 morph.push_back({ e->dir, w[i + 1] });
         const PeFelt& fe = fFelt.felt();
         const bool bent = !fFeltOriginal && std::any_of(std::begin(fe.curve), std::end(fe.curve), [](const PeFeltCurve& c) { return c.n > 0; });
-        const std::string program = standaloneExecutable(getBinaryFilename(), std::strcmp(getPluginFormatName(), "JACK/Standalone") == 0,
-            std::getenv("PATH"), installedProgramDirs());
+        const std::string found = standaloneExecutable(kKind, getBinaryFilename(), std::strcmp(getPluginFormatName(), "JACK/Standalone") == 0,
+            std::getenv("PATH"), installedProgramDirs(kKind));
+        const std::string program = found.empty() ? std::string(identity(kKind).executable) : found; // none found: its plain name
+        // brass: the controllers as this map ties them (midi2wav's own default is a fresh map's)
         const std::string line = midi2wavLine(v.data(), dir, getSampleRate(), &fEdit.curve(), morph, bent ? fFelt.text() : std::string(),
-            fScaleFile, program);
+            fScaleFile, program, kKind == PluginKind::Winds ? ccTiesArg(fMap) : std::string());
         if (!setClipboard("text/plain", line.c_str(), line.size())) {
-            d_stderr2("Dussek: the clipboard took nothing; the command line: %s", line.c_str());
+            d_stderr2(DISTRHO_PLUGIN_NAME ": the clipboard took nothing; the command line: %s", line.c_str());
             return;
         }
-        showNote("Copied", "The command line (dussek render) for the current settings is on the clipboard.", fLayout.menu);
+        showNote("Copied", std::string("The command line (") + identity(kKind).executable + " render) for the current settings is on the clipboard.", fLayout.menu);
     }
 
     // ---- the About tab: the instrument's LICENSE.md, read when the instrument changes (not per frame)
@@ -1171,7 +1235,7 @@ private:
     void copyLink()
     {
         if (!setClipboard("text/plain", kProjectUrl, std::strlen(kProjectUrl))) {
-            d_stderr2("Dussek: the clipboard took nothing; the link: %s", kProjectUrl);
+            d_stderr2(DISTRHO_PLUGIN_NAME ": the clipboard took nothing; the link: %s", kProjectUrl);
             return;
         }
         showNote("Copied", "The project's link is on the clipboard.", shown(fLayout.aboutCopy, true, fScroll));
@@ -1189,7 +1253,7 @@ private:
     }
 
     // ---- presets (Presets.hpp): the Mics tab's row (the microphones, for this body) and the Sound tab's (everything)
-    std::vector<Preset> fUserPresets = loadUserPresets(presetDir());
+    std::vector<Preset> fUserPresets = loadUserPresets(kKind, presetDir(kKind));
     std::chrono::steady_clock::time_point fDeleteArmedAt {};
     uint32_t fDeleteArmedRow = 0;
     bool fDeleteShown = false;
@@ -1201,7 +1265,7 @@ private:
     static uint32_t shownRow(uint32_t row) { return row == kMicPresetRow ? kMicPosition : row; }
     PresetScope scopeOf(uint32_t row) const { return row == kMicPresetRow ? PresetScope::Mics : PresetScope::All; }
     uint32_t bodyNow() const { return (uint32_t)entryBody(entry()); }
-    std::vector<const Preset*> offered(uint32_t row) const { return presetsFor(scopeOf(row), bodyNow(), fUserPresets); }
+    std::vector<const Preset*> offered(uint32_t row) const { return presetsFor(kKind, scopeOf(row), bodyNow(), fUserPresets); }
     bool deleteArmed(uint32_t row) const
     {
         return fDeleteArmedRow == row && std::chrono::steady_clock::now() - fDeleteArmedAt < std::chrono::seconds(3);
@@ -1218,7 +1282,7 @@ private:
                 if (o[k]->shipped == (pass == 1))
                     order.push_back(k);
         for (size_t k : order) {
-            if (matchingPreset({ o[k] }, fValues) != 0)
+            if (matchingPreset(kKind, { o[k] }, fValues) != 0)
                 continue;
             if (scopeOf(row) == PresetScope::All && presetInstrument(*o[k]) != fChoice.id)
                 continue;
@@ -1233,7 +1297,7 @@ private:
         for (const auto& [k, v] : pe::presetStates(p))
             if (k == "instrument" && !v.empty())
                 return v;
-        const InstrumentEntry* first = fCatalog->first();
+        const InstrumentEntry* first = fCatalog->first(kKind);
         return first != nullptr ? first->id : std::string();
     }
 
@@ -1276,8 +1340,8 @@ private:
             const std::string name = o[(size_t)cur]->name;
             fDeleteArmedAt = {};
             if (!deleteUserPreset(*o[(size_t)cur]))
-                d_stderr2("Dussek: could not delete the preset %s", o[(size_t)cur]->file.c_str());
-            fUserPresets = loadUserPresets(presetDir());
+                d_stderr2(DISTRHO_PLUGIN_NAME ": could not delete the preset %s", o[(size_t)cur]->file.c_str());
+            fUserPresets = loadUserPresets(kKind, presetDir(kKind));
             if (const Row* r = rowFor(shownRow(row)))
                 showNote("Deleted", "The preset “" + name + "” is gone.", shown(r->control, r->scrolls, fScroll));
         }
@@ -1291,9 +1355,11 @@ private:
             // default where the preset has none)
             const std::vector<std::pair<std::string, std::string>> states = pe::presetStates(p);
             if (const std::string v = presetInstrument(p); v != fChoice.id && !v.empty()) {
-                if (fCatalog->find(v) == nullptr && v.find('/') == std::string::npos) {
+                if (fCatalog->find(v, kKind) == nullptr && v.find('/') == std::string::npos) {
+                    const std::string other = otherPluginOf(*fCatalog, v, kKind);
                     if (const Row* r = rowFor(kPresetRow))
-                        showNote("Missing instrument", "The preset’s instrument “" + v + "” is not installed: its settings apply to this one.",
+                        showNote("Missing instrument", "The preset’s instrument “" + v + "” is "
+                                     + (other.empty() ? std::string("not installed") : other + "’s") + ": its settings apply to this one.",
                                  shown(r->control, r->scrolls, fScroll), 4000);
                 } else {
                     chooseInstrument(v);
@@ -1305,7 +1371,7 @@ private:
                     stateChanged(k.c_str(), v.c_str());
                 }
         }
-        for (const auto& [i, v] : presetParams(p)) {
+        for (const auto& [i, v] : presetParams(kKind, p)) {
             editParameter(i, true);
             setParam(i, v);
             editParameter(i, false);
@@ -1320,15 +1386,15 @@ private:
         if (a == std::string::npos)
             return; // no name: nothing saved
         const std::string name = typed.substr(a, b - a + 1);
-        const Preset p = presetFrom(name, scopeOf(row), bodyNow(), fValues, currentStates());
+        const Preset p = presetFrom(kKind, name, scopeOf(row), bodyNow(), fValues, currentStates());
         std::string err;
         const Row* r = rowFor(shownRow(row));
         const Rect anchor = r != nullptr ? shown(r->control, r->scrolls, fScroll) : fLayout.menu;
-        if (!saveUserPreset(presetDir(), p, err)) {
+        if (!saveUserPreset(kKind, presetDir(kKind), p, err)) {
             showNote("Not saved", err, anchor, 4000);
             return;
         }
-        fUserPresets = loadUserPresets(presetDir());
+        fUserPresets = loadUserPresets(kKind, presetDir(kKind));
         std::string kind = bodyName(bodyNow());
         std::replace(kind.begin(), kind.end(), '_', ' ');
         showNote("Saved", "“" + name + "” is among the presets" + (row == kMicPresetRow ? " of every " + kind + "." : std::string(".")), anchor);
@@ -1346,7 +1412,7 @@ private:
         // the velocity curve is a state, not a parameter: straight again too
         resetCurve();
         for (uint32_t i : resetParams()) {
-            const float def = paramInfo(i).def;
+            const float def = defaultOf(kKind, i);
             if (fValues[i] == def)
                 continue;
             editParameter(i, true);
@@ -1361,12 +1427,12 @@ private:
         if (!fTitled) {
             fTitled = true;
             if (std::strcmp(getPluginFormatName(), "JACK/Standalone") == 0)
-                getWindow().setTitle(DISTRHO_PLUGIN_NAME);
+                getWindow().setTitle(identity(kKind).name);
         }
         // the worker rescanned the instrument folders (a new one appeared, as the editor's preview)
         if (const CatalogPtr c = sharedCatalog(resources()); c != fCatalog) {
             fCatalog = c;
-            fChoice = choose(*fCatalog, fChoice.id);
+            fChoice = choose(*fCatalog, fChoice.id, kKind);
             loadLicense();
             relayout();
             repaint();
@@ -1425,11 +1491,21 @@ private:
         fLastClickTime = time;
         if (doubleClick && !inValue && r.kind == Kind::Slider) { // reset to the default
             editParameter(r.param, true);
-            setParam(r.param, paramInfo(r.param).def);
+            setParam(r.param, defaultOf(kKind, r.param));
             editParameter(r.param, false);
             return;
         }
         switch (r.kind) {
+        case Kind::Chips: {
+            const std::vector<Rect> chips = muteChips(r, entry());
+            for (uint32_t i = 0; i < chips.size(); ++i)
+                if (chips[i].contains(p.x, p.y)) {
+                    editParameter(r.param, true);
+                    setParam(r.param, (float)muteKind(entry(), i));
+                    editParameter(r.param, false);
+                }
+            break;
+        }
         case Kind::Toggle:
             editParameter(r.param, true);
             setParam(r.param, fValues[r.param] >= 0.5f ? 0.0f : 1.0f);
@@ -1537,7 +1613,7 @@ private:
         if (r.param == kMicPosition) { // the positions, then the presets for this body, Save as…, the delete
             const int cur = currentPreset(kMicPresetRow);
             for (uint32_t i = 0, n = paramLabelCount(kMicPosition); i < n; ++i) {
-                fListItems.push_back(paramLabel(kMicPosition, i));
+                fListItems.push_back(labelOf(kKind, kMicPosition, i));
                 fListValues.push_back((float)i);
             }
             const PresetMenu m = presetMenu(offered(kMicPresetRow), cur, deleteArmed(kMicPresetRow));
@@ -1563,7 +1639,7 @@ private:
             return;
         }
         if (r.param == kInstrumentRow) { // grouped: the groups first, each opening its instruments
-            const std::vector<std::string> groups = fCatalog->groups();
+            const std::vector<std::string> groups = fCatalog->groups(kKind);
             fListSelected = -1;
             for (size_t i = 0; i < groups.size(); ++i) {
                 fListItems.push_back(groups[i] + "  ▸");
@@ -1689,7 +1765,7 @@ private:
     /// shows group g's instruments beside the instrument menu's list
     void openGroup(int g)
     {
-        const std::vector<std::string> groups = fCatalog->groups();
+        const std::vector<std::string> groups = fCatalog->groups(kKind);
         if (g < 0 || g >= (int)groups.size()) { // no group (the menu's last: open a folder)
             if (fSubGroup >= 0) { fSubGroup = -1; repaint(); }
             return;
@@ -1698,7 +1774,7 @@ private:
         fSubHot = -1;
         fSubIds.clear();
         fSubItems.clear();
-        for (const InstrumentEntry* e : fCatalog->menu())
+        for (const InstrumentEntry* e : fCatalog->menu(kKind))
             if (e->group == groups[(size_t)g]) {
                 fSubIds.push_back(e->id);
                 fSubItems.push_back(e->name);
@@ -1787,7 +1863,7 @@ private:
                 }
             } else if (fListRect.contains(p.x, p.y)) { // a group: open it (and keep the menu open)
                 const int row = listRow(p.y);
-                if (row == (int)fCatalog->groups().size()) { // the last: an instrument kept anywhere
+                if (row == (int)fCatalog->groups(kKind).size()) { // the last: an instrument kept anywhere
                     fListParam = -1;
                     fSubGroup = -1;
                     chooseInstrumentFolder();
@@ -2002,7 +2078,7 @@ private:
         const std::vector<float> w = morphWeights(1 + (uint32_t)ps.size(), fValues[kMorphX], fValues[kMorphY]);
         std::vector<float> weights { w[0] };
         for (size_t i = 0; i < ps.size(); ++i)
-            if (const InstrumentEntry* e = fCatalog->find(ps[i])) {
+            if (const InstrumentEntry* e = fCatalog->find(ps[i], kKind)) {
                 dirs.push_back(e->dir);
                 weights.push_back(w[i + 1]);
             }
@@ -2185,7 +2261,7 @@ private:
     }
 
     // ---- MIDI learn: the map (the settings file, MidiMap.hpp), a control's right-click menu, the wait for a CC
-    MidiMap fMap = MidiMap::load(midiMapPath());
+    MidiMap fMap = MidiMap::load(midiMapPath(kKind), kKind);
     int fLearnMenu = -1;   // the control whose MIDI learn menu is open
     int fLearnTarget = -1; // the target waiting for a CC (kDiagLearnIn)
     bool fLearnAlt = false; // … learned the menu's second way (a relative knob, a flipping pad)
@@ -2282,11 +2358,11 @@ private:
     /// hear of it), said on stderr
     void commitMap(const std::function<void(MidiMap&)>& edit)
     {
-        const std::string path = midiMapPath();
+        const std::string path = midiMapPath(kKind);
         if (fMap.update(path, edit))
             setDiag(kDiagMapSeqIn, std::fmod(fValues[kDiagMapSeqIn] + 1.0f, 16777216.0f));
         else
-            d_stderr2("Dussek: the MIDI map could not be written to '%s': the change is not kept", path.c_str());
+            d_stderr2(DISTRHO_PLUGIN_NAME ": the MIDI map could not be written to '%s': the change is not kept", path.c_str());
         relayout(); // the MIDI tab's rows, the tags' room
         repaint();
     }
@@ -2404,7 +2480,7 @@ private:
         fMorphMenuIds.clear();
         fListItems.clear();
         const std::vector<std::string> ps = partners();
-        for (const InstrumentEntry* e : fCatalog->menu()) {
+        for (const InstrumentEntry* e : fCatalog->menu(kKind)) {
             std::vector<std::string> with = ps;
             with.push_back(e->id);
             if (std::find(ps.begin(), ps.end(), e->id) == ps.end() && validPartners(with, *fCatalog, fChoice.id).size() > ps.size()) {
@@ -2427,7 +2503,7 @@ private:
         const std::vector<std::string> ps = partners();
         std::vector<std::string> names;
         for (size_t i = 0; i <= ps.size(); ++i) {
-            const InstrumentEntry* e = i == 0 ? fChoice.entry : fCatalog->find(ps[i - 1]);
+            const InstrumentEntry* e = i == 0 ? fChoice.entry : fCatalog->find(ps[i - 1], kKind);
             names.push_back(e != nullptr ? e->name : i == 0 ? fChoice.id : ps[i - 1]);
         }
         return names;
@@ -2539,7 +2615,7 @@ private:
             return;
         fInstrumentOut = v;
         const long pos = std::lround(v) % 1024 - 1;
-        const std::vector<const InstrumentEntry*> menu = fCatalog->menu();
+        const std::vector<const InstrumentEntry*> menu = fCatalog->menu(kKind);
         if (pos >= 0 && pos < (long)menu.size() && menu[(size_t)pos]->id != fChoice.id)
             chooseInstrument(menu[(size_t)pos]->id);
     }

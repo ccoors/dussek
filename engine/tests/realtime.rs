@@ -128,6 +128,45 @@ fn playing_allocates_nothing() {
 }
 
 #[test]
+fn brass_allocates_nothing() {
+    // a line, a chord, harmony under a slur, the wheels, a mute, the sound off, a microphone moved under a sounding note
+    let Some(mut e) = common::engine(&dir("tenor_trombone"), SR, Tuning::default()) else { return };
+    let mut next = common::engine(&dir("tenor_trombone"), SR, Tuning { mic: dussek::mic::MicPosition::Audience, ..Tuning::default() }).unwrap();
+    play(&mut e, 2);
+    let n = counted(|| {
+        for round in 0..6u8 {
+            let t = e.now();
+            for k in 0..3u8 {
+                let key = 50 + round + 4 * k;
+                let speed = e.hammer_speed(key, 90.0);
+                e.queue(t + 8 * k as u64, Event::NoteOn { key, speed });
+            }
+            e.queue(t + 300, Event::ModWheel { value: 0.5 });
+            e.queue(t + 400, Event::PitchBend { value: 0.3 });
+            e.queue(t + 500, Event::ChannelPressure { value: 0.8 });
+            let mut p = e.params();
+            p.brass.mute = u32::from(round) % 7;
+            p.brass.growl = 0.4;
+            e.set_params(p);
+            play(&mut e, 12);
+            for k in 0..3u8 {
+                e.queue(e.now(), Event::KeyUp { key: 50 + round + 4 * k });
+            }
+            play(&mut e, 4);
+        }
+        let t = e.now();
+        let speed = e.hammer_speed(60, 90.0);
+        e.queue(t, Event::NoteOn { key: 60, speed });
+        play(&mut e, 12);
+        assert!(next.adopt(&mut e), "one instrument takes over");
+        play(&mut next, 8);
+        next.silence();
+        play(&mut next, 8);
+    });
+    assert_eq!(n, 0, "the audio thread allocated {n} times");
+}
+
+#[test]
 fn a_measuring_engine_writes_little_memory() {
     // a level table renders 704 notes of 0.2 s, each its own engine from a clone of the
     // instrument: each copied every note's knock and release noise (85 MB, at the recording's

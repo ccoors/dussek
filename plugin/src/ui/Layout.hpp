@@ -14,8 +14,8 @@ namespace pe {
 struct Rect { float x = 0, y = 0, w = 0, h = 0;
     bool contains(float px, float py) const { return px >= x && px < x + w && py >= y && py < y + h; }
     bool overlaps(const Rect& o) const { return x < o.x + o.w && o.x < x + w && y < o.y + o.h && o.y < y + h; } };
-enum Tab : uint32_t { kTabSound, kTabMorph, kTabTouch, kTabFelt, kTabMics, kTabTuning, kTabCondition, kTabExtras, kTabMidi, kTabAbout, kTabCount };
-enum class Kind { Slider, Toggle, Dropdown };
+enum Tab : uint32_t { kTabSound, kTabMorph, kTabTouch, kTabFelt, kTabMics, kTabTuning, kTabCondition, kTabExtras, kTabMidi, kTabAbout, kTabPlayer, kTabCount };
+enum class Kind { Slider, Toggle, Dropdown, Chips };
 /// a control: its row and the row's parts (the label; the control: a slider's track, a switch, a
 /// menu box; the value text, click to type). Compact rows put them on one line; the header's keep
 /// the old widgets. `scrolls`: in the content area (layout coordinates, shown shifted by the scroll)
@@ -124,6 +124,8 @@ const std::vector<TabGroup>& tabGroups(Tab t);
 /// the tab applies to the instrument: Morph where it has partners, Felt on the hammer pianos, a tab
 /// of rows (Tuning, Condition, Extras) where one of them is visible; the others always
 bool tabShown(Tab t, const UiContext& c);
+/// the mute buttons of a Chips row, each as wide as its word asks
+std::vector<Rect> muteChips(const Row& r, const InstrumentEntry& e);
 /// the chosen tab if shown, else Sound: the choice itself stays, so a piano returns to its Felt
 Tab shownTab(Tab chosen, const UiContext& c);
 /// the header's controls, in order

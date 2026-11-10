@@ -293,6 +293,8 @@ void drawCompactRow(NanoVG& vg, const Row& r, const ControlLook& c)
         vg.restore();
         break;
     }
+    case Kind::Chips: // the caller draws them (`muteChips`)
+        break;
     case Kind::Toggle: {
         const bool on = c.norm >= 0.5f;
         const Rect& s = r.control;

@@ -43,6 +43,12 @@ jobs:
           "$bin" render instruments/grand_a albums/demos/midi/03-glass-rain.mid render.wav --tail 1 2>&1 | tee render.txt
           test -s render.wav
           grep -q "rendered in" render.txt   # its report reaches a pipe (Windows: a window program)
+          # Weidinger's too (built beside it, not packaged)
+          bin=plugin/build/bin/weidinger
+          [ -e "$bin" ] || [ -e "$bin.exe" ] || bin=plugin/build/bin/weidinger.app/Contents/MacOS/weidinger
+          "$bin" render instruments/trumpet albums/demos/midi/03-glass-rain.mid wrender.wav --tail 1 2>&1 | tee wrender.txt
+          test -s wrender.wav
+          grep -q "rendered in" wrender.txt
       # a build to try on another machine (Actions tab: the run's artifacts; kept 3 days)
       - name: Package
         if: github.event_name != 'pull_request'
@@ -98,6 +104,12 @@ jobs:
           "$bin" render instruments/grand_a albums/demos/midi/03-glass-rain.mid render.wav --tail 1 2>&1 | tee render.txt
           test -s render.wav
           grep -q "rendered in" render.txt   # its report reaches a pipe (Windows: a window program)
+          # Weidinger's too (built beside it, not packaged)
+          bin=plugin/build/bin/weidinger
+          [ -e "$bin" ] || [ -e "$bin.exe" ] || bin=plugin/build/bin/weidinger.app/Contents/MacOS/weidinger
+          "$bin" render instruments/trumpet albums/demos/midi/03-glass-rain.mid wrender.wav --tail 1 2>&1 | tee wrender.txt
+          test -s wrender.wav
+          grep -q "rendered in" wrender.txt
       - name: Only the system's DLLs imported
         run: |
           set -o pipefail

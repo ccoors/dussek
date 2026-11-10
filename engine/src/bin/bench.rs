@@ -57,6 +57,9 @@ fn scenarios(speed: [f64; 3]) -> Vec<Scenario> {
     }
     out.push(Scenario { name: "pedal, 32 ff notes/s, whole keyboard", seconds: 20.0, events: ev });
 
+    // one mf key held: a brass instrument's one player, against its section below
+    out.push(Scenario { name: "one mf key held", seconds: 6.0, events: vec![(0.05, Event::NoteOn { key: 60, speed: mf })] });
+
     // eight-note mf chords every 0.5 s without pedal, held 0.45 s
     let mut ev = Vec::new();
     let mut t = 0.05;

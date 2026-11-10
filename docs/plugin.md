@@ -1,7 +1,8 @@
 # The plugin
 
 A DPF wrapper (C++) around the engine's C interface: LV2, CLAP, VST3 and a JACK standalone.
-LV2 and the standalone are the main targets; all four are tested on Linux and Windows.
+LV2 and the standalone are the main targets; all four are tested on Linux and Windows. The brass are
+a second plugin's, built from the same sources and shipped in the same release as a preview: [Weidinger](brass.md).
 
 Where a host offers LV2 or CLAP, use them: the VST3 is kept for hosts that load nothing else.
 In VST3 the shipped presets are missing from the host's own preset menu (the plugin's Preset menu
@@ -14,9 +15,9 @@ its editor. All three come from DPF, the framework the plugin is built on.
 
 ```sh
 just plugin        # DPF (a git submodule, plugin/dpf) at its pinned commit; cmake into plugin/build (builds the engine too)
-just install       # links: ~/.lv2, ~/.clap, ~/.vst3; instruments/ into ~/.local/share/dussek
+just install       # links (Dussek and Weidinger): ~/.lv2, ~/.clap, ~/.vst3; instruments/ into ~/.local/share/dussek
 just uninstall     # removes those links
-just standalone    # the JACK standalone under PipeWire
+just standalone    # the JACK standalone under PipeWire (--weidinger: Weidinger's)
 ```
 
 `just install` makes links, so a rebuild updates the installed plugin.
@@ -88,7 +89,9 @@ is the platform's own: on Linux `$XDG_DATA_HOME/dussek`, else `~/.local/share/du
   the repository, which the user data directory links to.
 - **Kept anywhere**: the instrument menu's last entry, "Open instrument folder…", opens a file
   browser: choosing a folder's `instrument.json` plays that folder, listed under "Opened" while
-  it plays, whether or not it lies in a search path.
+  it plays, whether or not it lies in a search path. A folder that is no instrument says why under
+  the menu (no `instrument.json`, no `data.bin` beside it, or the engine's reason), as one of the
+  other plugin's does; a file that is no Scala scale says so under Temperament.
 - **Saved by name**: a session saves the instrument by its directory's name (one opened from a
   folder by its path). One it cannot find shows as "Missing: <name>" and plays nothing.
 - **Reload**: an instrument whose files change while the plugin runs plays anew about a second
@@ -123,8 +126,9 @@ The UI is NanoVG and scalable: the host's HiDPI factor × a zoom of 100–400 %.
   (`engine/tests/no_effect.rs`).
 - **Layout**: wide windows put the drawing beside the panel and flow the panel into up to three
   columns. Narrow ones show one column, with the drawing in the Mics tab.
-- **The bottom**: **Keyboard** opens the player strip (keys to play with the mouse, the pedals).
-  With it open, one panel above it at a time:
+- **The bottom**: three toggles. **Keyboard** opens the player strip (keys to play with the mouse,
+  the pedals); **Analysis** and **Visualization** open their panel above it, one at a time, with or
+  without the strip:
   - **Analysis**: a spectrogram of the output with the engine's partials, or the partials as bars
     over their keys;
   - **Visualization**: the instrument as the engine plays it. Each key's strings from above, a
@@ -172,7 +176,7 @@ The header's buttons:
     instrument's directory, the sample rate, `--velocity-curve`, `--param`, `--tuning` with
     every setting that differs from the engine's default, `--latch`, and `--felt` with the Felt tab's
     points (midi2wav builds the felt and a piano's Hammer hardness as the plugin does, the loudness
-    kept). What does nothing (such
+    kept); in Weidinger `--cc` with the MIDI tab's ties of the controls it can drive. What does nothing (such
     as the lid at the recording's position) is left out. Replace `in.mid` and `out.wav`; the
     render then plays as the plugin does, since the plugin and the line share one mapping of the
     parameters to the engine's values.
@@ -680,10 +684,10 @@ includes the ones that rebuild the instrument, which a host's own MIDI learn can
   list and an integer slider one entry per 3 steps (a turn back answers at once), a switch (tied
   so only in the map's file) goes on turning up and off turning down. In the map's file such a tie
   ends in `relative`.
-- **Soft takeover** (the MIDI tab's switch, on by default): after a slider moved otherwise (the
-  mouse, the host, a preset), a knob or fader tied to it takes over only once it comes within 2 %
-  of the slider's value or passes it, so the slider never jumps. Lists, switches and relative knobs
-  take every value.
+- **Soft takeover** (the MIDI tab's switch, off by default: a knob is where its slider goes): after a
+  slider moved otherwise (the mouse, the host, a preset), a knob or fader tied to it takes over only
+  once it comes within 2 % of the slider's value or passes it, so the slider never jumps. Lists,
+  switches and relative knobs take every value. A map's file keeps the choice it was saved with.
 - **One to one**: one CC drives one control, and a control has one CC; learning a CC that is
   tied already moves it. A tie keeps the channel it was learned on.
 - **Reserved CCs**: the pedals (CC64, 66, 67) and CC120 and 123 keep their meaning and never

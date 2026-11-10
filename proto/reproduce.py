@@ -86,7 +86,7 @@ def exporter(name):
     if not os.path.isfile(os.path.join(P.REPO, "instruments", name, "instrument.json")):
         return None
     steps = build.chain(name)
-    return "export.py" if "export" in steps else "export_bars.py" if "export_bars" in steps else None
+    return "export.py" if "export" in steps else "export_bars.py" if "export_bars" in steps else "export_brass.py" if "export_brass" in steps else None
 
 
 def check(name, scratch):

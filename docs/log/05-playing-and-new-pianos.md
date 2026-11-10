@@ -3889,3 +3889,615 @@ Of the 41 instruments in the menu (`plugin/tests/visibility.txt`):
 | 8 | 9 (no Felt) | sostenuto, sustain |
 | 8 | 8 (no Felt, no Morph) | sostenuto, sustain |
 | 12 | 8 (no Felt, no Morph) | none |
+
+<a id="step-234"></a>
+## 234. The brass fitting chain
+
+The brass model was a spike's: its fits ran from one script in a fixed order, on values frozen in its own files, and nothing
+said what a change made stale. It now lives in the pipeline like every other family, so a rebuild can remake the sound from the
+recordings and `status` says what went stale and why.
+
+- **The recordings and the projects.** Five projects (`trumpet`, `horn`, `tenor_trombone`, `bass_trombone`, `tuba`), each its
+  `[brass]` table (the bore, the lips, the fits' limits), on Iowa's runs. `analysis/split_brass.py` cuts the runs once into one
+  file per note, with a `<midi>.json` beside each saying where it lay in its run (the fits measure the background in the silence
+  around it). Its cuts equal the spike's note sets on all five (107, 99, 90, 131, 110 notes).
+- **The model.** `proto/brass/` holds the model, its fits and the player the fits render through (`live.py`, the virtual player
+  `auto_player.py`): a fit judges a played note, its attack and its slur, so the player is part of the model. Every table of every
+  mute (22) equals the spike's (largest relative difference 0.0), and a seeded line and chord on open and the first mute render
+  the same to the sample.
+- **The chain.** `projects/steps.toml`'s families `brass` and `brass_lender` (the trumpet: it fits the mutes' shapes and their
+  correction, which the others borrow through `[uses] mutes`), thirteen and fifteen steps from `brass_fit` to `export_brass`, each
+  a subprocess (`proto/brass/steps.py`). The accepted values were adopted as the baseline (85 min at nice 19 for the tables and
+  the reports).
+- **A rebuild.** From nothing, in a separate worktree, at nice 19: the horn 19 min, the trumpet 73, the tenor trombone 83, the bass
+  trombone 67, the tuba about 21 to the mutes (before step 241's speed-up). The horn rebuilt to 4 of 840 bands over 1 dB (the worst
+  1.4 dB), its gain 18.5 → 18.2 dB. `proto/brass/compare_tables.py` compares two builds band by band, with their level and gain.
+
+What the rebuild found:
+
+- The cut notes held no silence for the fits' background: the horn came out up to 19.5 dB short at 8 kHz (the `<midi>.json`
+  above). The cutter cut into the horn's quiet notes and took a faint sound before four trumpet notes for the note: fixed, the
+  horn 90 → 95 notes, the others' cuts unchanged to the sample.
+- The mutes' shape search lands on other shapes than the accepted (the straight mute's end 0.050 → 0.033 m): the spike's own code
+  gives the rebuild's shapes today, the accepted ones came from an older state of the model. Straight, cup, wah and wah-stem differ
+  by a median 3–5 dB per band on the borrowers.
+- A key whose dynamics pick different modes under a mute (a mute splits a mode, the open note between the halves) played off its
+  note: the upper half holds on six of seven, so such a key takes the upper mode for all; `brass_mutes` ends with a holding pass.
+  In the range, not holding: 150 cases in all (219 accepted).
+- The trumpet's range from velocity 20 to 127 narrowed from 16.6 to 11.1 dB with its levels from Iowa (the spike's came from VSCO).
+
+Heard: the trumpet rebuilt "fine", its mutes "a bit different, but not wrong", no difference in the range; the split notes
+"sound very wrong" before the fix, "fine" after. The accepted values stay on the trumpet, the bass trombone and the tuba (heard as
+fine, not better); the horn is rebuilt from nothing on the new cuts; the tenor trombone's mutes go through `brass_mutes` again on
+the accepted shapes. A rebuild is no reproduction of a brass instrument's mutes: the chain remakes the sound, not its digits.
+
+<a id="step-235"></a>
+## 235. Brass plays
+
+The five brass instruments play in the plugin, marked experimental: a real-time family in the engine, an export, the window, the
+MIDI and the microphones. `engine/src/brass/` ports `rt.c`, `live.py` and `auto_player.py`; the fits' 44.1 kHz stays inside it and a
+streaming sinc goes to the engine's rate (ripple under 0.05 dB to 18 kHz).
+
+- **The port.** On Python's random numbers a phrase of 20 s (a line, a chord, a key left down under a slur, a swell, a glide, growl,
+  flutter, the wheels, Solo) nulls against `live.py`: -136 dB on the horn, -128 tenor open, -122 tenor straight, -124 tenor plunger.
+  On the engine's own random numbers the same phrase stays within 1 dB per octave from 400 Hz to 6 kHz; the lowest octaves and the
+  top one move up to 3.4 dB, inside what Python's own seeds move them (tenor straight to 4.8 dB, trumpet cup to 4.0 dB between seeds).
+- **Holding,** `rt_stability`'s grid through the Rust player on its own numbers, every key that plays, against the accepted report:
+  trumpet open 15 (15), trumpet cup 3 (6), tenor straight 0 (15), bass open 32 (33), tuba straight 33 (46), horn 3 (0, on key 74 at
+  one air).
+- **The cost,** at 128 samples and 48 kHz, room and all: one key 5.1 % of a core on the trumpet, six players 20.9 % (the spike's C: 7 %, 33 %).
+  The audio thread allocates nothing (`realtime.rs`).
+- **An export** is an ordinary directory: 88 silent notes, a `brass` block, 32-bit tables, 1.1 to 7.5 MB each, 24 MB for the five.
+  `no_effect` checks the report on them: of the controls it covers only Dynamics and the variation act.
+- **The keys that play** run from `below` under the fitted range (6 unless a project says) to its top: under the fit amber as other
+  instruments' extrapolated keys, outside the range gray and silent. `live.py` played 2 over the top too; on the trumpet the last of
+  them barely sounded, and over the highest note every instrument's lips are at their limit (`above`, 0 unless a project says).
+- **The controllers** are MIDI learn's ties, made out of the box (CC11 Air, 70 Vibrato, 21 Growl, 23 Flutter, 4 Plunger, 65 Glide held,
+  5 Glide time, channel 1; the map's file goes to version 2, and an older one gets those whose control and CC it leaves free), so their tags
+  show and they can be learned again or forgotten; built in, they had played unseen. Air or Plunger moved from MIDI turns on its "by hand"
+  switch, as the built-in ones did; CC2 is no longer Air out of the box (a control has one CC), and Glide time follows its slider's travel
+  rather than 40 ms × 30^(v/127).
+- **The microphones.** The bell is a `Body`, so the drawing cannot disagree with the sound. Only the pair's difference of delay is kept:
+  the distance's whole delay would play every note 18 ms late at Audience. Room at 0 dB stands 14 dB under the direct sound within 1.5 dB
+  on all five, with a feed measured at the export: one constant left the horn and the tenor 3.5 dB apart. Total keeps direct and room at the
+  recording's power, as `mic_test.py` held one level at every position.
+- **The window.** A Player tab, a button per mute, the plunger's knob with the plunger in, no pedals, no Visualization, the mark in the menu.
+  The Tuning tab acts: concert pitch and the temperament move the players. Mic position, Dynamics and the variation are kept apart for
+  brass (`brass_values`), so a pianist arrives at Audience and leaving changes neither side's.
+
+No brass player has judged any of this, and the exports were committed before the ear heard them, on the maintainer's word.
+
+<a id="step-236"></a>
+## 236. A soft slur lands on its note
+
+On the horn's clip the ear found G4 and F#4 off, in the prototype as much as in the engine. Tongued they are in tune; slurred softly
+from above, G4 sat 67 to 91 c flat for as long as it sounded and F#4 29 c. Under those two keys a stronger mode lies close (240 c,
+86 M against the note's 65 M): the lips, eased past the note by a slur, stay pulled toward it. `rt_stability` goes in from a tone either
+side at mf and ff, on a player without variation, and never saw it.
+
+- **The check and the repair.** `proto/brass/slur_fix.py`: per key, the median pitch from 60 to 270 ms after a soft slur from either side
+  and down a line, over six seeds (three passed notes the engine's own numbers still played 48 c flat). A key off by more than
+  20 c gets the least move of its lips at pp and mf that lands it and leaves it tongued within 25 c; the highest key first, as a line
+  falling onto a key comes through the keys above.
+- **The horn.** Ten keys moved by 0.005 to 0.02 of the lips' center, a grid finer than the fit's 0.025, which at G4 is 40 c.
+  Through the engine G4 now plays +3 and +1 c, F#4 -11, D-flat 5 -16 (it was -141, in no clip). Tongued, the most moved a key by about 16 c, most toward the note,
+  and the notes not holding fell from 3 of 720 to 0. `brass_level` on: only the moved keys' levels change.
+- **Not in the chain yet.** Run by hand on the horn; as a step of the chain it would also move the others, which the ear has not
+  asked for. Over 50 c on the same check: trumpet key 80 (-56 c); tenor 61 (+83), 69 (-98); bass 63 (-87), 64 (-116); tuba 30 (-65), 56 (-132), 57 (-156).
+
+<a id="step-237"></a>
+## 237. The soft slurs on all five, the horn's notes whole
+
+Step 236's repair is a step of the chains (`brass_slurs`, after `brass_land` and before `brass_level`: it moves lips and air, so a
+key's level comes after it), for the open bell and what goes in it. The search tries the least moves first and stops at the first
+case off: a mute's fourteen keys took longer than a step should. A move that only comes closer may not take the tongued note further
+off than 25 c or than it was.
+
+- **The cutter.** The horn's runs leave 0.2 s between notes of 2.3 s, so a run's quietest tenth lay in the notes: ff C4 was cut to
+  0.44 s, mf C4 to D4 and pp C4 were lost. The floor is now taken from the gaps; a sound some 60 dB under a note a second before it
+  (four trumpet notes) no longer takes the note's place. The horn has 95 notes for 90, all whole, and was fitted again from them;
+  the tenor's, bass's and tuba's cuts are the same to the sample. The trumpet keeps its accepted values.
+- **What moved** (keys over 20 c on a soft slur, before → after the repair):
+
+  | | open | straight | cup | wah | wah stem | bucket |
+  |---|---|---|---|---|---|---|
+  | horn | 7 keys, worst -111 c → 0 off | | | | | |
+  | tenor trombone | 4, -98 → 0 | 5, -102 → 0 | 13, +153 → 2 | 9, -79 → 1 | 14, -95 → 4 | 3, -45 → 1 |
+  | bass trombone | 9, -116 → 7 | 10, -106 → 6 | 18, -148 → 4 | | | 12, -89 → 3 |
+  | tuba | 10, -156 → 7 | 9, -83 → 9 | | | | |
+  | trumpet | 0 → 0 | 0 → 1 | 0 → 1 | 0 → 1 | 0 → 0 | 0 → 0 |
+
+  Most of what stays off is the lowest keys under the table (bass and tuba 28 to 36, where a player's lips loosen), within 40 c
+  but tuba straight 36 (+88). On the trumpet no move lands straight 80 (-127 c), cup 78 (+32), wah 70 (+183).
+- **The keys over the table.** The export played two keys over the table's highest (`above`, now 0 by default): the trumpet's
+  barely sound. `live.py` and `rt_stability` play the same keys as the export (`live.plays`).
+- **The horn against the last accepted export**, through the engine: the soft lines' notes within 18 c either way; played
+  softly, its low and middle keys (C3 to C4) 1.2 to 1.8 dB quieter, G3 3.2 dB; brightness mostly the same (G4 ff brighter,
+  centroid 1.5 to 2.1 × f0, E4 ff duller). Not holding: 0 of 690 cases (the two keys over the top no longer counted).
+- **A step's outputs on an instrument without mutes.** `brass_mutes` wrote nothing on the horn, so the driver found its outputs
+  missing and kept the chain stale; it now writes them empty. As every brass step declares the whole fit as read, writing them
+  the first time refitted the horn from `brass_fit` on: the second pass is the one exported.
+
+<a id="step-238"></a>
+## 238. The slur repair moves the lips only, each bell as played
+
+Played in the plugin, the step 237 build had three faults and some leftovers.
+
+- **The lips only.** The tenor's wah E-flat 4 on a soft slur sounded mostly as noise: its repair had taken the air to 0.8, which left the
+  note 5.6 dB under its line, the bell's noise over it. Of the 25 moves that changed the air (tenor, bass trombone, tuba), 0.8 left a
+  note 2 to 6.6 dB under its line, 1.25 others up to 4 dB over it. The repair now moves the lips alone (`slur_fix.candidates`,
+  `brass_slurs` version 2). The 25 moves were undone in the fits and the three refitted. The wah E-flat 4 now sits at -28.4 dB, among
+  its neighbors' -25 to -28 dB, where it was at -31.9. Keys still over 20 c on a soft slur, open and by mute: tenor 0, 2, 1, 1, 2, 2;
+  bass 3, 9, 8, 6; tuba 5, 8, again mostly the lowest keys. The trumpet and the horn had no air moves and keep their exports. A
+  rebuild refitted both from `brass_fit`, and the trumpet's mutes came out elsewhere: the cup 5 dB quieter, the wah's worst slur
+  33 c for 22. Their committed fits were restored and taken as they are (`build.py adopt`).
+- **Soft takeover off by default.** A knob turned fast lost its slider: the host's rounding left the value a hair off the knob's.
+  Takeover now waits only when it is switched on. With it on, a value within 1e-4 (an integer's half step) counts as caught.
+- **Audience in the middle.** At Audience every bell sounded left, 2.3 dB from 2 to 8 kHz: the pair stood off the bell's axis. It is now
+  centered on the bell, under 0.3 dB between the channels.
+- **Each bell as played.** A project's `[pose]` gives the axis (azimuth, elevation) and the player's ears from the bell's mouth:
+  - the trumpet and the trombones forward and 14° down;
+  - the horn back and right, 10° down, the ears 35 cm above the bell;
+  - the tuba up (75°) and to the right, the ears 40 cm under it.
+
+  Player and Audience stay with the player, and the close positions turn with the bell. At Audience the tuba is 13 dB darker from
+  2 to 8 kHz than forward, the horn 12.5 dB, both 2 to 3 dB to the right. The drawing is the bell's solid of revolution from above
+  and from the front. From above, a marker farther than 5 m (the bell's Audience) waits at the view's edge, so the bell is no longer
+  a few pixels. Every keyboard instrument's Audience lies within 4 m, and their framing is unchanged. A tube seen nearly edge-on
+  had come out as a wave (the samples fell between the rings); each ring now reaches a sampling step along the axis.
+- **The Mute by kind.** The value was the mute's place in the instrument's list, so a trumpet's wah (3) became the bass trombone's
+  bucket. It now names a kind (0 open … 6 plunger; `MUTE_KINDS`): one the instrument lacks plays open, and switching back finds it.
+- **The spacing in meters on the bell too.** The bell scaled its pairs by the spacing over 50 cm. A drag writes the spacing shown,
+  so dragging the Player pair collapsed it from 18 to 3 cm. The spacing is now the pair's: Player at most 18 cm (the ears),
+  Close 1 and 2 at most 10 cm, Audience as set (1 m before at the default, now 50 cm; the bell centered, the direct sound alike in
+  both). The value reads "18 cm (limited)" where it stops.
+- **The latency at other rates.** The brass plays at 44.1 kHz. Notes at 48 kHz started 1.4 ms after the reported latency, those at
+  96 kHz 1.0 ms, against 44.1 kHz. The resampler's half (32 samples at 44.1 kHz) and the fifo's mean hold (a 64-sample block at
+  44.1 kHz is 70 or 139 samples at the host's rate) are now reported, held to 44.1 kHz's in seconds: within 0.2 ms at 48, 88.2 and
+  96 kHz.
+- **Leftovers.** Glide time reads "220 ms" and Air "80" (two decimals before, no unit). The microphones' L and R go under their
+  dots where their side leaves the view.
+- **midi2wav plays the controllers.** It ignored every controller but the pedals, the mod wheel and the pitch wheel, so a
+  brass part's expression lane (CC11, thousands of values a file) did nothing. `--cc CH:CC=SYMBOL,…` ties them as the
+  plugin's MIDI tab does, each value applied at its time (a held note's growl at 1 s leaves the render before it to
+  the sample). On brass the plugin's default ties apply unless given; Copy CLI writes the map's own. The plugin's
+  mapping and midi2wav's are held together by one table (`plugin/tests/cc_values.txt`: nine controls at five values,
+  written by `ui_tests`, read by both). `--lowest-key` drops another library's keyswitches. Its demo files on the
+  trumpet with CC11 as air and CC1 as vibrato, the virtual player off: the expression lane widens a phrase's loudness
+  spread from 5.6 to 7.0 dB (10th to 90th percentile), the model's narrow loudness range still showing.
+
+<a id="step-239"></a>
+## 239. Weidinger: the brass's own plugin
+
+Played in the plugin, the brass showed what did not fit Dussek: an export of 88 silent notes so that every path walking notes
+kept working, one parameter list mixing the pianos' and the brass's (a host shows them all on either, and the first release would
+freeze the mix), MIDI meaning different things (CC11 thousands of times a file, keyswitches, a player per channel), one MIDI map for
+both, and brass changing by ear while Dussek's players expect a released instrument to stay. None of it reached a release. The
+brass now has a plugin of its own, Weidinger, built from the same sources, in the same four forms; not in the releases yet.
+
+- **One codebase, two targets.** `plugin/src/plugins/<name>/DistrhoPluginInfo.h` each define `PE_PLUGIN_KIND`; `PluginKind.hpp`
+  holds the names, the IDs (`https://ccoors.de/plugins/weidinger`, `de.ccoors.weidinger`, `Wdgr`), the MIDI map's and the presets'
+  files and the standalone's name, checked against DPF's at compile time. One DSP and one UI class, compiled per target.
+- **Dussek as released.** Its ports are the parameter table's first 78 rows, its lock v0.3.2's (`params-v0.3.2.lock`), its state
+  v0.3.2's seven keys (`brass_values` gone: each plugin plays one side), its menu v0.3.2's order (brass had moved Percussion and
+  what follows by 5 programs; `menu-v0.3.2.txt`), its MIDI map version 1 without brass ties (a map the branch wrote keeps its
+  piano ties).
+- **Weidinger's own.** 37 ports (the 14 brass rows, the microphones, Room, Volume, Dynamics, the variation, the tuning; Audience
+  and a variation of 100 % by default), `weidinger-midi-map.txt` with the brass player's seven ties, `weidinger-presets/`, the
+  Player tab. An instrument folder of the other plugin, opened or named by a saved session, is refused with a note.
+- **No silent notes.** The engine reads an instrument with a brass block and no notes; `export_brass` writes none (version 3).
+  Each `instrument.json` shrinks (the trumpet's 311 to 237 kB, the horn's 126 to 52 kB); `data.bin` is unchanged and the five
+  render bit-identical to before.
+- **Releases.** `package.sh` ships Dussek's bundles and the instruments without a brass block; CI builds Weidinger and renders a
+  trumpet line with its standalone (identical to midi2wav's, 11 s for 195 s of music).
+
+<a id="step-240"></a>
+## 240. Loud slurs land too; Weidinger's first fixes
+
+Played in Weidinger, the trumpet's A#5 to G#5 slur at full velocity sounded G5, then moved up to G#5 after a while. It does the
+same offline (midi2wav) and in the Python reference, so the fit was at fault, not the port. Only slurs from above at velocity 120
+or more failed: from A5, A#5 and B5 they landed about 125 c flat and pulled in over 0.3–1 s. The slur repair (steps 236–238)
+had checked soft slurs only (velocity 60: the pp and mf cells). The ff cell under G#5 had never been moved.
+
+- **The loud band.** `slur_fix.py` has two bands:
+  - soft: velocity 60, moves the pp and mf cells, tongued checks at 45, 70 and 100;
+  - loud: velocity 127, moves the ff cell alone, tongued checks at 100 and 127.
+
+  The rules are the same in both: the least lip move that lands every seed and keeps the tongued notes. `brass_slurs` runs both
+  (version 3). On today's fits only the loud band ran, so the soft band did not stack moves on keys it had left alone.
+- **What it moved.** Loud slurs more than 20 c off, open and muted:
+  - the trumpet 18 keys before, 2 after;
+  - the horn 3 before, none after;
+  - the tenor trombone 21 before, 3 after;
+  - the bass trombone 38 before, 23 after;
+  - the tuba 31 before, 16 after.
+
+  The worst cases:
+  - the trumpet's G#5, open −127 to +13 c, with the wah, the wah with its stem and the bucket from −118 to −131 c to −19 to
+    +15 c;
+  - the horn's E5 and F5, −90 to +11 c;
+  - the tenor trombone's wah G4, −105 to −18 c;
+  - the tuba's open A3, −155 to +22 c, and straight G#3, −150 to +12 c.
+
+  Left, because no move passes the checks:
+  - the tuba's open G3 (−148 c);
+  - its lowest keys (open E1 to G1 up to 363 c, straight F1 to C2 up to 62 c);
+  - some of the bass trombone's low keys (20–62 c).
+
+  The fits changed in their ff cells only.
+- **Measured in the engine.** Three rounds of each slur at velocity 127:
+  - the trumpet's slurs onto G#5 from A5, A#5 and B5: 8 of 9 wrong for 0.3 s or more before; after, none stays wrong, and one
+    dips −110 c for its first 50 ms;
+  - the tenor trombone's wah, G#4 to G4: a 50 ms start at −120 c in 2 of 3 rounds before; after, 1 of 3, for 150 ms;
+  - the tuba's straight A#3 to G#3: within 20 c by 0.15 s, before and after.
+- **Weidinger:**
+  - a fresh instance and the Default preset play the trumpet (`first = true` in a menu block; the engine reports it);
+  - the Analysis panel shows the Spectrogram alone, without a voice count or Partials (the players are not voices of strings);
+  - the LV2 port groups are numbered densely per plugin (DPF took a group id at or above the count in use as predefined, and the
+    build asserted);
+  - Weidinger has no audio inputs.
+
+<a id="step-241"></a>
+## 241. The brass steps five to ten times faster
+
+The brass steps were painfully slow: the trumpet's chain from `brass_land` to `export_brass` took 48 min on 16 cores, the slur
+repair over all five projects about 1.5 h. Three quarters of their CPU went to setting up a player, not to playing it. Each
+render through `live.render_events` built a new `live.Live`, and each drew its seed's streams again: 2M samples of breath noise
+(a bandpass, then an FFT of 2M points for the breath's balance), the wobbles, the growl's band, the flutter's jitter. That took
+0.15 s alone and 0.36 s each with 10–12 workers (memory bandwidth and page faults, 18 % of the CPU in the kernel), against
+0.1 s for the render itself. The renders were already in C (`rt.c`): the time was in Python's set-up.
+
+- **A seed's streams, once per process.** `live.streams(seed)` builds them once, keyed by the seed, `[brass] noise` and
+  `BREATH_DB`; the players of a seed share them, the noise read-only (`air_noise.py`'s silent player takes a zeroed copy). The
+  library is loaded once per process too. The renders are bit-identical: 151 of them over five mutes, seeds 1 to 501, with and
+  without the virtual player, a chord of six, against the old `live.py`.
+- **The slur repair's last scan.** After a repair, `slur_fix.py` scanned every key again for its report. Where nothing moved
+  from a band's scan on, the cells are as that scan found them: its result is reused.
+- **Measured** on the trumpet, 16 cores, nice 19, the chain run again on the committed fits:
+
+  | step | before | after |
+  |---|---|---|
+  | `brass_land` | 340 s | 58 s |
+  | `brass_slurs` | 1544 s | 152 s |
+  | `brass_level` | 83 s | 20 s |
+  | `brass_report` | 955 s | 194 s |
+  | `brass_gain`, `brass_tables`, `export_brass` | 2.4, 1.4, 1.9 s | 1.3, 1.2, 1.0 s |
+  | the chain | 48 min | 7 min |
+
+  `slur_fix.py repair loud open`: 109 s to 9.1 s.
+- **The same decisions.** On the same cells, `brass_slurs` prints the same moves and writes the same 130 cells. `brass_land`
+  did not choose the same on the second run, before this change as after it: `land_fix.attempt` leaves its trial cell in the
+  worker's `rt_tables.CELLS`, so what a worker tried before changes what it measures next (the cup's C#4 pp, lips 0 and air
+  ×0.8: 2 cases off fresh, 8 after an mf attempt), and the pool's order decides. Left as it was (a fix changes the fits).
+
+<a id="step-242"></a>
+## 242. A brass build is the same from the same inputs
+
+Two `build trumpet` in a row, on the same recordings, project file and code, differed: the tuning by up to 224 c (median
+0.4 c), the mutes' tuning by up to 141 c, 45 of the 192 cells, the level, the harmonics' correction, the gain. The fit itself
+(`brass_fit`: the table, `leveled`) was the same; everything after it moved. Three causes, each fixed:
+
+- **Trial cells left in the pool's workers.** `land_fix.attempt`, `rt_stability.try_cell` and `muted.attempt` set a trial cell
+  in the worker's tables and never took it out, so what a worker had tried before changed what it measured next, and the
+  pool's order chose (step 241). `spec.trying(table, key, value)` puts the trial in for one measurement and the table back as
+  it was.
+- **Steps that add to their own last output.** The retune added its passes to the last build's tuning (`brass_retune` and
+  `brass_retune#2`: two passes more per build; the tuba's E1 at ff had been moved −1011 c, the bass trombone's G1 at mf
+  +1075 c), the repairs started from the last build's cells, the mutes' retune from the last build's mute tuning. Each
+  now starts from none: `brass_retune` runs both passes from the table's own tuning (`brass_retune#2` is gone from the
+  chains), `brass_repair` and `brass_mutes` from no cells.
+- **Steps that read what later steps write.** The live player reads `level`, `speak` and `gain_db`, the tables `residual`, the
+  muted notes the mutes' correction (`mute_residual`): the repairs, the mutes' retune, the landing and the slurs read the last
+  build's, written after them. `brass_fit` now drops the later steps' keys first, and `brass_mute_shapes` (the lender's) the
+  mutes' shapes and their correction: each step reads only what this build wrote before it. With the first two fixes alone,
+  two builds still differed from the mutes' first retune pass on (the straight mute's worst 107 against 121 c).
+
+Two builds of the trumpet in a row, and of the tenor trombone (a borrower), now give the same fit and the same export, byte for
+byte. Every brass step's version went up; the five were refitted.
+
+- **The bore's modes, once per bore.** `sim.Note` found a note's slide by five bore computations in a row (a transfer
+  matrix through about 600 slices, 0.15 s each), and the mutes' steps build each note again per dynamics and mute.
+  `Note._mode` keeps them per bore (the slide, the shorter side, the mute's dimensions) and grid: bit-identical (30 muted
+  renders against the old `sim.py`), `muted.model` 2.3 times faster.
+- **The transfer's memo by the mute's dimensions.** `Note.transfer` kept its result by the slide rounded to 1e-9 and `id(mute)`:
+  without the shorter side, and a mute freed during the mutes' fit leaves its id to the next shape tried, which then got the
+  old one's transfer. Both memos now key the mute by its class and dimensions, at most 64 transfers (0.4 MB each) and 20 000
+  mode lists kept.
+- **Measured**, 16 cores, nice 19, a whole build from the recordings:
+
+  | project | before (step 241) | after |
+  |---|---|---|
+  | trumpet | 44–49 min | 37–38 min (`brass_mutes` 27 to 20 min) |
+  | tenor trombone | | 40 min |
+  | bass trombone | | 36 min |
+  | tuba | | 28 min |
+  | horn | | 6 min |
+
+- **What moved.** The trumpet's table and mutes' shapes differ from the committed ones (the shapes were last fitted on another
+  build's state); the trombones and the tuba borrow them. The tenor trombone's straight mute now splits its mode on A2, not G2,
+  and every note of it holds (`test_brass_chain`'s split key follows; `proto/tests/data/brass_accepted.json` holds the new
+  tables). Notes that do not hold, open, in the report: trumpet, horn, tenor trombone 0; bass trombone 28 of 570 cases (keys
+  28–30; 12 before, on 29 and 64); tuba 13 of 495 (29, 30; 26 before, on 28 and 29). For the ear before merging.
+- Rerun alone (`--only brass_land`, `--only brass_slurs`), the landing and the slur repair still start from the cells they
+  left: a whole build is what is the same.
+
+<a id="step-243"></a>
+## 243. The brass as loud as the grands
+
+At velocity 127, a loud slur on the trumpet peaked at 1.03 full scale, and on the tenor trombone with its wah at 1.15. The engine
+calibrates every other instrument by its ff peak (the median key at −15 dBFS) and then by step 173's loudness. The brass bypassed
+both: the fit's own gain (`brass_gain`) puts a loud note's peaks at the soft limit.
+
+Measured on step 173's phrase (EBU R128: an arpeggio over two octaves at 80, four long notes at 95; the grands' chords as single
+notes), Weidinger's defaults (Audience, the variation at 100 %):
+- the grands' median −30.4 LUFS (−31.1 … −29.0);
+- the trumpet −13.1, the horn −14.8, the tenor trombone −23.4, the bass trombone −24.3, the tuba −23.1.
+
+So the brass stood 6–17 dB over the grands, and 11 dB apart among themselves.
+
+- **A gain per project.** Each brass project's `[export]` has an `output_gain_db`, in 0.5 dB steps, the measurement as a comment:
+  the trumpet −17.5, the horn −15.5, the tenor trombone −7.0, the bass trombone −6.0, the tuba −7.5 dB.
+- **The export carries it.** `export_brass` writes it (version 4), and the engine scales the brass output by it, after the soft
+  limit, so the limit is unchanged. The tables, `data.bin` and the players are unchanged.
+- **After.** Every phrase lies within 0.2 dB of the grands' median (−30.6 … −30.3 LUFS), its peaks −20.5 … −16.1 dBFS. The loud
+  slurs peak 6–17 dB under full scale (the tenor trombone's wah −5.8 dBFS, the trumpet −17.2).
+
+<a id="step-244"></a>
+## 244. The brass attack against the recordings; brass renders in one segment
+
+Two complaints from the brass pieces (`albums/brass/`): the tuba's low notes explode at high air, and the trumpet's short
+notes in the wah mute with its stem are breathy and sound late.
+
+**The measure.** The attack is compared with its sustain (0.4–0.9 s in), on the recordings and on the engine dry at
+Recording, key by key at pp, mf and ff. Two figures:
+- the attack's peak, over windows of two periods (a 20 ms window is shorter than the tuba's E1, and a spiky low wave then reads
+  as an attack);
+- its first 50 ms.
+
+**The tuba.** On E1–A♯1 the recordings swell in (first 50 ms about −10 dB, no peak over the sustain). The engine peaked
++8 to +15 dB, its first 50 ms +6 to +12 dB. The attack's parts are not the cause: the tongue's kick, the air's burst, the lips'
+scoop and the virtual player's push, each switched off, left it. The cause is the pressure's rise:
+- every tongued note reached its pressure in 8 ms, under half a period of F♯1;
+- the bore took that as a shock and rang in its own inharmonic modes (on F♯1 at 226, 331, 380, 428, 522 Hz …) for 100–300 ms,
+  8–11 dB louder, until the lips locked on the note.
+
+| Rise | E1–A♯1: over / first 50 ms (ff) |
+|---|---|
+| 8 ms | +14.6 / +9.8 dB |
+| 4 periods | +8.9 / +5.9 |
+| 10 periods | +1.6 / −4.7 |
+| The recordings | about 0 / −10 |
+
+The other low brass have the same overshoot, milder:
+- the bass trombone's lowest keys +9.6 dB at ff, +0.6 dB with ten periods (the recordings +2.5);
+- the horn's D2–F♯2 +7.1 dB, with ten periods +3.6 (the recordings +1.1);
+- the tenor trombone's E2–G♯2 +11.0 dB, with ten periods still +6.8 (the recordings +1.2): the rise is not all of it there.
+
+**The trumpet.** From C5 up, a note at mf speaks (its pitch within 80 c and its level within 6 dB of the note's later level)
+30–50 ms after its audible onset, plus 10 ms from the key; the recordings speak in 0–20 ms. The cause is the lean-in:
+- a strong tongued note starts at `first` = 1.3 − 0.6 × the air, about 0.73, under its pressure, and recovers over 80 ms
+  (`compare5.attack_for`, fitted to the recordings' attack pitch);
+- a high note, close to its threshold, does not oscillate until the pressure is back: for 30–40 ms only breath noise.
+
+The speak fit's target (speaking within 60 ms) let it through. Never under 1, the median at velocity 81 goes from 50 to
+30–35 ms and at 110 from 20 to 10–15 ms (soft notes unchanged; about 20 ms at mf left to explain). The wah mute with its stem
+speaks like the open trumpet (30 ms without the lean-in, 45 with it). A slower rise slows the trumpet: ten periods takes its
+median at 81 back to 45 ms.
+
+**Three settings, off by default.**
+- `[brass] attack_rise_periods`: the pressure's rise in periods of the note, at least 8 ms (0: the 8 ms).
+- `attack_rise_hz`: a knee. Over it the rise blends back to 8 ms within an octave (log-linear). Ten periods everywhere took
+  the tenor trombone's staccato G3–C♯4 at velocity 50 from 25 to 65 ms (the march's trio afterbeats, heard as late). With a
+  100 Hz knee it is 30 ms, at 93 15 ms (today 20), the low registers' figures unchanged.
+- `attack_lean`: false never starts under the note's pressure.
+
+All three are optional fields of the export
+(`engine/tests/brass_attack.rs`), in the engine and in `live.py` alike (`port_check.py --with`, the tuba's case in
+`proto/tests/test_brass_port.py`). `export_brass.py` takes `--with` and `--variant` as `export.py` does.
+
+The variant `attack` (Snapshots): ten periods under a 100 Hz knee on the tuba, both trombones and the horn, the trumpet's 8 ms
+kept, no lean-in on all five. Heard as better overall, the march's trio afterbeats late before the knee. It is for the ear first, on the brass pieces rendered both ways (`albums/brass/mix.py --variant attack`).
+
+**The clicks.** The rendered pieces clicked at a few places: a step in the waveform, 0.027 to 0.006 in one sample. Each was
+where midi2wav joined two segments: two renders of the tuba's stem, one with a 1 s tail and one with a 4 s tail, were identical
+up to half of each and stepped there.
+- A brass player's state runs through the whole piece: each note's random draws count the notes since the start, and the
+  noise and the vibrato run on. No warm-up replays it.
+- midi2wav, and the standalone's `render` with it, now renders a brass instrument in one segment
+  (`engine/tests/midi2wav.rs`). The plugin never had the clicks.
+- `albums/brass/notes.py` reports the settled pitch alone (250 ms in): earlier, a low note's attack and the last note's ring
+  filled the window.
+
+**In the projects.** The variant's settings are now the projects' values (by ear: the knee fixed the trio's afterbeats).
+- The tuba, both trombones and the horn: ten periods under a 100 Hz knee, no lean-in. The trumpet: no lean-in alone.
+- The five chains were refitted on them: the level, the speech cells and the gain see the new attack.
+- The fitted gain moved by −1.5 dB on the horn and −2.0 dB on the tenor trombone. Their `output_gain_db` moved by +1.4 and
+  +1.8 dB, so step 243's phrase is back at −30.3 and −30.4 LUFS. The other three stayed within 0.3 dB.
+
+| Attack over the recording's, median (worst), dB | Low third | Middle | High |
+|---|---|---|---|
+| Tuba, before | +8.1 (+16.5) | +2.2 (+6.7) | −0.3 (+3.1) |
+| Tuba, now | +1.4 (+6.9) | +0.7 (+4.9) | +0.3 (+3.7) |
+| Bass trombone, before | +1.7 (+11.4) | +2.2 (+6.0) | +0.9 (+4.6) |
+| Bass trombone, now | 0.0 (+4.5) | +2.4 (+6.4) | +2.1 (+4.4) |
+| Tenor trombone, before | +3.7 (+9.7) | +2.1 (+6.0) | +1.7 (+4.8) |
+| Tenor trombone, now | +3.0 (+6.9) | +3.2 (+6.6) | +1.9 (+4.0) |
+| Horn, before | +1.4 (+6.2) | +0.4 (+3.4) | +0.2 (+3.5) |
+| Horn, now | +2.9 (+6.5) | +1.2 (+2.4) | +0.5 (+2.5) |
+
+- The tuba's E1–A♯1 at ff: +3.1 dB over the sustain on average (the variant +1.6, the 8 ms rise +9.7, the recordings about
+  −1). The refit's note repairs gave F♯1 at mf and ff 1.25 times the air (the variant 1.0), and F♯1–G1 overshoot 3.5–5.6 dB
+  (the variant 0.8–1.5). `brass_attack.rs` checks the mean over E1–A♯1.
+- The trumpet's speech from C5 to G♯5, median at velocity 50/81/93/110: 45/40/35/20 ms before, 50/30/30/10 ms now (the
+  variant before the refit 45/25/20/10).
+- At pp (velocity 40), 20 of its 33 fitted keys stayed silent before, dry at Recording; after the refit, 2.
+- Its low notes F♯3–D4 overshoot as before: 5–7 dB over the recordings at mf, 0.6–2 dB more without the lean-in. That is
+  left open.
+
+<a id="step-245"></a>
+## 245. A tongued note on a release can start from rest
+
+Dragging across the strip's white keys sometimes played a note explosively, more than the same keys from a controller.
+
+**The cause.** The strip sends the old key's off and the next key's on in the same frame:
+- the section gives the next key to the player just released, and the player tongues it;
+- the bore and the lips still hold the last note, which rings into the new attack.
+
+Dragged at 0.12 s a key, against the same notes 0.3 s apart (each note's peak over its first 150 ms, at Audience), the
+loudest dragged note peaked over the same note played apart by:
+
+| | Trumpet | Horn | Tenor trombone | Bass trombone | Tuba |
+|---|---|---|---|---|---|
+| Today | +5.3 | +6.8 | +2.2 | +3.3 | +5.9 |
+| From rest | +2.5 | +2.7 | +2.2 | +2.1 | +1.9 |
+
+The median dragged note: +1.3, +1.1, −0.7, +0.8, +3.0 dB today; +0.7, +0.6, +0.3, +0.4, −1.4 dB from rest.
+
+**The setting.** `[brass] attack_from_rest`, off by default: a tongued note on a release still sounding clears the
+player's core first, as a blown-up player does. It is in the engine and in `live.py` alike (the horn's case in
+`proto/tests/test_brass_port.py`), and an optional field of the export (`engine/tests/brass_drag.rs`: the horn's glissando
+dry at Recording, the loudest note +6.7 dB carried, +1.6 dB from rest).
+
+The release still sounding is cut where the new note starts. On the trumpet that leaves a step above 12 kHz at the joins
+(6 a glissando, −65 to −78 dBFS, about 50 dB under the notes); on the others none over the floor. It is for the ear: the
+variant `from_rest` (Snapshots) on all five, played from the strip.
+
+<a id="step-246"></a>
+## 246. Air added: the mod wheel's air as a control
+
+The mod wheel added air over the keys' (the prototype's way): built into the engine, no control showed it, MIDI learn could not
+move it, a host could not automate it, and only `docs/brass.md` named it.
+
+It is now a control, **Air added** (`air_added`, 0–100 %, on Weidinger's Player tab after Air), at the end of the parameter
+table and of Weidinger's ports (`plugin/tests/params-weidinger.lock`). It adds what the wheel did: the air from the keys'
+or Air's up to the top over its travel (`b + (127 − b) × added`).
+- Weidinger's default MIDI map ties it to CC 1, so its tag shows on the control and it is learned again or forgotten like the
+  other ties; midi2wav's default brass ties the same (`1:1=air_added,…`).
+- The mod wheel's own event is the clavichord's alone: on brass an untied CC 1 does nothing (`engine/tests/brass_air_added.rs`).
+- A Weidinger map file written before has no tie on CC 1: learn it once (Weidinger is not released).
+
+The brass pieces' swells on CC 1 render as before, through the tie (within −170 dB, the rounding).
+
+<a id="step-247"></a>
+## 247. The fade before a note from rest; the rise from a fifth of the pressure
+
+Step 245's variant, played from the strip: the joins click on some instruments (the trumpet the clearest), and a quick drag
+across the tuba's low keys is mostly silent, its low notes slow to speak.
+
+**The clicks.** Clearing the core cuts the release where the next note starts. Each join's top (the output over 5 kHz, its
+peak from 1 ms before the key to 3 ms after) against the louder of the two notes' own (the last 5–30 ms before, the new one
+30–80 ms after), the worst join of the glissando at Recording, dry:
+
+| | Trumpet | Horn | Tenor trombone | Bass trombone | Tuba |
+|---|---|---|---|---|---|
+| The state carried | +1.9 | +14.7 | −2.8 | +1.0 | +22.6 |
+| Cleared at once (245) | +10.5 | +21.9 | +5.4 | +0.0 | +26.6 |
+| Faded out first | +0.1 | +0.5 | −0.6 | +2.0 | +5.4 |
+
+(The last row with the rise below; over 0, a spike over both notes.) A tongued note on a release now waits while the
+release fades out over three control steps (4.4 ms, a raised cosine); the core is then cleared and the note starts from
+rest. A key during the fade takes the waiting note's place; its key coming up inside the fade still plays it, released at
+once (as the same tap from silence); a note let go inside the fade (Solo switched, a player released) ends the last one
+with the fade: cleared but left in its release, the release's air blew the bore again (−28 dB 40–300 ms after the key).
+
+**The low notes' speech.** Since step 244 the tuba's E1–C2 take 50–60 ms from the key to the first sound (30 dB under the
+sustain). The pressure rises as `first · sin²(π/2 · t/rise)` from none, over ten periods (244 ms at E1): it reaches a
+quarter of its top only after a third of the rise, the lips waiting under their threshold. The recordings cannot show the
+delay before the first sound; from the first sound to 3 dB under the sustain they take 40–280 ms, the engine 40–110 ms. The
+rise is not slower than the recordings; the wait before it is what a keyboard player hears.
+
+`[brass] attack_rise_from` starts the rise from a share of its top. The tuba's E1–C2 (medians over the keys at velocities
+40, 75, 114; ms to 30 dB and to 10 dB under the sustain; the attack's peak over the sustain, dB):
+
+| | First sound | 10 dB under | Over the sustain |
+|---|---|---|---|
+| The 8 ms rise (before 244) | 16, 16, 12 | 50, 52, 50 | +10.7, +12.2, +11.0 |
+| Ten periods, from none (today) | 52, 48, 46 | 86, 76, 70 | +1.6, +2.6, +3.1 |
+| From 0.15 | 12, 10, 8 | 54, 48, 46 | +1.3, +2.3, +3.0 |
+| From 0.2 | 12, 10, 8 | 50, 46, 44 | +1.3, +2.3, +3.1 |
+| From 0.3 | 10, 10, 8 | 44, 44, 46 | +1.7, +3.8, +4.4 |
+| From 0.6 | 8, 8, 8 | 44, 44, 44 | +6.3, +8.1, +7.8 |
+
+(The first row and the rows 0.3 and 0.6 over every other key from E1 to C2, the rest over all nine.) On the others with the slow rise, from 0.15–0.25 the first sound comes
+15–40 ms sooner (the bass trombone's low notes 46–56 → 12–22 ms, the horn's 25–35 → 5–10 ms) and the overshoot stays within
+0.5 dB. Dragged at 60 ms a key from rest, the tuba's E1–C3 come up to a median of −4.4 dB under their sustain (−11.1 dB
+from none), the quietest −23 dB (−38 dB).
+
+Both are settings, off: `attack_from_rest` fades (the engine and `live.py` alike, the horn's case in
+`proto/tests/test_brass_port.py`), `attack_rise_from` 0 (the tuba's case there). `engine/tests/brass_drag.rs`: the
+horn's joins (worst +24 dB cleared at once with no fade, under 3 dB faded), the tap inside the fade, the note let go;
+`engine/tests/brass_attack.rs`: the tuba's E1–A♯1 from a fifth sound 25 ms sooner and still under 4 dB over the sustain.
+For the ear (Snapshots): `from_rest` (the fade on all five, from 0.2 on the four with the slow rise) and `rise_from` (from
+0.2 alone, the four).
+
+**In the projects.** After the ear (both variants "much better"): `attack_from_rest = true` on all five, `attack_rise_from
+= 0.2` on the four with the slow rise (the trumpet's 8 ms rise has no wait to take away). Exported only: the fits stand as
+they were made without the share (the driver's chain adopted, `build.py adopt`, the ledgers saying so), the exports the
+variants played.
+
+Over the knee the share is blended out over the same octave as the rise (`attack_share`): an 8 ms rise has no wait to
+take away, and from a fifth it started with a step of air. `brass_engine.rs`'s latency at every rate caught it: the tenor
+trombone's C4 began 0.6 ms sooner at 48 kHz than at 44.1 kHz after the resampler, the edge softened differently at each
+rate. Under the knee nothing changes; the measures above move by 0.4 dB at most (the drag's worst note, the tuba's quick
+drag).
+
+<a id="step-248"></a>
+## 248. Weidinger's texts speak of a bell; no dummy engine
+
+Weidinger's controls shared Dussek's texts, so its microphones stood "across the piano", "above the soundboard", "at the
+keyboard", and its concert pitch retuned "the strings". `Ports.cpp`'s `nameOf` and `descriptionOf` give each plugin its own:
+Weidinger's speak of the bell's frame (its mouth the origin, x to the player's right, y to the player's front, z up, as
+`mic.rs` places the pair), its positions (Recording 1.5 m on the axis, Player at the ears, Audience 6 m in front, Close 1 and
+2 30 cm on and off the axis), Dynamics and Player's variation as the brass exports' labels did. A host reads them as the
+window does for a brass instrument (`ui_tests`: no piano word in any of Weidinger's ports, Dussek's unchanged). The mic
+positions' names too (`labelOf`): Close 1 and 2 named the hammers, the bars and the resonators; on Weidinger they are on and
+off the bell's axis. The brass projects keep their `[menu.labels]` for Variation and Dynamics (the same texts) until the next
+rebuild, as their comment says.
+
+The plugin built against a silent stand-in for the engine when `engine/` was missing. The engine is in the repository, so the
+stand-in (`plugin/src/dummy/`) is gone: the plugin always links the real one.
+
+`midi2wav --video` on a brass instrument drew a piano: 88 keys and their strings, which never moved (a bell has none), the
+sounding key lit. The plugin shows no Visualization on a bell, so `--video` refuses one before anything renders
+(`engine/tests/midi2wav.rs`).
+
+<a id="step-249"></a>
+## 249. The panels without the strip; a folder that is no instrument says why
+
+**The panels.** Analysis and Visualization opened only with the keyboard strip, their tabs shown only on it. The three
+tabs now show at every level and each toggles its own part: the bottom's level, as saved, keeps 0–3 (collapsed, the strip,
+the strip with Analysis, with Visualization) and adds 4 and 5, Analysis and Visualization alone
+(`StripInteraction.hpp`: `diagStrip`, `diagPanel`, the toggles; `ui_tests`: the toggles, the routing, the saved state).
+Seen under Xvfb: each panel alone and with the strip.
+
+**The messages.** Choosing a folder that is no instrument (or a file that is no Scala scale) said so on stderr only; one of
+the other plugin's showed a note. Now both show one: `Catalog::whyNot` names the reason (no `instrument.json`, no
+`data.bin` beside it, or the engine's own), under the Instrument menu, and a scale's under Temperament.
+
+<a id="step-250"></a>
+## 250. Weidinger in Dussek's release and on its website
+
+**The release.** The maintainer's choice: one set of five files, both plugins in each, rather than one set per plugin. The portable
+folders ship both standalones and all their bundles and every instrument (each plugin lists its own); Linux's `install.sh` installs
+both. The Windows installer offers Weidinger as a component that can be left out (its standalone and the formats chosen for Dussek,
+with the brass instruments), the macOS package as a choice with its formats under it; `packaging/split-brass.sh` keeps the brass
+apart for them. Each platform's install check lists both plugins' instruments; Linux's, run here, 47.
+
+**The website.** `weidinger.html`: a demo per brass instrument (its card the bell as held, from the window's drawing), the brass
+album's three pieces (`albums/brass/mix.py`, about 50 s to render on 16 cores, made when missing), and seven features: the mutes,
+dynamics, growl and flutter, vibrato, the slide, a section against Solo, the microphones around the horn. The clips carry a `page`;
+the start page links Weidinger from its menu, a band and the download. The clips name their settings through the
+plugin's Copy CLI line (`settings_line`), which took Dussek's defaults for every instrument: the brass played at Player, not
+Weidinger's Audience (heard by the maintainer). `settingsLine` now starts from the defaults of the instrument's plugin
+(`defaultOf`, the engine's report says which); `ui_tests` checks a trumpet's line at Audience, a grand's still at Player.
+
+<a id="step-251"></a>
+## 251. The standalones' window icon
+
+On Linux the standalones' windows showed X11's default icon. DPF has the hooks, set when DGL is compiled: on X11
+`DGL_X11_WINDOW_ICON_NAME` (an array in `_NET_WM_ICON`'s format: width, height, ARGB pixels) and `DGL_X11_WINDOW_ICON_SIZE`,
+on Windows `DGL_WINDOWS_ICON_ID` (an icon resource); both apply to a window of its own, not to one embedded in a host (the
+host's icon). `packaging/icon/render.sh` now also writes `plugin/src/ui/WindowIcon.inc` (32, 64 and 128 px, `x11_icon.py`),
+which `PianoUI.cpp` defines the array from; on Windows each standalone carries `dussek.ico` as resource 1 (the exe's icon in
+Explorer too). Both plugins show Dussek's icon: Weidinger has none of its own yet. Checked under Xvfb: the window's
+`_NET_WM_ICON` holds the three sizes; the Windows resource is first built in the release workflow.

@@ -35,7 +35,10 @@ LEAD_S = 0.15  # kept before the first note
 WAV = ["-c:a", "pcm_f32le"]  # the files between the renders and the encoder (ffmpeg's default: 16 bit)
 # the keys a clip and a step may hold (a step's instrument, midi, morph, tail and set override the clip's)
 CLIP_KEYS = {"id", "section", "title", "instrument", "midi", "morph", "tail", "set", "seconds", "match",
-             "steps", "listen", "license", "short"}
+             "steps", "listen", "license", "short", "page"}
+PAGES = ("dussek", "weidinger")
+# a step's `source` from an album's renders: made by the album's own script when missing (not in git)
+ALBUMS = {"albums/brass/out/": ["albums/brass/mix.py"]}
 STEP_KEYS = {"label", "source", "input", "instrument", "midi", "morph", "tail", "set"}
 
 
@@ -86,6 +89,8 @@ def check(clips):
         seen.add(cid)
         if c.get("section") not in SECTIONS:
             errors.append(f"{cid}: section `{c.get('section')}` is none of {', '.join(SECTIONS)}")
+        if c.get("page", "dussek") not in PAGES:
+            errors.append(f"{cid}: page `{c.get('page')}` is none of {', '.join(PAGES)}")
         if c.get("match", "together") not in ("together", "each"):
             errors.append(f"{cid}: match is `together` or `each`")
         errors += [f"{cid}: unknown key `{k}`" for k in sorted(set(c) - CLIP_KEYS)]
@@ -93,7 +98,8 @@ def check(clips):
             where = f"{cid}" + (f" ({s['label']})" if "steps" in c else "")
             errors += [f"{where}: unknown key `{k}`" for k in sorted(set(s) - STEP_KEYS)]
             if "source" in s:
-                if not os.path.isfile(os.path.join(REPO, s["source"])):
+                album = any(s["source"].startswith(a) for a in ALBUMS)  # rendered before the clips
+                if not album and not os.path.isfile(os.path.join(REPO, s["source"])):
                     errors.append(f"{where}: no sound file {s['source']}")
                 continue
             name = value(c, s, "instrument", "")
@@ -185,13 +191,14 @@ MAESTRO_CREDIT = ('Performance from the MAESTRO dataset v3.0.0 (Hawthorne et al.
 def tags(c, s):
     """The file's own title, license and credit (a link to it alone still carries them)."""
     title = c["title"] if len(steps_of(c)) == 1 else f"{c['title']}: {s['label']}"
+    artist = "Weidinger" if c.get("page") == "weidinger" else "Dussek"
     if c.get("license") == "maestro":
         lic = ["-metadata", "LICENSE=CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)",
                "-metadata", f"COMMENT={MAESTRO_CREDIT}"]
     else:
         lic = ["-metadata", "LICENSE=CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
                "-metadata", "COMMENT=Rendered by Dussek, https://github.com/ccoors/dussek"]
-    return ["-metadata", f"TITLE={title}", "-metadata", "ARTIST=Dussek", *lic]
+    return ["-metadata", f"TITLE={title}", "-metadata", f"ARTIST={artist}", *lic]
 
 
 def render_clip(c, out_dir, tmp):
@@ -199,7 +206,8 @@ def render_clip(c, out_dir, tmp):
     steps = steps_of(c)
     wavs = [os.path.join(tmp, f"{c['id']}-{i}.wav") for i in range(len(steps))]
     frame = None
-    if c["section"] == "demo":
+    # a demo's card: a still of its Visualization (a brass instrument has none: Weidinger's page shows its window)
+    if c["section"] == "demo" and "brass" not in instrument(value(c, steps[0], "instrument")):
         os.makedirs(os.path.join(os.path.dirname(out_dir), "frames"), exist_ok=True)
         frame = os.path.join(os.path.dirname(out_dir), "frames", f"{c['id']}.jpg")
     for i, (s, w) in enumerate(zip(steps, wavs)):
@@ -219,7 +227,8 @@ def render_clip(c, out_dir, tmp):
         files.append({"label": s["label"], "file": f"audio/{name}"})
     name = value(c, steps[0], "instrument") if "source" not in steps[0] else c.get("instrument")
     menu = instrument(name).get("menu", {}) if name else {}
-    entry = {"id": c["id"], "section": c["section"], "title": c["title"], "instrument": menu.get("name", name),
+    entry = {"id": c["id"], "page": c.get("page", "dussek"), "section": c["section"], "title": c["title"],
+             "instrument": menu.get("name", name), "dir": name,
              "group": menu.get("group"), "listen": c.get("listen", ""), "license": c.get("license", "cc0"), "steps": files}
     if frame:
         entry["frame"] = f"frames/{c['id']}.jpg"
@@ -238,6 +247,14 @@ def group_members():
             if not menu.get("hidden"):
                 groups.setdefault(menu.get("group", "Other"), []).append(menu.get("name", d))
     return groups
+
+
+def albums(clips):
+    """The albums whose renders the clips play, rendered where a file is missing (their scripts write them)."""
+    for prefix, script in ALBUMS.items():
+        wanted = [s["source"] for c in clips for s in steps_of(c) if s.get("source", "").startswith(prefix)]
+        if any(not os.path.isfile(os.path.join(REPO, f)) for f in wanted):
+            subprocess.run(["nice", "-n", "19", sys.executable, os.path.join(REPO, *script)], check=True)
 
 
 def video(out_dir):
@@ -271,6 +288,7 @@ def main():
         sys.exit(f"render.py: {MIDI2WAV} is missing: build the engine first (just engine)")
     only = set(args.only.split(",")) if args.only else None
     chosen = [c for c in clips if only is None or c["id"] in only]
+    albums(chosen)
     audio = os.path.join(args.out, "audio")
     os.makedirs(audio, exist_ok=True)
     manifest_path = os.path.join(args.out, "clips.json")

@@ -57,6 +57,17 @@ typedef struct PeParams {
     float dynamics;     /* a hammer piano's level range over the velocity, dB from velocity 1 to 127 (10 ... 70; others ignore it) */
     float variation;    /* each strike slightly different: 0 none, 1 as measured ... 4 (struck instruments) */
     float restrike;     /* a re-strike meets the strings or the bar where they ring: 0 off (as from rest), 1 on (hammer pianos, mallet instruments) */
+    uint32_t brass_mute; /* brass: the mute by kind (0 open, 1 straight, 2 cup, 3 wah, 4 wah_stem, 5 bucket, 6 plunger; one the instrument lacks plays open), from the next tongued note */
+    float growl, flutter; /* brass: 0 … 1 */
+    float brass_vibrato; /* brass: 0 … 1, above 0 it replaces the player's */
+    float plunger;      /* brass: the hand over the plunger, 0 shut … 1 open; negative: the player's */
+    float air;          /* brass: the air, 0 … 127; negative: from the keys */
+    uint32_t virtual_player, brass_solo; /* brass: 0 off, 1 on */
+    uint32_t glide_mode; /* brass with a slide: 0 off, 1 auto, 2 on */
+    uint32_t glide_hold; /* brass with a slide: the glide's pedal, 0 up, 1 down */
+    float glide_time;   /* brass with a slide: s for a minor third */
+    uint32_t aftertouch_to; /* brass: 0 growl, 1 flutter */
+    float air_added;    /* brass: the air over the keys' or air's, 0 … 1, up to the top (the mod wheel's tie) */
 } PeParams;
 
 typedef struct PeMicSetup {
@@ -164,6 +175,8 @@ PeEngine* pe_create_morph(const char* const* dirs, const float* weights, uint32_
     const PeTuning* tuning, const PeFelt* felt, PeCache* cache, char* err, size_t err_len);
 /* true when e plays a hammer piano (its felt and Hammer hardness go through pe_create_morph). Any thread */
 bool pe_hammer_piano(const PeEngine* e);
+/* the engine plays a brass instrument */
+bool pe_brass(const PeEngine* e);
 void pe_destroy(PeEngine* e);
 
 /* temperaments (PeTuning.temperament): count and names (static UTF-8, null out of range) */
@@ -202,13 +215,21 @@ typedef struct PeMicGeometry {
     double yaw[2];
     double pitch[2];
 } PeMicGeometry;
+/* where a bell points and where its player's ears are: degrees from the player's front toward the right and above
+ * level, cm from the bell's mouth (x right, y front, z up), the bell's radius in mm */
+typedef struct PeBellPose {
+    int32_t azimuth, elevation;
+    int32_t ears_cm[3];
+    uint32_t radius_mm;
+} PeBellPose;
+
 /* stateless, any thread: the drawing and the pair where the engine puts it.
- * body 0 grand, 1 upright, 2 harp, 3 lever harp, 4 vibraphone, 5 marimba, 6 xylophone, 7 bells, 8 crotales, 9 guitar, 10 chimes, 11 hand chimes, 12 kalimba, 13 balafon, 14 psaltery, 15 đàn tranh, 16 strumstick, 17 tongue drum; position as PeTuning.mic_position; spacing and distance as in
+ * body 0 grand, 1 upright, 2 harp, 3 lever harp, 4 vibraphone, 5 marimba, 6 xylophone, 7 bells, 8 crotales, 9 guitar, 10 chimes, 11 hand chimes, 12 kalimba, 13 balafon, 14 psaltery, 15 đàn tranh, 16 strumstick, 17 tongue drum, 18 a brass instrument's bell; position as PeTuning.mic_position; spacing and distance as in
  * PeTuning. false: body or position out of range (out untouched) */
-bool pe_mic_geometry(uint32_t body, uint32_t position, double spacing, double distance,
-                     double lid, const PeMicSetup* custom, PeMicGeometry* out);   /* custom: used when position == 5, may be null; lid: 0 closed … 1 open, above 1 taken off */
+bool pe_mic_geometry(uint32_t body, const PeBellPose* bell, uint32_t position, double spacing, double distance,
+                     double lid, const PeMicSetup* custom, PeMicGeometry* out);   /* bell: a bell's pose (PeInstrumentInfo.bell), may be null; custom: used when position == 5, may be null; lid: 0 closed … 1 open, above 1 taken off */
 /* clamps a free setup to what the instrument allows; true if anything changed */
-bool pe_mic_clamp(uint32_t body, double lid, PeMicSetup* in_out);   /* lid: 0 closed … 1 open, above 1 taken off */
+bool pe_mic_clamp(uint32_t body, const PeBellPose* bell, double lid, PeMicSetup* in_out);   /* bell as pe_mic_geometry's; lid: 0 closed … 1 open, above 1 taken off */
 /* a body's name, as an instrument.json names it ("grand", "upright", …); NULL out of range */
 const char* pe_body_name(uint32_t body);
 
@@ -223,7 +244,7 @@ enum {
 };
 /* what plucks or strikes the strings (PeInstrumentInfo.exciter) */
 enum { PE_EXCITER_HAMMER, PE_EXCITER_QUILL, PE_EXCITER_FINGER, PE_EXCITER_PICK, PE_EXCITER_TANGENT, PE_EXCITER_MALLET,
-    PE_EXCITER_THUMB };
+    PE_EXCITER_THUMB, PE_EXCITER_BREATH };
 
 #define PE_INFO_MALLETS 8
 #define PE_INFO_LABELS 8
@@ -260,6 +281,13 @@ typedef struct PeInstrumentInfo {
     PeLabel labels[PE_INFO_LABELS];
     uint32_t morph_family;  /* which instruments morph together (equal, nonzero); 0: this one does not */
     bool hammer_piano;      /* a hammer piano: the felt bends (pe_create_morph's felt) */
+    bool brass;             /* a brass instrument (the rest below only then) */
+    bool slide, plunger, experimental;
+    uint32_t play_lo, play_hi; /* the lowest and highest key that plays */
+    uint32_t mute_count;
+    char mutes[8][16];      /* "open" first, in the project's order */
+    PeBellPose bell;        /* where the bell points as played (pe_mic_geometry's bell) */
+    bool first;             /* the menu block's "first": the plugin's default choice */
 } PeInstrumentInfo;
 
 /* fills `out` from instrument_dir/instrument.json (any thread, not real-time safe); false (out

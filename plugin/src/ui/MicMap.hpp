@@ -18,12 +18,20 @@ inline void viewAB(const PeMicGeometry& g, View v, const double p[3], double& a,
 /// world (a, b) ↔ screen: from above a = x, b = y (the front, keys, at the bottom); from the front a = x, b = z (up)
 /// (from the side, the harp: a = y)
 struct ViewTransform { float scale = 1, ox = 0, oy = 0; bool flip = false;
+    Rect bounds { 0, 0, 0, 0 }; // the view it was fitted to (a far marker is pinned inside it)
     Point2 toScreen(double a, double b) const; void toWorld(Point2 s, double& a, double& b) const; };
 /// the band at a view's foot its caption stands in (MicView: the small font, 4 px from the edge), kept clear of the drawing
 constexpr float kCaptionBand = 18;
 ViewTransform fitView(const PeMicGeometry& g, View v, const Rect& r);  // whole drawing, aspect kept, centered above the caption's band, 8 % margin
 int hitMic(const PeMicGeometry& g, const ViewTransform& t, View v, Point2 p, float radius);    // 0/1, −1 none (and at Recording)
 int hitMarker(const PeMicGeometry& g, const ViewTransform& t, Point2 p, float radius, uint32_t current); // 1…4, 0 none (top view); never the current position (not drawn)
+/// where marker i is drawn from above: at its place, or pinned to the view's edge toward it when the framing left it out
+/// (a brass bell's Audience, 6 m out)
+Point2 markerScreen(const PeMicGeometry& g, const ViewTransform& t, int i);
+/// where a microphone's letter goes: L left of its dot (side −1), R right of it (+1), under it (0) where that side
+/// leaves the view
+struct MicLabel { Point2 at; int side; };
+MicLabel micLabel(Point2 dot, int which, const Rect& view);
 struct DragValues { float distance; float spacingCm; };
 class MicDrag {
 public:

@@ -5,6 +5,7 @@
 // the user's are files in presetDir(), one per preset, a key = value per line, parameters by symbol.
 // Pure (no UI, no DSP): tested by ui_tests.
 #pragma once
+#include "PluginKind.hpp"
 #include "StateVersion.hpp"
 
 #include <cstdint>
@@ -44,39 +45,39 @@ bool presetState(const std::string& key);
 const char* bodyName(uint32_t body);
 bool bodyIndex(const std::string& name, uint32_t& body);
 
-/// the shipped presets: the grand's and the upright's microphones, then the full presets (Default,
-/// then the repository's plugin/presets/*.dussek-preset, embedded by the build)
-const std::vector<Preset>& shippedPresets();
+/// a plugin's shipped presets: Dussek's the grand's and the upright's microphones, then the full presets
+/// (Default, then the repository's plugin/presets/<plugin>/*, embedded by the build)
+const std::vector<Preset>& shippedPresets(PluginKind k);
 /// the shipped full presets, Default first, then in their files' order (the plugin's programs)
-std::vector<const Preset*> shippedFullPresets();
+std::vector<const Preset*> shippedFullPresets(PluginKind k);
 
-/// a preset as its file's text, and read back (false: not a preset: no name or no scope, a mic preset
-/// without a known body)
-std::string formatPreset(const Preset& p);
-bool parsePreset(const std::string& text, Preset& out);
+/// a preset as its file's text ("# <plugin> preset" first), and read back (false: not a preset: no name or
+/// no scope, a mic preset without a known body, a text the other plugin wrote)
+std::string formatPreset(PluginKind k, const Preset& p);
+bool parsePreset(PluginKind k, const std::string& text, Preset& out);
 
-/// the user's presets' folder: the user data folder's presets (pe::dataDirs; empty: none)
-std::string presetDir();
+/// the user's presets' folder: the user data folder's identity(k).presetFolder (pe::dataDirs; empty: none)
+std::string presetDir(PluginKind k);
 /// the user's presets in `dir` (unreadable or foreign files skipped), by name
-std::vector<Preset> loadUserPresets(const std::string& dir);
+std::vector<Preset> loadUserPresets(PluginKind k, const std::string& dir);
 /// a file name for a preset's name in `dir`: the name made safe (letters, digits, - _ and spaces kept)
-std::string presetFile(const std::string& dir, const std::string& name);
+std::string presetFile(PluginKind k, const std::string& dir, const std::string& name);
 /// writes the preset to presetFile(dir, p.name) (the folder made if missing); false and `error` on failure
-bool saveUserPreset(const std::string& dir, const Preset& p, std::string& error);
+bool saveUserPreset(PluginKind k, const std::string& dir, const Preset& p, std::string& error);
 bool deleteUserPreset(const Preset& p);
 
 /// the presets offered for a scope and body: the shipped first, then the user's, each by name
-std::vector<const Preset*> presetsFor(PresetScope scope, uint32_t body, const std::vector<Preset>& user);
+std::vector<const Preset*> presetsFor(PluginKind k, PresetScope scope, uint32_t body, const std::vector<Preset>& user);
 
-/// a preset's values as (parameter index, value), its unknown symbols skipped; a full preset's are
-/// every parameter's, the default where the file has none
-std::vector<std::pair<uint32_t, float>> presetParams(const Preset& p);
+/// a preset's values as (parameter index, value), its unknown symbols and the parameters outside the
+/// plugin's ports skipped; a full preset's are every parameter's, the plugin's default where the file has none
+std::vector<std::pair<uint32_t, float>> presetParams(PluginKind k, const Preset& p);
 /// a full preset's states, every one it carries, the default (empty) where the file has none (a mic
 /// preset: none)
 std::vector<std::pair<std::string, std::string>> presetStates(const Preset& p);
 /// the preset whose values all equal `values` (indexed by parameter) within half a step of each's
 /// display, among `offered` (-1: none): the preset the controls still have
-int matchingPreset(const std::vector<const Preset*>& offered, const float* values);
+int matchingPreset(PluginKind k, const std::vector<const Preset*>& offered, const float* values);
 
 /// a Preset row's menu: the offered presets by name, "Save as…", and for the user's preset the
 /// controls still have (`current`) a delete, armed by a first click (the second deletes)
@@ -90,8 +91,9 @@ PresetMenu presetMenu(const std::vector<const Preset*>& offered, int current, bo
 /// the row's value: the preset the controls still have, else "None"
 std::string presetLabel(const std::vector<const Preset*>& offered, int current);
 
-/// a preset of `scope` from the current values (`values` by parameter index) and, for All, the states
-Preset presetFrom(const std::string& name, PresetScope scope, uint32_t body, const float* values,
+/// a preset of `scope` from the current values (`values` by parameter index; the plugin's ports only) and,
+/// for All, the states
+Preset presetFrom(PluginKind k, const std::string& name, PresetScope scope, uint32_t body, const float* values,
                   const std::vector<std::pair<std::string, std::string>>& states);
 
 } // namespace pe

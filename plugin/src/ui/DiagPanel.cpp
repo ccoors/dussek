@@ -114,13 +114,25 @@ void DiagPanel::addColumn()
     fImageDirty = true;
 }
 
+void DiagPanel::setPartialsOffered(bool on)
+{
+    if (on == fPartials) return;
+    fPartials = on;
+    fHoverTarget = kNearestNone;
+    layout(fArea, fStrip);
+    fRepaint();
+}
+
 void DiagPanel::layout(const Rect& area, const StripGeometry& strip)
 {
     fArea = area;
     fStrip = strip;
+    // without the Partials (a bell's players are no strings' voices) the buttons close up
+    float x = 8;
     for (int i = 0; i < 5; ++i) {
         Rect& r = i < 2 ? fViewTab[i] : i == 2 ? fRangeBtn : i == 3 ? fFloorBtn : fFreezeBtn;
-        r = { 8 + (float)i * 96, area.y + 4, 90, 22 };
+        r = i == 1 && !fPartials ? Rect {} : Rect { x, area.y + 4, 90, 22 };
+        x += r.w > 0 ? 96 : 0;
     }
     const float y = area.y + 30, h = area.h - 38;
     fSpecPlot = { 44, y, area.w - 52, h }; // a margin on the left for the frequency labels
@@ -151,7 +163,7 @@ void DiagPanel::poll()
 
 void DiagPanel::status(char* out, size_t n) const
 {
-    const uint32_t v = fHaveFrame ? std::min<uint32_t>(fShown->voices, PE_TELEMETRY_VOICES) : 0;
+    const uint32_t v = !fPartials ? kNoVoices : fHaveFrame ? std::min<uint32_t>(fShown->voices, PE_TELEMETRY_VOICES) : 0;
     formatStatus(out, n, fAvailable, dropsRecent(fDrops, nowMs()) ? fDrops.total : 0, nowMs() - fLastFrameAt > 1000, v, fFreeze);
 }
 
@@ -159,7 +171,7 @@ void DiagPanel::idle()
 {
     if (!fOpen) return; // closed: no work at all
     poll();
-    bool repaint = (fImageDirty && fSettings.view == 0) || (fNewFrame && !fFreeze);
+    bool repaint = (fImageDirty && view() == 0) || (fNewFrame && !fFreeze);
     fNewFrame = false;
     char st[sizeof fStatusShown];
     status(st, sizeof st);
@@ -171,8 +183,8 @@ void DiagPanel::draw(NanoVG& vg)
 {
     if (!fOpen) return;
     vg.fontSize(theme::smallFont);
-    button(vg, fViewTab[0], "Spectrogram", fSettings.view == 0);
-    button(vg, fViewTab[1], "Partials", fSettings.view == 1);
+    button(vg, fViewTab[0], "Spectrogram", view() == 0);
+    if (fPartials) button(vg, fViewTab[1], "Partials", view() == 1);
     char lo[24], hi[24], range[64];
     formatHz(fSettings.lo, lo, sizeof lo);
     formatHz(fSettings.hi, hi, sizeof hi);
@@ -187,7 +199,7 @@ void DiagPanel::draw(NanoVG& vg)
     if (fStatusShown[0] != '\0') // DGL asserts on an empty string
         vg.text(fArea.x + fArea.w - 10, fArea.y + 15, fStatusShown, nullptr);
 
-    const Rect& plot = fSettings.view == 0 ? fSpecPlot : fPartPlot;
+    const Rect& plot = view() == 0 ? fSpecPlot : fPartPlot;
     vg.beginPath(); vg.rect(plot.x, plot.y, plot.w, plot.h); vg.fillColor(theme::bg); vg.fill();
     if (!fAvailable) {
         vg.fillColor(theme::dim);
@@ -197,10 +209,10 @@ void DiagPanel::draw(NanoVG& vg)
     }
     vg.save();
     vg.scissor(plot.x, plot.y, plot.w, plot.h);
-    if (fSettings.view == 0) drawSpectrogram(vg, plot);
+    if (view() == 0) drawSpectrogram(vg, plot);
     else drawPartials(vg, plot);
     vg.restore();
-    if (fSettings.view == 0) { // the frequency labels, left of the plot
+    if (view() == 0) { // the frequency labels, left of the plot
         vg.fillColor(theme::faint);
         vg.textAlign(NanoVG::Align(NanoVG::ALIGN_RIGHT | NanoVG::ALIGN_MIDDLE));
         for (float f : { 55.0f, 110.0f, 220.0f, 440.0f, 880.0f, 1760.0f, 3520.0f, 7040.0f, 14080.0f }) {
@@ -272,7 +284,7 @@ bool DiagPanel::partialPos(int v, int p, float& x, float& y) const
 {
     const PeTelemetryPartial& q = fShown->voice[v].partials[p];
     if (!(q.freq > 0) || !std::isfinite(q.freq)) return false;
-    if (fSettings.view == 0) {
+    if (view() == 0) {
         if (q.freq < fSettings.lo || q.freq > fSettings.hi) return false;
         x = fSpecPlot.x + fSpecPlot.w - 2;
         y = fSpecPlot.y + fSpecPlot.h * freqToRow(q.freq, fSettings.lo, fSettings.hi, kRows) / kRows;
@@ -318,8 +330,8 @@ void DiagPanel::drawPartials(NanoVG& vg, const Rect& plot)
 int DiagPanel::nearest(float hx, float hy, float& px, float& py) const
 {
     if (!fAvailable || !fHaveFrame || hx < 0) return kNearestNone;
-    const Rect& plot = fSettings.view == 0 ? fSpecPlot : fPartPlot;
-    if (!plot.contains(hx, hy) && !(fSettings.view == 0 && hx >= plot.x && hx < plot.x + plot.w + kHoverRadius && hy >= plot.y && hy < plot.y + plot.h))
+    const Rect& plot = view() == 0 ? fSpecPlot : fPartPlot;
+    if (!plot.contains(hx, hy) && !(view() == 0 && hx >= plot.x && hx < plot.x + plot.w + kHoverRadius && hy >= plot.y && hy < plot.y + plot.h))
         return kNearestNone;
     int best = kNearestNone;
     float bestD = kHoverRadius * kHoverRadius;
@@ -329,7 +341,7 @@ int DiagPanel::nearest(float hx, float hy, float& px, float& py) const
             float x, y;
             if (!partialPos((int)v, p, x, y)) continue;
             // spectrogram: the dot; partials: the whole bar (from its top down to the bottom), not just its tip
-            const float dy = fSettings.view == 1 && hy > y ? 0.0f : y - hy;
+            const float dy = view() == 1 && hy > y ? 0.0f : y - hy;
             const float d = (x - hx) * (x - hx) + dy * dy;
             if (d <= bestD) { bestD = d; best = (int)v * 64 + p; px = x; py = y; }
         }

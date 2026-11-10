@@ -86,7 +86,7 @@ test-plugin: plugin
 
 # ---------------------------------------------------------------- run
 
-# The JACK standalone under PipeWire, linked to the default sink, with an ALSA MIDI port
+# The JACK standalone under PipeWire, linked to the default sink, with an ALSA MIDI port (--weidinger: Weidinger's)
 [group('run')]
 standalone *args:
     plugin/tools/run-standalone.sh {{args}}
@@ -124,7 +124,7 @@ report *args: engine
 midi2wav instrument midi wav *args: engine
     engine/target/release/midi2wav {{instrument}} {{midi}} {{wav}} {{args}}
 
-# Link the built plugin into ~/.lv2, ~/.clap, ~/.vst3 and instruments/ into the user data directory
+# Link the built plugins (Dussek, Weidinger) into ~/.lv2, ~/.clap, ~/.vst3 and instruments/ into the user data directory
 [group('run')]
 install:
     #!/usr/bin/env bash
@@ -133,24 +133,24 @@ install:
     data="${XDG_DATA_HOME:-$HOME/.local/share}/dussek"
     [ -d "$bin/dussek.lv2" ] || { echo "build the plugin first: just plugin"; exit 1; }
     mkdir -p "$HOME/.lv2" "$HOME/.clap" "$HOME/.vst3" "$data"
-    links=("$bin/dussek.lv2:$HOME/.lv2/dussek.lv2"
-           "$bin/dussek.clap:$HOME/.clap/dussek.clap"
-           "$bin/dussek.vst3:$HOME/.vst3/dussek.vst3"
-           "$PWD/instruments:$data/instruments")
+    links=("$PWD/instruments:$data/instruments")
+    for p in dussek weidinger; do
+        links+=("$bin/$p.lv2:$HOME/.lv2/$p.lv2" "$bin/$p.clap:$HOME/.clap/$p.clap" "$bin/$p.vst3:$HOME/.vst3/$p.vst3")
+    done
     for l in "${links[@]}"; do
         t=${l#*:}
         if [ -e "$t" ] && [ ! -L "$t" ]; then echo "$t exists and is not a link; not touching it"; exit 1; fi
     done
     for l in "${links[@]}"; do ln -sfn "${l%%:*}" "${l#*:}"; done
-    echo "installed (links): LV2, CLAP, VST3; instruments at $data/instruments"
+    echo "installed (links): Dussek and Weidinger as LV2, CLAP, VST3; instruments at $data/instruments"
 
 # Remove the links install made
 [group('run')]
 uninstall:
     #!/usr/bin/env bash
     data="${XDG_DATA_HOME:-$HOME/.local/share}/dussek"
-    for t in "$HOME/.lv2/dussek.lv2" "$HOME/.clap/dussek.clap" \
-             "$HOME/.vst3/dussek.vst3" "$data/instruments"; do
+    for t in "$HOME"/.lv2/{dussek,weidinger}.lv2 "$HOME"/.clap/{dussek,weidinger}.clap \
+             "$HOME"/.vst3/{dussek,weidinger}.vst3 "$data/instruments"; do
         [ -L "$t" ] && rm "$t" && echo "removed $t"
     done
     true
@@ -170,7 +170,7 @@ fit project *args:
 # Export again without refitting: one project, or every one by default
 [group('instruments')]
 export project="--all":
-    python3 proto/build.py build {{project}} --only export,export_bars
+    python3 proto/build.py build {{project}} --only export,export_bars,export_brass
 
 # Before a commit: nothing stale in a project built in this checkout (~6 s; exit 1 with the stale steps)
 [group('instruments')]
@@ -184,7 +184,7 @@ reproduce *projects:
 
 # ---------------------------------------------------------------- data
 
-# Download a University of Iowa MIS set (piano or guitar) into data/iowa-mis-<set>/; re-runnable
+# Download a University of Iowa MIS set (piano, guitar or brass) into data/iowa-mis-<set>/; re-runnable
 [group('data')]
 fetch-iowa set="piano":
     #!/usr/bin/env bash

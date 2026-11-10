@@ -359,6 +359,8 @@ def test_the_mallet_cuts_no_fundamental_deeply():
         if not os.path.exists(path):
             continue
         doc = json.load(open(path))
+        if "brass" in doc:  # its notes are silent: the sound is the players'
+            continue
         for n in doc.get("notes", []):
             e = n["excitation"]
             if e.get("type") == "pluck" and e.get("bar"):

@@ -14,7 +14,8 @@ def test_no_project_names_in_the_code():
     projects, parts, sources = P.index()
     names = set(projects) | set(parts) | set(sources)
     found = []
-    for path in sorted(glob.glob(os.path.join(P.REPO, "analysis", "*.py")) + glob.glob(os.path.join(P.REPO, "proto", "*.py"))):
+    for path in sorted(glob.glob(os.path.join(P.REPO, "analysis", "*.py")) + glob.glob(os.path.join(P.REPO, "proto", "*.py"))
+                       + glob.glob(os.path.join(P.REPO, "proto", "brass", "*.py"))):
         rel = os.path.relpath(path, P.REPO)
         for node in ast.walk(ast.parse(open(path).read())):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and node.value in names:

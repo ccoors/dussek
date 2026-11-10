@@ -35,6 +35,17 @@ and links it in as `data/<name>`.
 | [Single-Manual Harpsichord, Thomas Barton, 1709](https://doi.org/10.7488/ds/8088) (University of Edinburgh), `Harpsichord_Single_Manual_Thomas-Barton-1709.zip` | CC BY 4.0 | 613 MB | unpacked into `data/edinburgh-barton/raw/` | `harpsichord_f_right`, `harpsichord_f_left` (Harpsichord F, credited) |
 | University of Iowa MIS guitar, anechoic | free for any project (the MIS page) | 1.6 GB | `just fetch-iowa guitar`, then `python3 analysis/split_runs.py Guitar` | `guitar` |
 
+## Brass
+
+The University of Iowa MIS brass was recorded anechoic and "may be downloaded and used for any
+projects, without restrictions". `just fetch-iowa brass` fetches the runs into `data/iowa-mis-brass/`
+(about 300 MB) and `python3 analysis/split_brass.py` cuts them into one file per note under its `notes/`
+once. The trumpet's mutes are compared with VSCO 2 CE's muted notes (CC0, `data/vsco-2-ce/`).
+
+| Dataset | Files | Projects |
+|---|---|---|
+| University of Iowa MIS brass, anechoic | the runs `<stem>.<pp\|mf\|ff>.<range>.aiff`: `Trumpet.novib`, `TenorTrombone`, `Horn`, `BassTrombone`, `Tuba` | `trumpet`, `tenor_trombone`, `horn`, `bass_trombone`, `tuba` |
+
 ## Percussion
 
 The University of Iowa MIS percussion was recorded anechoic and "may be downloaded and used for

@@ -2,6 +2,7 @@
 // switch, the settings file they live in (one for every instance and session: it describes the
 // controller, not a sound), and a CC's value as the control's value.
 #pragma once
+#include "PluginKind.hpp"
 #include "Instruments.hpp"
 #include "Params.hpp"
 
@@ -59,10 +60,13 @@ public:
     /// the version that wrote the file (`version N`; without one 1); a newer file is read as far as
     /// it is understood (unknown lines skipped)
     uint32_t version = kFirstMidiMapVersion;
+    /// whose map it is (its file's first line; parse and load take it): ties to the other plugin's controls are left out
+    PluginKind plugin = PluginKind::Keys;
     bool programChange = false;
     /// soft takeover: a knob or fader tied absolute moves a slider only once it reaches the slider's
-    /// value (the slider moved otherwise: the mouse, the host, a preset), so the slider never jumps
-    bool softTakeover = true;
+    /// value (the slider moved otherwise: the mouse, the host, a preset), so the slider never jumps;
+    /// off by default: a knob is where its slider goes. A file's own line keeps its choice
+    bool softTakeover = false;
 
     const std::vector<Tie>& ties() const { return fTies; }
     /// ties the CC to target: the target's old tie and the CC's old one go first (one CC drives one
@@ -79,12 +83,13 @@ public:
     /// per tie, "… zero" for a step on the value 0, "… relative" for an endless knob's, "… flip" for a
     /// pad flipping a switch
     std::string text() const;
-    /// unreadable lines, unknown symbols and unlearnable CCs are left out; the lines apply in order
-    static MidiMap parse(const std::string& text);
+    /// unreadable lines, unknown symbols, controls the plugin has no port for (Ports.hpp) and unlearnable CCs
+    /// are left out; the lines apply in order
+    static MidiMap parse(const std::string& text, PluginKind k);
     /// creates missing directories, writes a temporary file beside it and renames it; false on failure
     bool save(const std::string& path) const;
-    /// missing or unreadable: no ties, the switch off
-    static MidiMap load(const std::string& path);
+    /// missing or unreadable: the plugin's defaults (defaultTies)
+    static MidiMap load(const std::string& path, PluginKind k);
     /// `edit` applied to the file as it is now (another instance may have written it since this map
     /// was read) and saved: this map becomes the result; false (the file not written): unchanged
     bool update(const std::string& path, const std::function<void(MidiMap&)>& edit);
@@ -93,8 +98,13 @@ private:
     std::vector<Tie> fTies;
 };
 
-/// midi-map.txt in the user config folder (pe::dataDirs: ~/.config/dussek on Linux; empty: none)
-std::string midiMapPath();
+/// a fresh map: Dussek's no ties, Weidinger's the brass player's (channel 1: CC11 Air, 70 Vibrato, 21 Growl,
+/// 23 Flutter, 4 Plunger, 65 Glide held, 5 Glide time); the switches off
+MidiMap defaultTies(PluginKind k);
+
+/// the plugin's map in the user config folder (pe::dataDirs: ~/.config/dussek on Linux; empty: none):
+/// identity(k).midiMapFile (Dussek's midi-map.txt, Weidinger's weidinger-midi-map.txt)
+std::string midiMapPath(PluginKind k);
 /// "CC 21", "CC 21 at 0" (a step on the value 0), "CC 21 ±" (a relative knob), "CC 21 flip" (a pad flipping a switch)
 std::string tieLabel(const Tie& t);
 /// "1" … "16"
@@ -127,6 +137,9 @@ ListChoices listChoices(uint32_t param, const InstrumentEntry& e);
 /// a CC value as param's value: a list in equal bands over `lists`, a switch off at 0 and on at 1–127
 /// (a pad hit softly), a slider over its travel (0 the left end, 127 the right)
 float ccToValue(uint32_t param, uint8_t value, const ListChoices& lists);
+/// the ties `midi2wav --cc` takes, as it reads them ("1:11=air,…", channels 1–16), "none" without one: the brass
+/// controls a value maps plainly (no list, no step, no relative knob, no flip; `engine/src/midi2wav/cc.rs`)
+std::string ccTiesArg(const MidiMap& map);
 /// param's value `steps` from `current` (a relative knob): a switch on (up) or off (down), a list
 /// that many entries along its menu (`lists`; a value not in it from the nearest), an integer slider
 /// that many whole numbers, a slider 1/127 of its travel per step; held at the ends

@@ -7,6 +7,7 @@
 #define DISTRHO_PLUGIN_NAME    "Dussek"
 #define DISTRHO_PLUGIN_URI     "https://ccoors.de/plugins/dussek"
 #define DISTRHO_PLUGIN_CLAP_ID "de.ccoors.dussek"
+#define PE_PLUGIN_KIND         0 // pe::Kind::Keys (PluginKind.hpp)
 
 #define DISTRHO_PLUGIN_BRAND_ID  Ccrs
 #define DISTRHO_PLUGIN_UNIQUE_ID Dsek

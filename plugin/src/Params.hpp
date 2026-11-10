@@ -30,6 +30,10 @@ enum Param : uint32_t {
     kHammerGrooves, kDamperBuzz, kRattle, kPhantom,
     // the prepared piano: the preparation and each one's own parameters
     kPrepMode, kPluckPosition, kPluckBrightness, kMuteStrength, kHarmonicNumber, kBoltMass, kBoltPosition, kPaperBuzz,
+    // brass: the mute, the player's effects, the air and the plunger by hand (each with its "by hand" switch: moving it
+    // takes over from the keys, the switch gives it back), the player, the slide's glide; the air added over it (the mod wheel's)
+    kBrassMute, kGrowl, kFlutter, kBrassVibrato, kPlunger, kPlungerSet, kAir, kAirSet, kVirtualPlayer, kBrassSolo,
+    kGlideMode, kGlideHold, kGlideTime, kAftertouchTo, kAirAdded,
     kParamCount
 };
 // per microphone pattern, yaw, pitch are consecutive: kMicLPattern + 3 * i + { 0, 1, 2 }
@@ -40,7 +44,7 @@ static_assert(kMicLYaw == kMicLPattern + 1 && kMicLPitch == kMicLPattern + 2 && 
         && kMicRYaw == kMicLPattern + 4 && kMicRPitch == kMicLPattern + 5,
     "pattern, yaw, pitch per microphone");
 
-enum Group : uint32_t { kGroupInstrument, kGroupMics, kGroupTuning, kGroupNoises, kGroupCondition, kGroupDefects, kGroupPrepared, kGroupCount };
+enum Group : uint32_t { kGroupInstrument, kGroupMics, kGroupTuning, kGroupNoises, kGroupCondition, kGroupDefects, kGroupPrepared, kGroupBrass, kGroupCount };
 
 struct ParamInfo {
     const char* name;

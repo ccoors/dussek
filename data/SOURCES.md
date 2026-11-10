@@ -114,6 +114,20 @@ these sets is embedded in or distributed with the engine.
   The top's main mode (~224 Hz) takes the energy of every partial near it: G3–B♭3's fundamentals
   decay at 50–135 dB/s on every string, their neighbors at 15–30 (`proto/fit_body_modes.py`).
 
+## University of Iowa MIS — Brass
+
+- Location: `iowa-mis-brass/` (download with `just fetch-iowa brass`, URL list in
+  `iowa-mis-brass-links.txt`: the runs of https://theremin.music.uiowa.edu/MIS.html for B-flat trumpet
+  without vibrato, tenor trombone, horn, bass trombone and tuba)
+- License: the MIS page, for the whole collection: "Since 1997, these recordings have been freely
+  available on this website and may be downloaded and used for any projects, without restrictions." No
+  audio of it is redistributed here.
+- Content: anechoic chromatic runs per dynamic, `<stem>.<pp|mf|ff>.<range>.aiff`; some names have a space
+  before the range (`BassTrombone.ff. Db1B1.aiff`). `analysis/split_brass.py` cuts them into
+  `notes/<stem>/<dyn>/<midi>.wav`.
+- Notes from inspection: the horn lacks pp C2-B3 and mf C3-B3 (its project interpolates them). The tuba
+  and the bass trombone do not hold below about E1 in the model: their projects start at E1.
+
 ## Versilian Community Sample Library — Keys (VCSL Keys)
 
 - Location: `vcsl-keys/` (https://versilian-studios.com/Distro/VCSL_Keys.zip, 680 MB; repository

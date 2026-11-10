@@ -1,15 +1,20 @@
 #!/usr/bin/env bash
 # Runs the JACK standalone under PipeWire as a desktop app would: its outputs linked to the
-# default sink, and an ALSA MIDI port ("Dussek MIDI", through a2jmidi_bridge) for programs
-# that play to ALSA MIDI devices (aplaymidi, ALSA-only players). Ends the bridge when the
-# standalone closes.
-#   plugin/tools/run-standalone.sh [path/to/dussek]
+# default sink, and an ALSA MIDI port ("Dussek MIDI" or "Weidinger MIDI", through a2jmidi_bridge)
+# for programs that play to ALSA MIDI devices (aplaymidi, ALSA-only players). Ends the bridge when
+# the standalone closes.
+#   plugin/tools/run-standalone.sh [--weidinger] [path/to/the standalone]
 # Needs pw-jack, pw-link, pw-dump, jq, pactl and a2jmidi_bridge (a2jmidid).
 set -u
 
 here=$(cd "$(dirname "$0")" && pwd)
-app=${1:-$here/../build/bin/dussek}
-bridge_name="Dussek MIDI"
+plugin=dussek name=Dussek
+if [ "${1:-}" = --weidinger ]; then
+    plugin=weidinger name=Weidinger
+    shift
+fi
+app=${1:-$here/../build/bin/$plugin}
+bridge_name="$name MIDI"
 
 for tool in pw-jack pw-link pw-dump jq pactl a2jmidi_bridge; do
     command -v "$tool" >/dev/null || { echo "run-standalone: $tool not found" >&2; exit 1; }

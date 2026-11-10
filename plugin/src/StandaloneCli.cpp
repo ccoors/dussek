@@ -6,6 +6,7 @@
 #include "Autoconnect.hpp"
 #include "Catalog.hpp"
 #include "Paths.hpp"
+#include "PluginTarget.hpp"
 #include "dussek.h"
 
 #include <cstdio>
@@ -64,11 +65,18 @@ void dispatch(int argc, char** argv)
     }
 #endif
     int code;
+    pe::setMessagesPlugin(pe::kKind);
     if (list) {
         const std::string res = resourcesFolder();
         const pe::Catalog c = pe::Catalog::scan(pe::Catalog::searchPaths(res.empty() ? nullptr : res.c_str()));
-        std::fputs(pe::listingText(c).c_str(), stdout);
-        code = c.menu().empty() ? 1 : 0;
+        std::fputs(pe::listingText(c, pe::kKind).c_str(), stdout);
+        code = c.menu(pe::kKind).empty() ? 1 : 0;
+    } else if (const std::string other = argc > 2 && argv[2] != nullptr ? pe::otherPluginsFolder(argv[2], pe::kKind) : std::string();
+               !other.empty()) {
+        std::fprintf(stderr, "%s: %s is a %s instrument: render it with %s\n", pe::identity(pe::kKind).executable, argv[2],
+            other.c_str(), other == pe::identity(pe::PluginKind::Winds).name ? pe::identity(pe::PluginKind::Winds).executable
+                                                                             : pe::identity(pe::PluginKind::Keys).executable);
+        code = 2;
     } else {
         code = pe_cli(argc - 1, argv + 1);
     }
@@ -107,7 +115,7 @@ void autoconnect()
     constexpr unsigned long kIsInput = 0x1, kIsOutput = 0x2, kIsPhysical = 0x4;
     constexpr const char* kAudio = "32 bit float mono audio";
     int status = 0;
-    void* client = jackOpen("Dussek autoconnect", kNoStartServer, &status);
+    void* client = jackOpen((std::string(pe::identity(pe::kKind).name) + " autoconnect").c_str(), kNoStartServer, &status);
     if (client == nullptr)
         return;
     const auto names = [&](const char* pattern, unsigned long flags) {
@@ -125,8 +133,9 @@ void autoconnect()
                 return false;
         return true;
     };
-    // the standalone's client is named Dussek (JACK numbers a second one: Dussek-01)
-    const char* const ours = "^Dussek(-[0-9]+)?:audio_out_[0-9]+$";
+    // the standalone's client is named as its plugin, Dussek (JACK numbers a second one: Dussek-01) or Weidinger
+    const std::string pattern = std::string("^") + pe::identity(pe::kKind).name + "(-[0-9]+)?:audio_out_[0-9]+$";
+    const char* const ours = pattern.c_str();
     for (int i = 0; i < 100; ++i) {
         std::vector<std::string> outs = names(ours, kIsOutput);
         if (outs.size() >= 2) {

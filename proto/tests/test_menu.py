@@ -4,7 +4,7 @@ import os
 
 import project as P
 
-KNOWN = ["Grand pianos", "Upright pianos", "Rolled pianos", "Harpsichords", "Clavichords", "Harps", "Guitars", "Percussion", "Thumb pianos", "Zithers"]
+KNOWN = ["Grand pianos", "Upright pianos", "Rolled pianos", "Harpsichords", "Clavichords", "Harps", "Guitars", "Brass", "Percussion", "Thumb pianos", "Zithers"]
 
 
 def exporting():

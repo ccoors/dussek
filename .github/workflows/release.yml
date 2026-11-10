@@ -65,7 +65,8 @@ jobs:
         run: |
           # direct dependencies only (JACK is loaded at run time, when a server runs)
           allowed='^(ld-linux-x86-64\.so\.2|lib(c|m|dl|pthread|rt|gcc_s|stdc\+\+|GL|X11|Xext|Xrandr|Xcursor|dbus-1|asound|pulse|pulse-simple)\.so\.[0-9.]+)$'
-          for f in plugin/build/bin/dussek plugin/build/bin/dussek.lv2/*.so plugin/build/bin/dussek.clap plugin/build/bin/dussek.vst3/Contents/x86_64-linux/*.so; do
+          for f in plugin/build/bin/{dussek,weidinger} plugin/build/bin/{dussek,weidinger}.lv2/*.so plugin/build/bin/{dussek,weidinger}.clap \
+                   plugin/build/bin/{dussek,weidinger}.vst3/Contents/x86_64-linux/*.so; do
             objdump -p "$f" | awk '/NEEDED/{print $2}' | grep -Ev "$allowed" && { echo "$f needs more than every desktop has"; exit 1; }
           done
           echo ok
@@ -173,7 +174,11 @@ jobs:
         run: |
           version=${PORTABLE#dist/dussek-}
           version=${version%-windows}
-          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" /Q "/DVersion=$version" "/DSource=$(cygpath -w "$PWD/$PORTABLE")" packaging/windows/dussek.iss
+          # the installer's source: the portable folder, the brass apart (installed with Weidinger only)
+          stage=dist/setup-stage
+          rm -rf "$stage" && cp -R "$PORTABLE" "$stage"
+          packaging/split-brass.sh "$stage/instruments" "$stage/instruments-brass"
+          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" /Q "/DVersion=$version" "/DSource=$(cygpath -w "$PWD/$stage")" packaging/windows/dussek.iss
           echo "SETUP=dist/dussek-$version-windows-setup.exe" >> "$GITHUB_ENV"
       - name: Installed, listed, uninstalled
         run: packaging/windows/check-install.sh "$SETUP" "$PORTABLE"

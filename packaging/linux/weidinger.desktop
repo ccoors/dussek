@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Weidinger
+GenericName=Brass
+Comment=Physically modeled brass: trumpet, trombones, horn and tuba (a preview)
+Exec=weidinger
+Icon=dussek
+Terminal=false
+Categories=AudioVideo;Audio;Midi;
+Keywords=trumpet;trombone;horn;tuba;brass;synthesizer;music;

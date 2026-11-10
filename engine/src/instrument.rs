@@ -24,20 +24,20 @@ impl std::fmt::Display for Error {
 
 impl std::error::Error for Error {}
 
-fn err(msg: impl Into<String>) -> Error {
+pub(crate) fn err(msg: impl Into<String>) -> Error {
     Error(msg.into())
 }
 
 /// Reference to an array in `data.bin`.
 #[derive(Clone, Deserialize)]
-struct ArrRef {
+pub(crate) struct ArrRef {
     o: usize,
     n: usize,
     t: String,
 }
 
 #[derive(Clone)]
-struct Data(Vec<u8>);
+pub(crate) struct Data(Vec<u8>);
 
 impl Data {
     fn bytes(&self, r: &ArrRef, width: usize) -> Result<&[u8], Error> {
@@ -46,14 +46,14 @@ impl Data {
             .ok_or_else(|| err(format!("array at {} (n={}) beyond data.bin", r.o, r.n)))
     }
 
-    fn f64(&self, r: &ArrRef) -> Result<Vec<f64>, Error> {
+    pub(crate) fn f64(&self, r: &ArrRef) -> Result<Vec<f64>, Error> {
         if r.t != "f64" {
             return Err(err(format!("expected f64, got {}", r.t)));
         }
         Ok(self.bytes(r, 8)?.as_chunks::<8>().0.iter().map(|b| f64::from_le_bytes(*b)).collect())
     }
 
-    fn f32(&self, r: &ArrRef) -> Result<Vec<f32>, Error> {
+    pub(crate) fn f32(&self, r: &ArrRef) -> Result<Vec<f32>, Error> {
         if r.t != "f32" {
             return Err(err(format!("expected f32, got {}", r.t)));
         }
@@ -594,6 +594,9 @@ struct RawInstrument {
     /// the plugin's menu entry (`info`; the engine plays without it)
     #[serde(default)]
     menu: Option<serde_json::Value>,
+    /// a brass instrument's tables and what its players read (`brass::Tables`)
+    #[serde(default)]
+    brass: Option<crate::brass::tables::RawBrass>,
 }
 
 /// One pedal-noise take: burst (reference rate, channel-major stereo, peak 1) and its
@@ -713,6 +716,8 @@ pub struct Mallet {
 
 #[derive(Clone)]
 pub struct Instrument {
+    /// a brass instrument: its sound comes from these, the notes are silent (`brass`)
+    pub brass: Option<std::sync::Arc<crate::brass::Tables>>,
     pub profile: String,
     /// a fingerprint of what the files held (a morph: of its sides' and their weights): an engine
     /// takes another's state over only for the same content (`Engine::adopt`), so a changed export
@@ -1079,6 +1084,7 @@ pub(crate) struct NoteFacts {
 
 /// What `info` reads of an instrument (instrument.json alone).
 pub(crate) struct Facts {
+    pub brass: Option<crate::info::BrassInfo>,
     pub body: crate::mic::Body,
     /// the instruments it morphs with (`morph::family`: 1 the hammer-strung pianos, 2 the
     /// harpsichords, 3 the harps); 0: none
@@ -1131,6 +1137,7 @@ pub(crate) fn facts(dir: &Path) -> Result<Facts, Error> {
         }
     };
     Ok(Facts {
+        brass: raw.brass.as_ref().map(crate::brass::tables::RawBrass::facts),
         body: crate::mic::Body::from_name(raw.body.as_deref()),
         morph_family: morph::family(&raw).unwrap_or(0),
         recorded: raw.recorded.map_or((21, 108), |[lo, hi]| (lo, hi)),
@@ -1318,7 +1325,9 @@ fn build(dec: Decoded) -> Result<Instrument, Error> {
             },
         });
     }
-    for (r, (_, ns, _)) in regs.iter().enumerate() {
+    // a brass export has no notes: its brass block is the sound (`brass`)
+    let silent = raw.brass.is_some() && regs.len() == 1 && regs[0].1.is_empty();
+    for (r, (_, ns, _)) in regs.iter().enumerate().filter(|_| !silent) {
         if ns.len() != 88 || ns.iter().enumerate().any(|(i, n)| n.note as usize != 21 + i) {
             return Err(err(format!("register {r}: expected notes 21…108 in order")));
         }
@@ -1368,7 +1377,7 @@ fn build(dec: Decoded) -> Result<Instrument, Error> {
     let register_names = regs.iter().map(|(name, _, _)| name.to_string()).collect();
     let (sp, rsr) = (raw.mic_spacing, raw.reference_sr);
     let threads = crate::threads::build_threads();
-    let per = notes.len().div_ceil(threads);
+    let per = notes.len().div_ceil(threads).max(1); // a brass export: none
     let (rad_v, rad_h) = std::thread::scope(|scope| {
         for (chunk, raws) in notes.chunks_mut(per).zip(raw_notes.chunks(per)) {
             let (kp, rp) = (&raw.knock, &raw.release);
@@ -1408,8 +1417,14 @@ fn build(dec: Decoded) -> Result<Instrument, Error> {
         down: thumps(&p.down, p),
         up: thumps(&p.up, p),
     });
+    let brass = raw.brass.as_ref().map(|b| crate::brass::Tables::load(b, &d).map(std::sync::Arc::new)).transpose()?;
+    let body_kind = match (crate::mic::Body::from_name(raw.body.as_deref()), &brass) {
+        (crate::mic::Body::Bell(_), Some(t)) => crate::mic::Body::Bell(t.pose), // where its bell points
+        (b, _) => b,
+    };
     let mut inst = Instrument {
-        body_kind: crate::mic::Body::from_name(raw.body.as_deref()),
+        brass,
+        body_kind,
         motor: raw.motor,
         bend: raw.bend,
         membrane: raw
@@ -1495,6 +1510,7 @@ impl Instrument {
         self.mallets.is_empty()
             && !self.tangent
             && !self.body_kind.is_bars()
+            && !self.notes.is_empty() // a brass export has none
             && self.notes.iter().all(|n| matches!(n.spec.excitation, crate::physics::Excitation::Hammer(_)))
     }
 
@@ -1834,7 +1850,7 @@ impl Instrument {
         }
         let stretch = &stretch;
         let threads = crate::threads::build_threads();
-        let per = self.notes.len().div_ceil(threads);
+        let per = self.notes.len().div_ceil(threads).max(1); // a brass export: none
         std::thread::scope(|scope| {
             for (ci, chunk) in self.notes.chunks_mut(per).enumerate() {
                 scope.spawn(move || {

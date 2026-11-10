@@ -169,14 +169,15 @@ std::string formatPartners(const std::vector<std::string>& ids)
     return out;
 }
 
+// a morph is a keyboard instrument's (no brass export has a family): looked up as Dussek's
 std::vector<std::string> validPartners(const std::vector<std::string>& ids, const Catalog& catalog, const std::string& mainId)
 {
     std::vector<std::string> out;
-    const InstrumentEntry* main = catalog.find(mainId);
+    const InstrumentEntry* main = catalog.find(mainId, PluginKind::Keys);
     if (main == nullptr || main->info.morph_family == 0)
         return out;
     for (const std::string& id : ids) {
-        const InstrumentEntry* e = catalog.find(id);
+        const InstrumentEntry* e = catalog.find(id, PluginKind::Keys);
         if (e == nullptr || id == mainId || e->info.morph_family != main->info.morph_family
             || std::find(out.begin(), out.end(), id) != out.end())
             continue;

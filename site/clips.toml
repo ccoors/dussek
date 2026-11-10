@@ -5,7 +5,8 @@
 # optional: `set` (plugin controls by symbol, in their own units: what the plugin plays, through
 # its Copy CLI line), `tail` (seconds after the last event, default 4), `seconds` (cut after so
 # many, faded), `listen` (what to listen for), `license` (shown with the clip; default CC0), `short`
-# (a shorter name where space is tight).
+# (a shorter name where space is tight), `page` ("dussek", the default, or "weidinger": the brass's page).
+# A step's `source` from an album's renders (albums/brass/out/) is rendered first when missing.
 # A feature lists `steps`, each a variant of the clip (`label`, and any of `instrument`, `midi`,
 # `set`, `morph`, `input` a sound into the audio input, `source` a sound file played as it is);
 # `match`: "together" (one gain for all steps: their differences in level stay) or "each" (every
@@ -135,6 +136,15 @@ instrument = "grand_a"
 midi = "site/midi/maestro/schubert-op90-3.mid"
 license = "maestro"
 
+[[clip]]
+id = "rachmaninoff"
+section = "performance"
+title = "Rachmaninoff: Prelude in D major, Op. 23 No. 4"
+short = "Rachmaninoff's Op. 23 No. 4"
+instrument = "grand_d"
+midi = "site/midi/maestro/rachmaninoff-op23-4.mid"
+license = "maestro"
+
 # ---- the features: the same phrase plain, then with the feature
 
 [[clip]]
@@ -258,3 +268,184 @@ steps = [
   { label = "Equal", set = { temperament = 0 } },
   { label = "Meantone 1/4 comma", set = { temperament = 1 } },
 ]
+
+# ---- Weidinger's page (page = "weidinger"): the brass, one demo each, the album's pieces, the features
+
+[[clip]]
+id = "trumpet"
+page = "weidinger"
+section = "demo"
+title = "Trumpet"
+instrument = "trumpet"
+midi = "trumpet"
+
+[[clip]]
+id = "horn"
+page = "weidinger"
+section = "demo"
+title = "Horn"
+instrument = "horn"
+midi = "horn"
+
+[[clip]]
+id = "tenor-trombone"
+page = "weidinger"
+section = "demo"
+title = "Tenor trombone"
+instrument = "tenor_trombone"
+midi = "tenor-trombone"
+
+[[clip]]
+id = "bass-trombone"
+page = "weidinger"
+section = "demo"
+title = "Bass trombone"
+instrument = "bass_trombone"
+midi = "bass-trombone"
+
+[[clip]]
+id = "tuba"
+page = "weidinger"
+section = "demo"
+title = "Tuba"
+instrument = "tuba"
+midi = "tuba"
+
+# the brass album (albums/brass, CC0): its mixes as albums/brass/mix.py writes them, rendered first when missing
+
+[[clip]]
+id = "harbor-parade"
+page = "weidinger"
+section = "piece"
+title = "Harbor Parade"
+steps = [{ label = "Harbor Parade", source = "albums/brass/out/01-harbor-parade.wav" }]
+
+[[clip]]
+id = "evening-chorale"
+page = "weidinger"
+section = "piece"
+title = "Evening Chorale"
+steps = [{ label = "Evening Chorale", source = "albums/brass/out/02-evening-chorale.wav" }]
+
+[[clip]]
+id = "back-alley-strut"
+page = "weidinger"
+section = "piece"
+title = "Back Alley Strut"
+steps = [{ label = "Back Alley Strut", source = "albums/brass/out/03-back-alley-strut.wav" }]
+
+[[clip]]
+id = "mutes"
+page = "weidinger"
+section = "feature"
+title = "Mutes"
+instrument = "trumpet"
+midi = "f-brass"
+listen = "The same line open and with five mutes: straight, cup, wah, bucket, and the plunger, the hand opening wider the harder a note is played."
+match = "together"
+steps = [
+  { label = "Open", set = { brass_mute = 0 } },
+  { label = "Straight", set = { brass_mute = 1 } },
+  { label = "Cup", set = { brass_mute = 2 } },
+  { label = "Wah", set = { brass_mute = 3 } },
+  { label = "Bucket", set = { brass_mute = 5 } },
+  { label = "Plunger", set = { brass_mute = 6 } },
+]
+
+[[clip]]
+id = "brass-dynamics"
+page = "weidinger"
+section = "feature"
+title = "Dynamics"
+instrument = "trumpet"
+midi = "f-brass"
+listen = "The same line soft, medium and loud: more air, and the sound grows brighter as well as louder."
+match = "together"
+steps = [
+  { label = "Soft", midi = "f-brass-soft" },
+  { label = "Medium" },
+  { label = "Loud", midi = "f-brass-loud" },
+]
+
+[[clip]]
+id = "growl-flutter"
+page = "weidinger"
+section = "feature"
+title = "Growl and flutter"
+instrument = "trumpet"
+midi = "f-brass"
+listen = "The throat's rough edge on the air, then the tongue rolling, cutting the air about 25 times a second."
+match = "together"
+steps = [
+  { label = "Plain" },
+  { label = "Growl", set = { growl = 70 } },
+  { label = "Flutter", set = { flutter = 80 } },
+]
+
+[[clip]]
+id = "brass-vibrato"
+page = "weidinger"
+section = "feature"
+title = "Vibrato"
+instrument = "trumpet"
+midi = "f-brass"
+listen = "The virtual player's own vibrato, coming in on a held note; a set one, wider; and the player off, the air from the keys alone, as a wind controller would give it."
+match = "together"
+steps = [
+  { label = "The player's" },
+  { label = "Wide", set = { brass_vibrato = 60 } },
+  { label = "No virtual player", set = { virtual_player = 0 } },
+]
+
+[[clip]]
+id = "glide"
+page = "weidinger"
+section = "feature"
+title = "The slide"
+instrument = "tenor_trombone"
+midi = "f-glide"
+listen = "The tenor trombone's slurs by the lips, then by the slide: every slur within a tritone glides."
+match = "together"
+steps = [
+  { label = "By the lips", set = { glide_mode = 0 } },
+  { label = "By the slide", set = { glide_mode = 2 } },
+]
+
+[[clip]]
+id = "section"
+page = "weidinger"
+section = "feature"
+title = "A section"
+instrument = "trumpet"
+midi = "f-brass-chords"
+listen = "Three chords: in Auto each becomes a section of trumpets, one player a note; in Solo one player takes the last key."
+match = "together"
+steps = [
+  { label = "Auto", set = { brass_solo = 0 } },
+  { label = "Solo", set = { brass_solo = 1 } },
+]
+
+[[clip]]
+id = "brass-mics"
+page = "weidinger"
+section = "feature"
+title = "Microphones"
+instrument = "horn"
+midi = "f-brass-horn"
+listen = "The horn's bell points back and to the player's right: 6 m in front (the default) it is darker, at the player's ears and 30 cm on the bell's axis brighter. All at the same loudness."
+match = "each"
+steps = [
+  { label = "Audience", set = { mic_position = 2 } },
+  { label = "Player", set = { mic_position = 1 } },
+  { label = "Close 1", set = { mic_position = 3 } },
+]
+
+[[clip]]
+id = "sad-trumpet"
+page = "weidinger"
+section = "feature"
+title = "Wah-wah-waaah"
+instrument = "trumpet"
+midi = "f-sad-trumpet"
+listen = "The plunger by hand (CC 4): three notes falling, the hand opening during each, the last one long with a widening vibrato. The sound of a plan failing."
+steps = [{ label = "Wah-wah-waaah", set = { brass_mute = 6 } }]

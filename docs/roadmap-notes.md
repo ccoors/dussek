@@ -518,3 +518,52 @@ Decided 2026-11-02: every instrument keeps 88 keys (A0–C8). Considered and dec
   (the extra strings ring along under the pedal and change the 88's sound), the bridge extended a
   few centimeters past A0 so the 88 keep their places. "88 keys" is assumed in about 350 places
   (the engine, its C interface, the fits, the UI, the editor): about two weeks.
+
+## Brass
+
+**The soft notes' speech** (measured 2026-11-10). From each one's own first sound the engine's notes speak as fast as the
+recordings' (the pitch within 80 c and the level within 6 dB of the note's own, held 100 ms: `proto/brass/speech.py`). What is
+late is the wait from the key to the first sound, which the recordings cannot show: taking their first sound as the key, at pp
+and mf from the middle of the range up the trumpet is 20–25 ms late, the horn 20–45 ms, the tuba 13–35 ms, the tenor
+trombone's top third 60 ms at pp; at ff 0–10 ms. Near their threshold the lips build slowly (the horn's A♯4 at mf: −25 dB
+at 16 ms, the breath, then −10 dB at 54 ms, −3 dB at 72 ms; at ff −5 dB at 28 ms).
+
+`speak_fit.py` pushes the attack only for a note that takes over 60 ms (`TARGET`), and lets the push overshoot by up to 6 dB
+(`OVER`). On the horn's G4–D5 at mf a push of 1.3 speaks in 14–34 ms for +2.3 to +3.7 dB at the attack (none: 29–64 ms,
++0.9 to +2.4 dB). The way, if the wait is heard: the target and the cap as `[brass]` settings (30 ms, 4 dB), the chain from
+`brass_speak` refit, the horn first, as a variant for the ear: a refit changes every step after it, and the push trades the
+wait for some of the burst steps 244–247 took out.
+
+**The trumpet's low notes overshoot** (left as they are by ear, 2026-11-10). F♯3–F4 peak 4.5–10 dB over their sustain
+(the recordings about 0). The cause is the scoop: the lips start up to 300 c slack (`compare5.attack_for`; `scoop_span`
+caps it only where the next mode down is close) and lips under the note blow the bore harder: without the scoop +2.1 to +3.2 dB,
+without the kick about 1 dB less, the burst and the virtual player's accent change nothing. The scoop gives the attack's pitch
+glide, which the recordings have (−68, −34, −14 c at 20, 40, 80 ms at pp; the player −53, −13, −4 c; without the scoop −22,
++7, +2 c); a slower scoop matches the glide and overshoots more (+8 dB), less air while the lips are slack takes 1.5 dB off.
+Not heard as explosive: left.
+
+**A Visualization for the brass** (the maintainer's note, 2026-11-10). The plugin offers none on a bell, and
+`midi2wav --video` refuses one (it drew a piano's keys and strings, which never moved). What it would show is open: the bell
+and the air through it, the lips' motion, the bore's modes, the mute. The engine's telemetry carries strings and bars
+(`telemetry.rs`, `VIZ_PARTIALS`); a bell needs its own frame.
+
+**The mute in the microphone drawing** (the same note). The drawing shows the bell as held (`[pose]`, `mic.rs`
+`bell_outlines`) but not the mute in it; a straight, cup, wah or bucket outline in the bell's mouth would show which one plays.
+
+## Signing
+
+What was found on 2026-11-10, to be looked up again when the work starts (prices, terms and eligibility change):
+
+- **Windows, SignPath Foundation** (signpath.org): free for open source; needs an OSI-approved license (AGPL-3.0 is),
+  automated builds on GitHub, multi-factor authentication on both accounts, a release before. The certificate is the
+  foundation's: Windows names "SignPath Foundation" as the publisher. Official GitHub Actions submit the artifacts and the
+  service checks they come from the repository's build; each project applies on its own. The likely choice.
+- **Windows, Certum Open Source Code Signing:** about €49 a year (the key in Certum's cloud, SimplySign) or €69 with a
+  card; the publisher the developer's own name, one certificate for all one's open-source projects. The cloud key's one-time
+  codes make an unattended CI run awkward, and certificates are now limited to about 15 months.
+- **Windows, Azure Artifact Signing:** about $10 a month, but an individual developer must be in the USA or Canada; in the
+  EU only organizations.
+- Either way SmartScreen may warn until a signed file has built a reputation.
+- **macOS, Apple's Developer Program** ($99 a year): Developer ID Application for the apps and plugin bundles, Developer
+  ID Installer for the package, notarization (`notarytool`, an App Store Connect API key); one account for every project.
+  In the workflow it replaces `packaging/macos/build-pkg.sh`'s ad hoc signatures.

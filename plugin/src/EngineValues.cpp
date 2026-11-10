@@ -2,7 +2,9 @@
 #include "Catalog.hpp"
 
 #include "Instruments.hpp"
+#include "Ports.hpp"
 
+#include <filesystem>
 #include <map>
 #include <algorithm>
 #include <cctype>
@@ -136,6 +138,19 @@ PeParams engineParams(const float* values)
         v[kDynamics],
         v[kVariation] / 100.0f,
         on(v[kRestrike]) ? 1.0f : 0.0f,
+        (uint32_t)std::max(0L, rounded(v[kBrassMute])),
+        v[kGrowl] / 100.0f,
+        v[kFlutter] / 100.0f,
+        v[kBrassVibrato] / 100.0f,
+        on(v[kPlungerSet]) ? v[kPlunger] / 100.0f : -1.0f,
+        on(v[kAirSet]) ? v[kAir] : -1.0f,
+        on(v[kVirtualPlayer]) ? 1u : 0u,
+        on(v[kBrassSolo]) ? 1u : 0u,
+        (uint32_t)std::max(0L, rounded(v[kGlideMode])),
+        on(v[kGlideHold]) ? 1u : 0u,
+        v[kGlideTime] / 1000.0f,
+        (uint32_t)std::max(0L, rounded(v[kAftertouchTo])),
+        v[kAirAdded] / 100.0f,
     };
 }
 
@@ -208,7 +223,7 @@ bool sameTuning(const PeTuning& a, const PeTuning& b)
         && a.spread_keys == b.spread_keys;
 }
 
-std::string instrumentDir(const char* resources, const char* id)
+static std::string anyInstrumentDir(const char* resources, const char* id)
 {
     if (const InstrumentEntry* e = Catalog::outside(id != nullptr ? id : ""))
         return e->dir; // kept anywhere: its own path
@@ -229,9 +244,27 @@ std::string instrumentDir(const char* resources, const char* id)
     return std::string();
 }
 
+std::string instrumentDir(const char* resources, const char* id, PluginKind k)
+{
+    const std::string dir = anyInstrumentDir(resources, id);
+    if (dir.empty())
+        return dir;
+    // whose it is: the catalog's answer for an id it lists (no second read), else the folder's own report
+    const CatalogPtr c = sharedCatalog(resources);
+    const PluginKind other = k == PluginKind::Winds ? PluginKind::Keys : PluginKind::Winds;
+    if (c->find(id != nullptr ? id : "", k) != nullptr)
+        return dir;
+    if (c->find(id != nullptr ? id : "", other) != nullptr)
+        return std::string(); // the other plugin's: not this one's to load
+    namespace fs = std::filesystem;
+    std::error_code ec;
+    const InstrumentEntry* e = Catalog::outside(fs::absolute(fs::path(dir), ec).lexically_normal().string());
+    return e == nullptr || ofKind(*e, k) ? dir : std::string();
+}
+
 std::string midi2wavLine(const float* values, const std::string& dir, double rate, const PeVelocityCurve* curve,
     const std::vector<std::pair<std::string, float>>& morph, const std::string& felt, const std::string& scale,
-    const std::string& program)
+    const std::string& program, const std::string& cc)
 {
     const PeParams p = engineParams(values);
     PeTuning t = engineTuning(values);
@@ -263,15 +296,22 @@ std::string midi2wavLine(const float* values, const std::string& dir, double rat
     }
     if (!felt.empty())
         line += " --felt " + quoted(felt);
+    if (!cc.empty())
+        line += " --cc " + quoted(cc);
     return line;
 }
 
 std::string settingsLine(const std::string& dir, const std::vector<std::pair<std::string, float>>& settings, std::string& error)
 {
     error.clear();
+    // the defaults of the plugin the instrument is played in (Weidinger's for a brass one: Audience, the player's
+    // variation as fitted); a folder the engine cannot read is Dussek's
+    PeInstrumentInfo info {};
+    char err[256] = {};
+    const PluginKind kind = pe_instrument_info(dir.c_str(), &info, err, sizeof(err)) && info.brass ? PluginKind::Winds : PluginKind::Keys;
     std::vector<float> v(kParamCount);
     for (uint32_t i = 0; i < kParamCount; ++i)
-        v[i] = paramInfo(i).def;
+        v[i] = defaultOf(kind, i);
     for (const auto& [symbol, value] : settings) {
         uint32_t i = 0;
         while (i < kParamCount && symbol != paramInfo(i).symbol)

@@ -276,3 +276,9 @@ button { font: inherit; color: inherit; }
   *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
   .js .rise { opacity: 1; transform: none; }
 }
+
+/* Weidinger's page: a brass field under the seam; the cards show each bell's drawing whole */
+.weidinger .hero-fields { background: #d9a63c; }
+.weidinger .hero-copy-bottom { color: #4a3305; }
+.weidinger .card img { object-fit: contain; background: var(--ui-bg); }
+.brass-band { display: grid; gap: 24px; }

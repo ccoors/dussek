@@ -28,6 +28,19 @@ pub const PARAM_KEYS: &[(&str, &str)] = &[
     ("dynamics", "a hammer piano's level range over the velocity (dB, 10–70)"),
     ("variation", "each strike slightly different (0 none … 1 as measured)"),
     ("restrike", "a re-strike meets the strings or the bar where they ring (0 off, 1 on)"),
+    ("brass_mute", "brass: the mute by kind (0 open, 1 straight, 2 cup, 3 wah, 4 wah with its stem, 5 bucket, 6 plunger; one the instrument lacks plays open), from the next tongued note"),
+    ("growl", "brass: 0 ... 1"),
+    ("flutter", "brass: 0 ... 1"),
+    ("brass_vibrato", "brass: 0 ... 1, above 0 it replaces the player's"),
+    ("plunger", "brass: the hand over the plunger, 0 shut ... 1 open (unset: the player's)"),
+    ("air", "brass: the air, 0 ... 127 (unset: from the keys)"),
+    ("virtual_player", "brass: 1 on, 0 off (the air from velocity, nothing else)"),
+    ("brass_solo", "brass: 0 Auto (a line one player, a chord a section), 1 Solo"),
+    ("glide_mode", "brass with a slide: 0 off, 1 auto, 2 on"),
+    ("glide_hold", "brass with a slide: the glide's pedal, 0 up, 1 down"),
+    ("glide_time", "brass with a slide: s for a minor third, 0.04 ... 1.2"),
+    ("aftertouch_to", "brass: 0 growl, 1 flutter"),
+    ("air_added", "brass: the air over the keys' or air's, 0 ... 1, up to the top (the mod wheel's tie)"),
     ("hammer", "wear: the hammers' felt compressed (0 as fitted … 1)"),
     ("voicing", "wear: the hammers worn unevenly (0 … 1)"),
     ("damper", "wear: the damper felt (0 … 1)"),
@@ -233,6 +246,19 @@ pub fn params(mut p: Params, spec: &str) -> Result<Params> {
             "hardness" => p.hardness = f,
             "variation" => p.variation = f,
             "restrike" => p.restrike = f,
+            "brass_mute" => p.brass.mute = f as u32,
+            "growl" => p.brass.growl = f,
+            "flutter" => p.brass.flutter = f,
+            "brass_vibrato" => p.brass.vibrato = f,
+            "plunger" => p.brass.plunger = Some(f),
+            "air" => p.brass.air = Some(f),
+            "virtual_player" => p.brass.virtual_player = f != 0.0,
+            "brass_solo" => p.brass.solo = f != 0.0,
+            "glide_mode" => p.brass.glide_mode = f as u32,
+            "glide_hold" => p.brass.glide_hold = f != 0.0,
+            "glide_time" => p.brass.glide_time = f,
+            "aftertouch_to" => p.brass.aftertouch_to = f as u32,
+            "air_added" => p.brass.air_added = f,
             "hammer" => p.hammer_wear = f,
             "voicing" => p.voicing_wear = f,
             "damper" => p.damper_wear = f,
@@ -313,6 +339,11 @@ pub fn format(p: &Params, curve: &crate::velocity::VelocityCurve, t: &Tuning, a4
         ("dynamics", p.dynamics, d.dynamics),
         ("variation", p.variation, d.variation),
         ("restrike", p.restrike, d.restrike),
+        ("growl", p.brass.growl, d.brass.growl),
+        ("flutter", p.brass.flutter, d.brass.flutter),
+        ("brass_vibrato", p.brass.vibrato, d.brass.vibrato),
+        ("glide_time", p.brass.glide_time, d.brass.glide_time),
+        ("air_added", p.brass.air_added, d.brass.air_added),
     ] {
         if v != dv {
             item(k, v.to_string());
@@ -326,10 +357,22 @@ pub fn format(p: &Params, curve: &crate::velocity::VelocityCurve, t: &Tuning, a4
         ("lute", p.lute as u32, d.lute as u32),
         ("motor", p.motor as u32, d.motor as u32),
         ("mallet", p.mallet, d.mallet),
+        ("brass_mute", p.brass.mute, d.brass.mute),
+        ("virtual_player", p.brass.virtual_player as u32, d.brass.virtual_player as u32),
+        ("brass_solo", p.brass.solo as u32, d.brass.solo as u32),
+        ("glide_mode", p.brass.glide_mode, d.brass.glide_mode),
+        ("glide_hold", p.brass.glide_hold as u32, d.brass.glide_hold as u32),
+        ("aftertouch_to", p.brass.aftertouch_to, d.brass.aftertouch_to),
     ] {
         if v != dv {
             item(k, v.to_string());
         }
+    }
+    if let Some(x) = p.brass.plunger {
+        item("plunger", x.to_string());
+    }
+    if let Some(x) = p.brass.air {
+        item("air", x.to_string());
     }
     let params = std::mem::take(&mut list);
     let d = Tuning::default();
@@ -531,6 +574,21 @@ mod format_tests {
                 restrike: r.or(d.restrike, |x| (x < 0.5) as u32 as f32),
                 // no key: a MIDI render has no audio input
                 input: d.input,
+                brass: crate::brass::BrassParams {
+                    mute: r.or(d.brass.mute, |x| (x * 7.0) as u32),
+                    growl: r.or(d.brass.growl, |x| x as f32),
+                    flutter: r.or(d.brass.flutter, |x| x as f32),
+                    vibrato: r.or(d.brass.vibrato, |x| x as f32),
+                    plunger: r.or(d.brass.plunger, |x| Some(x as f32)),
+                    air: r.or(d.brass.air, |x| Some((x * 127.0) as f32)),
+                    virtual_player: r.or(d.brass.virtual_player, |x| x < 0.5),
+                    solo: r.or(d.brass.solo, |x| x < 0.5),
+                    glide_mode: r.or(d.brass.glide_mode, |x| (x * 3.0) as u32),
+                    glide_hold: r.or(d.brass.glide_hold, |x| x < 0.5),
+                    glide_time: r.or(d.brass.glide_time, |x| (0.04 + x * 1.16) as f32),
+                    aftertouch_to: r.or(d.brass.aftertouch_to, |x| (x * 2.0) as u32),
+                    air_added: r.or(d.brass.air_added, |x| x as f32),
+                },
             };
             let dt = Tuning::default();
             let mic = r.or(dt.mic, |x| MicPosition::from_index((x * 6.0) as u32));

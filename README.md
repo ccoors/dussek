@@ -28,6 +28,8 @@ resonance, low latency) and has a character of its own. It is named after Jan La
 | Percussion | Vibraphone, Marimba, Xylophone, Balafon, Bells, Tubular bells, Crotales, Glockenspiel A, B, Hand chimes, Tongue drum |
 | Thumb pianos | Kalimba, Mbira A, B, Nyunga nyunga |
 
+Weidinger, a second plugin for the brass, in development: [docs/brass.md](docs/brass.md).
+
 The editor makes more: new instruments from a sample set, pianos morphed between two others, and
 rolled pianos that no recording holds (a "Rolled pianos" group).
 

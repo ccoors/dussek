@@ -1,5 +1,6 @@
 #!/bin/sh
-# Dussek on Linux: the standalone, the LV2, CLAP and VST3 plugins and the instruments.
+# Dussek and Weidinger (the brass, a preview) on Linux: each its standalone, its LV2, CLAP and VST3 plugins;
+# the instruments (each plugin lists its own).
 #   ./install.sh            for you: ~/.lv2, ~/.clap, ~/.vst3, ~/.local/bin, ~/.local/share
 #   sudo ./install.sh --system   for every user, under /usr/local (CLAP: /usr/lib/clap)
 # Run again to update. What it installed is listed in installed.txt beside the instruments (each
@@ -26,7 +27,8 @@ manifest=$data/installed.txt
 
 # `just install` links these to a clone (its instruments, its builds): writing through the links would
 # change the clone, so a release install waits until they are gone (`just uninstall`)
-for t in "$data/instruments" "$bin/dussek" "$lv2/dussek.lv2" "$clap/dussek.clap" "$vst3/dussek.vst3"; do
+for t in "$data/instruments" "$bin/dussek" "$lv2/dussek.lv2" "$clap/dussek.clap" "$vst3/dussek.vst3" \
+         "$bin/weidinger" "$lv2/weidinger.lv2" "$clap/weidinger.clap" "$vst3/weidinger.vst3"; do
     if [ -L "$t" ]; then
         echo "install.sh: $t is a link (from \`just install\`?); remove the links first (\`just uninstall\`)" >&2
         exit 1
@@ -48,18 +50,22 @@ put() { # list $2, then copy $1 to $2 (replacing what is there: a test build's b
     rm -rf "$2"
     cp -R "$1" "$2"
 }
-put "$here/dussek" "$bin/dussek"
-put "$here/dussek.lv2" "$lv2/dussek.lv2"
-put "$here/dussek.clap" "$clap/dussek.clap"
-put "$here/dussek.vst3" "$vst3/dussek.vst3"
+for p in dussek weidinger; do
+    put "$here/$p" "$bin/$p"
+    put "$here/$p.lv2" "$lv2/$p.lv2"
+    put "$here/$p.clap" "$clap/$p.clap"
+    put "$here/$p.vst3" "$vst3/$p.vst3"
+done
 for dir in "$here"/instruments/*/; do
     id=$(basename "$dir")
     put "${dir%/}" "$data/instruments/$id"
 done
 [ -f "$here/instruments/aliases.txt" ] && put "$here/instruments/aliases.txt" "$data/instruments/aliases.txt"
-echo "$share/applications/dussek.desktop" >> "$manifest"
-sed "s|^Exec=.*|Exec=$bin/dussek|" "$here/dussek.desktop" > "$share/applications/dussek.desktop"
+for p in dussek weidinger; do
+    echo "$share/applications/$p.desktop" >> "$manifest"
+    sed "s|^Exec=.*|Exec=$bin/$p|" "$here/$p.desktop" > "$share/applications/$p.desktop"
+done
 put "$here/dussek.png" "$share/icons/hicolor/256x256/apps/dussek.png"
 
-echo "Dussek installed: $bin/dussek, the plugins in $lv2, $clap, $vst3, the instruments in $data/instruments."
-case ":$PATH:" in *":$bin:"*) ;; *) echo "($bin is not on your PATH: start it from the menu or as $bin/dussek)";; esac
+echo "Dussek and Weidinger installed: $bin/dussek and $bin/weidinger, the plugins in $lv2, $clap, $vst3, the instruments in $data/instruments."
+case ":$PATH:" in *":$bin:"*) ;; *) echo "($bin is not on your PATH: start them from the menu or as $bin/dussek, $bin/weidinger)";; esac
