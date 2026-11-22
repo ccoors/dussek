@@ -904,10 +904,33 @@ impl Default for BellPose {
 /// The bell's profile: (along its axis, radius), × its radius over 9 cm: the flare and the tube behind it.
 const BELL_PROFILE: [(f64, f64); 6] = [(0.0, 0.09), (-0.05, 0.05), (-0.12, 0.02), (-0.22, 0.012), (-0.45, 0.012), (-0.45, 0.0)];
 
-/// A bell from above (x, y) and from the front (x, z), each a closed outline: a solid of revolution seen along a view's
-/// normal is its rings, each an ellipse centered on the axis's projection, so its half-width at a point of that projection
-/// is the widest ring there.
+/// The mutes' profiles as BELL_PROFILE's (along the axis, + out of the mouth; radius), by `brass::MUTE_KINDS` (open: none):
+/// the drawing's shapes, not the tables' (a straight mute's cone, its wide end out; a cup's cone and cup over the mouth; a
+/// wah's cork ring and bowl, the stem's tube out of it; a bucket clipped over the rim; a plunger held in front).
+const MUTE_PROFILES: [&[(f64, f64)]; 7] = [
+    &[],
+    &[(-0.10, 0.0), (-0.10, 0.015), (0.05, 0.045), (0.07, 0.045), (0.07, 0.0)],
+    &[(-0.10, 0.0), (-0.10, 0.015), (0.03, 0.04), (0.03, 0.075), (0.07, 0.082), (0.08, 0.082), (0.08, 0.0)],
+    &[(-0.06, 0.0), (-0.06, 0.03), (0.0, 0.045), (0.02, 0.07), (0.05, 0.07), (0.06, 0.03), (0.06, 0.0)],
+    &[(-0.06, 0.0), (-0.06, 0.03), (0.0, 0.045), (0.02, 0.07), (0.05, 0.07), (0.06, 0.03), (0.06, 0.012), (0.11, 0.012), (0.11, 0.0)],
+    &[(0.0, 0.0), (0.0, 0.097), (0.09, 0.097), (0.09, 0.0)],
+    &[(0.035, 0.0), (0.045, 0.06), (0.06, 0.08), (0.065, 0.08), (0.065, 0.0)],
+];
+
+/// A bell from above (x, y) and from the front (x, z), each a closed outline (24 and 32 points).
 fn bell_outlines(pose: BellPose) -> (Vec<[f64; 2]>, Vec<[f64; 2]>) {
+    revolved_outlines(pose, &BELL_PROFILE)
+}
+
+/// The mute in a bell (a `brass::MUTE_KINDS` index) as bell_outlines draws the bell; None: open, or no such kind.
+pub fn mute_outlines(pose: BellPose, kind: usize) -> Option<(Vec<[f64; 2]>, Vec<[f64; 2]>)> {
+    MUTE_PROFILES.get(kind).filter(|p| !p.is_empty()).map(|p| revolved_outlines(pose, p))
+}
+
+/// A solid of revolution along the bell's axis (a profile as BELL_PROFILE, × the bell's radius over 9 cm) from above and
+/// from the front, each a closed outline: seen along a view's normal it is its rings, each an ellipse centered on the
+/// axis's projection, so its half-width at a point of that projection is the widest ring there.
+fn revolved_outlines(pose: BellPose, profile: &[(f64, f64)]) -> (Vec<[f64; 2]>, Vec<[f64; 2]>) {
     let k = pose.radius() / 0.09;
     let u = pose.axis();
     let view = |a: usize, b: usize, n: usize, points: usize| {
@@ -917,7 +940,7 @@ fn bell_outlines(pose: BellPose) -> (Vec<[f64; 2]>, Vec<[f64; 2]>) {
         let squash = u[n].abs(); // a ring's extent along the projected axis, over its radius
         // the rings, finely along the profile: (center along the projection, radius)
         let mut rings = Vec::new();
-        for w in BELL_PROFILE.windows(2) {
+        for w in profile.windows(2) {
             for i in 0..20 {
                 let t = i as f64 / 20.0;
                 rings.push(((w[0].0 + t * (w[1].0 - w[0].0)) * k * l, (w[0].1 + t * (w[1].1 - w[0].1)) * k));

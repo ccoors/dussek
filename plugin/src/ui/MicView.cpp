@@ -1,6 +1,7 @@
 #include "MicView.hpp"
 #include "Theme.hpp"
 
+#include <algorithm>
 #include <cmath>
 
 namespace pe {
@@ -37,10 +38,25 @@ void drawAim(NanoVG& vg, const PeMicGeometry& g, View v, const ViewTransform& t,
     vg.closePath();
     vg.fillColor(theme::accent); vg.fill();
 }
+
+/// a closed outline in world coordinates, filled as the keys (a mute in the bell)
+void outlineWorld(NanoVG& vg, const ViewTransform& t, const double (*pts)[2], uint32_t n)
+{
+    if (n < 3)
+        return;
+    vg.beginPath();
+    for (uint32_t i = 0; i < n; ++i) {
+        const Point2 p = t.toScreen(pts[i][0], pts[i][1]);
+        i == 0 ? vg.moveTo(p.x, p.y) : vg.lineTo(p.x, p.y);
+    }
+    vg.closePath();
+    vg.fillColor(theme::keys); vg.fill();
+    vg.strokeColor(theme::woodEdge); vg.strokeWidth(1); vg.stroke();
+}
 }
 
 void drawMicView(NanoVG& vg, const PeMicGeometry& g, View v, const Rect& r, const ViewTransform& t, int hotMic, int hotMarker,
-    uint32_t position, const char* caption)
+    uint32_t position, const char* caption, const PeMuteOutline* mute)
 {
     vg.save();
     vg.beginPath();
@@ -66,6 +82,8 @@ void drawMicView(NanoVG& vg, const PeMicGeometry& g, View v, const Rect& r, cons
         if (std::isfinite(g.keys_top[0])) {
             vg.beginPath(); rectWorld(vg, t, g.keys_top); vg.fillColor(theme::keys); vg.fill();
         }
+        if (mute != nullptr)
+            outlineWorld(vg, t, mute->top, std::min<uint32_t>(mute->top_count, 24));
         for (int i = 1; i < 5; ++i) { // the other positions
             if ((uint32_t)i == position)
                 continue;
@@ -99,6 +117,8 @@ void drawMicView(NanoVG& vg, const PeMicGeometry& g, View v, const Rect& r, cons
         if (std::isfinite(g.keys_front[0])) {
             vg.beginPath(); rectWorld(vg, t, g.keys_front); vg.fillColor(theme::keys); vg.fill();
         }
+        if (mute != nullptr)
+            outlineWorld(vg, t, mute->front, std::min<uint32_t>(mute->front_count, 32));
         const Point2 a = t.toScreen(g.lid_front[0][0], g.lid_front[0][1]), b = t.toScreen(g.lid_front[1][0], g.lid_front[1][1]);
         vg.beginPath();
         if (!std::isfinite(g.lid_front[0][0])) {

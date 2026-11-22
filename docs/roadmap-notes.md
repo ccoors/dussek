@@ -547,8 +547,7 @@ Not heard as explosive: left.
 and the air through it, the lips' motion, the bore's modes, the mute. The engine's telemetry carries strings and bars
 (`telemetry.rs`, `VIZ_PARTIALS`); a bell needs its own frame.
 
-**The mute in the microphone drawing** (the same note). The drawing shows the bell as held (`[pose]`, `mic.rs`
-`bell_outlines`) but not the mute in it; a straight, cup, wah or bucket outline in the bell's mouth would show which one plays.
+**The mute in the microphone drawing** (the same note): done, step 261.
 
 ## Signing
 

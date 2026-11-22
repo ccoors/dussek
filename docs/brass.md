@@ -61,7 +61,8 @@ fitted sound unchanged, 1.5 m on the axis as Iowa's microphone stood. A position
 the room's balance; Lid and Pillow do not apply. Of the distance's delay only the pair's difference is kept, so nothing plays late. Audience is 3 to 4 dB
 darker from 4 kHz up than Recording. The spacing is the pair's, as on every instrument; at Player it stops at the ears' 18 cm and at
 Close 1 and 2 at 10 cm, and the value reads "(limited)" there. From above, the other positions' markers wait at the view's edge when
-they are farther than 5 m (Audience).
+they are farther than 5 m (Audience). The views draw the mute that plays in the bell's mouth (a straight mute's cone, a
+cup's cone and cup, a wah's bowl, its stem, a bucket over the rim, a plunger in front): a drawing, not the tables' shapes.
 
 Each bell points as it does when played (the export's `pose`): the trumpet and the trombones forward and a little down,
 the horn back and to the player's right, the tuba up and to the right. Player and Audience stay where the player is,

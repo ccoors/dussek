@@ -364,9 +364,14 @@ protected:
         if (fLayout.topView.w <= 0)
             return;
         const uint32_t pos = micPosition();
-        drawMicView(*this, fGeom, kTop, fLayout.topView, fTop, fHotView == kTop ? fHotMic : -1, fHotMarker, pos, "from above");
+        // the mute that plays, in the bell's mouth
+        PeMuteOutline m;
+        const bool muted = entryBody(entry()) == BodyKind::Bell
+            && pe_mute_outline(&entry().info.bell, muteKind(entry(), effectiveMute(entry(), stored(kBrassMute))), &m);
+        const PeMuteOutline* mute = muted ? &m : nullptr;
+        drawMicView(*this, fGeom, kTop, fLayout.topView, fTop, fHotView == kTop ? fHotMic : -1, fHotMarker, pos, "from above", mute);
         drawMicView(*this, fGeom, kFront, fLayout.frontView, fFront, fHotView == kFront ? fHotMic : -1, 0, pos,
-            frontAxis(fGeom) == 1 ? "from the side" : "from the front");
+            frontAxis(fGeom) == 1 ? "from the side" : "from the front", mute);
     }
 
     // ---- pointer

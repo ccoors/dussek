@@ -1247,6 +1247,42 @@ pub extern "C" fn pe_body_name(body: u32) -> *const std::ffi::c_char {
     BODY_NAMES.get(body as usize).map_or(std::ptr::null(), |n| n.as_ptr())
 }
 
+/// The mute in a bell as `PeMicGeometry` draws the bell: from above (x, y) and from the front (x, z), each a closed
+/// outline, in the bell's coordinates.
+#[repr(C)]
+#[derive(Clone, Copy, Debug)]
+pub struct PeMuteOutline {
+    pub top_count: u32,
+    pub top: [[f64; 2]; 24],
+    pub front_count: u32,
+    pub front: [[f64; 2]; 32],
+}
+
+/// The mute `kind` (`brass::MUTE_KINDS`: 1 straight … 6 plunger) in the bell `bell` (null: the default pose), for the
+/// microphones' drawing (stateless, any thread); false (out untouched): open, out of range, or `out` null.
+///
+/// # Safety
+/// `out` null or writable; `bell` null or valid.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn pe_mute_outline(bell: *const PeBellPose, kind: u32, out: *mut PeMuteOutline) -> bool {
+    // SAFETY: null or valid (the caller guarantees it)
+    let pose = unsafe { bell.as_ref() }.map_or(crate::mic::BellPose::DEFAULT, PeBellPose::to_engine);
+    let (Some(out), Some((top, front))) = (unsafe { out.as_mut() }, crate::mic::mute_outlines(pose, kind as usize)) else {
+        return false;
+    };
+    let mut o = PeMuteOutline { top_count: 0, top: [[0.0; 2]; 24], front_count: 0, front: [[0.0; 2]; 32] };
+    for (d, p) in o.top.iter_mut().zip(&top) {
+        *d = *p;
+    }
+    for (d, p) in o.front.iter_mut().zip(&front) {
+        *d = *p;
+    }
+    o.top_count = top.len().min(24) as u32;
+    o.front_count = front.len().min(32) as u32;
+    *out = o;
+    true
+}
+
 /// The drawing and the pair where the engine puts it (stateless, any thread); false:
 /// body or position out of range.
 ///
@@ -2213,6 +2249,27 @@ mod tests {
             assert_eq!(unsafe { std::ffi::CStr::from_ptr(pe_body_name(i as u32)) }, *n);
         }
         assert!(pe_body_name(BODIES.len() as u32).is_null());
+    }
+
+    #[test]
+    fn each_mute_has_an_outline_in_the_bells_mouth() {
+        let pose = PeBellPose::from_engine(crate::mic::BellPose::DEFAULT);
+        let r = pose.to_engine().radius();
+        for (k, name) in crate::brass::family::MUTE_KINDS.iter().enumerate() {
+            let mut o = PeMuteOutline { top_count: 0, top: [[0.0; 2]; 24], front_count: 0, front: [[0.0; 2]; 32] };
+            let drawn = unsafe { pe_mute_outline(&pose, k as u32, &mut o) };
+            assert_eq!(drawn, k != 0, "{name}");
+            if drawn {
+                assert!(o.top_count == 24 && o.front_count == 32, "{name}");
+                let pts = o.top[..24].iter().chain(&o.front[..32]);
+                // within the bell's radius and a mute's length of its mouth
+                assert!(pts.clone().all(|p| p[0].is_finite() && p[1].is_finite() && p[0].hypot(p[1]) < 2.0 * r), "{name}");
+            }
+        }
+        let mut o = PeMuteOutline { top_count: 0, top: [[0.0; 2]; 24], front_count: 0, front: [[0.0; 2]; 32] };
+        assert!(!unsafe { pe_mute_outline(std::ptr::null(), 7, &mut o) });
+        assert!(unsafe { pe_mute_outline(std::ptr::null(), 1, &mut o) }, "a null pose is the default's");
+        assert!(!unsafe { pe_mute_outline(std::ptr::null(), 1, std::ptr::null_mut()) });
     }
 
     fn zeroed_params() -> PeParams {

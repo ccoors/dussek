@@ -228,6 +228,16 @@ typedef struct PeBellPose {
  * PeTuning. false: body or position out of range (out untouched) */
 bool pe_mic_geometry(uint32_t body, const PeBellPose* bell, uint32_t position, double spacing, double distance,
                      double lid, const PeMicSetup* custom, PeMicGeometry* out);   /* bell: a bell's pose (PeInstrumentInfo.bell), may be null; custom: used when position == 5, may be null; lid: 0 closed … 1 open, above 1 taken off */
+/* the mute in a bell, as pe_mic_geometry draws the bell: from above (x, y) and from the front (x, z), closed outlines */
+typedef struct PeMuteOutline {
+    uint32_t top_count;
+    double top[24][2];
+    uint32_t front_count;
+    double front[32][2];
+} PeMuteOutline;
+/* stateless, any thread: kind as PeParams' brass mute (1 straight, 2 cup, 3 wah, 4 wah with its stem, 5 bucket,
+ * 6 plunger) in the bell `bell` (may be null: the default pose); false (out untouched): open or out of range */
+bool pe_mute_outline(const PeBellPose* bell, uint32_t kind, PeMuteOutline* out);
 /* clamps a free setup to what the instrument allows; true if anything changed */
 bool pe_mic_clamp(uint32_t body, const PeBellPose* bell, double lid, PeMicSetup* in_out);   /* bell as pe_mic_geometry's; lid: 0 closed … 1 open, above 1 taken off */
 /* a body's name, as an instrument.json names it ("grand", "upright", …); NULL out of range */
