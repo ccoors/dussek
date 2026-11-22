@@ -337,6 +337,33 @@ pub fn page(app: &mut App, ui: &mut egui::Ui) {
                         });
                         ui.end_row();
                     });
+                    ui.add_space(8.0);
+                    ui.strong("The recordings' credit");
+                    steps::hint(ui, "Who made the recordings and on what terms: the instrument's LICENSE.md credits them and takes \
+                        its license from theirs. Left empty, it says the license is not stated (the project's [license] block, to fill later).");
+                    let c = &mut v.w.credit;
+                    egui::Grid::new("wizard credit").num_columns(2).show(ui, |ui| {
+                        ui.label("Recordings");
+                        ui.add(egui::TextEdit::singleline(&mut c.set).hint_text("their name, as their author gives it"));
+                        ui.end_row();
+                        ui.label("Author");
+                        ui.text_edit_singleline(&mut c.author);
+                        ui.end_row();
+                        ui.label("Address");
+                        ui.add(egui::TextEdit::singleline(&mut c.url).hint_text("where they are published (empty: not published)"));
+                        ui.end_row();
+                        ui.label("Terms");
+                        ui.add(egui::TextEdit::singleline(&mut c.terms).hint_text("their terms, quoted where the source words them"));
+                        ui.end_row();
+                        ui.label("License");
+                        let shown = wizard::SOURCE_LICENSES.iter().find(|(id, _)| *id == c.source_license).map_or("(choose)", |(_, l)| *l);
+                        egui::ComboBox::from_id_salt("wizard license").selected_text(shown).show_ui(ui, |ui| {
+                            for (id, label) in wizard::SOURCE_LICENSES {
+                                ui.selectable_value(&mut c.source_license, id.to_string(), label);
+                            }
+                        });
+                        ui.end_row();
+                    });
                     ui.checkbox(&mut v.w.build_now, "Build it now (the whole chain; minutes)");
                 }
             }

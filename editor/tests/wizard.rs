@@ -473,3 +473,49 @@ fn a_new_project_does_not_take_the_donors_credit() {
     assert_eq!(p.get(&Table::top("license"), "set"), None);
     assert!(!p.text().contains("[license]"));
 }
+
+#[test]
+fn the_credit_becomes_the_license_block() {
+    let (d, repo) = fixture();
+    let mut w = wizard_for(&repo, "zz_cred");
+    w.credit = wizard::Credit {
+        set: "ZZ Bars".into(),
+        author: "Someone".into(),
+        url: String::new(),
+        terms: "\"Use them freely.\"".into(),
+        source_license: "CC0".into(),
+    };
+    let p = wizard::finish(&repo, &w, &d.path().join("none.json")).unwrap();
+    let t = Table::top("license");
+    assert_eq!(p.get(&t, "set"), Some(json!("ZZ Bars")));
+    assert_eq!(p.get(&t, "source_license"), Some(json!("CC0")));
+    // an unpublished set has no address (license.py leaves it out)
+    assert_eq!(p.get(&t, "url"), None);
+}
+
+#[test]
+fn a_credit_begun_must_be_complete_and_none_writes_no_block() {
+    let (d, repo) = fixture();
+    let ids = project::ids(&repo);
+    let mut w = wizard_for(&repo, "zz_cred2");
+    assert_eq!(w.blocker(&ids, None, Step::Menu, Some(4)), None, "no credit: allowed, LICENSE.md says not stated");
+    w.credit.author = "Someone".into();
+    let b = w.blocker(&ids, None, Step::Menu, Some(4)).unwrap();
+    assert!(b.contains("name") && b.contains("terms") && b.contains("license"), "{b}");
+    w.credit = Default::default();
+    let p = wizard::finish(&repo, &w, &d.path().join("none.json")).unwrap();
+    assert!(!p.text().contains("[license]"));
+}
+
+#[test]
+fn the_licenses_offered_are_the_ones_license_py_reads() {
+    let py = std::fs::read_to_string(Repo::from_env().root.join("proto/license.py")).unwrap();
+    let line = py.lines().find(|l| l.starts_with("SOURCE_LICENSES =")).unwrap();
+    let theirs: Vec<&str> = line.split('"').skip(1).step_by(2).collect();
+    let ours: Vec<&str> = wizard::SOURCE_LICENSES.iter().map(|(id, _)| *id).collect();
+    let mut a = theirs.clone();
+    a.sort();
+    let mut b = ours.clone();
+    b.sort();
+    assert_eq!(a, b);
+}

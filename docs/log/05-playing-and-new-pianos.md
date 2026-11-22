@@ -4740,3 +4740,22 @@ on Windows MinGW's winpthreads (linked in by `-static`). VST3 and AU are DPF's o
 - **Tests.** `proto/tests/test_notices.py`: every crate the engine links has a section with its text, DPF's parts are
   named (libSOFD on Linux only), a crate without a file fails, of MIT or Apache the MIT file is kept;
   `test_site_build.py` the Credits link; `ui_tests` the About tab's line (353 tests, 0 failed checks).
+
+<a id="step-260"></a>
+## 260. The wizard asks for the recordings' credit
+
+A project the editor made started without a `[license]` block (step 199 removed the donor's: it named the donor's
+recordings), so its `LICENSE.md` said the license was not stated until the block was written by hand. The wizard's last
+page, now **Name, menu and credit**, asks for it: the recordings' name, author, address, terms and license (the six
+`proto/license.py` reads, from CC0 to CC BY-SA 4.0). Finish writes them as the new project's `[license]` block, and the
+export's `LICENSE.md` credits them and takes its license from theirs.
+
+- **Optional, but whole.** Left empty, no block is written (as before). A credit begun stops the page until its name,
+  author, terms and license are filled; the address may stay empty (recordings not published, which `license.py`
+  leaves out).
+- **Sources added to an open project** are not asked: the project has its credit already.
+- **Tests.** `editor/tests/wizard.rs`: Finish writes the block (no `url` when empty), a partial credit stops the page
+  and an empty one writes none, the licenses offered are `license.py`'s `SOURCE_LICENSES`.
+
+The roadmap's Platforms item went too: CI runs the Linux suites on main and on pull requests (`ci.yml`), and
+`platforms.yml` builds and tests macOS and Windows (step 258).

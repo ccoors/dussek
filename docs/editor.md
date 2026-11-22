@@ -68,9 +68,13 @@ Cancel also unlinks a folder it linked in.
 6. **Check and listen.** The grid and the table (below). With a group, a menu picks the source
    shown, and each source's skipped keys and relabels are its own. A source of the group that
    reads no file stops here.
-7. **Name and menu.** The name (lower case, digits, underscores) becomes the folder under
+7. **Name, menu and credit.** The name (lower case, digits, underscores) becomes the folder under
    `projects/`; a name or id that is taken stops here. The page also sets the name and group in
-   the plugin's menu. Finish writes the project from the donor's file (its first line says which
+   the plugin's menu, and the recordings' credit: their name, author, address, terms and license,
+   the project's `[license]` block, from which the export's `LICENSE.md` credits them and takes
+   its license (CC BY-SA 4.0 for a ShareAlike set). Left empty, no block is written and
+   `LICENSE.md` says the license is not stated; a credit begun stops here until its name, author,
+   terms and license are filled (the address may stay empty: recordings not published). Finish writes the project from the donor's file (its first line says which
    donor and why), with what the recordings decide:
    - bars get `tracks = "auto"`; with one dynamic recorded they get an assumed mallet, with two
      `pp_mirror`;

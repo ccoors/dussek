@@ -101,14 +101,11 @@ Nothing in progress; the next item comes from below.
   - Pedal mechanism noise.
   - Scaling the inharmonicity B on its own.
 - **Sharing instruments.** A documented instrument format and a published recipe, so that
-  others can make instruments from their own sets. The editor is the start of it; its wizard
-  should ask for the recordings' credit (the `[license]` block, step 199), which a new project
-  starts without.
+  others can make instruments from their own sets. The editor is the start of it (its wizard asks
+  for the recordings' credit, step 260).
 - **Cost.** A low-CPU mode (fewer partials, a simpler soundboard) and a polyphony or quality
   setting, for weaker machines and the ARM/Raspberry Pi case (and a phone with its screen off: the
   Android app below).
-- **Platforms.** macOS and Windows builds through DPF, and CI running the tests and builds on
-  each commit.
 - **An Android app.** A MIDI player (and later a live instrument) on a phone. The spike (in the archive repository, branch
   `worktree-agent-ab1ed2ffbf05f2af3`, `android/`: the engine unchanged through a small Rust JNI
   library, AAudio, a plain Java app with the instruments bundled) on a Pixel 9a (Tensor G4, 48 kHz):

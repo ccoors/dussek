@@ -40,8 +40,9 @@ lender you have not built yourself is used as it is.
 8. **Check and listen:** the grid of keys and layers, with suspect takes marked. A click on a key
    lists its files, and a row plays its file; a wrong one (a mislabeled note, a flawed take) can
    be left out here.
-9. **Name and menu:** a name in lower case (`my_harp`), its name and group in the plugin's menu
-   (`My harp`, `Harps`). Leave **Build it now** ticked and press **Finish**.
+9. **Name, menu and credit:** a name in lower case (`my_harp`), its name and group in the plugin's menu
+   (`My harp`, `Harps`), and who made the recordings and under which license (the instrument's
+   `LICENSE.md` credits them). Leave **Build it now** ticked and press **Finish**.
 
 The build runs every step of the chain (the analysis, the fits, the export) and shows each one's
 progress and log. A harp takes a few minutes.

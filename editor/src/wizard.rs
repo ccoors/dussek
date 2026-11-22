@@ -29,7 +29,7 @@ impl Step {
             Step::Dynamics => "Dynamics",
             Step::Played => "How is it played?",
             Step::Check => "Check and listen",
-            Step::Menu => "Name and menu",
+            Step::Menu => "Name, menu and credit",
         }
     }
 }
@@ -67,6 +67,64 @@ pub struct Wizard {
     pub donor_why: String,
     /// the take checks' thresholds (an added source: the project's), written at Finish
     pub thresholds: crate::takes::Thresholds,
+    /// the recordings' credit, the new project's `[license]` block (all empty: none written)
+    pub credit: Credit,
+}
+
+/// the recordings' license, as `proto/license.py` reads it (SOURCE_LICENSES there): the id and
+/// how the page names it
+pub const SOURCE_LICENSES: [(&str, &str); 6] = [
+    ("CC0", "CC0"),
+    ("public-domain", "Public domain"),
+    ("free-use", "Free to use (the author's own terms)"),
+    ("CC-BY-3.0", "CC BY 3.0"),
+    ("CC-BY-4.0", "CC BY 4.0"),
+    ("CC-BY-SA-4.0", "CC BY-SA 4.0 (the instrument becomes BY-SA)"),
+];
+
+/// the recordings' credit: a project's `[license]` block (`proto/license.py`); the address may be
+/// empty (recordings not published)
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Credit {
+    pub set: String,
+    pub author: String,
+    pub url: String,
+    pub terms: String,
+    /// a SOURCE_LICENSES id ("" none chosen)
+    pub source_license: String,
+}
+
+impl Credit {
+    pub fn is_empty(&self) -> bool {
+        [&self.set, &self.author, &self.url, &self.terms, &self.source_license].iter().all(|f| f.trim().is_empty())
+    }
+
+    /// what a credit begun lacks (None: complete, or not begun)
+    pub fn missing(&self) -> Option<String> {
+        if self.is_empty() {
+            return None;
+        }
+        let mut lacks: Vec<&str> = [("the recordings' name", &self.set), ("their author", &self.author), ("their terms", &self.terms)]
+            .into_iter().filter(|(_, v)| v.trim().is_empty()).map(|(k, _)| k).collect();
+        if !SOURCE_LICENSES.iter().any(|(id, _)| *id == self.source_license) {
+            lacks.push("their license");
+        }
+        (!lacks.is_empty()).then(|| format!("the credit needs {}", lacks.join(", ")))
+    }
+
+    /// written into `p` as its `[license]` block (an empty credit writes none)
+    pub fn write(&self, p: &mut Project) -> Result<(), String> {
+        if self.is_empty() {
+            return Ok(());
+        }
+        let t = Table::top("license");
+        for (k, v) in [("set", &self.set), ("author", &self.author), ("url", &self.url), ("terms", &self.terms), ("source_license", &self.source_license)] {
+            if !v.trim().is_empty() {
+                p.set(&t, k, Value::from(v.trim()))?;
+            }
+        }
+        Ok(())
+    }
 }
 
 /// where the wizard keeps its measurements before the project exists (copied in at Finish)
@@ -170,7 +228,8 @@ impl Wizard {
             Step::Menu if self.name.trim().is_empty() => Some("the instrument needs a name".into()),
             Step::Menu => project::check_project_name_in(ids, &self.name).err()
                 .or_else(|| self.check_ids(ids, project).err())
-                .or_else(|| self.menu_name.trim().is_empty().then(|| "the menu needs a name".into())),
+                .or_else(|| self.menu_name.trim().is_empty().then(|| "the menu needs a name".into()))
+                .or_else(|| self.credit.missing()),
         }
     }
 
@@ -464,6 +523,7 @@ pub fn finish(repo: &Repo, w: &Wizard, measures_cache: &Path) -> Result<Project,
         if !w.menu_group.trim().is_empty() {
             p.set(&Table::top("menu"), "group", Value::from(w.menu_group.trim()))?;
         }
+        w.credit.write(&mut p)?;
         p.save().map_err(|e| e.to_string())
     })();
     if let Err(e) = result {
