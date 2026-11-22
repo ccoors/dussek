@@ -12,8 +12,8 @@ Nothing in progress; the next item comes from below.
 
 - **Brass, by ear.** The five play, marked experimental (step 235). Left: a brass player's word, Auto's thresholds on a longer
   session, a hand in the horn's bell and more mutes on the horn and the tuba; the soft notes' wait before they speak (20–45 ms
-  at pp and mf, not heard as late so far); a Visualization of their own (none on a bell yet, and `--video` refuses one); the
-  mute in the bell in the microphone drawing. [Notes](docs/roadmap-notes.md#brass)
+  at pp and mf, not heard as late so far); a Visualization of their own (none on a bell yet, and `--video` refuses one).
+  [Notes](docs/roadmap-notes.md#brass)
 - **Traits, the rest.** The plan (design 2026-10-21-traits-plan): a piano as smooth curves with
   its few breaks plus traits (knobs), its unevenness as statistics with a seed, the tuner's and
   voicer's choices on top. Done: the rail (step 136), the even levels (138–139), the felt as runtime
@@ -29,8 +29,8 @@ Nothing in progress; the next item comes from below.
   232). Left: the other plucked strings (guitars, zithers), the percussion, then across families.
   [Notes](docs/roadmap-notes.md#morphing)
 - **Presets, the rest.** Microphone presets per body type and full presets, shipped and saved
-  (step 175), the first two shipped full presets, also in LV2 hosts' preset menus (step 179). Left: shipped
-  mic setups for the other bodies; snapshots and a morph between two settings.
+  (step 175), the first two shipped full presets, also in LV2 hosts' preset menus (step 179). The other bodies'
+  ORTF pairs (step 262) wait for the ear. Left: a bell's mic setups; snapshots and a morph between two settings.
   [Notes](docs/roadmap-notes.md#presets)
 - **Each instrument checked by ear.** The take checks' flags heard instrument by instrument, the
   level corrections proposed and heard, then each instrument rebuilt.

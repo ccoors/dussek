@@ -4759,3 +4759,33 @@ export's `LICENSE.md` credits them and takes its license from theirs.
 
 The roadmap's Platforms item went too: CI runs the Linux suites on main and on pull requests (`ci.yml`), and
 `platforms.yml` builds and tests macOS and Windows (step 258).
+
+<a id="step-261"></a>
+## 261. The mute in the bell, drawn
+
+The microphones' views drew a brass instrument's bell as held (its `pose`) but not the mute in it, so the drawing looked
+the same whichever mute played. Each mute now has a profile of its own (`mic.rs` `MUTE_PROFILES`, by `MUTE_KINDS`, ×
+the bell's radius over 9 cm), turned into outlines from above and from the front as the bell is (`revolved_outlines`,
+which `bell_outlines` now calls): a straight mute's cone, its wide end out; a cup's cone and cup over the mouth; a wah's
+cork ring and bowl, the stem's tube out of it; a bucket clipped over the rim; a plunger held in front. A drawing only:
+the sound's mutes are the tables'. `pe_mute_outline` hands them to the plugin, which draws the one that plays (the Mute
+chips' choice, open on an instrument without it) in the keys' gray over the bell.
+
+On screen (Xvfb): the trumpet with each of the six reads apart from above; from the front its bell points at the viewer
+and the mute is a disk in the mouth; the tuba's straight mute in its larger bell. Test (`ffi.rs`): every kind but open
+has both outlines, finite and within twice the bell's radius of the mouth; open, an unknown kind and a null output draw
+nothing.
+
+<a id="step-262"></a>
+## 262. Microphone setups for the other bodies
+
+The shipped microphone presets were the grand's four and the upright's three (step 175). Every other body now gets two,
+built at start from the engine's own positions (`Presets.cpp` `addOtherBodies`), so they follow the bodies' geometry
+instead of copying it: ORTF at the player's seat (two cardioids 17 cm apart, 110° between them, at the middle of the
+Player pair) and ORTF in front at 1.5 m (on the audience's side, at the Audience pair's height), each aimed at the
+body's origin, the left microphone on the player's left. That is 32 setups for the harps, the bars, the guitars, the
+zithers, the kalimba and the tongue drum; none for a bell, whose pose (and so its coordinates) is each instrument's.
+
+The positions offer omni pairs only; these are the first cardioid setups on those bodies. `ui_tests`'
+`shipped_mic_presets_are_valid_setups` covers them all: each in range and kept as it is by the engine's clamp. Not
+listened to yet.

@@ -359,7 +359,10 @@ grand: ORTF at the player's seat (two cardioids 17 cm apart, 110° between them,
 one mic near the tail (both microphones at one point, a cardioid aimed at the board: mono), Spaced
 pair over the strings (two omnis 60 cm apart, 30 cm over the strings), Concert pair at 4 m (two omnis
 on the curved side); for the upright: Pair over the open top, Pair behind the board (the piano 1.2 m
-from the wall), ORTF at the player's seat. Save as… (at the list's end) keeps the current microphones
+from the wall), ORTF at the player's seat; for each of the other instruments' bodies (the harps, the bars, the
+guitars, the zithers, the kalimba, the tongue drum), ORTF at the player's seat (at the Player position's middle) and ORTF
+in front at 1.5 m (on the audience's side, at the Audience position's height), each aimed at the instrument. None for a
+bell yet: its pose is each instrument's. Save as… (at the list's end) keeps the current microphones
 under a name for every instrument of this kind, typed in the box (Enter); your own preset shown gets a
 Delete (a second click within 3 s confirms). The box names the preset the microphones still match
 (your own before a shipped one), else the position (Custom once a microphone moves).

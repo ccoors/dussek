@@ -6411,7 +6411,7 @@ TEST(shipped_mic_presets_are_valid_setups)
     for (const pe::Preset& p : pe::shippedPresets(PluginKind::Keys)) {
         if (p.scope == pe::PresetScope::All)
             continue; // shipped_full_presets_name_exported_instruments
-        CHECK(p.scope == pe::PresetScope::Mics && p.shipped && (p.body == 0 || p.body == 1));
+        CHECK(p.scope == pe::PresetScope::Mics && p.shipped && p.body < 18); // not a bell (its pose is each instrument's)
         const std::vector<std::pair<uint32_t, float>> ps = pe::presetParams(PluginKind::Keys, p);
         CHECK(ps.size() == p.values.size()); // every symbol known and a microphone's
         float v[pe::kParamCount] = {};

@@ -24,7 +24,7 @@ namespace {
 
 const char* const kStates[] = { "instrument", "velocity_curve", "morph", "felt", "scale_file" };
 
-constexpr uint32_t kGrand = 0, kUpright = 1;
+constexpr uint32_t kGrand = 0, kUpright = 1, kBellBody = 18;
 
 /// a Custom pair: position (m), pattern (%: 0 omni, 50 cardioid, 100 figure-8), aim (yaw: 0 to the
 /// tail, 180 to the player; °), tilt (°), per microphone; the upright's wall (m; < 0: not set)
@@ -43,6 +43,51 @@ Preset custom(const char* name, uint32_t body, const float l[6], const float r[6
     if (wall >= 0)
         p.values.push_back({ "mic_wall", wall });
     return p;
+}
+
+/// an ORTF pair (two cardioids 17 cm apart, 110° between them) centered at `c` (m), aimed at the body's origin, the
+/// left microphone the one towards −x
+Preset ortf(const char* name, uint32_t body, const double c[3])
+{
+    const double pi = 3.14159265358979323846;
+    const double yaw = std::atan2(-c[0], -c[1]) * 180 / pi, pitch = std::atan2(-c[2], std::hypot(c[0], c[1])) * 180 / pi;
+    const double a = yaw * pi / 180, across[2] = { std::cos(a), -std::sin(a) }; // to the aim's right
+    // the aim's right is +x when facing +y; facing −y it is −x: the left microphone stays on −x
+    const double side = across[0] >= 0 ? 1 : -1;
+    const auto wrap = [](double d) { return d > 180 ? d - 360 : d <= -180 ? d + 360 : d; };
+    float l[6], r[6];
+    for (int m = 0; m < 2; ++m) {
+        float* o = m == 0 ? l : r;
+        const double s = (m == 0 ? -0.085 : 0.085) * side;
+        o[0] = (float)(c[0] + s * across[0]);
+        o[1] = (float)(c[1] + s * across[1]);
+        o[2] = (float)c[2];
+        o[3] = 50;
+        o[4] = (float)wrap(yaw + (m == 0 ? -55 : 55) * side);
+        o[5] = (float)pitch;
+    }
+    return custom(name, body, l, r);
+}
+
+/// the other bodies' (the harps, the bars, the guitars, the zithers; not a bell, whose pose is each instrument's): ORTF
+/// at the player's seat (the engine's Player pair's middle) and 1.5 m in front (towards the audience, at the Audience
+/// pair's height)
+void addOtherBodies(std::vector<Preset>& v)
+{
+    for (uint32_t body = 2; body < kBellBody; ++body) {
+        PeMicGeometry player {}, audience {};
+        if (!pe_mic_geometry(body, nullptr, 1, 0.5, 0, 1, nullptr, &player)
+            || !pe_mic_geometry(body, nullptr, 2, 0.5, 0, 1, nullptr, &audience))
+            continue;
+        double seat[3], front[3];
+        for (int k = 0; k < 3; ++k) {
+            seat[k] = (player.mics[0][k] + player.mics[1][k]) / 2;
+            front[k] = (audience.mics[0][k] + audience.mics[1][k]) / 2;
+        }
+        front[1] = 1.5;
+        v.push_back(ortf("ORTF at the player's seat", body, seat));
+        v.push_back(ortf("ORTF in front at 1.5 m", body, front));
+    }
 }
 
 int symbolIndex(const std::string& symbol)
@@ -175,6 +220,7 @@ const std::vector<Preset>& shippedKeys()
         v.push_back(custom("Pair behind the board", kUpright, backL, backR, 1.2f));
         const float uOrtfL[6] = { -0.085f, -1.00f, 0.45f, 50, -55, -24 }, uOrtfR[6] = { 0.085f, -1.00f, 0.45f, 50, 55, -24 };
         v.push_back(custom("ORTF at the player's seat", kUpright, uOrtfL, uOrtfR));
+        addOtherBodies(v);
         static const char* const texts[] = {
 #include "ShippedPresets-dussek.inc"
             nullptr };
