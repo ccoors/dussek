@@ -906,7 +906,7 @@ const BELL_PROFILE: [(f64, f64); 6] = [(0.0, 0.09), (-0.05, 0.05), (-0.12, 0.02)
 
 /// The mutes' profiles as BELL_PROFILE's (along the axis, + out of the mouth; radius), by `brass::MUTE_KINDS` (open: none):
 /// the drawing's shapes, not the tables' (a straight mute's cone, its wide end out; a cup's cone and cup over the mouth; a
-/// wah's cork ring and bowl, the stem's tube out of it; a bucket clipped over the rim; a plunger held in front).
+/// wah's cork ring and bowl, the stem's tube out of it; a bucket clipped over the rim; a plunger held in front, its rim to the bell and its dome out).
 const MUTE_PROFILES: [&[(f64, f64)]; 7] = [
     &[],
     &[(-0.10, 0.0), (-0.10, 0.015), (0.05, 0.045), (0.07, 0.045), (0.07, 0.0)],
@@ -914,7 +914,7 @@ const MUTE_PROFILES: [&[(f64, f64)]; 7] = [
     &[(-0.06, 0.0), (-0.06, 0.03), (0.0, 0.045), (0.02, 0.07), (0.05, 0.07), (0.06, 0.03), (0.06, 0.0)],
     &[(-0.06, 0.0), (-0.06, 0.03), (0.0, 0.045), (0.02, 0.07), (0.05, 0.07), (0.06, 0.03), (0.06, 0.012), (0.11, 0.012), (0.11, 0.0)],
     &[(0.0, 0.0), (0.0, 0.097), (0.09, 0.097), (0.09, 0.0)],
-    &[(0.035, 0.0), (0.045, 0.06), (0.06, 0.08), (0.065, 0.08), (0.065, 0.0)],
+    &[(0.03, 0.0), (0.03, 0.08), (0.04, 0.076), (0.055, 0.052), (0.065, 0.022), (0.068, 0.0)],
 ];
 
 /// A bell from above (x, y) and from the front (x, z), each a closed outline (24 and 32 points).

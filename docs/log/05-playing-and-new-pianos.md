@@ -4767,7 +4767,7 @@ The microphones' views drew a brass instrument's bell as held (its `pose`) but n
 the same whichever mute played. Each mute now has a profile of its own (`mic.rs` `MUTE_PROFILES`, by `MUTE_KINDS`, ×
 the bell's radius over 9 cm), turned into outlines from above and from the front as the bell is (`revolved_outlines`,
 which `bell_outlines` now calls): a straight mute's cone, its wide end out; a cup's cone and cup over the mouth; a wah's
-cork ring and bowl, the stem's tube out of it; a bucket clipped over the rim; a plunger held in front. A drawing only:
+cork ring and bowl, the stem's tube out of it; a bucket clipped over the rim; a plunger held in front, its rim to the bell and its dome out. A drawing only:
 the sound's mutes are the tables'. `pe_mute_outline` hands them to the plugin, which draws the one that plays (the Mute
 chips' choice, open on an instrument without it) in the keys' gray over the bell.
 
