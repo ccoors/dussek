@@ -73,10 +73,6 @@ public:
     {
         setMessagesPlugin(kKind); // the catalog's lines name this plugin
         loadSharedResources();
-        // the standalone on its own audio (no JACK): the MIDI inputs present open at start, others
-        // by the MIDI tab's Rescan (a request reopens them all, cutting held notes)
-        if (isUsingNativeAudio() && supportsMIDI() && !isMIDIEnabled())
-            requestMIDI();
         fCatalog = sharedCatalog(resources());
         fChoice = choose(*fCatalog, "", kKind);
         loadLicense();
@@ -102,6 +98,11 @@ public:
             setSize((uint)(kDefaultWidth * s), (uint)((kDefaultHeight + DiagView::kHeaderH) * s));
         refreshGeometry();
         relayout();
+        // CoreMIDI can dispatch a window layout here, so finish initializing the UI first.
+        // the standalone on its own audio (no JACK): the MIDI inputs present open at start, others
+        // by the MIDI tab's Rescan (a request reopens them all, cutting held notes)
+        if (isUsingNativeAudio() && supportsMIDI() && !isMIDIEnabled())
+            requestMIDI();
     }
 
     ~PianoUI() override

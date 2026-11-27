@@ -4789,3 +4789,12 @@ zithers, the kalimba and the tongue drum; none for a bell, whose pose (and so it
 The positions offer omni pairs only; these are the first cardioid setups on those bodies. `ui_tests`'
 `shipped_mic_presets_are_valid_setups` covers them all: each in range and kept as it is by the engine's clamp. Not
 listened to yet.
+
+<a id="step-263"></a>
+## 263. The standalone initializes its window before opening MIDI inputs
+
+On an Apple silicon Mac running macOS 27.3, Dussek 0.4.1 crashed while opening its window.
+RtMidi runs the macOS event loop while counting MIDI inputs. A pending resize called
+`PianoUI::relayout()` before the constructor had initialized the instrument catalog.
+The standalone now opens MIDI inputs after its first layout. With that order, the patched
+0.4.1 standalone opened a 900 × 656 window on the same Mac.
