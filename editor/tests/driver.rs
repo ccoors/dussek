@@ -110,6 +110,7 @@ fn the_log_tail() {
     assert_eq!(driver::log_tail("/nonexistent", 2), "");
 }
 
+#[cfg(target_os = "linux")]
 #[test]
 fn a_build_outliving_its_editor_is_cancelled() {
     // a killed editor runs no Drop: the kernel sends the build SIGTERM when the thread that started it

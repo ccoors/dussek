@@ -4798,3 +4798,11 @@ RtMidi runs the macOS event loop while counting MIDI inputs. A pending resize ca
 `PianoUI::relayout()` before the constructor had initialized the instrument catalog.
 The standalone now opens MIDI inputs after its first layout. With that order, the patched
 0.4.1 standalone opened a 900 × 656 window on the same Mac.
+
+<a id="step-264"></a>
+## 264. The editor builds on macOS
+
+The build driver registers a parent-death signal on Linux, where the kernel can signal
+a build if the editor is killed. macOS has no `prctl`. The registration and its test
+now compile only on Linux. Cancelling a build or closing the editor normally still
+signals the child on both platforms.

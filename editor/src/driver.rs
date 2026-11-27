@@ -5,6 +5,7 @@ use crate::project::{Repo, python};
 use serde::Deserialize;
 use std::collections::BTreeMap;
 use std::io::{BufRead, BufReader, Read};
+#[cfg(target_os = "linux")]
 use std::os::unix::process::CommandExt;
 use std::process::{Child, Command, Stdio};
 use std::sync::mpsc::{Receiver, TryRecvError, channel};
@@ -119,6 +120,7 @@ impl Build {
         // the editor killed (no Drop): the build gets SIGTERM when the thread that started it ends
         // (Linux; the editor starts builds on its UI thread)
         // SAFETY: prctl is async-signal-safe; nothing else runs between fork and exec
+        #[cfg(target_os = "linux")]
         unsafe {
             c.pre_exec(|| {
                 libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGTERM);

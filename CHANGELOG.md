@@ -18,6 +18,7 @@ break is allowed but listed under "Breaking" (`docs/compatibility.md`).
 
 ### Fixed
 
+- The instrument editor builds on macOS.
 - The standalone can open its window safely when macOS processes a resize during the initial MIDI scan.
 - Every download carries THIRD-PARTY-NOTICES.txt: the licenses of the libraries built into the
   plugins and standalones (DPF and what it builds in, RtAudio, RtMidi, the engine's Rust crates),

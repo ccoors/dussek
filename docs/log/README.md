@@ -305,3 +305,4 @@ re-lettered the grands:
 - [261. The mute in the bell, drawn](05-playing-and-new-pianos.md#step-261): the microphones' views draw the mute that plays in the bell's mouth (straight, cup, wah, wah with its stem, bucket, plunger; `pe_mute_outline`, profiles as the bell's)
 - [262. Microphone setups for the other bodies](05-playing-and-new-pianos.md#step-262): ORTF at the player's seat and ORTF in front at 1.5 m for each of the 16 other bodies, built from the engine's Player and Audience positions; none for a bell; not listened to yet
 - [263. The standalone initializes its window before opening MIDI inputs](05-playing-and-new-pianos.md#step-263): CoreMIDI can dispatch a resize during the initial scan
+- [264. The editor builds on macOS](05-playing-and-new-pianos.md#step-264): only Linux provides the kernel signal used when the editor is killed
