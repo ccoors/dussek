@@ -161,6 +161,9 @@ The UI is NanoVG and scalable: the host's HiDPI factor × a zoom of 100–400 %.
     second; a live note-on comes as the hammer arrives, so no hammer rises before it. The Copy
     CLI line plus `--video out.mp4` renders the same picture as a video ([engine.md](engine.md)).
 
+  The AudioUnit leaves a 24-point footer below these controls. GarageBand owns a resize target over
+  the bottom center of its AudioUnit view; the footer keeps the keyboard above that target.
+
   Both panels read what the sound side shares with the window. In VST3 that needs a host that
   passes the plugin's output values on to its editor (DPF runs the two as separate objects); where
   the host does not, the panels stay empty and the sound is unaffected.

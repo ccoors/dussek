@@ -306,3 +306,4 @@ re-lettered the grands:
 - [262. Microphone setups for the other bodies](05-playing-and-new-pianos.md#step-262): ORTF at the player's seat and ORTF in front at 1.5 m for each of the 16 other bodies, built from the engine's Player and Audience positions; none for a bell; not listened to yet
 - [263. The standalone initializes its window before opening MIDI inputs](05-playing-and-new-pianos.md#step-263): CoreMIDI can dispatch a resize during the initial scan
 - [264. The editor builds on macOS](05-playing-and-new-pianos.md#step-264): only Linux provides the kernel signal used when the editor is killed
+- [265. The AudioUnit keyboard clears GarageBand's resize target](05-playing-and-new-pianos.md#step-265): a 24-point footer keeps the player strip outside the host's bottom-center resize target

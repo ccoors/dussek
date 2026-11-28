@@ -64,6 +64,8 @@ using namespace pe;
 /// the instrument menu's last entry
 static const char* const kOpenFolder = "Open instrument folder…";
 static const char* const kAsioControlPanel = "ASIO control panel…";
+// GarageBand puts its own resize target over the bottom center of an AudioUnit view.
+static constexpr float kAudioUnitBottomInset = 24.0f;
 
 class PianoUI : public UI
 {
@@ -94,8 +96,8 @@ public:
         // the controls keep their default view; the diagnostics' header row comes below it
         // (in DISTRHO_UI_DEFAULT_HEIGHT, so hosts asking before the UI exists get it right)
         static_assert(DISTRHO_UI_DEFAULT_HEIGHT == (int)(kDefaultHeight + DiagView::kHeaderH), "default window height");
-        if (s != 1.0)
-            setSize((uint)(kDefaultWidth * s), (uint)((kDefaultHeight + DiagView::kHeaderH) * s));
+        if (s != 1.0 || bottomInset() != 0.0f)
+            setSize((uint)(kDefaultWidth * s), (uint)((kDefaultHeight + DiagView::kHeaderH + bottomInset()) * s));
         refreshGeometry();
         relayout();
         // CoreMIDI can dispatch a window layout here, so finish initializing the UI first.
@@ -686,7 +688,11 @@ private:
     // own value is fixed at creation)
     double fHostScale = 1.0;
     float uiScale() const { return (float)fHostScale * fState.zoom / 100.0f; }
-    float viewHeight() const { return getHeight() / uiScale() - fDiag.height(); } // the controls' part of the window
+    float bottomInset() const
+    {
+        return std::strcmp(getPluginFormatName(), "AudioUnit") == 0 ? kAudioUnitBottomInset : 0.0f;
+    }
+    float viewHeight() const { return getHeight() / uiScale() - fDiag.height() - bottomInset(); } // the controls' part of the window
     /// the chosen instrument's entry (a missing one: noInstrument)
     const InstrumentEntry& entry() const { return fChoice.entry != nullptr ? *fChoice.entry : noInstrument(); }
     const char* resources() const
@@ -877,7 +883,7 @@ private:
         fShownTab = shownTab(chosenTab(), ctx());
         fLayout = computeLayout(getWidth() / s, viewHeight(), fShownTab, ctx());
         fScroll = std::min(fScroll, maxScroll(fLayout));
-        fDiag.layout(getWidth() / s, getHeight() / s);
+        fDiag.layout(getWidth() / s, getHeight() / s - bottomInset());
         fHotRow = fHotTab = -1; // row indices change with the layout
         fTipShown = -1;
         fTip.hover(-1, nowMs());
@@ -889,7 +895,7 @@ private:
     /// keep a small controls viewport available beneath the expanded diagnostics
     void updateConstraints(double scale, uint32_t& minW, uint32_t& minH)
     {
-        minimumWindowSize(fHostScale, scale, fDiag.height(), minW, minH);
+        minimumWindowSize(fHostScale, scale, fDiag.height() + bottomInset(), minW, minH);
         setGeometryConstraints(minW, minH, false, false);
     }
 

@@ -4806,3 +4806,17 @@ The build driver registers a parent-death signal on Linux, where the kernel can 
 a build if the editor is killed. macOS has no `prctl`. The registration and its test
 now compile only on Linux. Cancelling a build or closing the editor normally still
 signals the child on both platforms.
+
+<a id="step-265"></a>
+## 265. The AudioUnit keyboard clears GarageBand's resize target
+
+In GarageBand, the lower half of the on-screen keyboard from D4 through A5 did not
+respond. A pointer trace at 2× scale showed that an upper D4 click reached Dussek as
+MIDI note 62 at velocity 59, crossed the AudioUnit property twice with status 0 and
+entered its ring buffer. A lower D4 click never reached `PianoUI::onMouse`; a lower C4
+click immediately to its left did, as note 60 at velocity 102. GarageBand owns that
+bottom-center rectangle for its window resize target.
+
+The AudioUnit now requests 24 points more height and leaves those points as a footer,
+putting the diagnostic keyboard above the host's target. Other plugin formats and the
+standalone keep their window geometry. This changes no sound.
