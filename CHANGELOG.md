@@ -3,6 +3,15 @@
 What each release changes for a player. From 1.0 on a break needs a major version; before it, a
 break is allowed but listed under "Breaking" (`docs/compatibility.md`).
 
+## Unreleased
+
+### Fixed
+
+- macOS: in GarageBand, the lower half of the on-screen keyboard from D4 to A5 did not respond
+  (the host's resize handle covers the bottom center of a plugin's window). The AudioUnit's window
+  is 24 points taller and keeps the keyboard above it. Contributed by
+  [@Neon-White](https://github.com/Neon-White).
+
 ## 0.5.0 — 2026-11-28
 
 ### New
