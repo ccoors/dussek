@@ -34,8 +34,8 @@ done
 cp LICENSE "$out/LICENSE.txt"
 python3 packaging/notices.py "$platform" "$out/THIRD-PARTY-NOTICES.txt"
 commit=$(git describe --always --dirty 2>/dev/null || echo unknown)
-tested="The standalone, LV2, CLAP and VST3 are tested on Linux and Windows; the macOS build (its
-AudioUnit too) is untested (reports welcome). Where a host offers LV2 or CLAP, prefer them: the
+tested="The standalone, LV2, CLAP and VST3 are tested on Linux, Windows and macOS, the AudioUnit
+on macOS too. Where a host offers LV2 or CLAP, prefer them: the
 VST3 has limits (no presets in the host's menu, no diagnostics panels in some hosts)."
 case $platform in
     linux)

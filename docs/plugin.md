@@ -2,9 +2,9 @@
 
 A DPF wrapper (C++) around the engine's C interface: LV2, CLAP, VST3 and a JACK standalone, on
 macOS also an AudioUnit (AUv2, for Logic Pro and GarageBand). LV2 and the standalone are the main
-targets; all four are tested on Linux and Windows. The macOS build is universal (Apple silicon and
-Intel) and untested by hand: CI runs its UI tests on both chips (Intel under Rosetta) and the
-AudioUnits through Apple's `auval`. The brass are
+targets; all four are tested on Linux, Windows and macOS, the AudioUnit on macOS too. The macOS build is
+universal (Apple silicon and Intel): CI runs its UI tests on both chips (Intel under Rosetta) and
+the AudioUnits through Apple's `auval`. The brass are
 a second plugin's, built from the same sources and shipped in the same release as a preview: [Weidinger](brass.md).
 
 Where a host offers LV2 or CLAP, use them: the VST3 is kept for hosts that load nothing else.

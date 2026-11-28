@@ -4,7 +4,7 @@ Weidinger, a choice of its own (Customize), is the winds: trumpet, horn, tenor a
 
 Where a host offers LV2 or CLAP, prefer them to the VST3.
 
-The macOS build runs on Apple silicon and Intel Macs. It is untested: reports welcome at https://github.com/ccoors/dussek/issues
+The macOS build runs on Apple silicon and Intel Macs. Reports welcome at https://github.com/ccoors/dussek/issues
 
 The package is not signed by a registered developer: macOS asked you to confirm before opening it (right-click, Open; or System Settings, Privacy & Security, Open Anyway).
 

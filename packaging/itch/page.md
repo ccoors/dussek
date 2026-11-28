@@ -15,8 +15,8 @@ Edit project). The description is plain paragraphs and lists: it pastes into itc
 - **Uploads:** the five channels `packaging/itch.sh` pushes; their display names on the page:
   - `windows-setup`: Windows installer (64 bit)
   - `windows-portable`: Windows, portable
-  - `mac-pkg`: macOS installer (Apple silicon and Intel, untested)
-  - `mac-portable`: macOS, portable (Apple silicon and Intel, untested)
+  - `mac-pkg`: macOS installer (Apple silicon and Intel)
+  - `mac-portable`: macOS, portable (Apple silicon and Intel)
   - `linux`: Linux (x86-64; unpack, run ./install.sh)
 - **Genre:** none (tools have none)
 - **Tags** (10 at most): piano, synthesizer, audio-plugin, vst, lv2, clap, virtual-instrument, harpsichord, music-production, open-source
@@ -61,7 +61,7 @@ What it does:
 Install:
 
 - Windows (10 or newer, 64 bit): the installer puts the standalone in the Start menu and the LV2, CLAP and VST3 plugins in place, with an uninstaller. It is not signed: SmartScreen warns about an unknown publisher ("More info", then "Run anyway").
-- macOS (Apple silicon or Intel, 13.3 or newer): the package installs Dussek in Applications and the plugins in /Library/Audio/Plug-Ins, an AudioUnit for Logic Pro and GarageBand among them. Untested so far: reports welcome. It is not signed by a registered developer: right-click it and choose Open.
+- macOS (Apple silicon or Intel, 13.3 or newer): the package installs Dussek in Applications and the plugins in /Library/Audio/Plug-Ins, an AudioUnit for Logic Pro and GarageBand among them. It is not signed by a registered developer: right-click it and choose Open.
 - Linux (x86-64, glibc 2.35 or newer): unpack the archive and run ./install.sh.
 - The portable downloads hold the same files to copy by hand (their README.txt says where).
 

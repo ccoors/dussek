@@ -106,7 +106,7 @@ def by_group(items):
 def installers(v):
     """The installers: (key, system, file, what it needs and holds)."""
     return [("windows", "Windows", f"dussek-{v}-windows-setup.exe", "Windows 10 or newer, 64 bit: the standalone in the Start menu, the plugins, an uninstaller."),
-            ("macos", "macOS", f"dussek-{v}-macos.pkg", "Apple silicon or Intel, macOS 13.3 or newer: the app, the plugins (an AudioUnit too). Untested: reports welcome."),
+            ("macos", "macOS", f"dussek-{v}-macos.pkg", "Apple silicon or Intel, macOS 13.3 or newer: the app, the plugins (an AudioUnit too)."),
             ("linux", "Linux", f"dussek-{v}-linux.tar.gz", "x86-64, glibc 2.35 or newer: unpack, run ./install.sh.")]
 
 

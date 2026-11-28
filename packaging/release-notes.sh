@@ -27,8 +27,8 @@ bundles you copied by hand first (\`dussek.lv2\`, \`.clap\`, \`.vst3\`, \`.compo
 preview: its own standalone and plugins, physically modeled from the same sources. The installers
 offer it as a component that can be left out; its sound and controls may still change.
 
-**Tested** on Linux and Windows (the standalone, LV2, CLAP and VST3); the macOS build is untested,
-reports welcome. Where a host offers LV2 or CLAP, prefer them to the VST3.
+**Tested** on Linux, Windows and macOS (the standalone, LV2, CLAP and VST3; on macOS the
+AudioUnit too). Where a host offers LV2 or CLAP, prefer them to the VST3.
 
 **Not signed:** Windows' SmartScreen warns about an unknown publisher ("More info", then "Run
 anyway"); macOS asks before opening the package (right-click it and choose Open, or System

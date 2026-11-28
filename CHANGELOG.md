@@ -13,8 +13,7 @@ break is allowed but listed under "Breaking" (`docs/compatibility.md`).
   inputs row names the connected inputs. Contributed by [@deliosiret](https://github.com/deliosiret).
 - macOS: the build runs on Intel Macs too (one universal build), and both plugins come as an
   AudioUnit as well, for Logic Pro and GarageBand (in the package, each a choice of its own).
-  Untested by hand, like the rest of the macOS build: CI checks the AudioUnits with Apple's
-  `auval`.
+  The macOS build is tested by hand: the standalone, LV2, CLAP, VST3 and the AudioUnit.
 - Mic presets for every other body (the harps, the bars, the guitars, the zithers, the kalimba,
   the tongue drum): ORTF at the player's seat and ORTF in front at 1.5 m. Only the grand and the
   upright had them; none for a bell yet.

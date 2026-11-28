@@ -138,7 +138,7 @@ The engine's tests use the committed instruments; a test without its data return
   `instrument.json` grows by optional fields (a change that cannot be optional raises `format` and
   freezes a copy in `engine/tests/formats/`); `render`'s options are added, not renamed. During 0.x
   a break is a deliberate edit of the lock in a commit that says why.
-- LV2 and the JACK standalone are the targets, of both plugins; VST3/CLAP were tested once by hand (Linux, Windows).
+- LV2 and the JACK standalone are the targets, of both plugins; VST3/CLAP were tested once by hand (Linux, Windows, macOS; there the AudioUnit too).
   Both ship in one release, five files (`plugin/tools/package.sh`): Weidinger as a preview, an installer component that can be
   left out (`packaging/split-brass.sh` keeps its instruments apart for the installers).
 

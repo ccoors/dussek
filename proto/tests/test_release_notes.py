@@ -29,7 +29,7 @@ def test_the_section_then_the_footer(tmp_path):
     head, footer = r.stdout.split("\n---\n", 1)
     assert "### Breaking" in head and "- B." in head
     assert "Older" not in head and "## 9.9.9" not in head  # the release's title carries the version
-    assert "Linux and Windows" in footer and "macOS" in footer and "untested" in footer
+    assert "Linux, Windows and macOS" in footer and "AudioUnit" in footer and "untested" not in footer
     assert "LV2 or CLAP" in footer and "SmartScreen" in footer and "Open Anyway" in footer
 
 
