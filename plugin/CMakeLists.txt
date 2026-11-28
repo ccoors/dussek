@@ -7,7 +7,7 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "13.3" CACHE STRING "the oldest macOS the builds
 # -DCMAKE_OSX_ARCHITECTURES=arm64 builds one chip's only. Ignored elsewhere.
 set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "the chips the macOS builds run on")
 # the plugin's version: the hosts' (getVersion) and the About tab's
-project(dussek-plugin VERSION 0.4.1 LANGUAGES C CXX)
+project(dussek-plugin VERSION 0.5.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 # MinGW: its C and C++ runtimes linked in (libstdc++, libgcc, winpthread), so the builds run on a

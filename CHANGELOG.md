@@ -3,7 +3,7 @@
 What each release changes for a player. From 1.0 on a break needs a major version; before it, a
 break is allowed but listed under "Breaking" (`docs/compatibility.md`).
 
-## Unreleased
+## 0.5.0 — 2026-11-28
 
 ### New
 
@@ -15,11 +15,19 @@ break is allowed but listed under "Breaking" (`docs/compatibility.md`).
   AudioUnit as well, for Logic Pro and GarageBand (in the package, each a choice of its own).
   Untested by hand, like the rest of the macOS build: CI checks the AudioUnits with Apple's
   `auval`.
+- Mic presets for every other body (the harps, the bars, the guitars, the zithers, the kalimba,
+  the tongue drum): ORTF at the player's seat and ORTF in front at 1.5 m. Only the grand and the
+  upright had them; none for a bell yet.
+- Weidinger's microphone views draw the mute that plays in the bell (straight, cup, wah, bucket,
+  plunger).
+- The editor's wizard asks for the recordings' credit (name, author, terms, license) on its last
+  page, so a new instrument's LICENSE.md credits them.
 
 ### Fixed
 
-- The instrument editor builds on macOS.
-- The standalone can open its window safely when macOS processes a resize during the initial MIDI scan.
+- macOS: the standalone could crash while opening its window (a resize arrived during its first
+  MIDI scan). Contributed by [@Neon-White](https://github.com/Neon-White).
+- The instrument editor builds on macOS. Contributed by [@Neon-White](https://github.com/Neon-White).
 - Every download carries THIRD-PARTY-NOTICES.txt: the licenses of the libraries built into the
   plugins and standalones (DPF and what it builds in, RtAudio, RtMidi, the engine's Rust crates),
   which earlier releases left out. The About tab and the website's Credits page point to it.
@@ -30,7 +38,7 @@ break is allowed but listed under "Breaking" (`docs/compatibility.md`).
 
 - The standalone starts where it was left: the instrument, every parameter, the velocity curve,
   morph, felt and Scala scale, the selected tab, and the window's size and place (on first start
-  the window opens centered).
+  the window opens centered). Contributed by [@deliosiret](https://github.com/deliosiret).
 
 ## 0.4.1 — 2026-11-17
 
